@@ -1,0 +1,4 @@
+<Addon Name="CRB_QuestTracker" Version="" Author="" APIVersion="" Description="">
+    <Script Name="CRB_QuestTracker.lua"/>
+    <Form Name="CRB_QuestTracker.xml"/>
+</Addon>

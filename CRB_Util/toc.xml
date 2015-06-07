@@ -1,0 +1,4 @@
+<Addon Name="CRB_Util" Version="" Author="" APIVersion="" Description="">
+    <Script Name="CRB_Util.lua"/>
+    <Script Name="ItemWindowSubclass.lua"/>
+</Addon>

@@ -1,0 +1,4 @@
+<Addon Name="CRB_MatchMaker" APIVersion="1" Author="" Version="" Description="">
+    <Script Name="CRB_MatchMaker.lua"/>
+    <Form Name="CRB_MatchMaker.xml"/>
+</Addon>

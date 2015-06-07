@@ -1,0 +1,4 @@
+<Addon Name="CRB_TradeskillTrainer" APIVersion="1" Author="" Version="" Description="">
+    <Script Name="CRB_TradeskillTrainer.lua"/>
+    <Form Name="CRB_TradeskillTrainer.xml"/>
+</Addon>

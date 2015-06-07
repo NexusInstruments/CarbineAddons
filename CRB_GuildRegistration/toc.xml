@@ -1,0 +1,6 @@
+<Addon Name="CRB_GuildRegistration" APIVersion="2" Author="" Version="" Description="">
+    <Script Name="CRB_GuildRegistration.lua"/>
+    <Form Name="CRB_GuildRegistration.xml"/>
+    <Script Name="CircleRegistration.lua"/>
+    <Form Name="CircleRegistration.xml"/>
+</Addon>

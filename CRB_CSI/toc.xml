@@ -1,0 +1,4 @@
+<Addon Name="CRB_CSI" APIVersion="2" Author="" Version="" Description="">
+    <Script Name="CRB_CSI.lua"/>
+    <Form Name="CRB_CSI.xml"/>
+</Addon>

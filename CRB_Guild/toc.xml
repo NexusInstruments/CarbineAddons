@@ -1,0 +1,4 @@
+<Addon Name="CRB_Guild" APIVersion="1" Author="" Version="" Description="">
+    <Script Name="CRB_GuildMain.lua"/>
+    <Form Name="CRB_GuildMain.xml"/>
+</Addon>

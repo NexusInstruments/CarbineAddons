@@ -1,0 +1,4 @@
+<Addon Name="CRB_LootNotificationWindow" Version="" Author="" APIVersion="" Description="">
+    <Script Name="LootStack.lua"/>
+    <Form Name="LootStack.xml"/>
+</Addon>

@@ -1,0 +1,8 @@
+<Addon Name="CRB_PathScientistContent" Version="" Author="" APIVersion="" Description="">
+    <Script Name="CRB_PathScientistContent.lua"/>
+    <Form Name="PathScientistExperimentation.xml"/>
+    <Script Name="PathScientistExperimentation.lua"/>
+    <Form Name="CRB_PathScientistContent.xml"/>
+    <Script Name="PathScientistCustomize.lua"/>
+    <Form Name="PathScientistCustomize.xml"/>
+</Addon>

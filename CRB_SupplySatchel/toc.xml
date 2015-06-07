@@ -1,0 +1,4 @@
+<Addon Name="CRB_SupplySatchel" Author="" APIVersion="2" Version="" Description="">
+    <Script Name="CRB_SupplySatchel.lua"/>
+    <Form Name="CRB_SupplySatchel.xml"/>
+</Addon>

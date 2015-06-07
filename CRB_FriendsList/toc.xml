@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<Addon Author="Carbine" APIVersion="3" Name="CRB_FriendsList" Description="Maintains your friends, neighbors, rivals and ignored lists." Version="">
+    <Script Name="CRB_FriendsList.lua"/>
+    <Form Name="CRB_FriendsList.xml"/>
+</Addon>

@@ -1,0 +1,4 @@
+<Addon Name="CRB_AdventureClueTracker" Version="" Author="" APIVersion="" Description="">
+    <Script Name="CRB_AdventureClueTracker.lua"/>
+    <Form Name="CRB_AdventureClueTracker.xml"/>
+</Addon>

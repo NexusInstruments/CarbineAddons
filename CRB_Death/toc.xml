@@ -1,0 +1,4 @@
+<Addon Name="CRB_Death" Version="" Author="" APIVersion="" Description="">
+    <Script Name="CRB_Death.lua"/>
+    <Form Name="CRB_Death.xml"/>
+</Addon>

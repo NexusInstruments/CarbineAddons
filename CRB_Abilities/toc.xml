@@ -1,0 +1,4 @@
+<Addon Name="CRB_Abilities" Version="" Author="" APIVersion="" Description="">
+    <Script Name="CRB_AbilitiesBuilder.lua"/>
+    <Form Name="CRB_AbilitiesBuilder.xml"/>
+</Addon>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<Addon Author="Carbine" APIVersion="3" Name="CRB_CraftingGrid" Description="" Version="">
+    <Script Name="CRB_CraftingGrid.lua"/>
+    <Form Name="CRB_CraftingGrid.xml"/>
+</Addon>

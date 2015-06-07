@@ -1,0 +1,4 @@
+<Addon Name="CRB_Cinematics" Version="" Author="" APIVersion="" Description="">
+    <Script Name="CRB_Cinematics.lua"/>
+    <Form Name="CRB_Cinematics.xml"/>
+</Addon>

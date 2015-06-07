@@ -1,0 +1,4 @@
+<Addon Name="CRB_Achievements" APIVersion="2" Author="" Version="" Description="">
+    <Script Name="CRB_Achievements.lua"/>
+    <Form Name="CRB_Achievements.xml"/>
+</Addon>

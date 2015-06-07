@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<Addon Author="" APIVersion="3" Name="CRB_GuildPerks" Description="" Version="">
+    <Script Name="CRB_GuildPerks.lua"/>
+    <Form Name="CRB_GuildPerks.xml"/>
+</Addon>

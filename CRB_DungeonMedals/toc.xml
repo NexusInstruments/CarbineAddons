@@ -1,0 +1,4 @@
+<Addon Name="CRB_DungeonMedals" Version="" Author="" APIVersion="" Description="">
+    <Script Name="CRB_DungeonMedals.lua"/>
+    <Form Name="CRB_DungeonMedals.xml"/>
+</Addon>

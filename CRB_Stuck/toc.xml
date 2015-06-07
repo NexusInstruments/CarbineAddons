@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<Addon Author="Doug Koup" APIVersion="3" Name="CRB_Stuck" Description="The interface for /stuck." Version="">
+    <Script Name="CRB_Stuck.lua"/>
+    <Form Name="CRB_Stuck.xml"/>
+</Addon>

@@ -1,0 +1,5 @@
+<Addon Name="CRB_TargetFrame" Version="" Author="" APIVersion="" Description="">
+    <Script Name="CRB_TargetFrame.lua"/>
+    <Form Name="CRB_TargetFrame.xml"/>
+    <Form Name="TargetRewardPanel.xml"/>
+</Addon>

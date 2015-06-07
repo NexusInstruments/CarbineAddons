@@ -1,0 +1,4 @@
+<Addon Author="" APIVersion="3" Name="CRB_BankViewer" Description="" Version="">
+    <Script Name="CRB_BankViewer.lua"/>
+    <Form Name="CRB_BankViewer.xml"/>
+</Addon>

@@ -1,0 +1,4 @@
+<Addon Name="CRB_MasterLoot" Version="" Author="" APIVersion="" Description="">
+    <Script Name="CRB_MasterLoot.lua"/>
+    <Form Name="CRB_MasterLoot.xml"/>
+</Addon>

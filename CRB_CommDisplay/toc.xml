@@ -1,0 +1,4 @@
+<Addon Name="CRB_CommDisplay" Version="" Author="" APIVersion="" Description="">
+    <Script Name="CRB_CommDisplay.lua"/>
+    <Form Name="CRB_CommDisplay.xml"/>
+</Addon>

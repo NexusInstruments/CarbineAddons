@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<Addon Author="Carbine" APIVersion="3" Name="CRB_GameExit" Description="This Addon displays a dialog with a timer when the user selects &quot;Camp&quot; or &quot;Exit Game&quot;." Version="">
+    <Script Name="CRB_GameExit.lua"/>
+    <Form Name="CRB_GameExit.xml"/>
+    <ReplaceAddon Name="GameExit"/>
+</Addon>

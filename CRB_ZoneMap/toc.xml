@@ -1,0 +1,4 @@
+<Addon Name="CRB_ZoneMap" Version="" Author="" APIVersion="" Description="">
+    <Form Name="CRB_ZoneMapForms.xml"/>
+    <Script Name="CRB_ZoneMap.lua"/>
+</Addon>

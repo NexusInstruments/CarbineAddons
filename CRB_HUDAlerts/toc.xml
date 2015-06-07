@@ -1,0 +1,6 @@
+<Addon Name="CRB_HUDAlerts" Version="" Author="" APIVersion="" Description="">
+    <Script Name="CRB_HUDAlerts.lua"/>
+    <Form Name="CRB_HUDAlerts.xml"/>
+    <Script Name="HUDInteract.lua"/>
+    <Form Name="HUDInteract.xml"/>
+</Addon>

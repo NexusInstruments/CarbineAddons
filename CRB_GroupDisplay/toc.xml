@@ -1,0 +1,6 @@
+<Addon Name="CRB_GroupDisplay" Version="" Author="" APIVersion="" Description="">
+    <Script Name="CRB_GroupDisplay.lua"/>
+    <Form Name="CRB_GroupDisplay.xml"/>
+    <Script Name="CRB_GroupDisplayOptions.lua"/>
+    <Form Name="CRB_GroupDisplayOptions.xml"/>
+</Addon>

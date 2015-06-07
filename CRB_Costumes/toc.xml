@@ -1,0 +1,4 @@
+<Addon Name="CRB_Costumes" Version="" Author="" APIVersion="" Description="">
+    <Script Name="CRB_Costumes.lua"/>
+    <Form Name="CRB_Costumes.xml"/>
+</Addon>

@@ -1,0 +1,4 @@
+<Addon Name="CRB_ProgressLog" Version="" Author="" APIVersion="" Description="">
+    <Script Name="CRB_ProgressLog.lua"/>
+    <Form Name="CRB_ProgressLog.xml"/>
+</Addon>

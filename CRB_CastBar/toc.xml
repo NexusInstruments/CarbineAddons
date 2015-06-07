@@ -1,0 +1,4 @@
+<Addon Name="CRB_CastBar" Version="" Author="" APIVersion="" Description="">
+    <Script Name="CRB_CastBar.lua"/>
+    <Form Name="CRB_CastBar.xml"/>
+</Addon>

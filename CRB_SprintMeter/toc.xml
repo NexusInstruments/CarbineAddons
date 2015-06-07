@@ -1,0 +1,4 @@
+<Addon Author="Carbine" Name="CRB_SprintMeter" APIVersion="3" Version="" Description="">
+    <Script Name="CRB_SprintMeter.lua"/>
+    <Form Name="CRB_SprintMeter.xml"/>
+</Addon>

@@ -1,0 +1,4 @@
+<Addon Name="CRB_AbilityVendor" Version="" Author="" APIVersion="" Description="">
+    <Script Name="CRB_AbilityVendor.lua"/>
+    <Form Name="CRB_AbilityVendor.xml"/>
+</Addon>

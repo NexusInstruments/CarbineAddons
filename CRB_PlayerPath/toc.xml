@@ -1,0 +1,4 @@
+<Addon Name="CRB_PlayerPath" Version="" Author="" APIVersion="" Description="">
+    <Script Name="CRB_PlayerPath.lua"/>
+    <Form Name="CRB_PlayerPath.xml"/>
+</Addon>

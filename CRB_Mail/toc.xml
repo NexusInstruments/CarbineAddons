@@ -1,0 +1,4 @@
+<Addon Name="CRB_Mail" Version="" Author="" APIVersion="" Description="">
+    <Script Name="CRB_Mail.lua"/>
+    <Form Name="CRB_MailForms.xml"/>
+</Addon>

@@ -1,0 +1,4 @@
+<Addon Name="CRB_NeedVsGreed" Author="" APIVersion="2" Version="" Description="">
+    <Script Name="CRB_NeedVsGreed.lua"/>
+    <Form Name="CRB_NeedVsGreed.xml"/>
+</Addon>

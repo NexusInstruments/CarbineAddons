@@ -1,0 +1,10 @@
+<Addon Name="CRB_Tradeskills" APIVersion="1" Author="" Version="" Description="">
+    <Script Name="TradeskillTree.lua"/>
+    <Form Name="TradeskillTree.xml"/>
+    <Script Name="TradeskillSchematics.lua"/>
+    <Form Name="TradeskillSchematics.xml"/>
+    <Script Name="TradeskillTalents.lua"/>
+    <Form Name="TradeskillTalents.xml"/>
+    <Script Name="TradeskillContainer.lua"/>
+    <Form Name="TradeskillContainer.xml"/>
+</Addon>

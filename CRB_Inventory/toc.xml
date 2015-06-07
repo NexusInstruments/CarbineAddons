@@ -1,0 +1,8 @@
+<Addon Name="CRB_Inventory" Version="" Author="" APIVersion="" Description="">
+    <Script Name="CRB_InventoryBag.lua"/>
+    <Script Name="ItemPreview.lua"/>
+    <Script Name="ImprovedSalvage.lua"/>
+    <Form Name="CRB_InventoryBag.xml"/>
+    <Form Name="ItemPreview.xml"/>
+    <Form Name="ImprovedSalvage.xml"/>
+</Addon>

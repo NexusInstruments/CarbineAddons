@@ -1,0 +1,4 @@
+<Addon Name="CRB_ActionBarShortcut" Version="" Author="" APIVersion="" Description="">
+    <Script Name="CRB_ActionBarShortcut.lua"/>
+    <Form Name="CRB_ActionBarShortcut.xml"/>
+</Addon>

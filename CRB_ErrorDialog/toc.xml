@@ -1,0 +1,4 @@
+<Addon Name="CRB_ErrorDialog" Version="" Author="" APIVersion="" Description="">
+    <Script Name="CRB_ErrorDialog.lua"/>
+    <Form Name="CRB_ErrorDialog.xml"/>
+</Addon>

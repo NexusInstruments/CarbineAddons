@@ -1,0 +1,4 @@
+<Addon Name="CRB_Hazards" Version="" Author="" APIVersion="" Description="">
+    <Script Name="hazards.lua"/>
+    <Form Name="CRB_Hazards.xml"/>
+</Addon>

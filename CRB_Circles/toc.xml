@@ -1,0 +1,4 @@
+<Addon Name="CRB_Circles" APIVersion="1" Author="" Version="" Description="">
+    <Script Name="CRB_CirclesMain.lua"/>
+    <Form Name="CRB_CirclesMain.xml"/>
+</Addon>

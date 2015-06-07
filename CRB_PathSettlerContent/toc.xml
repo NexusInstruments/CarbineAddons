@@ -1,0 +1,6 @@
+<Addon Name="CRB_PathSettlerContent" Version="" Author="" APIVersion="" Description="">
+    <Script Name="PathSettlerMain.lua"/>
+    <Form Name="PathSettlerMain.xml"/>
+    <Script Name="PathSettlerMissions.lua"/>
+    <Form Name="PathSettlerMissions.xml"/>
+</Addon>

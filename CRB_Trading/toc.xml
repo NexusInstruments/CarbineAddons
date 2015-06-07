@@ -1,0 +1,4 @@
+<Addon Name="CRB_Trading" Version="" Author="" APIVersion="" Description="">
+    <Script Name="CRB_Trading.lua"/>
+    <Form Name="CRB_TradingForms.xml"/>
+</Addon>
