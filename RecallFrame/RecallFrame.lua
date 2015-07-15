@@ -389,12 +389,3 @@ end
 -----------------------------------------------------------------------------------------------
 local RecallFrameInst = RecallFrame:new()
 RecallFrameInst:Init()
- Tooltip="" GlobalRadioGroup="" RadioDisallowNonSelection="1">
-                <Event Name="ButtonCheck" Function="OnSetLootOverThresCheck"/>
-            </Control>
-        </Control>
-        <Control Class="Window" LAnchorPoint="0" LAnchorOffset="40" TAnchorPoint="0" TAnchorOffset="321" RAnchorPoint="1" RAnchorOffset="-40" BAnchorPoint="0" BAnchorOffset="386" RelativeToClient="1" Font="CRB_InterfaceSmall" Text="" Template="Holo_TextCallout" TooltipType="OnCursor" Name="SetHarvestRules" BGColor="ffffffff" TextColor="UI_TextHoloTitle" TooltipColor="" TextId="RaidFrame_HarvestingLootRule" Tooltip="" IgnoreMouse="1" UseTemplateBG="1" Border="1">
-            <Control Class="Button" Base="BK3:btnHolo_ListView_Simple" Font="CRB_InterfaceSmall" ButtonType="Check" RadioGroup="HarvestRules_Raid_RadioGroup" LAnchorPoint="0" LAnchorOffset="110" TAnchorPoint="1" TAnchorOffset="-37" RAnchorPoint="0" RAnchorOffset="210" BAnchorPoint="1" BAnchorOffset="-7" DT_VCENTER="1" DT_CENTER="1" TooltipType="OnCursor" Name="HarvestThresFFABtn" BGColor="ffffffff" TextColor="ffffffff" TooltipColor="" NormalTextColor="UI_BtnTextBlueNormal" PressedTextColor="ff31fcf6" FlybyTextColor="ff2f94ac" PressedFlybyTextColor="ff31fcf6" DisabledTextColor="ff333333" Text="" TextId="Group_FFA" Tooltip="" GlobalRadioGroup="" RadioDisallowNonSelection="1">
-                <Event Name="ButtonCheck" Function="OnSetHarvestRulesCheck"/>
-            </Control>
-            <Control Class="Button" Base="BK3:btnHolo_ListView_Simple" Font="CRB_InterfaceSmall" ButtonType="Check" RadioGroup="HarvestRules_Raid_RadioGroup" LAnchorPoint="0" LAnchorOffset="8" TAnchorPoint="1" TAnchorOffset="-37" RAnchorPoint="0" RAnchorOffset="108" BAnchorPo

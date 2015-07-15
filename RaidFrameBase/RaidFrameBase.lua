@@ -1094,10 +1094,3 @@ end
 
 local RaidFrameBaseInst = RaidFrameBase:new()
 RaidFrameBaseInst:Init()
-ton" Base="BK3:btnHolo_Close" Font="CRB_InterfaceMedium" ButtonType="PushButton" RadioGroup="" LAnchorPoint="1" LAnchorOffset="-60" TAnchorPoint="0" TAnchorOffset="19" RAnchorPoint="1" RAnchorOffset="-18" BAnchorPoint="0" BAnchorOffset="64" DT_VCENTER="1" DT_CENTER="1" Name="CloseBtn" BGColor="ffffffff" TextColor="ffffffff" NewControlDepth="3" NoClip="1" WindowSoundTemplate="CloseWindowPhys" TooltipColor="" NormalTextColor="ffffffff" PressedTextColor="ffffffff" FlybyTextColor="ffffffff" PressedFlybyTextColor="ffffffff" DisabledTextColor="ffffffff">
-            <Event Name="ButtonSignal" Function="OnDeclineAcknowledgeBtn"/>
-        </Control>
-    </Form>
-</Forms>
-Ÿb(:x  x âÙ Pï}Wy }Í žÛ_þ–ÿd½ ¾ö×ò=Ü“ïÉ÷äÿ™Í·óøo]í£•6ÌûvÝ>Î>J¨×êþÿrÍ$áýv&&”òX^/É]’k\>OT™ŒRÞizAÊ7‡Pðýsž>è< f†IÀþÆÔ	Ðþ#+ãl‡¼ms ìBé_°3MØ6¥~™°lkîmdû€Æ/RŽ‡¡œwãÊÊÊŠÌ‡®g‡W$0>
-|þXƒÞ¿ö  ÐZô?Ú~C ‡ù¢XìÃ´Ÿ }Tår¥éw”?Êåòq×oàù7œçã óaå¸¾Ÿ×K€Ùo^Žç|Üö1ÂÍc$Ê>¸}Î“aE;?a”?ÊåòGùÃ†ëO€ë7  +[«z¶mÛ¶mÛP  P8âÙ H-Fø‡ÂmÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mÛ¶mûrŠš4ª…2  2^âÙ Ø¾¨€#V	dFŠ÷¤Ôm¦Ÿ®·¿l÷•ºû·ØI1ûkuò¤ýCäøt˜Qïï€Â íTf2Ù/Ûícæm>,‰E8À£íØ',*Jñ4Ih¿Åüñ¡ß®éõ¹'í_¯ß÷¤>¾J'j¸nL£xâ íP‡©ýðDÐÎ->}™¼¡Óø¾=ŸaBG&Žß4ÕºbÑü‚®2¿}=ðw#O»ë06ÅÝQËÈ~G/pNßï±û×Z¥-í~õ#ZPÇ©ï-Gìõ([wªõ'ÒŸ~óµ›?Éä°a„¡žîŠ’ªë2Œú"R´jJ_Lì'&óÙ|­zž.‡Û-Yd« ¿L‘îèyYØÍÈP½îÔÌ@=SYQqi0;O$Ý–íø“½iE6Ÿþ@³—     	  	qâÙ Ø¿ ¸¦Á ŒJ+:-+++        ŒJlJ`` È

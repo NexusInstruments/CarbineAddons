@@ -1685,15 +1685,4 @@ function ClusterFrame:OnMouseButtonDown(wndHandler, wndControl, eMouseButton, x,
 end
 
 local UnitFramesInstance = UnitFrames:new()
-UnitFrames:Init()dColor="ffffff"/>
-    </Sprite>
-    <Sprite Name="sprTrk_MessageAnimLooped" Cycle="1">
-        <Frame Texture="UI\Assets\TexPieces\UI_CRB_TrackerAnim.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="95" y0="0" y1="0" y2="0" y3="0" y4="0" y5="95" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
-        <Frame Texture="UI\Assets\TexPieces\UI_CRB_TrackerAnim.tga" x0="95" x1="95" x2="95" x3="95" x4="95" x5="190" y0="0" y1="0" y2="0" y3="0" y4="0" y5="95" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
-        <Frame Texture="UI\Assets\TexPieces\UI_CRB_TrackerAnim.tga" x0="190" x1="190" x2="190" x3="190" x4="190" x5="285" y0="0" y1="0" y2="0" y3="0" y4="0" y5="95" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
-        <Frame Texture="UI\Assets\TexPieces\UI_CRB_TrackerAnim.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="95" y0="95" y1="95" y2="95" y3="95" y4="95" y5="190" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.020" StartColor="ffffffff" EndColor="ffffffff"/>
-        <Frame Texture="UI\Assets\TexPieces\UI_CRB_TrackerAnim.tga" x0="95" x1="95" x2="95" x3="95" x4="95" x5="190" y0="95" y1="95" y2="95" y3="95" y4="95" y5="190" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.020" StartColor="ffffffff" EndColor="ffffffff"/>
-        <Frame Texture="UI\Assets\TexPieces\UI_CRB_TrackerAnim.tga" x0="190" x1="190" x2="190" x3="190" x4="190" x5="285" y0="95" y1="95" y2="95" y3="95" y4="95" y5="190" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.020" StartColor="ffffffff" EndColor="ffffffff"/>
-        <Frame Texture="UI\Assets\TexPieces\UI_CRB_TrackerAnim.tga" x0="190" x1="190" x2="190" x3="190" x4="190" x5="285" y0="95" y1="95" y2="95" y3="95" y4="95" y5="190" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.100" StartColor="ffffff" EndColor="ffffff"/>
-        <Frame Texture="UI\Assets\TexPieces\UI_CRB_TrackerAnim.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="95" y0="190" y1="190" y2="190" y3="190" y4="190" y5="285" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.075" StartColor="ffffffff" EndColor="ffffffff"/>
-        
+UnitFrames:Init()

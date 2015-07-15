@@ -773,15 +773,3 @@ end
 ---------------------------------------------------------------------------------------------------
 local PathExplorerMainInst = PathExplorerMain:new()
 PathExplorerMainInst:Init()
-ltipColor="">
-                        <Event Name="ButtonSignal" Function="OnSubCloseBtn"/>
-                    </Control>
-                    <Pixie LAnchorPoint="0" LAnchorOffset="25" TAnchorPoint="0" TAnchorOffset="18" RAnchorPoint="1" RAnchorOffset="-14" BAnchorPoint="0" BAnchorOffset="50" BGColor="white" Font="CRB_InterfaceMedium" TextColor="UI_WindowTitleYellow" Text="" TextId="Neighbors_VisitPlayer" Line="0"/>
-                </Control>
-            </Control>
-        </Control>
-    </Form>
-</Forms>
-et="0" TAnchorPoint="0" TAnchorOffset="9" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="0" BAnchorOffset="32" BGColor="white" Font="CRB_HeaderSmall" TextColor="white" Text="" TextId="Nameplates_Healthbar" DT_CENTER="1" DT_VCENTER="0" DT_BOTTOM="0" Line="0"/>
-        </Control>
-        <Control Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="NameplateO_HealthBarFraming_Bottom" TAnchorOffset="15" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="NameplateO_HealthBarFraming_Bottom" BAnchorOffset="203" RelativeToClient="1" Font="Default" Text="" Template="Default" Name="RewardsFraming" BGColor="white" TextColor="white" Picture="1" IgnoreMouse="1" Sprite="" 

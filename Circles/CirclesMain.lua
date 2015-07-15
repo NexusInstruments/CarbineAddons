@@ -907,12 +907,3 @@ end
 
 local CirclesInst = Circles:new()
 CirclesInst:Init()
-UI_BtnTextBluePressedFlyby" DisabledTextColor="UI_BtnTextBlueDisabled" Template="CRB_Normal" Text="" TextId="CRB_Medium" DT_WORDBREAK="1" GlobalRadioGroup="" RadioDisallowNonSelection="1" TooltipColor="" DrawAsCheckbox="1" WindowSoundTemplate="MetalButtonSmall">
-                <Event Name="ButtonCheck" Function="OnFontSizeOption"/>
-                <Event Name="ButtonUncheck" Function="OnFontSizeOption"/>
-            </Control>
-            <Control Class="Button" Base="BK3:btnHolo_Radio_Big" Font="CRB_InterfaceLarge" ButtonType="Check" RadioGroup="ChatFontSizeOption" LAnchorPoint=".5" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="44" RAnchorPoint=".75" RAnchorOffset="0" BAnchorPoint="0" BAnchorOffset="71" DT_VCENTER="1" DT_CENTER="0" Name="FontSizeLarge" BGColor="white" TextColor="UI_TextHoloBodyHighlight" NormalTextColor="UI_BtnTextBlueNormal" PressedTextColor="UI_BtnTextBluePressed" FlybyTextColor="UI_BtnTextBlueFlyby" PressedFlybyTextColor="UI_BtnTextBluePressedFlyby" DisabledTextColor="UI_BtnTextBlueDisabled" Template="CRB_Normal" Text="" TextId="ChatLog_FontLarge" DT_WORDBREAK="1" GlobalRadioGroup="" RadioDisallowNonSelection="1" TooltipColor="" DrawAsCheckbox="1" WindowSoundTemplate="MetalButtonSmall">
-                <Event Name="ButtonCheck" Function="OnFontSizeOption"/>
-                <Event Name="ButtonUncheck" Function="OnFontSizeOption"/>
-            </Control>
-            <Control Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="93" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="0" BAnchorOffset="123" RelativeToClient="1" Font="CRB_Header12" Text="

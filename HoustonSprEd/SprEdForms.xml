@@ -73,9 +73,3 @@
         <Event Name="WindowMove" Function="OnFramePreviewMove" />
     </Form>
 </Forms>
- = strTitle
-				if peEvent:GetObjectiveType() == PublicEventObjective.PublicEventObjectiveType_Exterminate then
-					strTempTitle = String_GetWeaselString(Apollo.GetString("Nameplates_NumRemaining"), strTitle, nCompleted)
-				elseif peEvent:ShowPercent() then
-					strTempTitle = String_GetWeaselString(Apollo.GetString("Nameplates_PercentCompleted"), strTitle, nCompleted / nNeeded * 100)
-				elseif peEvent:GetObjectiveType() == PublicEventObjective.PublicEventObjectiveTyp

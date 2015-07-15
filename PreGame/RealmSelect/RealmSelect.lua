@@ -516,13 +516,3 @@ RealmSelect:Init()
 
 
 
-rOffset="145" BAnchorPoint="0.00000" TextId="CRB_Health" Visible="0" TooltipColor=""/>
-        </Control>
-        <Control Class="Window" LAnchorPoint="0.5" LAnchorOffset="-30" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="0.5" RAnchorOffset="30" BAnchorPoint="0" BAnchorOffset="59" RelativeToClient="1" Font="Default" Text="" Template="Default" TooltipType="OnCursor" Name="Cover" BGColor="white" TextColor="white" TooltipColor="" Sprite="HUD_TargetFrame:spr_TargetFrame_ClusterCover" Picture="1" IgnoreMouse="1" NewControlDepth="2" Tooltip=""/>
-        <Event Name="MouseButtonDown" Function="OnMouseButtonDown"/>
-        <Event Name="QueryDragDrop" Function="OnQueryDragDrop"/>
-        <Event Name="DragDrop" Function="OnDragDrop"/>
-        <Control Class="Window" Name="TargetLevel" Text="44" DT_CENTER="1" DT_VCENTER="0" Font="CRB_Header9" RelativeToClient="1" Picture="0" NewControlDepth="1" BGColor="white" TextColor="white" LAnchorPoint="0" LAnchorOffset="4" TAnchorPoint="0" TAnchorOffset="42" RAnchorPoint="1" RAnchorOffset="-4" BAnchorPoint="1" BAnchorOffset="0" HideInEditor="0" TextId="" Tooltip="" TooltipId="" TooltipType="OnCursor" TooltipColor="" DT_RIGHT="0" IgnoreMouse="1" IgnoreTooltipDelay="1" DT_WORDBREAK="1"/>
-    </Form>
-    <Form Class="WorldFixedWindow" LAnchorPoint="SELF" LAnchorOffset="-48" TAnchorPoint="SELF" TAnchorOffset="-70" RAnchorPoint="SELF" RAnchorOffset="52" BAnchorPoint="SELF" BAnchorOffset="-50" RelativeToClient="1" Font="Default" Text="" Template="Default" Name="WhackAMoleForm" Overlapped="1" BGColor="white" TextColor="white" TextId="" Visible="1" Sprite="CRB_NameplateSprites:sprNp_HealthBack" IgnoreMouse="1" TooltipColor="" Tooltip="" Picture="1">
-        <Control Class="ProgressBar" Text="" LAnchorPoint="0" LAnchorOffset="4" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="-4" BAnchorPoint="0" BAnchorOffset="20" AutoSetText="0

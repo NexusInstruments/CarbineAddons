@@ -488,4 +488,3 @@ end
 
 local HUDAlertsInst = HUDAlerts:new()
 HUDAlertsInst:Init()
-orcedRename

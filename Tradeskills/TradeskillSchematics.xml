@@ -125,5 +125,3 @@
         </Control>
     </Form>
 </Forms>
-ble="0" Overlapped="0" BGColor="ffffffff" TextColor="UI_TextMetalBodyHighlight" TooltipColor="" IgnoreMouse="1" Tooltip="" DoNotBlockTooltip="1">
-        <Control Class="MLWindow" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="0" BAnchorOffset="20" RelativeToClient="1" Font="CRB_InterfaceSmall" Text="" Template="Default" TooltipType="OnCursor" Name="ItemTooltip_BasicStats_TopLeft" Border="0" Picture="1" Moveable="0" Escapable="0" Overlapped="0" BGColor="ffffffff" TextColor="ff39b5d4" TooltipColor="" IgnoreMouse=

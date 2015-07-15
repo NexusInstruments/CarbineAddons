@@ -95,43 +95,3 @@
         <Event Name="WindowClosed" Function="CloseContextMenu"/>
     </Form>
 </Forms>
-sRounded = math.floor(fHours)
-	local nMinutes = math.floor(fHours * 60)
-
-	if nYears > 0 then
-		tTimeData["name"] = Apollo.GetString("CRB_Year")
-		tTimeData["count"] = nYears
-	elseif nMonths > 0 then
-		tTimeData["name"] = Apollo.GetString("CRB_Month")
-		tTimeData["count"] = nMonths
-	elseif nWeeks > 0 then
-		tTimeData["name"] = Apollo.GetString("CRB_Week")
-		tTimeData["count"] = nWeeks
-	elseif nDaysRounded > 0 then
-		tTimeData["name"] = Apollo.GetString("CRB_Day")
-		tTimeData["count"] = nDaysRounded
-	elseif nHoursRounded > 0 then
-		tTimeData["name"] = Apollo.GetString("CRB_Hour")
-		tTimeData["count"] = nHoursRounded
-	elseif nMinutes > 0 then
-		tTimeData["name"] = Apollo.GetString("CRB_Min")
-		tTimeData["count"] = nMinutes
-	else
-		tTimeData["name"] = Apollo.GetString("CRB_Min")
-		tTimeData["count"] = 1
-	end
-
-	return String_GetWeaselString(Apollo.GetString("AccountInventory_LogTime"), tTimeData)
-end
-
-local MarketplaceCREDDInst = MarketplaceCREDD:new()
-MarketplaceCREDDInst:Init()
-end
-
-local LevelUpUnlocksInst = LevelUpUnlocks:new()
-LevelUpUnlocksInst:Init()
-8ÿ ëŠ×¦	bÐR‰å}ÅûiûÝåYûÉŠ¡Óª.}uÙ‚•¯«^†ùjœñô¥>u‹5úwÃú‹¹ tÁ½çÞøTùtSöù!QÚí»Z~Ï£«vÙ©ˆë–ï/ƒçÉ¯09K<åÉH9ðÇhÔêßÞ1Ør`°ñvÌÿl¦¿Ÿö¸x\sŽ¢1ý{hséEýJm.[ ŸoÃýEõÖ¶q*;/O¯ÿ°ì¡×UÔ ÿi‰„ Œ*‹:v€¾ƒþw‰ò!»££âåÃ½])ò˜P8Ÿàîýg:ìÉ‹Â>pn?ÞñÛ±|¼>ûqÔ_'v_}•…ñ÷Ì”EI_‰|€×x½fÂ‹ƒAËìÿ¤}Žõ±»E¤Î‚?”vq¹BRU0ôü‹‹\ùHS3½©%™yW/¿«†ùìN”ŠøN9ÿ˜ïóù{¼}×vô”œ_Fñò6Îåçu>%ààþþ7‰¹z‘¿07^€õÁÀ>{õñáÐöm-Ç}úàÎÐ@ÿ`sÌÆh¨G}`r¢ê9ÿ qúÀÃþÛ}Éùžm™¨*î´Û“‹cr–³/TS"ö'oÑg¸°¼!X?rñ¢È¤×Û~È­±¸‘¡DÃ´Óò`{»Õº0|)ôÇPÂ÷Nƒáiê˜E–I"Ì'=þ¸v6æÕÕ/@µTMüõ	Ä$¥MOLô¯GÖ¸Í®¼¼Çüý
-Àç¯Â6ŒÅûïk0ÿc…úÆ„I
-?Éä.3‘jcÍÌÿ4¨o{F¥•Üƒ$ßþC“Û¤VÉª¦½+a<¥R…&œ~þÖÅ\ý[GJr²”üÄPv²åð?s{è'¶Wûã7Lq4öÏ`ü±>€õÚ®õd§Û±>ÈÍ­,70K^Tý~e¥jS}©O/`dSã<ßïá|ŸOê{Ï½±ËÇïí„||à»×Ÿ·»8û~MÅ/ÎGã÷÷þçæï}Ûñ\ÿ`n<1„Ö«Dú@F†óm†ñUNÜÂûˆ×Èy§Qyrÿh<¢¢(,o—ÞU#'²6&*È;B#¹~ýhay“‘RB«9÷Æ“j¸Øq~(ø“a„4nýÒØhÄígX·‡¯Äü/UÂßM&Ó3êxg Ð²`w{ƒ»¬®>FZ?ó…Á(ä¿Ô`>j4
-¼Üê2O’¤]'ð»pò{þvlÀ6ŒuS“ÉhtWj‡$? j…Bº-µŸ¼›™ìuzzlã]ÒV	·?úO£I'ŠËŠ/ƒ÷•Éå)¢Áê‹ŸAxBF`ÿìX3?þcxü½úþ~c±•Ù;!+o<„Ç»)_ïd6Å Ìw¼ž@˜ïxýæ¯}'0~£ä^Žï]²¬¿÷÷÷Æg=×ë§àßÏ­gÿ>È÷›‹óáŸ¹øÈ_ ¼^PÁz¯?Š þÈÙ'^X™HÉ¡†ã¯Â÷ÇªÇííJõÔ—Ìd†ó¶¤(òÞž§K2}|— È#ª‡xýB"¯þý^8‘ÔýàûccÎ1µ¬<.ôÁ†~(Ûéf£ôçZ@–ÇÛë.?i‘,µ`ÿµ¢ó´k~KÑ
-Ñþÿšs([ÜÏäÆ1õ¥¸í,•m,Ðáõ6ÃÙ{ÄPijuzìŽµCä'Có:Q;ªÍÈÈèM‘Ô¶Ú.Y…ßgúEö¶UV‰Þ7%%)éšúbtˆ^§ô×IÑá¡íÏ4÷éãèÎ†“üø`%:Ä’ÝóùA;úìvÇ÷mÜøwsñym«o¾e¤wüé€úúÿÑù÷Aüåô¿* ¾€,÷{ëÛy¬Jôâd¸þ#‘èó÷@KK£——rü/ÆŸeóNîâdãmØ¿8ý„wäÙŒóÿte;²¢ÚÊJ—Ë½=Þrî_KÝgEÈ½õð8òwÜ;oÏýûÅ;úÏ®öâØT„ž5,h›*ZëBM¨V£I‘Ý?òû™—%™ø}NÈåx@@ÿ+å*xß$üáüç/á‰øzPÐX½é$X_7xÇcÊI˜Ë+¾ïcu¥û¦å'ˆƒøËpJª_·9n?oÿÛ­kÂ1ù›Yl/û'úQ,Išfø»Ð_bËøoKZThY ÿÉÖ»ñ–Ä[©¿Ï½ßnE!Ù›Z¼ÏÛ…Ž˜d>{Yßç¨T*GáHŸêê¸ï^Žÿ))Éßôøq“˜ÄþEDÎ+þþ'rˆ?T·\ýO¢%ÑÚí=-`Ìõ›ˆåû`>qý&þ^|ë\vƒxÎßÇH˜e¯wÏ¨|Ï;ðõ¿

@@ -169,14 +169,3 @@
         </Control>
     </Form>
 </Forms>
-epth="0" TestAlpha="1" NewControlDepth="5" Tooltip="" HideInEditor="0" DrawAsCheckbox="1">
-            <Event Name="ButtonCheck" Function="OnWarpartyPublicClick"/>
-            <Event Name="ButtonUncheck" Function="OnWarpartyPublicClick"/>
-            <Control Class="Window" LAnchorPoint="0.5" LAnchorOffset="-55" TAnchorPoint="1" TAnchorOffset="-402" RAnchorPoint="0.5" RAnchorOffset="302" BAnchorPoint="1" BAnchorOffset="-33" RelativeToClient="1" Font="Default" Text="" Template="" Name="PublicContainer" BGColor="ffffffff" TextColor="ffffffff" Picture="0" IgnoreMouse="1" Sprite="" Visible="1" HideInEditor="0" NewWindowDepth="1" NoClip="1" CloseOnExternalClick="0" TooltipColor="" Border="1" UseTemplateBG="1" Tooltip="">
-                <Control Class="Window" LAnchorPoint="0" LAnchorOffset="-80" TAnchorPoint="0" TAnchorOffset="-53" RAnchorPoint="1" RAnchorOffset="62" BAnchorPoint="1" BAnchorOffset="59" RelativeToClient="1" Font="Default" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="Blocker" TooltipColor="" Sprite="BK3:UI_BK3_Holo_Framing_2_Blocker" Picture="1" IgnoreMouse="1" NoClip="1"/>
-                <Control Class="Window" LAnchorPoint="0" LAnchorOffset="-25" TAnchorPoint="0" TAnchorOffset="-10" RAnchorPoint="1" RAnchorOffset="15" BAnchorPoint="1" BAnchorOffset="10" RelativeToClient="1" Font="Default" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="HoloBG" TooltipColor="" Sprite="BK3:sprHolo_Alert_Flyout" Picture="1" IgnoreMouse="1" NoClip="1" HideInEditor="0"/>
-                <Control Class="Button" Base="CRB_Basekit:kitBtn_Holo_Close2" Font="Thick" ButtonType="PushButton" RadioGroup="" LAnchorPoint="1" LAnchorOffset="-37" TAnchorPoint="0" TAnchorOffset="34" RAnchorPoint="1" RAnchorOffset="-19" BAnchorPoint="0" BAnchorOffset="52" DT_VCENTER="1" DT_CENTER="1" Name="PublicCloseBtn" BGColor="ffffffff" TextColor="ffffffff" NormalTextColor="ffffffff" PressedTextColor="ffffffff" FlybyTextColor="ffffffff" PressedFlybyTextColor="ffffffff" DisabledTextColor="ffffffff" TooltipColor="" HideInEditor="0">
-                    <Event Name="ButtonSignal" Function="OnWarpartyPublicCloseBtn"/>
-                </Control>
-                <Event Name="WindowClosed" Function="OnRosterAddMemberCloseBtn"/>
-                <Control Class="Window" LAnchorPoint="0" LAnchorOffset="25" TAnchorPoint="0" TAnchorOffset="45" RAnchorPoint="1" RAnchorOffset="-35" BAnchorPoint="1" BAnchorOffset="-74" RelativeToClient="1" Font="CRB_InterfaceSmall" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_TextHoloBodyHighlight" Template="Holo_TextCallout" TooltipType="OnCursor" Name="TextFrame" TooltipColor="" TextId="" Sprite="" DT_VCENTER="1" DT_CENTER="1" DT_WORDBREAK="1" NewControlDepth="2" Picture="0" IgnoreMouse="1" Border="1" U

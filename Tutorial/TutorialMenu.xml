@@ -98,22 +98,3 @@
         <Control Class="Window" LAnchorPoint="0" LAnchorOffset="2" TAnchorPoint="0" TAnchorOffset="3" RAnchorPoint="0" RAnchorOffset="29" BAnchorPoint="1" BAnchorOffset="1" RelativeToClient="1" Font="CRB_InterfaceMedium_B" Text="" Template="Default" Name="ReadTutorialNew" TextId="" BGColor="bfffffff" TextColor="ff2f94ac" TooltipType="OnCursor" TooltipColor="" DT_VCENTER="1" Picture="1" IgnoreMouse="1" Sprite="CRB_MinimapSprites:sprMM_QuestGiver" Visible="0" NewControlDepth="10"/>
     </Form>
 </Forms>
-nd
-
-local TradeskillTreeInst = TradeskillTree:new()
-TradeskillTreeInst:Init()
-2" y4="422" y5="452" Stretchy="1" StateBits="31" Direction="Down"/>
-</Sprites>
-dColor="ffffffff"/>
-    </Sprite>
-</Sprites>
-1" Direction="Across"/>
-    <AutoButton Name="btnActionBarFrame_RecallToggle" Texture="UI\Assets\TexPieces\UI_CRB_HUD_ActionBar_2_557_305.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="24" y0="0" y1="0" y2="0" y3="0" y4="0" y5="16" StateBits="31" Direction="Across"/>
-    <AutoButton Name="btnActionBarFrame_DismountBtn" Texture="UI\Assets\TexPieces\UI_CRB_HUD_ActionBar_2_209_483.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="57" y0="0" y1="0" y2="0" y3="0" y4="0" y5="55" StateBits="31" Direction="Across"/>
-    <AutoButton Name="btnResourceBar_DisableDash" Texture="UI\Assets\TexPieces\UI_CRB_HUD_ActionBar_398_367.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="42" y0="0" y1="0" y2="0" y3="0" y4="0" y5="31" StateBits="31" Direction="Across"/>
-    <AutoButton Name="NewButton" Texture="UI\Assets\TexPieces\UI_CRB_HUD_ActionBar_397_286.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="68" y0="0" y1="0" y2="0" y3="0" y4="0" y5="72" StateBits="31" Direction="Across"/>
-</Sprites>
-‡û
-d  úü Š,X˜ßÿÞò Bž‹÷û.÷ÞòÊNèoZ{Ê%ÜsäÇ©=‹EKñ~8|äëO&xÇ|”F¢"LŸÈ‚J­†þHImíøÕëyÅ©‰Z¦/þ…²É0Ì ø(/þîF‰·¾râ›gar†…Î¬lf¿æV.q:ív,?óàÎø~Üÿÿ˜,6ÅC|) ª­çÎB=ÛŒ>¿f•WèÈÌ@xâ+È~øf=o…QLNN‡|åŸ–$†;‘	 ™ìp‰EçC<¼Â+”K`?ü“ëP¿¯`üàïÈûjçàù¼ò)^ðgÂ;¢®íð>ÕBÎ¯‘÷ÛÑ!ŸD×m‘âÃÔ¶îðççÅ\s
-Ì×‹¿T·zŠÙwÇ£CÉi¯šÅûù)]B1Y¯‰yä¢°ÇD»½=žÂÂY™«Ñ%d¾ò±=zUw&ÈïõªÈÈFšMmy¦{\r“E¥
-¦ü~*!)	äëU*È¿sÒ§þý}z‰NåÇŸWªJüääþ–dç«TQôüŸ¡ýÿOÎ{^¥JFÏs|T¥šø äÏØMA6Ì‘ç^Ÿé&õƒLÙëÛðýbÓ ÙU¡ü{¯ãjÙ>¯UR©š›A‹ÊûgØ{@Î­Vþ>yÎýñ‘çAûaˆ<OÚ?®9÷Ï°Ï%]ûùíŽëË|Åõå¹÷Ïý|—p}yîûðnT>ïÐ/”ø2Ìù}WÉsß¿M)ˆª4_E•×ŽÍÊìt¿G©~/,ü_pŽ¤ß>ÿB  Bjúü @s¦ ýÑóÇÏ;ÌoAÀxÍ/ðãÿ²>ß}ºÿžUàxìv>>#‰¿óE~Jí%»óIrµµspìyÏùrSû¨ˆñú¦"?†ñ¦zÊ3ãÿUP~wäñúN£ÛÀgé£ñºýbi2þüee›×+Éƒ_`¯QúâÕ¦ÃX²æ9;â•~jÍËïô¾ÿË°ÄvSkþ®û5q÷,±ývÆ±/Ãïýçxç¦ì?„ëgãI÷aÜ9Œ•›‡qßìËÆ

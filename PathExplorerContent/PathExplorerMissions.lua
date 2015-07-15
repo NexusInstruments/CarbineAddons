@@ -570,13 +570,3 @@ end
 ---------------------------------------------------------------------------------------------------
 local PathExplorerMissionsInst = PathExplorerMissions:new()
 PathExplorerMissionsInst:Init()
-GColor="white" TextColor="UI_TextHoloBody" Picture="0" DT_VCENTER="1" IgnoreMouse="1" TooltipColor="" Border="1" UseTemplateBG="1" NewControlDepth="1" Tooltip="">
-                <Event Name="EditBoxChanged" Function="OnMissionDistanceEditBoxChanged"/>
-                <Event Name="EditBoxReturn" Function="OnMissionDistanceEditBoxChanged"/>
-            </Control>
-        </Control>
-        <Control Class="Window" LAnchorPoint="0" LAnchorOffset="32" TAnchorPoint="0" TAnchorOffset="38" RAnchorPoint="1" RAnchorOffset="-32" BAnchorPoint="0" BAnchorOffset="58" RelativeToClient="1" Font="CRB_HeaderTiny_O" Text="" Template="Default" TooltipType="OnCursor" Name="Label" BGColor="white" TextColor="UI_TextHoloTitle" TooltipColor="" TextId="GuildRegistration_SettingsLabel" IgnoreMouse="1" NoClip="1" DT_CENTER="1" DT_VCENTER="1"/>
-        <Event Name="WindowClosed" Function="CloseContextMenu"/>
-    </Form>
-</Forms>
-efault" TooltipType="OnCursor" Name="Label" BGColor="white" TextColor="UI_TextHoloTitle" TooltipColo

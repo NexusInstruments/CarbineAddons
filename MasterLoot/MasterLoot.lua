@@ -438,12 +438,3 @@ end
 
 local MasterLoot_Singleton = MasterLoot:new()
 MasterLoot_Singleton:Init()
-nt="1" TAnchorOffset="-73" RAnchorPoint="1" RAnchorOffset="-43" BAnchorPoint="1" BAnchorOffset="-47" DT_VCENTER="1" DT_CENTER="1" TooltipType="OnCursor" Name="SearchClearBtn" BGColor="white" TextColor="white" TooltipColor="" NormalTextColor="white" PressedTextColor="white" FlybyTextColor="white" PressedFlybyTextColor="white" DisabledTextColor="white" Visible="0" RelativeToClient="1" TransitionShowHide="1" HideInEditor="0">
-            <Event Name="ButtonSignal" Function="OnSearchClearBtn"/>
-        </Control>
-        <Event Name="WindowShow" Function="OnListShow"/>
-    </Form>
-</Forms>
-ÑË’ÔD˜pŸQ”GÌ8]®' ˜ã…A(õÅtÂÉeÒûÎ'vÝ(n¨DvaÐ‚Î5?¯(¼^iðP/Tn“} ³À<ÊÐpÞ;C–‹ø5ïFv¢Ÿ`Å^|^b„#g,ºb?\Ž?zƒ.ã·ƒÚYù÷êäãï°Ùxü[—ýv³–æ¿óëë
-ë—6½Ï‡t8Îï[
-P'!>W™ç¤ûq]dÄ¯7\é»#¡Àù:z;Ùk¨ÜAa¸"y»/Âw—ùŽ|ÂQ®Ï{‰ˆïIÌÙhÖ«	ÌÓF½ñ|¯VM#½ u»FäçÛ\·ë5j¢ï»¿à¸¾_D~©ÒÍ!~¬tûyôí”B§xàø­Ù ÓÍúd_™â|Ìá"oò<ž˜÷Ïâ{™ŠúˆÒ ðÒj½-ë½6Ö%Òè#˜8—ÆIÑJ2íý¾:b&/ö Ø*—¤¯Àåü!t?Ûƒ®Øzý¶EØŠò{€úçñ<#~Ð-IÁUðüÿº*lZ‘]øzhúeÉ3ºàQÆûð#úÑá[~àBGZð·„ñ»ÅA9ò¿}Î£eèïáµIo"þýW®ûñû°#ÀÞ !ŸWU†¼v%.ð<ôñ°Ý"»Àçi¶Œ½Ÿ?â®¿G<GÞŸu¼ë&6¥ïNêñµ„‚z|³Ž¼Åïô{R——¼òƒÌwÂ¨/']õ\§o$ÌÙ1}õ}£&ñ|³!y<·*ß§Ûjåa×•ra}zÄ{ëð+'3qî­#äç‹ˆ'KôzäÐÙ	Šë3¯òü½¸_ïyC|oFy‚«Éú>H%ª^Oòõ6¾wzÝ6½¿¹˜¦×È÷$k^StÁ|¸þþ¢ØmE}E¶ù¾Ä	y;²ƒ.çr­Hô£xü8÷ÿÙåÊlòô] ~@^QôÅìÿLóG[àI>Ê+[Ì£"Û‹dÜ2ók qâü·EG°ý€ÿ>€§}7Évc@q;óÕM

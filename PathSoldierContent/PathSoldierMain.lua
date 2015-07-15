@@ -886,28 +886,3 @@ end
 
 local PathSoldierMainInst = PathSoldierMain:new()
 PathSoldierMainInst:Init()
-ientistContent:DrawContextMenu()
-	local nXCursorOffset = -36
-	local nYCursorOffset = 5
-
-	if self:CloseContextMenu() then
-		return
-	end
-
-	self.wndContextMenu = Apollo.LoadForm(self.xmlDoc, "ContextMenu", nil, self)
-	self:DrawContextMenuSubOptions()
-			
-	local tCursor = Apollo.GetMouse()
-	local nWidth = self.wndContextMenu:GetWidth()
-	local nHeight = self.wndContextMenu:GetHeight()
-	
-	self.wndContextMenu:Move(
-		tCursor.x - nWidth - nXCursorOffset,
-		tCursor.y - nHeight - nYCursorOffset,
-		nWidth,
-		nHeight
-	)
-end
-
-function PathScientistContent:DrawContextMenuSubOptions(wndIgnore)
-	if not self.wndContextMenu or not self.wndContextMenu:IsValid() the

@@ -262,23 +262,3 @@ end
 
 local RaidFrameLeaderOptionsInst = RaidFrameLeaderOptions:new()
 RaidFrameLeaderOptionsInst:Init()
----------------------
-function PlayerTicketDialog:OnCancelBtn(wndHandler, wndControl, eMouseButton)
-	if wndHandler:GetId() ~= wndControl:GetId() then
-		return
-	end
-	self:ClearTextEntries()
-	self.tWindowMap["Main"]:Show(false)
-end
-
----------------------------------------------------------------------------------------------------
-function PlayerTicketDialog:OnTextChanged()
-	self:UpdateSubmitButton()
-end
-
----------------------------------------------------------------------------------------------------
--- PlayerTicketDialog instance
----------------------------------------------------------------------------------------------------
-local PlayerTicketDialogInst = PlayerTicketDialog:new()
-PlayerTicketDialogInst:Init()
-ªŸ‡«úyh±ªŸ—Uı<´XÕÏƒÌª~Rü5èg´şó-ğN±ªŸUı|/²ªŸ‡«úypYÕÏC‹Uı<È¬êç!Å_ƒ~~  HÕÏ÷«úyH±ªŸ‡«úypYÕÏC‹Uı<È¬êç!Åw^?§”™‡¾~Nöêgi´ôWd-³âõ(†__>çeàÓÏØ]w[?ÿs÷ûŞúWöêçï~o°ôóõRDÆ=˜qı†ïfÙû¾ÔŒÈ»¬Ÿ—(úÑW¿áÊ]³Ñ× '–~Æù€×oØğn–q>Ü-ı|Ù«ŸWcî~K®¤°¯¾Ã…¯ÿJööã˜ÿ ëç?İmı¼DÑ¾úWÆıÓÕÏCxı:•o¿.ı¬ò­ñ×¥ŸU¾5V×Z|§ô³Ê·ÆêúÏC‹ÕõŸ›û­Ÿæ£uˆègfø•oƒaø¾Eı,ĞL—¯òÀùvâáÕÏ Ğ,*ß“Ñ¦¿ú™*á$Š¯ÊwŠoM?“ãÓå©<p5ëÖãô›_*ß.õÜ_ıLJ@LÇWå3®ıæzp(ÌVYe•UVYe•UVYå{ÑúÏ€Z¿îÿÙ¦uò•  •Gò± Š,X˜iÎ¾ÆàöÛ²TŞÖ×D¹ûKÚmd)ØĞBTïÓ{"NZœÛnfÈ‘ÁÇRÈ¶ä#³R–dâı‘#´ê$38™M±E˜³ökÒãf[ÍæƒjñgÍÙd:¢¯X4ÀˆvÚª­ÓæjV%'TÂJšå‹·Ÿ³K¸íMé}~×¬kì¹Vz™•¼ÏÙ9{ÎÉĞN½ŞóéÜUì2ÓBÖß#I7]İÙÂß•CŸû%º‡«à®XLúŠg¶¿“îPos–|öš ‘—š¹é‹ˆK‡OfH9íÌâ%Cñ'”qÚ	>>eï-íPçêi‰)uC¼8÷"%Æµs»	‹sÍÌYORöÈkcü:‚nÓJïvb¦ÿ„Mü~s"Ğññv)ıîô‹I×ÖÃÓ@á£Ó{•:7Y’P°"‹ä+Íğmi¯Ùá¸ÆlÖŒKŞ5;×ØH´ùæ«M*‚¿lĞ¯Øá]›[¼Ts§Wf¬ç¹ÉÚÑôÜ€jÈ­søÿóóÿùùër»7¤m¯*š¹]Jßr©©fR²Û¹/İ4Ò$

@@ -392,26 +392,3 @@ end
 
 local ObjectiveTrackerInst = ObjectiveTracker:new()
 ObjectiveTrackerInst:Init()
-MountPortrait"):SetAttachment(tData.custEquipped:GetPreviewAttachSlot(tData.eSlotId), 0)
-
-	if tData.custFlair:GetFlairType() == PetCustomizationLib.PetFlairType_GroundMountSide and tData.custFlair:GetUnlockCount() == 1 and not self.tLastSelectedData.bIsHoverboard then
-		local wndOtherFlairList = nil
-		if tData.eSlotId == PetCustomizationLib.MountSlot.Left then
-			wndOtherFlairList = self.wndGroundFlairSlots:FindChild("CustomizeRight")
-		elseif tData.eSlotId == PetCustomizationLib.MountSlot.Right then
-			wndOtherFlairList = self.wndGroundFlairSlots:FindChild("CustomizeLeft")
-		end
-
-		
-		for idx, wndCurr in pairs(wndOtherFlairList:GetChildren()) do
-			local wndCustomizeBtn = wndCurr:FindChild("CustomizeFlairBtn")
-			if wndCustomizeBtn and wndCustomizeBtn:GetData().custFlair == tData.custFlair then
-				wndCustomizeBtn:Enable(true)
-			end
-		end
-	end
-end
-
-function MountScreen:OnMountBeginDragDrop(wndHandler, wndControl)
-	if wndHandler ~= wndControl then
-		return 

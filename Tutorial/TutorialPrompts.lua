@@ -915,5 +915,3 @@ end
 -----------------------------------------------------------------------------------------------
 local TutorialPromptsInst = TutorialPrompts:new()
 TutorialPromptsInst:Init()
-ow" LAnchorPoint="0" LAnchorOffset="29" TAnchorPoint="0" TAnchorOffset="76" RAnchorPoint="1" RAnchorOffset="-28" BAnchorPoint="1" BAnchorOffset="-93" RelativeToClient="1" Font="CRB_InterfaceMedium" Text="" Template="Default" Name="ItemBlocker" BGColor="80000000" TextColor="ffffffff" Sprite="BK3:UI_BK3_Metal_Framing_BlockerFull" Picture="1" NewControlDepth="10" HideInEditor="1" SwallowMouseClicks="1" TooltipColor="" IgnoreMouse="1"/>
-            <

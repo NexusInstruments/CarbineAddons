@@ -744,8 +744,3 @@ end
 
 local TradeskillSchematicsInst = TradeskillSchematics:new()
 TradeskillSchematicsInst:Init()
-nchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="0" RelativeToClient="1" Font="Default" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="LeftSide" TooltipColor=""/>
-        <Control Class="Window" LAnchorPoint="0.25" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="0" RelativeToClient="1" Font="Default" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="RightSide" TooltipColor=""/>
-    </Form>
-    <Form Class="Window" LAnchorPoint="0" LAnchorOffset="24" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="-24" BAnchorPoint="0" BAnchorOffset="0" RelativeToClient="1" Font="CRB_InterfaceSmall" Text="" Template="Default" TooltipType="OnCursor" Name="ItemTooltip_BasicStatsBox" Border="0" Picture="1" Moveable="0" Escapable="0" Overlapped="0" BGColor="ffffffff" TextColor="UI_TextMetalBodyHighlight" TooltipColor="" IgnoreMouse="1" Tooltip="" DoNotBlockTooltip="1">
-        <Control Class="MLWindow" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="0" BAnchorOffset="20" RelativeToClient="1" Font="CRB_InterfaceSmall" Text="" Template="Default" TooltipType="OnCursor" Name="ItemTooltip_BasicStats_TopLeft" Border="0" Picture="1" Moveable="0" Escapable="0" Overlapped="0" BGColor="ffffffff" TextColor="ff39b5d4" TooltipColor="" IgnoreMouse=

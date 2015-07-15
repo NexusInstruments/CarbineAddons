@@ -1480,11 +1480,3 @@ end
 ---------------------------------------------------------------------------------------------------
 local VendorInst = Vendor:new()
 VendorInst:Init()
->
-            <Event Name="ButtonSignal" Function="ShowNext"/>
-        </Control>
-        <Control Class="Button" Base="BK3:btnHolo_Blue_Med" Font="CRB_Button" ButtonType="PushButton" RadioGroup="" LAnchorPoint="1" LAnchorOffset="-247" TAnchorPoint="1" TAnchorOffset="-101" RAnchorPoint="1" RAnchorOffset="-137" BAnchorPoint="1" BAnchorOffset="-28" DT_VCENTER="1" DT_CENTER="1" Name="btnPrevious" BGColor="ffffffff" TextColor="ffffffff" NormalTextColor="UI_BtnTextBlueNormal" PressedTextColor="UI_BtnTextBluePressed" FlybyTextColor="UI_BtnTextBlueFlyby" PressedFlybyTextColor="UI_BtnTextBluePressedFlyby" DisabledTextColor="UI_BtnTextBlueDisabled" WindowSoundTemplate="TogglePhys02" Text="" TextId="Tutorials_PrevPage" LeftEdgeControlsAnchor="" TopEdgeControlsAnchor="" RightEdgeControlsAnchor="" BottomEdgeControlsAnchor="" RelativeToClient="0" TooltipColor="" TestAlpha="1">
-            <Event Name="ButtonSignal" Function="ShowPrevious"/>
-        </Control>
-        <Event Name="WindowClosed" Function="OnTutorialWindowClosed"/>
-        <Control Class="Button" Base="BK3:btnHolo_Radio_Big" Font="CRB_InterfaceSmall" ButtonType="Check" RadioGroup="hidetutorial" LAnchorPoint="0" LAnchorOffset="44" TAnchorPoint="1" TAnchorOffset="-113" RAnchorPoint="0" RAnchorOffset="294" BAnchorPoint="1" BAnchorOffset="-62" DT_VCENTER="1" DT_CENTER="0" TooltipType="OnCursor" Name="HideCategoryBtn" BGColor="ffffffff" TextColor="UI_TextHoloBodyCyan" Tooltip

@@ -487,34 +487,3 @@ end
 
 local BaseBarCornerInst = XPBar:new()
 BaseBarCornerInst:Init()
-ÿÿªªªª        ÿÿÿÿªªªª        ÿÿ$!€À@`øIdIœ$bªªªªþÀ     D)‚PcÁÿÿ      Ã‚¨¢'ÿÿ      Ã¢ªªªªÿÿ      Ã¢ªªªªÿÿ      Ã‚ª*ªBÿÿ      D)‚7ÿü@  Ie1!^RWUÿüd   I$)!?ïÿÿÿüI@  I%)!ÿÿÿÿÿüI@  I!!    ÿûm#   %)!ÿÿÿÿÿüI"   	%)!ÿÿÿÿÿü		   H%)!ÿÿÿÿÿü	   H%)!ÿÿÿÿÿüI   I%)!ÿÿÿÿÿüa  A%)!ÿÿÿÿÿü!   	$)ã ªªªêÿýI   	…1ã ÿ?áÿýI   …1!XVUUÿýI   H%)!ÿÿÿÿÿýI   @%)!ÿÿÿÿÿýR   A%)!ÿÿÿÿÿýŠ$   A%)!ÿÿÿÿÿý‘   @$)!¿¿¿¿øP$@<…1‚ppPP 	 	’b  PPPP        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿ¢pPX\        bªªªªøI‘ÄD)b%•UUÿð     D)‚Ôp‚ÿÿ      D)‚ÿõW ÿÿ      $)‚ÿU*ÿÿ      D)‚_5Àø  €@ƒ&D)¢¢ 
-	ãÐ”$I’$…1!UUÿ¨» $I’$D)ã Ëÿ  ¾ $I’$D)ã ÿÿ  ¿ $I’$D)ã ÿÿ  Ã $I’$d)ã ÿÿª Ã $I’$d)ã ÿÿª Ã $I’$d)ã ÿÿª Å $I’$e1!UUÿªÂ $I’$e1!UUÿªÆ $I’$e1!UUÿªÆ $I’$E)ã _ßª Æ $I’$e1!^UÿªÈ $I’$e1!UUÿªÈ $I’$D)ã ‚ÿ  É $I’$D)ã ÿÿ  Ì $I’$D)ã ÿÿª Í $I’$D)ã ÿÿª Ì äI’$D)ã ¿¿* Ì€ó'I’$e1bpppp 	’ I b  PPPP        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ÿÿ     U        ¾÷aTVWU        b     U        b     Uø!œI’$¢  *ªªUø   ¹›$D)  ¿ÿUø   ¤Ÿ$D)   úÿUø &>I’$$!  øÿÿU  H’$I’$!  ÿÿU        $!   ÿÿU        !   ÿÿU        !   ÿÿU        ã    «ÿU        !   ÿÿU        !   ÿÿU        !   ÿÿU        !   ÿÿU        !   ÿÿU        !   ÿÿU        !   ÿÿU        !   ÿÿU        !   ÿÿU        !   ÿÿU        ã    ¯ÿU        ã    ªÿU        ã    ªÿU        Ã   ªªU        £   ªªU I$	’$b  PPPUsprMap_PlayerArrow" Cycle="0">
-        <Layer Name="sprMap_PlayerArrowBase"/>
-        <Layer Name="sprMap_PlayerArrowGlow"/>
-        <Layer Name="sprMap_PlayerPulse"/>
-    </Composite>
-    <Composite Name="sprMap_PlayerArrowNoRing" Cycle="0">
-        <Layer Name="sprMap_PlayerArrowBase"/>
-        <Layer Name="sprMap_PlayerArrowGlow"/>
-    </Composite>
-    <Composite Name="sprMap_PlayerArrowSmall" Cycle="0">
-        <Layer Name="sprMap_PlayerPulse"/>
-        <Layer Name="sprMap_PlayerDot"/>
-    </Composite>
-    <Sprite Name="sprMap_SignalLost_FramingOrange" Cycle="1">
-        <Frame Texture="UI\Assets\TexPieces\UI_CRB_SignalLost_0_503.tga" x0="116" x1="145" x2="147" x3="147" x4="147" x5="176" y0="1" y1="31" y2="32" y3="32" y4="32" y5="62" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
-    </Sprite>
-</Sprites>
-WaveRunner.tga" x0="0" x1="8" x2="8" x3="8" x4="222" x5="230" y0="1978" y1="1986" y2="1986" y3="1986" y4="2016" y5="2024" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
-    </Sprite>
-</Sprites>
-me="OnNext" />
-   
-    <output name="OnNew" />
-    <output name="OnSave" />
-    
-    <output name="OnOkay" />
-    <output name="OnCancel" />
-
-    <output name="OnChangeName" />
-    <output name="OnChangeHeightScale" /

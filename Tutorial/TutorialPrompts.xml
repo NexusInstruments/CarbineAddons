@@ -263,36 +263,3 @@
         <Event Name="WindowClosed" Function="OnTransparentWindowClose"/>
     </Form>
 </Forms>
-ItemTooltip_RuneText"):SetText(String_GetWeaselString(strText, karSigilTypeToString[tCur.eElement]))
-			end
-
-			-- If it's the only item, use the full space
-			if #tRunes.arRuneSlots == 1 then
-				local nLeft, nTop, nRight, nBottom = wnd:GetAnchorOffsets()
-				wnd:SetAnchorOffsets(nLeft, nTop, wndBox:GetWidth() / 2, nBottom)
-			end
-		end
-	end
-
-	wndBox:ArrangeChildrenTiles(0)
-	local nNumChildren = #wndBox:GetChildren()
-	local nLeft, nTop, nRight, nBottom = wndBox:GetAnchorOffsets()
-	wndBox:SetAnchorOffsets(nLeft, nTop, nRight, nTop + (math.ceil(nNumChildren / 2) * nHeight))
-end
-
--- #############################
-
-local function ItemTooltipRuneHelper(wndParent, tItemInfo)
-	-- IMPORTANT: If mousing over a rune item, not drawing runes on an item
-	-- Note: The raw stats (e.g. + A lot of Brutality) exists on flavor text for now
-	if tItemInfo.tRuneInfo and tItemInfo.tRuneInfo.tSet then
-		ItemTooltipSeparatorSmallLineHelper(wndParent)
-
-		local tSetData = tItemInfo.tRuneInfo.tSet
-		local wnd = Apollo.LoadForm("ui\\Tooltips\\TooltipsForms.xml", "SimpleRowSmallML", wndParent)
-		local strRuneSetText = String_GetWeaselString(Apollo.GetString("EngravingStation_RuneSetText"), tSetData.strName, tSetData.nCurrentPower, tSetData.nMaxPower)
-		wnd:SetAML(string.format("<T Font=\"CRB_InterfaceSmall\" TextColor=\"%s\">%s</T>", kUIGreen, strRuneSetText))
-		wnd:SetHeightToContentHeight()
-
-		-- Now loop through the sets
-		local tBonuse

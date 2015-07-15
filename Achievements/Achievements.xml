@@ -148,28 +148,3 @@
         <Control Class="Window" LAnchorPoint="0" LAnchorOffset="4" TAnchorPoint="0" TAnchorOffset="4" RAnchorPoint="0" RAnchorOffset="26" BAnchorPoint="0" BAnchorOffset="26" RelativeToClient="1" Font="Default" Text="" Template="Default" TooltipType="OnCursor" Name="LootIconPicture" BGColor="ffffffff" TextColor="ffffffff" TooltipColor="" Sprite="CRB_TargetFrameRewardPanelSprites:sprTargetFrame_Achievement" Picture="1" IgnoreMouse="1" Visible="0" HideInEditor="0" Tooltip="" IgnoreTooltipDelay="1" TooltipFont="CRB_Interface9_O"/>
     </Form>
 </Forms>
-nerPadding)
-
-	local wndProgressBar = wndContainer:FindChild("NeededCompletedProgressBar")
-	wndProgressBar:SetMax(nNumNeeded)
-	wndProgressBar:SetProgress(nNumCompleted)
-	wndProgressBar:EnableGlow(nNumCompleted > 0)
-
-	-- Rewards
-	wndContainer:FindChild("RewardsContainer"):DestroyChildren()
-	local tRewards = achData:GetRewards()
-	if tRewards and tRewards.strTitle then -- TODO: Other types. Only Titles are supported right now
-		local wndReward = Apollo.LoadForm(self.xmlDoc, "LootItem", wndContainer:FindChild("RewardsContainer"), self)
-		wndReward:FindChild("LootIcon"):Show(false)
-		wndReward:FindChild("LootIconPicture"):Show(true)
-		wndReward:FindChild("LootIconPicture"):SetTooltip(String_GetWeaselString(Apollo.GetString("Achievements_RewardTitle"), tRewards.strTitle:GetTitle()))
-	end
-	wndContainer:FindChild("RewardsContainer"):ArrangeChildrenHorz(2)
-	
-	wndContainer:SetData(achData)
-	self:ResizeHelper(wndContainer)
-end
-
-function Achievements:BuildChecklistAchievement(achData)
-	local wndContainer = Apollo.LoadForm(self.xmlDoc, "AchievementSimple", self.wndMain:FindChild("RightScroll"), self)
-	local wndGrid = Apollo.LoadForm(self.xmlDoc

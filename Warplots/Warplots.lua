@@ -191,26 +191,4 @@ function Warplots:CheckForWarplot()
 end
 
 local WarplotsInstance = Warplots:new()
-WarplotsInstance:Init()2" WindowSoundTemplate="CloseWindowPhys" Text="" TextId="" TooltipColor="" NormalTextColor="ffffffff" PressedTextColor="ffffffff" FlybyTextColor="ffffffff" PressedFlybyTextColor="ffffffff" DisabledTextColor="ffffffff" NewWindowDepth="1">
-            <Event Name="ButtonSignal" Function="OnCancel"/>
-        </Control>
-    </Form>
-</Forms>
-Response( guildCurr, eGuildType, eResult, wndRegistration, strAlertMessage )
-
-	if eGuildType ~= GuildLib.GuildType_WarParty or wndRegistration ~= self.wndMain then
-		return
-	end
-
-	if eResult == GuildLib.GuildResult_YouCreated or eResult == GuildLib.GuildResult_YouJoined then
-		Event_FireGenericEvent("Event_ShowWarpartyInfo")
-		self:OnCancel()
-	end
-
-	self.wndAlert:FindChild("MessageAlertText"):SetText(Apollo.GetString("Warparty_Whoops"))
-	Apollo.CreateTimer("ErrorMessageTimer", 3.00, false)
-	self.wndAlert:FindChild("MessageBodyText"):SetText(strAlertMessage)
-	self.wndAlert:Show(true)
-end
-
-fun
+WarplotsInstance:Init()

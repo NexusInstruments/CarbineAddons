@@ -90,97 +90,3 @@
         <Pixie LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="1" TAnchorOffset="-1" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="0" Sprite="WhiteFill" BGColor="UI_AlphaPercent5" TextColor="black" Rotation="0" Font="CRB_Interface9_O"/>
     </Form>
 </Forms>
-elf.wndMain:FindChild("MainBankScrollbar"):RecalculateContentExtents()
-end
-
-function WarpartyBank:HelperUpdateHeaderText(strNewHeader)
-    local strFinalHeader = strNewHeader
-    if not strNewHeader or string.len(strNewHeader) == 0 then
-        strFinalHeader = Apollo.GetString("WarpartyBank_Title")
-    end
-    self.wndMain:FindChild("BGHeaderText"):SetText(strFinalHeader)
-end
-
-function WarpartyBank:DoFlashAnimation()
-    if not self.wndMain or not self.wndMain:IsValid() then
-        return
-    end
-    self.wndMain:FindChild("FlashAnimation"):SetSprite("CRB_WindowAnimationSprites:sprWinAnim_BirthSmallTemp")
-end
-
-function WarpartyBank:HelperBuildItemTooltip(wndArg, itemCurrent)
-    --wndArg:SetTooltipDoc(nil)
-    local itemEquipped = itemCurrent:GetEquippedItemForItemType()
-    Tooltip.GetItemTooltipForm(self, wndArg, itemCurrent, {bPrimary = true, bSelling = false, itemCompare = itemEquipped})
-    --if itemEquipped ~= nil then
-    --    Tooltip.GetItemTooltipForm(self, wndArg, itemEquipped, {bPrimary = false, bSelling = false, itemCompare = itemCurrent})
-    --end
-end
-
-function WarpartyBank:HelperLoadTabPerks(guildOwner)
-    local tGuildPerks = guildOwner:GetPerks()
-    for idx, tCurrPerk in pairs(tGuildPerks) do
-        if ktWhichPerksAreGuildTabs[tCurrPerk.nId] then
-            self.tTabPerks[ktWhichPerksAreGuildTabs[tCurrPerk.nId]] = tCurrPerk
-        end
-    end
-end
-
-function WarpartyBank:FactoryProduce(wndParent, strFormName, tObject)
-    local wnd = wndParent:FindChildByUserData(tObject)
-    if not wnd then
-        wnd = Apollo.LoadForm(self.xmlDoc, strFormName, wndParent, self)
-        wnd:SetData(tObject)
-    end
-    return wnd
-end
-
-function WarpartyBank:HelperConvertToTime(nDays)
-
-    tTimeData =
-    {
-        ["name"]	= "",
-        ["count"]	= nil,
-    }
-
-    local nYears = math.floor(nDays / 365)
-    local nMonths = math.floor(nDays / 30)
-    local nWeeks = math.floor(nDays / 7)
-    local nDaysRounded = math.floor(nDays / 1)
-    local fHours = nDays * 24
-    local nHoursRounded = math.floor(fHours)
-    local nMinutes = math.floor(fHours * 60)
-
-    if nYears > 0 then
-        tTimeData["name"] = Apollo.GetString("CRB_Year")
-        tTimeData["count"] = nYears
-    elseif nMonths > 0 then
-        tTimeData["name"] = Apollo.GetString("CRB_Month")
-        tTimeData["count"] = nMonths
-    elseif nWeeks > 0 then
-        tTimeData["name"] = Apollo.GetString("CRB_Week")
-        tTimeData["count"] = nWeeks
-    elseif nDaysRounded > 0 then
-        tTimeData["name"] = Apollo.GetString("CRB_Day")
-        tTimeData["count"] = nDaysRounded
-    elseif nHoursRounded > 0 then
-        tTimeData["name"] = Apollo.GetString("CRB_Hour")
-        tTimeData["count"] = nHoursRounded
-    elseif nMinutes > 0 then
-        tTimeData["name"] = Apollo.GetString("CRB_Min")
-        tTimeData["count"] = nMinutes
-    else
-        tTimeData["name"] = Apollo.GetString("CRB_Min")
-        tTimeData["count"] = 1
-    end
-
-    return String_GetWeaselString(Apollo.GetString("CRB_TimeOffline"), tTimeData)
-end
-
-
-local WarpartyBankInst = WarpartyBank:new()
-WarpartyBankInst:Init()
-
-g~  ~&úü ¸ü©¨&Âv,?óàÎø~Üÿÿ˜,6ÅC|) ª­çÎB=ÛŒ>¿f•WèÈÌ@xâ+È~øf=o…QLNN‡|åŸ–$†;‘	 ™ìp‰EçC<¼Â+”K`?ü“ëP¿¯`üàïÈûjçàù¼ò)^ðgÂ;¢®íð>ÕBÎ¯‘÷ÛÑ!ŸD×m‘âÃÔ¶îðççÅ\s
-Ì×‹¿T·zŠÙwÇ£CÉi¯šÅûù)]B1Y¯‰yä¢°ÇD»½=žÂÂY™«Ñ%d¾ò±=zUw&ÈïõªÈÈFšMmy¦{\r“E¥
-¦ü~*!)	äëU*È¿sÒ§þý}z‰NåÇŸWªJüääþ–dç«TQôüŸ¡ýÿOÎ{^¥JFÏs|T¥šø äÏØMA6Ì‘ç^Ÿé&õƒLÙëÛðýbÓ ÙU¡ü{¯ãjÙ>¯UR©š›A‹ÊûgØ{@Î­Vþ>yÎýñ‘çAûaˆ<OÚ?®9÷Ï°Ï%]ûùíŽëË|Åõå¹÷Ïý|—p}yîûðnT>ïÐ/”ø2Ìù}WÉsß¿M)ˆª4_E•×ŽÍÊìt¿G©~/,ü_pŽ¤ß>ÿB  Bjúü @s¦ ýÑóÇÏ;ÌoAÀxÍ/ðãÿ²>ß}ºÿžUàxìv>>#‰¿óE~Jí%»óIrµµspìyÏùrSû¨ˆñú¦"?†ñ¦zÊ3ãÿUP~wäñúN£ÛÀgé£ñºýbi2þüee›×+Éƒ_`¯QúâÕ¦ÃX²æ9;â•~jÍËïô¾ÿË°ÄvSkþ®û5q÷,±ývÆ±/Ãïýçxç¦ì?„ëgãI÷aÜ9Œ•›‡qßìËÆ

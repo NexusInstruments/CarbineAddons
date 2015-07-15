@@ -56,17 +56,3 @@
         <Event Name="MouseExit" Function="OnHoverGlowMouseExit"/>
     </Form>
 </Forms>
- iCurrRow = wndNewsGrid:AddRow("", "CRB_Basekit:kitIcon_Gold_Exclamation")
-			wndNewsGrid:SetCellDoc(iCurrRow, 2, '<T Font="CRB_InterfaceSmall" TextColor="WindowTitleColor">'.. strText .."</T>")
-		end
-	end
-end
-
-function GuildInfo:OnGuildResult(guildSender, strName, nRank, eResult)
-	if eResult == GuildLib.GuildResult_PendingInviteExpired and self.wndGuildInvite ~= nil then
-		self.wndGuildInvite:Destroy()
-	end
-end
-
-function GuildInfo:OnGuildLoaded(guildLoaded)
-	local tGuildF

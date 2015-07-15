@@ -791,49 +791,3 @@ end
 
 local GalacticArchiveInst = GalacticArchive:new()
 GalacticArchiveInst:Init()
-ent", 1, Apollo.GetString("CRB_Several_New_Missions_Added"))
-		end
-	end
-
-	if iType == 5 then -- mission completed; 4 (progression) sends no signals
-		self.missionLastCompleted = tContent
-		if tContent ~= nil then
-			Event_FireGenericEvent("PlayerPath_NotificationSent", 2, tContent:GetName()) -- 2 is completed signal
-		else
-			Event_FireGenericEvent("PlayerPath_NotificationSent", 2, "")
-		end
-	end
-end
-
-function FloatTextPanel:OnMessageTimerSub()
-	self.wndSecondary:Show(false)
-	Apollo.CreateTimer("DelayExpiredSub", 0.400, false)
-	if not self.bDelayHandlerSetSub then
-		Apollo.RegisterTimerHandler("DelayExpiredSub", "OnDelayExpiredSub", self)
-		self.bDelayHandlerSetSub = true
-	end
-end
-
-function FloatTextPanel:OnDelayExpiredSub()
-	self.bShowingAlertSub = false
-
-	if self.iDisplayedTypeSub == 5 then -- done showing completion notice; we want to remove it from the table
-		self.tCompletedMissions[self.missionLastCompleted:GetName()] = nil -- cleanup our completed table
-	end
-
-	self:ProcessAlertsSub()
-end
-
-function FloatTextPanel:ClearFieldsSub() --clear everything
-	self.iDisplayedTypeSub = 0
-	self.missionLastCompleted = nil
-
-	for i = 1, #self.tSubWindow do
-		self.tSubWindow[i]:FindChild("Text"):SetText("")
-		self.tSubWindow[i]:Show(false)
-	end
-end
-
-local FloatTextPanelInst = FloatTextPanel:new()
-FloatTextPanelInst:Init()
-ÿÿëZÕUÿÿ      Ş÷ëZ@€ øX8  ºÖËZUUUT        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªªÉ‰‘$I’$ËZªRªªªªø PI•$®s«ZUUUø    S–µ«Z\UUUøI²$x²$ËZËZ            ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª        ËZªRªªªª

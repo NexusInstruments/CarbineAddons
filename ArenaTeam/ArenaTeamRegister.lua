@@ -230,52 +230,3 @@ end
 -----------------------------------------------------------------------------------------------
 local ArenaTeamRegisterInst = ArenaTeamRegister:new()
 ArenaTeamRegister:Init()
-layers and champions (0 = no upgrade, 1-2 = specific upgrade)
-	if not self.wndMain or not self.wndMain:IsValid() then
-		return
-	end
-
-	if nPlayerUp == 0 then
-		self.wndMain:FindChild("LeftWndHuntUpgrade1"):Show(false)
-		self.wndMain:FindChild("LeftWndHuntUpgrade2"):Show(false)
-	elseif nPlayerUp == 1 then
-		self.wndMain:FindChild("LeftWndHuntUpgrade1"):Show(true)
-		self.wndMain:FindChild("LeftWndHuntUpgrade2"):Show(false)
-	elseif nPlayerUp == 2 then
-		self.wndMain:FindChild("LeftWndHuntUpgrade1"):Show(false)
-		self.wndMain:FindChild("LeftWndHuntUpgrade2"):Show(true)
-	end
-
-	if nEnemyUp == 0 then
-		self.wndMain:FindChild("RightWndHuntUpgrade1"):Show(false)
-		self.wndMain:FindChild("RightWndHuntUpgrade2"):Show(false)
-	elseif nEnemyUp == 1 then
-		self.wndMain:FindChild("RightWndHuntUpgrade1"):Show(true)
-		self.wndMain:FindChild("RightWndHuntUpgrade2"):Show(false)
-	elseif nEnemyUp == 2 then
-		self.wndMain:FindChild("RightWndHuntUpgrade1"):Show(false)
-		self.wndMain:FindChild("RightWndHuntUpgrade2"):Show(true)
-	end
-	
-	self.tAdventureInfo.nPlayerHunterUpgrade = nPlayerUp
-	self.tAdventureInfo.nEnemyHunterUpgrade = nHunterUp
-end
-
-function NorthernWildsAdv:UIKDR(iKills, iDeaths)	-- Updates the kill death ratio
-	if not self.wndMain or not self.wndMain:IsValid() then
-		return
-	end
-
-		self.wndMain:FindChild("KDRNumber"):SetText(iKills..":"..iDeaths)
-end
------------------------------------------------------------------------------------------------
--- NorthernWildsAdv Instance
------------------------------------------------------------------------------------------------
-local NorthernWildsAdvInst = NorthernWildsAdv:new()
-NorthernWildsAdvInst:Init()
-†ë–œaE„  „òÙ p$·°wiÌÌµGÀYµœ
-2¨$Mæƒg›:zNƒÕÆÍdÐ·SGìôÞR˜kLœQ»[øŠÓÝkTêÀBÿI€¹ê¨í~M9ilÞ;$ó· Vâ`£÷ªeß†/D*ù4Ðvv«>C§z JÉÁñ™+Ý©åU‡7°ßÉì	•WLŒ@eÔÕÚÜabËtµÃÛ”9»û43M™
-¢ŸÛÍåhu†O2œŸéSì/«¸B£Gîy,Lî8ûWêGg	CÓ­f;¾:•£Í'öæ
-ˆC50åžCH	­H~[²ý±«»´a;Íÿw~’X5Šÿ»gÝnø~ub"’tûáiˆ,‡'«Ž#mÚý èÙGö•þò,uÐú¦«ÈnR=21ÓãeefiL½0¿ëü
-wŽ‡6ð>«’Ô˜6žˆÇZx»ôþPn·ÔÏÆ«‘\Ð¹wØm“@ì~-^«ÉxGG<fqt‹!ŒÝ{
-[¸½]æŽžt›Æzú­c=²«X&PÉÐ>a	‘•v]P+ª{…w=¯ó#$eå4ì;Î´Xíêæ¯gj0?þh&«\{’Hd-“B–¶ióÇ›kLƒB§G]Kîm×²69Q´lÎJ_NKúýþŽlTì{´Pdwk4ãT{äŒ|ÚÍ3Ø;ÂVOÈ¢Ù½ÇKæØÆP¤íø&¾F®=ë{_<RŽpŠíPû]^%aeÊ­?©tíyŒOå ƒ¶s'™¡NŒêÆx‡›oÎôðzÊç6:h˜v½bÚHN{©1#{ÁN˜ú°Ñœ–UòVh¸å/×¶üS¤5Ç¶µìÙñHÍóÐ”’KT¬˜9|øf};”aÿ&ßwÚ="0",  ,TòÙ  8•äp" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="0" RelativeToClient="1" Font="Default" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="Window" TooltipColor="" Sprite="BK3:btnHolo_ListView_MidDisabled" Picture="1" IgnoreMouse="1"/>

@@ -951,6 +951,3 @@ end
 
 local AccountInventoryInst = AccountInventory:new()
 AccountInventoryInst:Init()
-edium_B" Text="" Template="Default" TooltipType="OnCursor" Name="PointsMaxText" BGColor="white" TextColor="UI_TextHoloBody" TooltipColor="" DT_CENTER="1" TextId="CRB__2" Picture="1" Sprite="" Visible="1" HideInEditor="0" IgnoreMouse="1"/>
-        <Control Class="Window" LAnchorPoint="0.5" LAnchorOffset="-35" TAnchorPoint="0.5" TAnchorOffset="-33" RAnchorPoint="0.5" RAnchorOffset="35" BAnchorPoint="0.5" BAnchorOffset="35" RelativeToClient="1" Font="CRB_InterfaceMedium_B" Text="" Template="Default" TooltipType="OnCursor" Name="PointsReady" BGColor="white" TextColor="UI_WindowTitleYellow" TooltipColor="" DT_CENTER="1" TextId="AMP_AllPointsSpent" Picture="1" Sprite="" Visible="1" HideInEditor="0" IgnoreMouse="1" DT_VCENTER="1"/>
-        <Control Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="0" RelativeToClient="1" Font="Default" Text="" Template="Default" TooltipType="OnCursor" Name="LightBulbN" BGColor="white" TextColor="white" TooltipColor="" Sprite="CRB_AMPs:spr_AMPS_MiddleGlow_N" Pict

@@ -1202,12 +1202,3 @@ end
 
 local GuildBankInst = GuildBank:new()
 GuildBankInst:Init()
-         <Control Class="Window" LAnchorPoint="0" LAnchorOffset="10" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="0.5" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="0" RelativeToClient="1" Font="Default" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_TextHoloTitle" Template="Default" TooltipType="OnCursor" Name="Window" TooltipColor="" TextId="OptionsHUD_SkillsLabel" DT_VCENTER="1" DT_SINGLELINE="1"/>
-                </Control>
-                <Control Class="Window" LAnchorPoint="0" LAnchorOffset="5" TAnchorPoint="0" TAnchorOffset="240" RAnchorPoint="1" RAnchorOffset="-5" BAnchorPoint="0" BAnchorOffset="288" RelativeToClient="1" Font="Default" Text="" BGColor="UI_AlphaPercent10" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="Window4" TooltipColor="" Sprite="BasicSprites:BlackFill" Picture="1" IgnoreMouse="1">
-                    <Pixie LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="1" TAnchorOffset="-1" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="0" Sprite="WhiteFill" BGColor="UI_AlphaPercent10" TextColor="black" Rotation="0" Font="Default"/>
-                    <Control Class="Button" Base="BK3:btnHolo_Blue_Small" Font="CRB_Button" ButtonType="Check" RadioGroup="" LAnchorPoint="1" LAnchorOffset="-225" TAnchorPoint="0.5" TAnchorOffset="-27" RAnchorPoint="1" RAnchorOffset="-5" BAnchorPoint="0.5" BAnchorOffset="27" DT_VCENTER="1" DT_CENTER="1" TooltipType="OnCursor" Name="DropToggleResource" BGColor="ffffffff" TextColor="ffffffff" TooltipColor="" NormalTextColor="UI_BtnTextHoloNormal" PressedTextColor="UI_BtnTextHoloPressed" FlybyTextColor="UI_BtnTextHoloFlyby" PressedFlybyTextColor="UI_BtnTextHoloPressedFlyby" DisabledTextColor="UI_BtnTextHoloDisabled" Text="" TextId="CRB_Test_Set_name" HideInEditor="0">
-                        <Event Name="ButtonCheck" Function="OnWindowModeToggle"/>
-                        <Event Name="ButtonUncheck" Function="OnWindowModeToggle"/>
-                        <Control Class="Window" LAnchorPoint="1" LAnchorOffset="-20" TAnchorPoint="0" TAnchorOffset="-40" RAnchorPoint="1" RAnchorOffset="250" BAnchorPoint="0" BAnchorOffset="182" RelativeToClient="1" Font="Default" Text="" Template="Default" TooltipType="OnCursor" Name="ChoiceContainer" BGColor="ffffffff" TextColor="ffffffff" TooltipColor="" CloseOnExternalClick="1" Picture="1" NewWindowDepth="1" Sprite="BK3:sprHolo_Alert_Flyout" NoClip="1" HideInEditor="1">
-                            <Contr

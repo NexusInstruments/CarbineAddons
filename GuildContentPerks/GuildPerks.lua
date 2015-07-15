@@ -996,8 +996,3 @@ end
 -----------------------------------------------------------------------------------------------
 local GuildPerksInst = GuildPerks:new()
 GuildPerksInst:Init()
-"1" TooltipType="OnCursor" Name="BankTabLogBtn4" BGColor="ffffffff" TextColor="ffffffff" TooltipColor="" NormalTextColor="UI_BtnTextBlueNormal" PressedTextColor="UI_BtnTextBluePressed" FlybyTextColor="UI_BtnTextBlueFlyby" PressedFlybyTextColor="UI_BtnTextBluePressedFlyby" DisabledTextColor="UI_BtnTextBlueDisabled" Text="" TextId="GuildBank_LockedTab" GlobalRadioGroup="GuildBank_LogTab_RadioGroup" RadioDisallowNonSelection="1" RelativeToClient="1">
-                        <Event Name="ButtonCheck" Function="OnBankLogTabCheck"/>
-                        <Event Name="ButtonUncheck" Function="OnBankLogTabUncheck"/>
-                    </Control>
-                    <Control Class="Button" Base="BK3:btnMetal_TabSub_Right" Font="CRB_Button" ButtonType="

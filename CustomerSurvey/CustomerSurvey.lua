@@ -208,39 +208,3 @@ end
 
 local CustomerSurveyInst = CustomerSurvey:new()
 CustomerSurveyInst:Init()
-t( "item " ..  self.wndSelectedListItem:GetData() .. " is selected.")
-end
-
-
---[/option]
------------------------------------------------------------------------------------------------
--- $AddonName Instance
------------------------------------------------------------------------------------------------
-local $AddonNameInst = $AddonName:new()
-$AddonNameInst:Init()
-on:SetTooltip(Apollo.GetString("CRB_Breath_"))
-		
-		local nWidth = self.tWndRefs.wndHazardList:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
-		local nLeft, nTop, nRight, nBottom = self.tWndRefs.wndMain:GetAnchorOffsets()
-		self.tWndRefs.wndMain:SetAnchorOffsets(nRight - nWidth, nTop, nRight, nBottom)
-	end
-	
-	self:OnHazardUpdate(idHazard, eHazardType, nBreath, nBreathMax, nil)
-end
-
-function Hazards:OnBreath_FlashEvent()
-	if self.tHazardWnds[knBreathFakeId] ~= nil then
-		self.tHazardWnds[knBreathFakeId].wndHazardsProgressFlash:SetSprite("SprintMeter:sprHazards_Flash")
-	end
-end
-
-
-local HazardInst = Hazards:new()
-HazardInst:Init()lertPopout"):Show(bToggle, not bToggle)
-		self.wndMain:FindChild("AlertItemKeybind"):SetSprite(bToggle and "sprAlert_Square_Blue" or "sprAlert_Square_Black")
-	end
-end
-
-local HUDInteractInst = HUDInteract:new()
-HUDInteractInst:Init()
-ö”

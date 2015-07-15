@@ -970,15 +970,3 @@ end
 
 local ClassResourcesInst = ClassResources:new()
 ClassResourcesInst:Init()
-    </Control>
-                        <Control Class="Button" Base="BK3:btnHolo_Red_Small" Font="CRB_Button" ButtonType="PushButton" RadioGroup="" LAnchorPoint="0.5" LAnchorOffset="-2" TAnchorPoint="1" TAnchorOffset="-59" RAnchorPoint="1" RAnchorOffset="-15" BAnchorPoint="1" BAnchorOffset="-6" DT_VCENTER="1" DT_CENTER="1" Name="RemoveMemberNoBtn" BGColor="white" TextColor="white" NormalTextColor="UI_BtnTextRedNormal" PressedTextColor="UI_BtnTextRedPressed" FlybyTextColor="UI_BtnTextRedFlyby" PressedFlybyTextColor="UI_BtnTextHoloPressedFlyby" DisabledTextColor="UI_BtnTextHoloDisabled" Text="" TextId="No" TooltipColor="">
-                            <Event Name="ButtonSignal" Function="OnRosterRemoveMemberCloseBtn"/>
-                        </Control>
-                    </Control>
-                </Control>
-                <Control Class="Button" Base="CRB_Basekit:kitBtn_Metal_LargeBlue" Font="CRB_Button" ButtonType="Check" RadioGroup="RosterOptions_MemberOptionsRadioGroup" LAnchorPoint="0" LAnchorOffset="452" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="0" RAnchorOffset="561" BAnchorPoint="1" BAnchorOffset="0" DT_VCENTER="1" DT_CENTER="1" Name="RosterOptionBtnViewAlts" BGColor="white" TextColor="white" NormalTextColor="UI_BtnTextBlueNormal" PressedTextColor="UI_BtnTextBluePressed" FlybyTextColor="UI_BtnTextBlueFlyby" PressedFlybyTextColor="UI_BtnTextBluePressedFlyby" DisabledTextColor="UI_BtnTextBlueDisabled" Text="" TextId="Circles_ViewAlts" RelativeToClient="1" GlobalRadioGroup="" TooltipColor="" Visible="0" ButtonTextXMargin="15" WindowSoundTemplate="MetalButtonLarge">
-                    <Event Name="ButtonCheck" Function="DrawRosterPopout"/>
-                </Control>
-            </Control>
-            <Control Class="Window" LAnchorPoint="1" LAnchorOffset="-62" TAnchorPoint="0" TAnchorOffset="-14" RAnchorPoint="1" RAnchorOffset="250" BAnchorPoint="0" BAnchorOffset="241" RelativeToClient="1" Font="Default" Text="" Template="HoloWindowSound" Name="AdvancedOptionsContainer" BGColor="white" TextColor="white" Picture="1" IgnoreMouse="1" NoClip="1" Sprite="" Visible="0" TooltipColor="" HideInEditor="1" CloseOnExternalClick="0">
-                <Control Class="Window" LAnchorPoint="0" LAnchorOffset="49" TAnchorPoint="0" TAnchorOffset="-12" RAnchorPoint="1" RAnchorOffset="15" BAnchorPoint="1" BAnchorOffset="0" RelativeToClient="1" Font="Default" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="Backplate" TooltipColor="" Sprite="bk3:sprHolo_Alert_Flyout2" Picture="1" Ig

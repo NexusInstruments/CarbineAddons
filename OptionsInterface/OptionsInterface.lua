@@ -265,6 +265,7 @@ function OptionsInterface:OnConfigure() -- From ESC -> Options
 	self.wndInterface:FindChild("SpellErrorMessages"):SetCheck(g_InterfaceOptions.Carbine.bSpellErrorMessages)
 	self.wndInterface:FindChild("ChallengeSharePreference"):SetCheck(g_InterfaceOptions.Carbine.eShareChallengePreference == GameLib.SharedChallengePreference.Prompt)
 	self.wndInterface:FindChild("InteractTextOnUnit"):SetCheck(g_InterfaceOptions.Carbine.bInteractTextOnUnit)
+	self.wndInterface:FindChild("DisplayWaveFlash"):SetCheck(Apollo.GetConsoleVariable("ui.soldierHoldoutDisplayWaveFlash"))
 	self.wndInterface:FindChild("DropToggleTargetFrame"):Enable(false)
 	self.wndInterface:FindChild("TargetUnitFrame"):SetRadioSel("TargetFrameFilpped", g_InterfaceOptions.Carbine.bTargetFrameFlipped and 1 or 2)
 	self.wndInterface:FindChild("MyUnitFrame"):SetRadioSel("MyUnitFrameFlipped", g_InterfaceOptions.Carbine.bMyUnitFrameFlipped and 1 or 2)
@@ -716,17 +717,9 @@ function OptionsInterface:OnToggleInteractTextOnUnit(wndHandler, wndControl)
 	Event_FireGenericEvent("GenericEvent_SystemChannelMessage", Apollo.GetString("HUDAlert_InteractTextVisibilityChanged"), wndHandler:IsChecked() and Apollo.GetString("Command_Chat_True") or Apollo.GetString("Command_Chat_False"))
 end
 
+function OptionsInterface:OnToggleDisplayWaveFlash(wndHandler, wndControl)
+	Apollo.SetConsoleVariable("ui.soldierHoldoutDisplayWaveFlash", wndHandler:IsChecked())
+end
+
 local OptionsInterfaceInst = OptionsInterface:new()
 OptionsInterfaceInst:Init()
-tColor="UI_BtnTextRedFlyby" PressedFlybyTextColor="UI_BtnTextRedPressedFlyby" DisabledTextColor="UI_BtnTextRedDisabled" Text="" TextId="No" TooltipColor="">
-                        <Event Name="ButtonSignal" Function="OnSubCloseBtn"/>
-                    </Control>
-                    <Pixie LAnchorPoint="0" LAnchorOffset="25" TAnchorPoint="0" TAnchorOffset="18" RAnchorPoint="1" RAnchorOffset="-14" BAnchorPoint="0" BAnchorOffset="50" BGColor="white" Font="CRB_InterfaceMedium" TextColor="UI_WindowTitleYellow" Text="" TextId="Neighbors_VisitPlayer" Line="0"/>
-                </Control>
-            </Control>
-        </Control>
-    </Form>
-</Forms>
-et="0" TAnchorPoint="0" TAnchorOffset="9" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="0" BAnchorOffset="32" BGColor="white" Font="CRB_HeaderSmall" TextColor="white" Text="" TextId="Nameplates_Healthbar" DT_CENTER="1" DT_VCENTER="0" DT_BOTTOM="0" Line="0"/>
-        </Control>
-        <Control Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="NameplateO_HealthBarFraming_Bottom" TAnchorOffset="15" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="NameplateO_HealthBarFraming_Bottom" BAnchorOffset="203" RelativeToClient="1" Font="Default" Text="" Template="Default" Name="RewardsFraming" BGColor="white" TextColor="white" Picture="1" IgnoreMouse="1" Sprite="" 

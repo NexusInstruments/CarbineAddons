@@ -49,24 +49,3 @@
         </Control>
     </Form>
 </Forms>
-~= 0 then
-								self.wndTaxiMap:AddLine(self.tTaxiNodes[nPrev].tLocation, self.tTaxiNodes[idNode].tLocation, 5.0, CColor.new(1, 1, 1, 1), "", "")
-							end
-							nPrev = idNode
-						end
-					end
-					
-					local nPlatinum = math.floor(tPath.tPriceInfo.nAmount1 / (1000000))
-					local nRemainder = tPath.tPriceInfo.nAmount1 % (1000000)
-					local nGold = math.floor(nRemainder / (10000))
-					nRemainder = nRemainder % (10000)
-					local nSilver = math.floor(nRemainder / 100)
-					local nCopper = math.floor(nRemainder % 100)		
-					
-					if nPlatinum >= 1 then
-						local strPlatinumLine = string.format("<P Font=\"%s\" TextColor=\"%s\">%s</P>", "CRB_InterfaceSmall", "ffdbd7d2", String_GetWeaselString(Apollo.GetString("CRB_Platinum"), nPlatinum))
-						strTooltipString = strTooltipString .. strPlatinumLine
-					end
-					
-					if nGold >= 1 then
-						local strGoldLine = string.format("<P Font=\"%s\" TextColor=\"

@@ -29,7 +29,3 @@
         </Control>
     </Form>
 </Forms>
-----------------------------------------------------
--- MalgraveAdventureResources Instance
------------------------------------------------------------------------------------------------
-local MalgraveAdventureResourcesInst = MalgraveAdventureResources

@@ -79,24 +79,3 @@
         </Control>
     </Form>
 </Forms>
--if eGuildType == GuildLib.GuildType_Guild then
-		strGuildType = Apollo.GetString("Guild_GuildTypeGuild")
-	end
-
-	local bIntercepted = self:IsIntercepted( guildSender, eResult )
-
-	local strResidence = Apollo.GetString("Guild_ResidenceNameDefault")
-	if eGuildType == GuildLib.GuildType_WarParty then
-		strResidence = Apollo.GetString("CRB_Warplot")
-	end
-
-	local strRank = ""
-	
-	local strGuildMaster = nil
-	if guildSender then
-		strGuildMaster = guildSender:GetRanks()[1].strName
-		
-		if nRank and nRank ~= 0 then
-			strRank = guildSender:GetRanks()[nRank].strName
-			if not strRank or not string.len(strRank) then
-				strRank = '#' .. tos

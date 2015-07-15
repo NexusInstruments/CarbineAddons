@@ -228,14 +228,3 @@ end
 -----------------------------------------------------------------------------------------------
 local AdventureWhitevaleInst = AdventureWhitevale:new()
 AdventureWhitevaleInst:Init()
-Child("SubBars:FeedBarBG:FeedProgressBar") }) do
-			wndCurr:FindChild("ProgressFlashIcon"):Show(false)
-			self:SetBarValueAndData(wndCurr, wndCurr:GetData()) -- After show false, will get ProgressFlashIcon's data too
-		end
-	end
-end
-
------------------------------------------------------------------------------------------------
--- MalgraveAdventureResources Instance
------------------------------------------------------------------------------------------------
-local MalgraveAdventureResourcesInst = MalgraveAdventureResources

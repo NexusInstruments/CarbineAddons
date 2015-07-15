@@ -843,11 +843,4 @@ function GuildRoster:HelperConvertToTime(fDays)
 end
 
 local GuildRosterInst = GuildRoster:new()
-GuildRosterInst:Init()"OnCursor" Name="BGArtTierClosed" BGColor="ff7f7f7f" TextColor="ffffffff" TooltipColor="" Picture="1" IgnoreMouse="1" Sprite="BK3:UI_BK3_Holo_InsetFramed" UseParentOpacity="1" HideInEditor="0">
-                <Control Class="Window" LAnchorPoint="0" LAnchorOffset="10" TAnchorPoint="0" TAnchorOffset="10" RAnchorPoint="0" RAnchorOffset="56" BAnchorPoint="1" BAnchorOffset="-10" RelativeToClient="1" Font="Default" Text="" Template="Default" TooltipType="OnCursor" Name="IconFraming" BGColor="darkgray" TextColor="ffffffff" TooltipColor="" Picture="1" IgnoreMouse="1" UseParentOpacity="1" Sprite="BK3:UI_BK3_Holo_InsetSimple" HideInEditor="0"/>
-            </Control>
-            <Control Class="Button" LAnchorPoint="0" LAnchorOffset="61" TAnchorPoint="1" TAnchorOffset="-49" RAnchorPoint="1" RAnchorOffset="-5" BAnchorPoint="1" BAnchorOffset="4" RelativeToClient="1" Font="CRB_Button" Text="" Template="Default" TooltipType="OnCursor" Name="UnlockBtn" BGColor="ffffffff" TextColor="ffffffff" TooltipColor="" NormalTextColor="UI_BtnTextBlueNormal" PressedTextColor="UI_BtnTextBluePressed" FlybyTextColor="UI_BtnTextBlueFlyby" PressedFlybyTextColor="UI_BtnTextBluePressedFlyby" DisabledTextColor="UI_BtnTextBlueDisabled" Base="BK3:btnHolo_Blue_Small" TextId="GuildPerk_Unlock" DT_VCENTER="1" DT_CENTER="1" IgnoreMouse="0" HideInEditor="0">
-                <Event Name="ButtonSignal" Function="OnUnlockBtn"/>
-            </Control>
-            <Control Class="Window" LAnchorPoint="0" LAnchorOffset="67" TAnchorPoint="0" TAnchorOffset="8" RAnchorPoint="0" RAnchorOffset="154" BAnchorPoint="1" BAnchorOffset="-39" RelativeToClient="1" Font="CRB_HeaderTiny" Text="1000000" Template="Default" TooltipType="OnCursor" Name="UnlockCost" BGColor="ffffffff" TextColor="ffffffff" TooltipColor="" Picture="0" IgnoreMouse="1" DT_CENTER="0" UseParentOpacity="1" TextId="" DT_VCENTER="1"/>
-            <Control Class="Window" LAnchorPoint="0" LAnchorOffset="10" TAnchorPoint="0" TAnchorOffset="10" RAnchorPoint="1" RAnchorOffset="-97" BAnchorPoint="0" BAnchorOffset="55" RelativeToClien
+GuildRosterInst:Init()

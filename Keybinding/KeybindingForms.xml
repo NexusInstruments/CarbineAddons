@@ -181,31 +181,3 @@
     </Form>
     <Form Class="Window" LAnchorPoint="1" LAnchorOffset="-410" TAnchorPoint="0.5" TAnchorOffset="-15" RAnchorPoint="1" RAnchorOffset="-380" BAnchorPoint="0.5" BAnchorOffset="15" RelativeToClient="1" Font="Default" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="MultiBindIcon" Border="0" Picture="1" SwallowMouseClicks="1" Moveable="0" Escapable="0" Overlapped="1" TooltipColor="white" IgnoreMouse="1" Sprite="IconSprites:Icon_Windows32_UI_CRB_InterfaceMenu_Keybindings" TooltipFont="CRB_InterfaceSmall_O" Tooltip="" TooltipId="Keybinding_MultiBindTooltip"/>
 </Forms>
-----
--- Factory
----------------------------------------------------------------------------------------------------
-
-function Keybind:FactoryCacheProduce(wndParent, strFormName, strKey)
-	local wnd = self.tWindowCache[strKey]
-	if not wnd or not wnd:IsValid() then
-		wnd = Apollo.LoadForm(self.xmlDoc, strFormName, wndParent, self)
-		self.tWindowCache[strKey] = wnd
-
-		for strKey, wndCached in pairs(self.tWindowCache) do
-		if not self.tWindowCache[strKey]:IsValid() then
-				self.tWindowCache[strKey] = nil
-			end
-		end
-	end
-
-	return wnd
-end
-
-local KeybindInst = Keybind:new()
-KeybindInst:Init()
-trol Class="Window" LAnchorPoint="0" LAnchorOffset="3" TAnchorPoint="0" TAnchorOffset="3" RAnchorPoint="1" RAnchorOffset="-3" BAnchorPoint="1" BAnchorOffset="-3" RelativeToClient="1" Font="Default" Text="" Template="Default" Name="VirtualItemDisplay" BGColor="white" TextColor="white" Picture="1" IgnoreMouse="1" IgnoreTooltipDelay="1" TooltipType="OnCursor" TooltipColor="" DT_BOTTOM="1"/>
-        <Control Class="Window" LAnchorPoint="0" LAnchorOffset="-16" TAnchorPoint="0" TAnchorOffset="-9" RAnchorPoint="1" RAnchorOffset="-20" BAnchorPoint="1" BAnchorOffset="-13" RelativeToClient="1" Font="CRB_Header9_O" Text="" Template="Default" Name="VirtualItemCount" BGColor="white" TextColor="white" DT_BOTTOM="0" DT_RIGHT="0" TextId="" Tooltip="" TooltipColor="" DT_CENTER="0" DT_VCENTER="0"/>
-    </Form>
-    <Form Class="Window" LAnchorPoint=".5" LAnchorOffset="-162" TAnchorPoint=".5" TAnchorOffset="-224" RAnchorPoint=".5" RAnchorOffset="161" BAnchorPoint=".5" BAnchorOffset="-31" RelativeToClient="1" Font="CRB_InterfaceMedium" Text="" Template="Default" Name="InventorySalvageNotice" Border="0" Picture="1" SwallowMouseClicks="1" Moveable="1" Escapable="1" Overlapped="1" BGColor="white" TextColor="white" NoClip="0" Visible="0" Sprite="" TooltipColor="" Tooltip="">
-        <Control Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="0" RelativeToClient="1" Font="Default" Text="" Template="Default" TooltipType="OnCursor" Name="InventoryNoticeFrame" BGColor="white" TextColor="white" TooltipColor="" Sprite="BK3:sprHolo_Alert_Confirm" Picture="1" IgnoreMouse="1"/>
-        <Control Class="Window" LAnchorPoint="0" LAnchorOffset="13" TAnchorPoint="0" TAnchorOffset="5" RAnchorPoint="1" RAnchorOffset="-13" BAnchorPoint="1" BAnchorOffset="-6" R

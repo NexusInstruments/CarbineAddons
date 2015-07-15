@@ -116,33 +116,3 @@
         </Control>
     </Form>
 </Forms>
-Name)
-	self.wndRename:FindChild("StatusLastValidAlert"):Show(not bLastValid and nLastLength > 0)
-	
-	local bFullValid = CharacterScreenLib.IsCharacterNameValid(strFullName)
-	self.wndRename:FindChild("Rename_ConfirmRenameBtn"):Enable(bFullValid)
-	
-end
-
-function CharacterSelection:OnRenameNameEscape(wndHandler, wndControl)
-	self.wndRename:FindChild("BlockerConfirm"):Show(false)
-	self.wndRename:Show(false)
-end
-
-
-function CharacterSelection:OnRealmBtn(wndHandler, wndControl)
-	CharacterScreenLib.ExitToRealmSelect()
-end
-
-function CharacterSelection:OnRandomLastName()
-	local nId = g_controls:FindChild("EnterBtn"):GetData()
-	local tSelected = g_arCharacters[nId]
-	
-	local nRaceId = tSelected.idRace
-	local nFactionId = tSelected.idFaction
-	local nGenderId = tSelected.idGender
-	
-	local tName = PreGameLib.GetRandomName(nRaceId, nGenderId, nFactionId)
-	
-	self.wndRename:FindChild("RenameCharacterLastNameEntry"):SetText(tName.strLastName)
-	self.wndRename:FindChild("RenameCharacterFirstNameEntry"):SetText(tName

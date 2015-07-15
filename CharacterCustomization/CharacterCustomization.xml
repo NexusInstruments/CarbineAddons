@@ -167,22 +167,3 @@
         </Control>
     </Form>
 </Forms>
-ndHandler, wndControl)
-	if self.wndAttributeTooltip and self.wndAttributeTooltip:IsValid() then
-		self.wndAttributeTooltip:Destroy()
-		self.wndAttributeTooltip = nil
-	end
-end
-
-function Character:OnAttributeIconToolip(wndHandler, wndControl, eType, arg1, arg2)
-	if wndHandler ~= wndControl or wndControl:GetData() == nil then
-		return
-	end
-
-	if self.wndAttributeTooltip and self.wndAttributeTooltip:IsValid() then
-		self.wndAttributeTooltip:Destroy()
-	end
-
-	local tData = wndControl:GetData()
-	local wndRankDisplay = wndControl:LoadTooltipForm("Character.xml", "MilestoneTooltip", self)
-	wn

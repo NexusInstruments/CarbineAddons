@@ -1925,4 +1925,4 @@ function CombatFloaterConfig_Options_DeathEffect_AccelerationMagnitudeEndChanged
 	CombatFloaterConfig_LoadNode(data)
 end
 
----------------------------------------------------------------------------------------------------"249" y5="332" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="fffff
+---------------------------------------------------------------------------------------------------

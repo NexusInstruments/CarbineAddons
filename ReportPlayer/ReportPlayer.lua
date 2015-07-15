@@ -322,7 +322,3 @@ end
 
 local ReportPlayerInst = ReportPlayer:new()
 ReportPlayerInst:Init()
-TextColor="ffffffff" TooltipColor="" NormalTextColor="UI_BtnTextBlueNormal" PressedTextColor="ff31fcf6" FlybyTextColor="ff2f94ac" PressedFlybyTextColor="ff31fcf6" DisabledTextColor="ff333333" Text="" TextId="Group_FFA" Tooltip="" GlobalRadioGroup="" RadioDisallowNonSelection="1">
-                <Event Name="ButtonCheck" Function="OnSetHarvestRulesCheck"/>
-            </Control>
-            <Control Class="Button" Base="BK3:btnHolo_ListView_Simple" Font="CRB_InterfaceSmall" ButtonType="Check" RadioGroup="HarvestRules_Raid_RadioGroup" LAnchorPoint="0" LAnchorOffset="8" TAnchorPoint="1" TAnchorOffset="-37" RAnchorPoint="0" RAnchorOffset="108" BAnchorPo

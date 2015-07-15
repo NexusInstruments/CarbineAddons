@@ -213,5 +213,4 @@ function AdventureLevianBay:TeamDead(nTeam)
 end
 
 local AdventureLevianBayInst = AdventureLevianBay:new()
-AdventureLevianBayInst:Init()s="1" Moveable="0" Escapable="0" Overlapped="0" BGColor="white" TextColor="white" TooltipColor="" IgnoreMouse="1" Sprite="ActionBarShortcut:spr_ActionBarShortcut_Slot">
-        <Control Class="ActionBarButton" Name="ActionBarShortcutBtn" ContentType="SBar" ContentId="0" Base="CRB_DEMO_Wra
+AdventureLevianBayInst:Init()

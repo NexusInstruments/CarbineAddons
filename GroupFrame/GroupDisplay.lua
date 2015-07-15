@@ -1635,7 +1635,3 @@ end
 ---------------------------------------------------------------------------------------------------
 local GroupFrameInst = GroupDisplay:new()
 GroupDisplay:Init()
-isallowNonSelection="1" GlobalRadioGroup="" Text="" TextId="Friends_FriendsBtn" Tooltip="" WindowSoundTemplate="HoloButtonLarge">
-                <Event Name="ButtonCheck" Function="OnFriendTabBtn"/>
-            </Control>
-            <Control Class="Button" Base="BK3:btnMetal_TabSub_Mid" Font="CRB_Button" ButtonType="Check" RadioGroup="FriendsListTabsGroup" LAnchorPoint="0.25" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="8" RAnchorPoint="0.5" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="-10" DT_VCENTER="

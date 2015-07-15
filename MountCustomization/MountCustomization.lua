@@ -464,40 +464,4 @@ function MountScreen:ArrangeList()
 end
 
 local MountScreenInst = MountScreen:new()
-MountScreenInst:Init()Target, tParams.strText, tParams.tTextOption)
-        if oMessage == nil then
-			return -- nothing is shown
-		end
-    elseif eDisplayType == LuaEnumMessageDisplayType.Window then
-        oMessage = tParams.wndMessage
-        if bReposition then
-			oMessage:Reposition()
-		end
-        oMessage:Show(true)
-    else 
-        Print(Apollo.GetString("MessageManager_UnknownType"))
-        return -- nothing is shown
-    end
-
-    -- keep track of the ref of the messsage in the tMessagesOnScreen list
-    self.tMessagesOnScreen[eField] = 
-	{
-		eMessageType 	= eMessageType,
-		oMessage 		= oMessage,
-		tParams 		= tParams,
-	}
-    
-end
----------------------------------------------------------------------------------------------------
-function MessageManager:HideMessage(eField)
-    
-    if self.tMessagesOnScreen[eField] == nil then
-        return
-    end
-    
-    local eMessageType = self.tMessagesOnScreen[eField].eMessageType
-    local oMessage = self.tMessagesOnScreen[eField].oMessage
-    local eDisplayType = self.tMessagesOnScreen[eField].tParams.eDisplayType -- ktMessageSettings[eMessageType].eDisplayType
-    
-    -- hide the tMessage according to the tMessage display type
-    if eDisplayType == LuaEnumMessag
+MountScreenInst:Init()

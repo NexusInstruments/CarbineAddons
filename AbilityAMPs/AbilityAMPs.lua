@@ -795,32 +795,3 @@ end
 
 local AbilityAMPsInst = AbilityAMPs:new()
 AbilityAMPsInst:Init()
-cIndex, specError)
-	if not self.tWndRefs.wndMain or not self.tWndRefs.wndMain:IsValid() then
-		return
-	end
-
-	if specError == AbilityBook.CodeEnumSpecError.InvalidIndex then
-		self:HelperShowError(Apollo.GetString("AbilityBuilder_SetIndexOutOfBounds"))
-	elseif specError == AbilityBook.CodeEnumSpecError.IndexLocked then
-		self:HelperShowError(Apollo.GetString("AbilityBuilder_SetIndexLocked"))
-	elseif specError == AbilityBook.CodeEnumSpecError.NoChange then
-		self:HelperShowError(Apollo.GetString("AbilityBuilder_SetIndexNotChanged"))
-	elseif specError == AbilityBook.CodeEnumSpecError.InCombat then
-		self:HelperShowError(Apollo.GetString("AbilityBuilder_SetChangeInCombat"))
-	elseif specError == AbilityBook.CodeEnumSpecError.InvalidPlayer then
-		self:HelperShowError(Apollo.GetString("AbilityBuilder_SetChangeInvalidPlayer"))
-	elseif specError == AbilityBook.CodeEnumSpecError.PvPRestricted then
-		self:HelperShowError(Apollo.GetString("AbilityBuilder_SetChangeInPvP"))
-	elseif specError == AbilityBook.CodeEnumSpecError.InVoid then
-		self:HelperShowError(Apollo.GetString("AbilityBuilder_SetChangeInVoid"))
-	elseif specError == AbilityBook.CodeEnumSpecError.Ok then
-		self:RedrawFromScratch()
-		Event_FireGenericEvent("GenericEvent_OpenEldanAugmentation", self.tWndRefs.wndMain:FindChild("BGFrame:AMPBuilderMain"))
-	end
-end
-
-function Abilities:OnActionSetError(eResult)
-	local strMessage = nil
-	if eResult == ActionSetLib.CodeEnumLimitedActionSetResult.InVoid then
-		strMe

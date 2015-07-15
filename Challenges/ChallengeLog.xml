@@ -128,24 +128,3 @@
         <Event Name="WindowClosed" Function="OnShareChallengeClose"/>
     </Form>
 </Forms>
-rtByDropdownContainer:btnToggleZone"):IsChecked() then
-			local strLocalHeader = clgCurrent:GetZoneRestrictionInfo().strSubZoneName
-            if strLocalHeader == "" then
-                strDesc = Apollo.GetString("Challenges_UnspecifiedArea")
-            else
-                strDesc = strLocalHeader
-            end
-            break
-        else
-
-			local tInfo =
-			{
-				["name"] = "",
-				["count"] = 2  --Want "Combat Challenges", not "Combat Challenge"
-			}
-
-			local eChallengeType = clgCurrent:GetType()
-            if eChallengeType == ChallengesLib.ChallengeType_Combat then
-				tInfo["name"] = Apollo.GetString("Challenges_CombatChallenge")
-            elseif eChallengeType == ChallengesLib.ChallengeType_Ability then
-				tInfo["name"] = Apollo.GetString("Chall

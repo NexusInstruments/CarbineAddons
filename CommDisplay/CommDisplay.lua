@@ -444,9 +444,3 @@ end
 
 local CommDisplayInst = CommDisplay:new()
 CommDisplayInst:Init()
-sets()
-	local nCurrentCenter = nRightMain - ((nRightMain - nLeftMain)/ 2)
-	local nCenteredValue = (nTotalWidth + knWindowFramePadding) / 2
-	self.wndMain:SetAnchorOffsets(-nCenteredValue + nCurrentCenter, nTopMain, nCenteredValue + nCurrentCenter, nBottomMain)
-
-	-- Ar

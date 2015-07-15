@@ -58,8 +58,3 @@
         <Event Name="ButtonCheck" Function="OnPetItemClick"/>
     </Form>
 </Forms>
-veToClient="1" Font="Default" Text="" Template="Default" TooltipType="OnCursor" Name="ControlContainer" BGColor="ffffffff" TextColor="ffffffff" TooltipColor="" HideInEditor="0">
-            <Control Class="Button" Base="CRB_Basekit:kitBtn_Metal_LargeBlue" Font="CRB_Button" ButtonType="PushButton" RadioGroup="" LAnchorPoint="1" LAnchorOffset="-269" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="-149" BAnchorPoint="1" BAnchorOffset="0" DT_VCENTER="1" DT_CENTER="1" TooltipType="OnCursor" Name="ViewBtn" BGColor="ffffffff" TextColor="ffffffff" TooltipColor="" NormalTextColor="UI_BtnTextBlueNormal" PressedTextColor="UI_BtnTextBluePressed" FlybyTextColor="UI_BtnTextBlueFlyby" PressedFlybyTextColor="UI_BtnTextBluePressedFlyby" DisabledTextColor="UI_BtnTextBlueDisabled" Text="" TextId="CRB_View">
-                <Event Name="ButtonSignal" Function="OnViewBtn"/>
-            </Control>
-            <Control Class="Button" Base="CRB_Basekit:kitBtn_Metal_LargeRed" Font="CRB_Butto

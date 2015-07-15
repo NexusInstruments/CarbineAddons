@@ -437,25 +437,3 @@ end
 ---------------------------------------------------------------------------------------------------
 local ErrorDialogInst = ErrorDialog:new()
 ErrorDialogInst:Init()
-WindowSoundTemplate="HoloButtonSmall">
-            <Event Name="ButtonDown" Function="OnCustomerSurveyAlertBtn"/>
-        </Control>
-        <Control Class="Window" LAnchorPoint="0.5" LAnchorOffset="-12" TAnchorPoint="0.5" TAnchorOffset="-11" RAnchorPoint="0.5" RAnchorOffset="10" BAnchorPoint="0.5" BAnchorOffset="11" RelativeToClient="1" Font="Default" Text="" Template="Default" Name="CustomerSurveyAlertSprite" BGColor="white" TextColor="white" Picture="1" IgnoreMouse="1" Sprite="CRB_Basekit:kitIcon_Holo_Interfaces" NoClip="0" TooltipColor="" Visible="1" HideInEditor="0" NewControlDepth="1"/>
-        <Event Name="MouseEnter" Function="OnHoverGlowMouseEnter"/>
-        <Event Name="MouseExit" Function="OnHoverGlowMouseExit"/>
-    </Form>
-</Forms>
- iCurrRow = wndNewsGrid:AddRow("", "CRB_Basekit:kitIcon_Gold_Exclamation")
-			wndNewsGrid:SetCellDoc(iCurrRow, 2, '<T Font="CRB_InterfaceSmall" TextColor="WindowTitleColor">'.. strText .."</T>")
-		end
-	end
-end
-
-function GuildInfo:OnGuildResult(guildSender, strName, nRank, eResult)
-	if eResult == GuildLib.GuildResult_PendingInviteExpired and self.wndGuildInvite ~= nil then
-		self.wndGuildInvite:Destroy()
-	end
-end
-
-function GuildInfo:OnGuildLoaded(guildLoaded)
-	local tGuildF

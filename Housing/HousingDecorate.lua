@@ -2279,9 +2279,3 @@ end
 -----------------------------------------------------------------------------------------------
 local HousingDecorateInst = HousingDecorate:new()
 HousingDecorateInst:Init()
-horPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="0" RelativeToClient="1" Font="CRB_InterfaceSmall" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_TextHoloBody" Template="Default" TooltipType="OnCursor" Name="WindowName" TooltipColor="" TextId="Nameplates_TargetName" DT_VCENTER="1"/>
-                    </Control>
-                    <Control Class="Window" LAnchorPoint="0" LAnchorOffset="229" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="0" RAnchorOffset="325" BAnchorPoint="1" BAnchorOffset="0" RelativeToClient="1" Font="CRB_HeaderTiny_O" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_TextHoloTitle" Template="Default" TooltipType="OnCursor" Name="Location" TooltipColor="" Sprite="BK3:btnHolo_ListView_TopNormal" Picture="1" IgnoreMouse="1" DT_CENTER="1" DT_VCENTER="1" TextId="">
-                        <Control Class="Window" LAnchorPoint="0" LAnchorOffset="5" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="-5" BAnchorPoint="1" BAnchorOffset="0" RelativeToClient="1" Font="CRB_InterfaceSmall" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_TextHoloBody" Template="Default" TooltipType="OnCursor" Name="Location" TooltipColor="" Sprite="" Picture="0" IgnoreMouse="1" DT_CENTER="1" DT_VCENTER="1" TextId="CRB_Location"/>
-                    </Control>
-                    <Control Class="Window" LAnchorPoint="0" LAnchorOffset="324" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="0" RAnchorOffset="397" BAnchorPoint="1" BAnchorOffset="0" RelativeToClient="1" Font="CRB_HeaderTiny_O" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_TextHoloTitle" Template="Default" TooltipType="OnCursor" Name="Movable" TooltipColor="" Sprite="BK3:btnHolo_ListView_TopNormal" Picture="1" IgnoreMouse="1" DT_C

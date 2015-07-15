@@ -150,11 +150,3 @@ end
 
 local CrowdControlGameplayInst = CrowdControlGameplay:new()
 CrowdControlGameplayInst:Init()
-chorPoint="0" TAnchorOffset="70" RAnchorPoint="0" RAnchorOffset="136" BAnchorPoint="0" BAnchorOffset="144" BGColor="UI_WindowBGDefault" Font="Default" TextColor="UI_WindowTextDefault" Text="" Sprite="BK3:UI_BK3_Holo_InsetSimple" Line="0"/>
-        <Pixie LAnchorPoint="0" LAnchorOffset="55" TAnchorPoint="1" TAnchorOffset="-127" RAnchorPoint="1" RAnchorOffset="-54" BAnchorPoint="1" BAnchorOffset="-94" BGColor="UI_WindowBGDefault" Font="Default" TextColor="UI_WindowTextDefault" Text="" Sprite="BK3:UI_BK3_Holo_InsetSimple" Line="0"/>
-    </Form>
-    <Form Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="0" RAnchorOffset="40" BAnchorPoint="0" BAnchorOffset="40" RelativeToClient="1" Font="Default" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="CoordPrevMaterialItem" Border="1" Picture="1" SwallowMouseClicks="1" Moveable="0" Escapable="0" Overlapped="1" TooltipColor="" Sprite="BK3:UI_BK3_Holo_InsetSimple" Tooltip="">
-        <Control Class="Window" LAnchorPoint="0" LAnchorOffset="3" TAnchorPoint="0" TAnchorOffset="3" RAnchorPoint="1" RAnchorOffset="-3" BAnchorPoint="1" BAnchorOffset="-3" RelativeToClient="1" Font="CRB_InterfaceMedium_BO" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="CoordPrevMaterialIcon" TooltipColor="" Picture="1" IgnoreMouse="1" Sprite="IconSprites:Icon_ItemMisc_Shredded_Meat" DT_RIGHT="1" DT_BOTTOM="1"/>
-    </Form>
-</Forms>
-4†¦Å"gÑùâUW§@æ-–íšùÒTð^e+¡[[ü%W’: ;©ÝÊñË7aœG7èF1R'¡ŠËïæ›·J+Ý0ÞÒòÝÌkÁÉû¿xvÂBmˆÕˆ×ñ®×Û…¸›ò-p¦°f­øU–Läµõl7 ´¸5µ]5åŽDDzÛ°Ê]ÕŸž“5	eUã\ Ç²s¡!”~é0½ò"àJå’H€†‘‰B•§¶.hWýA½¨"C^ï'Q{æ,óã–WçµÑût¼~!5è˜°°õ³ÚÕÛÒøv[2#}1;':*œ˜g>FñeÍ¶÷¶_Üà<ž³—Ð±-¸o,twšÇôÖÖÉœ¬üá¯Ÿˆ»äÉxÂÒê‘2ã:

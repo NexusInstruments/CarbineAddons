@@ -35,31 +35,3 @@
         </Control>
     </Form>
 </Forms>
-lor="UI_WindowBGDefault" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="wndTeam2Icon" TooltipColor="" Tooltip="" TooltipId="AdventureLevianBay_Team2Position" HideInEditor="0" Visible="1" Sprite="BK3:UI_BK3_Holo_Adventure_EnemyPlayer" Picture="1" IgnoreMouse="1"/>
-                <Control Class="Window" LAnchorPoint="0" LAnchorOffset="8" TAnchorPoint="0" TAnchorOffset="1" RAnchorPoint="1" RAnchorOffset="8" BAnchorPoint="1" BAnchorOffset="1" RelativeToClient="1" Font="Default" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="wndTeam2Dead" TooltipColor="" Tooltip="" TooltipId="AdventureLevianBay_Team2Defeated" HideInEditor="1" Visible="0" Sprite="CRB_WarriorSprites:sprWar_SmallSkullRed" Picture="1" IgnoreMouse="1"/>
-            </Control>
-        </Control>
-        <Pixie LAnchorPoint="0" LAnchorOffset="40" TAnchorPoint="0" TAnchorOffset="44" RAnchorPoint="0" RAnchorOffset="344" BAnchorPoint="0" BAnchorOffset="121" Sprite="BK3:UI_BK3_Holo_Adventure_Background" BGColor="white" TextColor="black" Rotation="0" Font="Default" Text=""/>
-        <Pixie LAnchorPoint="0" LAnchorOffset="297" TAnchorPoint="0" TAnchorOffset="51" RAnchorPoint="0" RAnchorOffset="315" BAnchorPoint="0" BAnchorOffset="103" Sprite="BK3:UI_BK3_Holo_Adventure_PitStops" BGColor="white" TextColor="black" Rotation="0" Font="Default"/>
-        <Pixie LAnchorPoint="0" LAnchorOffset="218" TAnchorPoint="0" TAnchorOffset="51" RAnchorPoint="0" RAnchorOffset="236" BAnchorPoint="0" BAnchorOffset="103" Sprite="BK3:UI_BK3_Holo_Adventure_PitStops" BGColor="white" TextColor="black" Rotation="0" Font="Default"/>
-        <Pixie LAnchorPoint="0" LAnchorOffset="138" TAnchorPoint="0" TAnchorOffset="51" RAnchorPoint="0" RAnchorOffset="156" BAnchorPoint="0" BAnchorOffset="103" Sprite="BK3:UI_BK3_Holo_Adventure_PitStops" BGColor="white" TextColor="black" Rotation="0" Font="Default"/>
-        <Pixie LAnchorPoint="0" LAnchorOffset="65" TAnchorPoint="0" TAnchorOffset="51" RAnchorPoint="0" RAnchorOffset="67" BAnchorPoint="0" BAnchorOffset="103" Sprite="BK3:UI_BK3_Holo_Adventure_LineBreak" BGColor="white" TextColor="black" Rotation="0" Font="Default"/>
-    </Form>
-</Forms>
-== Tooltip.TooltipGenerateType_Macro then
-		xml = XmlDoc.new()
-		xml:AddLine(oArg1)
-		wndControl:SetTooltipDoc(xml)
-	elseif eType == Tooltip.TooltipGenerateType_Spell then
-		Tooltip.GetSpellTooltipForm(self, wndControl, oArg1)
-	elseif eType == Tooltip.TooltipGenerateType_PetCommand then
-		xml = XmlDoc.new()
-		xml:AddLine(oArg2)
-		wndControl:SetTooltipDoc(xml)
-	end
-end
-
------------------------------------------------------------
-local ActionBarShortcut_Singleton = ActionBarShortcut:new()
-ActionBarShortcut_Singleton:Init()
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                  

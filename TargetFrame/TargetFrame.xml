@@ -191,19 +191,3 @@
         </Control>
     </Form>
 </Forms>
-on="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
-    </Sprite>
-    <Sprite Name="sprTrk_ObjMarkArrow" Cycle="1">
-        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Datachron_Pulse_266_912.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="15" y0="0" y1="0" y2="0" y3="0" y4="0" y5="17" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
-    </Sprite>
-    <Sprite Name="sprTrk_ActiveMarker" Cycle="1">
-        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Datachron_Pulse_284_914.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="27" y0="0" y1="0" y2="0" y3="0" y4="0" y5="26" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
-    </Sprite>
-    <Sprite Name="sprQT_EpisodeBack" Cycle="1">
-        <Frame Texture="UI\Assets\TexPieces\UI_CRB_HUD_Tracker_0_0.tga" x0="0" x1="0" x2="0" x3="0" x4="10" x5="293" y0="0" y1="0" y2="0" y3="0" y4="0" y5="30" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
-    </Sprite>
-    <Sprite Name="sprQT_QuestBack" Cycle="1">
-        <Frame Texture="UI\Assets\TexPieces\UI_CRB_HUD_Tracker_296_1.tga" x0="0" x1="0" x2="0" x3="32" x4="44" x5="76" y0="0" y1="0" y2="0" y3="10" y4="15" y5="22" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
-    </Sprite>
-    <Sprite Name="sprQT_TrackerBaseBar" Cycle="1">
-        <Frame Texture="UI\Assets\TexPieces\UI_CRB_HUD_Tracker_376_1.tga" x0="0" x1="0" x2="0" x3="31" x4="44" x5="74" y0="0" y1="0" y2="0" y3="0" y4="0" y5="17" Stretchy="1" HotspotX="0" HotspotY

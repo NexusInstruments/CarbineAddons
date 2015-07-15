@@ -985,7 +985,4 @@ function ChallengeTracker:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPop
 end
 
 local ChallengeTrackerInst = ChallengeTracker:new()
-ChallengeTrackerInst:Init()le="0" TooltipType="OnCursor" Picture="1" RadioDisallowNonSelection="1" TestAlpha="1" HideInEditor="0" BGColor="white" TextColor="white" NormalTextColor="white" PressedTextColor="white" FlybyTextColor="white" PressedFlybyTextColor="white" DisabledTextColor="white" TooltipColor="" WindowSoundTemplate="HoloButtonSmall">
-                <Control Class="MLWindow" LAnchorPoint="0" LAnchorOffset="5" TAnchorPoint="0" TAnchorOffset="5" RAnchorPoint="1" RAnchorOffset="-20" BAnchorPoint="0" BAnchorOffset="35" RelativeToClient="1" Font="CRB_FloaterSmall" Text="" Name="TrackerTabTimeText" TextId="" IgnoreMouse="1" BGColor="white" TextColor="white" TooltipColor=""/>
-                <Control Class="Window" LAnchorPoint="1" LAnchorOffset="-20" TAnchorPoint="0" TAnchorOffset="5" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="0" BAnchorOffset="25" RelativeToClient="1" Font="Default" Text="" Template="Default" Name="TrackerTabIcon" Picture="1" IgnoreMouse="1" Sprite="CRB_ChallengeTrackerSprites:sprChallengeTypeSkillTiny" TextId="" BGColor="white" TextColor="white" TooltipColor=""/>
-                <Event Name="Butto
+ChallengeTrackerInst:Init()

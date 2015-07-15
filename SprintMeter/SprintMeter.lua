@@ -162,8 +162,3 @@ end
 
 local SprintMeterInst = SprintMeter:new()
 SprintMeterInst:Init()
-GDefault" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="Bomb2" TooltipColor="" IgnoreMouse="1" NoClip="1" Sprite="Warplots:spr_WarPlots_Generator_Base" Picture="0" Visible="1"/>
-        </Control>
-        <Control Class="ProgressBar" Text="" LAnchorPoint="0.5" LAnchorOffset="-54" TAnchorPoint="0" TAnchorOffset="36" RAnchorPoint="0.5" RAnchorOffset="54" BAnchorPoint="0" BAnchorOffset="73" AutoSetText="0" UseValues="0" RelativeToClient="1" SetTextToProgress="0" DT_CENTER="1" DT_VCENTER="0" ProgressEmpty="" ProgressFull="Warplots:spr_WarPlots_CP3_BlueFill" TooltipType="OnCursor" Name="Center" BGColor="ffffffff" TextColor="UI_TextHoloBodyCyan" TooltipColor="" BarColor="" ProgressFill="" BRtoLT="1" Picture="1" Sprite="Warplots:spr_WarPlots_CP3_Empty" Font="CRB_Header9" UsePercent="0" TooltipFont="CRB_InterfaceSmall" VerticallyAligned="1" Overlapped="0" IgnoreMouse="0" TextId="Sabotage_CP1"/>
-        <Control Class="ProgressBar" Text="" LAnchorPoint="0.5" LAnchorOffset="-121" TAnchorPoint="0" TAnchorOffset="36" RAnchorPoint="0.5" RAnchorOffset="-41" BAnchorPoint="0" BAnchorOffset="73" AutoSetText="0" UseValues="0" RelativeToClient="1" SetTextToProgress="0" DT_CENTER="1" DT_VCENTER="0" ProgressEmpty="" ProgressFull="Warplots:spr_WarPlots_CP2_BlueFill" TooltipType="OnCursor" Name="West" BGColor="ffffffff" TextColor="UI_TextHoloBodyCyan" TooltipColor="" BarColor="" ProgressFill="" BRtoLT="1" Picture="1" Sprite="Warplots:spr_WarPlots_CP2_Empty" Font="CRB_Header9" UsePercent="0" TooltipFont="CRB_InterfaceSmall" VerticallyAligned="1" NewWindowDepth="0" TextId="Sabotage_CP2"/>
-        <Control Class="P

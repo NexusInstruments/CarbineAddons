@@ -878,8 +878,3 @@ end
 local CombatLogInstance = CombatLog:new()
 CombatLog:Init()
 
-75" RelativeToClient="1" Font="Default" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="NodeFlash" TooltipColor="" Sprite="" Picture="1" IgnoreMouse="1"/>
-        </Control>
-        <Control Class="ProgressBar" LAnchorPoint="0.5" LAnchorOffset="-156" TAnchorPoint="1" TAnchorOffset="-38" RAnchorPoint="0.5" RAnchorOffset="157" BAnchorPoint="1" BAnchorOffset="-14" RelativeToClient="1" Font="Default" Text="" Template="Default" TooltipType="OnCursor" Name="ManaProgressBar" BGColor="white" TextColor="white" TooltipColor="" Sprite="" Picture="1" IgnoreMouse="1" BarColor="" ProgressFull="CM_SpellslingerSprites:sprSlinger_ManaBar_OutOfCombat" ProgressEdgeGlow="CM_SpellslingerSprites:sprSlinger_ManaBar_EdgeGlow" NoClipEdgeGlow="0" EdgeGlow="1"/>
-        <Control Class="Window" LAnchorPoint="0.5" LAnchorOffset="-20" TAnchorPoint="1" TAnchorOffset="-30" RAnchorPoint="0.5" RAnchorOffset="20" BAnchorPoint="1" BAnchorOffset="-20" RelativeToClient="1" Font="CRB_HeaderTiny_O" Text="" Template="Default" Name="ManaProgressBacker" BGColor="white" TextColor="white" TextId="" TooltipColor="" NewControlDepth="6" DT_CENTER="1" Picture="1" IgnoreMouse="1" Sprite="BK3:sprGradientOutwards"/>
-        <Control Class="Window" LAnchorPoint="0.5" LAnchorOffset="-156" TAnchorPoint="1" TAnchorOffset="-35" RAnchorPoint="0.5" RAnchorOffset="156" BAnchorPoint="1" BAnchorOffset="-15" RelativeToClient="1" Font="CRB_HeaderTiny_O" Text="" Template="Default" Name="ManaProgressText" BGColor="white" TextColor="UI_TextHoloTitle" TextId="CRB__2" TooltipColor="" NewControlDepth="6" DT_CENTER="1" Pic

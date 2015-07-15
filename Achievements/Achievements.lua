@@ -1206,5 +1206,3 @@ end
 
 local AchievementsInst = Achievements:new()
 AchievementsInst:Init()
-d="0" BGColor="white" TextColor="white" TooltipColor="" IgnoreMouse="1" TooltipFont="CRB_InterfaceSmall_O" Tooltip="" IgnoreTooltipDelay="1" TestAlpha="1">
-        <Control Class="Button" Base="Abilities:btnAbilitiesBasePoint" Font="CRB_InterfaceTiny_BB" ButtonType="Check" RadioGroup="" LAnchorPoint="0" LAnchorOffset="14" TAnchorPoint="0.5" TAnchorOffset="-23" RAnchorPoint="1" RAnchorOffset="-41" BAnchorPoint="0.5" BAnchorOffset="

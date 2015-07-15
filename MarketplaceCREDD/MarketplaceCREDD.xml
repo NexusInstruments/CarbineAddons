@@ -146,33 +146,3 @@
         <Control Class="CashWindow" LAnchorPoint="0" LAnchorOffset="8" TAnchorPoint="0" TAnchorOffset="23" RAnchorPoint="0.75" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="0" TooltipType="OnCursor" RelativeToClient="1" Font="CRB_Header9" Text="" Template="Default" BGColor="ffffffff" TextColor="UI_TextHoloBodyCyan" DT_RIGHT="0" Name="LogCashWindow" TooltipColor="" Visible="0" Tooltip=""/>
     </Form>
 </Forms>
-t(self:HelperFormatTimeString(aucCurr:GetExpirationTime()))
-		wnd:FindChild("ListExpiresIcon"):SetSprite("Market:UI_Auction_Icon_TimeGreen")
-		wnd:FindChild("ListExpires"):SetTextColor(ApolloColor.new("UI_TextHoloTitle"))
-
-	elseif eTimeRemaining == ItemAuction.CodeEnumAuctionRemaining.Very_Long then
-		wnd:FindChild("ListExpires"):SetTextRaw(String_GetWeaselString(Apollo.GetString("MarketplaceAuction_VeryLong"), kstrAuctionOrderDuration))
-		wnd:FindChild("ListExpires"):SetTextColor(ApolloColor.new("UI_TextHoloTitle"))
-		wnd:FindChild("ListExpiresIcon"):Show("Market:UI_Auction_Icon_TimeGreen")
-
-	else
-		wnd:FindChild("ListExpires"):SetTextRaw(ktTimeRemaining[eTimeRemaining])
-		wnd:FindChild("ListExpires"):SetTextColor(ApolloColor.new("xkcdReddish"))
-		wnd:FindChild("ListExpiresIcon"):Show("Market:UI_Auction_Icon_TimeRed")
-	end
-	wnd:FindChild("OwnAuctionLabel"):Show(bIsOwnAuction)
-	wnd:FindChild("TopBidAuctionLabel"):Show(aucCurr:IsTopBidder())
-
-	if wnd:FindChild("BidPrice") then
-		wnd:FindChild("BidPrice"):SetAmount(nDefaultBid)
-	end
-
-	if wnd:FindChild("BuyNowPrice") then
-		local bCanAffordBuyNow = self.wndPlayerCashWindow:GetAmount() >= nBuyoutPrice
-		wnd:FindChild("BuyNowPrice"):SetAmount(nBuyoutPrice)
-		wnd:FindChild("BuyNowPrice"):SetTextColor(bCanAffordBuyNow and "UI_TextHoloBodyCyan" or "xkcdReddish")
-	end
-end
-
-function MarketplaceAuction:OnRowSelectBtnUncheck(wndHandler, wndControl)
-	local wndParent = self.wndMain:FindChild("BuyContainer"):Fi

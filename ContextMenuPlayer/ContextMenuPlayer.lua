@@ -656,7 +656,7 @@ function ContextMenuPlayer:ProcessContextClick(eButtonType)
 	end
 
 	local unitPlayer = GameLib.GetPlayerUnit()
-	local strTarget = self.strTarget
+	local strTarget = self.strTarget ~= nil and self.strTarget or ""
 	local unitTarget = self.unitTarget
 	local tCharacterData = GameLib.SearchRelationshipStatusByCharacterName(strTarget)
 	local nGroupMemberId = (tCharacterData and tCharacterData.nPartyIndex) or nil
@@ -724,12 +724,12 @@ function ContextMenuPlayer:ProcessContextClick(eButtonType)
 		FriendshipLib.AddByName(FriendshipLib.CharacterFriendshipType_Friend, strTarget)
 	elseif eButtonType == "BtnUnrival" then
 		FriendshipLib.Remove(tCharacterData.tFriend.nId, FriendshipLib.CharacterFriendshipType_Rival)
-	elseif eButtonType == "BtnPromoteInGuild" then
-		self.guildCurr:Promote(self.strTarget) -- TODO: More error checking	
-	elseif eButtonType == "BtnDemoteInGuild" then
-		self.guildCurr:Demote(self.strTarget)
-	elseif eButtonType == "BtnKickFromGuild" then
-		self.guildCurr:Kick(self.strTarget)
+	elseif eButtonType == "BtnPromoteInGuild" and strTarget ~= "" then
+		self.guildCurr:Promote(strTarget) -- TODO: More error checking	
+	elseif eButtonType == "BtnDemoteInGuild" and strTarget ~= "" then
+		self.guildCurr:Demote(strTarget)
+	elseif eButtonType == "BtnKickFromGuild" and strTarget ~= "" then
+		self.guildCurr:Kick(strTarget)
 	elseif eButtonType == "BtnUnfriend" then
 		FriendshipLib.Remove(tCharacterData.tFriend.nId, FriendshipLib.CharacterFriendshipType_Friend)
 		Event_FireGenericEvent("GenericEvent_SystemChannelMessage", String_GetWeaselString(Apollo.GetString("Social_RemovedFromFriends"), strTarget))
@@ -742,8 +742,8 @@ function ContextMenuPlayer:ProcessContextClick(eButtonType)
 	elseif eButtonType == "BtnUnneighbor" then
 		HousingLib.NeighborEvict(tCharacterData.tNeighbor.nId)
 		Event_FireGenericEvent("GenericEvent_SystemChannelMessage", String_GetWeaselString(Apollo.GetString("ContextMenu_NeighborRemove")))
-	elseif eButtonType == "BtnVisitPlayer" then
-        HousingLib.RequestVisitPlayer(self.strTarget)
+	elseif eButtonType == "BtnVisitPlayer" and strTarget ~= "" then
+        HousingLib.RequestVisitPlayer(strTarget)
 	elseif eButtonType == "BtnAccountFriend" then
 		FriendshipLib.AccountAddByUpgrade(tCharacterData.tFriend.nId)
 	elseif eButtonType == "BtnUnaccountFriend" then
@@ -879,4 +879,3 @@ end
 
 local ContextMenuPlayerInst = ContextMenuPlayer:new()
 ContextMenuPlayerInst:Init()
-    ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª

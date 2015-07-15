@@ -85,30 +85,3 @@
         <Control Class="Window" LAnchorPoint="0" LAnchorOffset="45" TAnchorPoint="0" TAnchorOffset="589" RAnchorPoint="0" RAnchorOffset="289" BAnchorPoint="0" BAnchorOffset="625" RelativeToClient="1" Font="CRB_InterfaceMedium" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_TextHoloTitle" Template="Default" TooltipType="OnCursor" Name="String3" TooltipColor="" TextId="ErrorDialog_WorldPosition" DT_VCENTER="1" DT_WORDBREAK="1"/>
     </Form>
 </Forms>
-" DT_CENTER="1" Tooltip=""/>
-                </Control>
-            </Control>
-        </Control>
-    </Form>
-</Forms>
--if eGuildType == GuildLib.GuildType_Guild then
-		strGuildType = Apollo.GetString("Guild_GuildTypeGuild")
-	end
-
-	local bIntercepted = self:IsIntercepted( guildSender, eResult )
-
-	local strResidence = Apollo.GetString("Guild_ResidenceNameDefault")
-	if eGuildType == GuildLib.GuildType_WarParty then
-		strResidence = Apollo.GetString("CRB_Warplot")
-	end
-
-	local strRank = ""
-	
-	local strGuildMaster = nil
-	if guildSender then
-		strGuildMaster = guildSender:GetRanks()[1].strName
-		
-		if nRank and nRank ~= 0 then
-			strRank = guildSender:GetRanks()[nRank].strName
-			if not strRank or not string.len(strRank) then
-				strRank = '#' .. tos

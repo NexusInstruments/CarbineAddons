@@ -203,54 +203,3 @@ end
 -----------------------------------------------------------------------------------------------
 local WarpartyRegisterInst = WarpartyRegister:new()
 WarpartyRegisterInst:Init()
--------------------------------------------------------
-
-function WarpartyBattle:OnBossTokens( wndHandler, wndControl, eMouseButton )
-	local wndBossToken = self.wndMain:FindChild("BossTokenEntries")
-	local wndWarplotLayout = self.wndMain:FindChild("WarplotLayout")
-	wndBossToken:Show(true)
-	wndWarplotLayout:Show(false)
-end
-
-function WarpartyBattle:OnWarplotLayout( wndHandler, wndControl, eMouseButton  )
-	local wndBossToken = self.wndMain:FindChild("BossTokenEntries")
-	local wndWarplotLayout = self.wndMain:FindChild("WarplotLayout")
-	wndBossToken:Show(false)
-	wndWarplotLayout:Show(true)
-	self:OnBattleStateChanged()
-end
-
----------------------------------------------------------------------------------------------------
--- BossTokenEntry Functions
----------------------------------------------------------------------------------------------------
-function WarpartyBattle:OnGenerateTooltip(wndControl, wndHandler, eType, oArg1, oArg2)
-	local xml = nil
-	if eType == Tooltip.TooltipGenerateType_ItemInstance then
-		Tooltip.GetItemTooltipForm(self, wndControl, oArg1, {bPrimary = true})
-	elseif eType == Tooltip.TooltipGenerateType_ItemData then
-		Tooltip.GetItemTooltipForm(self, wndControl, oArg1, {bPrimary = true})
-	elseif eType == Tooltip.TooltipGenerateType_GameCommand then
-		xml = XmlDoc.new()
-		xml:AddLine(oArg2)
-		wndControl:SetTooltipDoc(xml)
-	elseif eType == Tooltip.TooltipGenerateType_Macro then
-		xml = XmlDoc.new()
-		xml:AddLine(oArg1)
-		wndControl:SetTooltipDoc(xml)
-	elseif eType == Tooltip.TooltipGenerateType_Spell then
-		Tooltip.GetSpellTooltipForm(self, wndControl, oArg1)
-	elseif eType == Tooltip.TooltipGenerateType_PetCommand then
-		xml = XmlDoc.new()
-		xml:AddLine(oArg2)
-		wndControl:SetTooltipDoc(xml)
-	end
-end
-
------------------------------------------------------------------------------------------------
--- WarpartyBattleInstance
------------------------------------------------------------------------------------------------
-local WarpartyBattleInst = WarpartyBattle:new()
-WarpartyBattleInst:Init()
-
-ñÿ Íò± ÖŠ,ÖŠ,    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª  Óò± ÖŠ,û:ïŽÈß‡Ùx_‘—GŸñ}?ÆÇ y˜±ïú?ö±“÷íÏþÄ¿7FzŽGaMæ»È¾SþþÞÌU¾ïñ±öo.ó×»YþþcqfÞ_´?o'½égo}fh0ãú®âøYˆ»¥Ÿÿ-ÀÛ?aÆõÁ¼s˜±ïú¿,ýŒó3®ßpá*Žq>Ü-ý¼À÷½ZÌU¾ïÕbÆõ.ì‹‡s¤ïûwK?ãþ	3n˜w3ÆýÓÔÏÜÎüç;Å½éçÎÀ 2 ÿd½ØÞÞŽG@lv|h›€ÖŒüa‡ï/ÚŸ_‡~ö~¯Ú¨0>ãpeôýÇGàß`égéo:9
-Kœ}˜qg`zq8ü»[ú÷O˜•3SîÞí}g°ô3Î…%Î>ÌçÃÝÒÏ”ß§Rô3®Ï°å P>`Þ5"¹Øš|÷ô3îŸ0ãúWÆýÓ}þ|oèçvU?KÒoüUý<4xðõ³FÕÏ_Uõó r÷ï[?kTýLñÕ»¬Ÿ/ªú™eßzb˜=ª~TÆýÓÔÏUý|±ªŸ‡«úyh±ªŸ—Uý<´XÕÏƒÌª~Rü5èg´þó-ðN±ªŸUý|/²ªŸ‡«úypYÕÏC‹Uý<È¬êç!Å_ƒ~~  HÕÏ÷«úyH±ªŸ‡«úypYÕÏC‹Uý<È¬êç!Åw^?§”™‡¾~Nöêgi´ôWd-³âõ(†__>çeàÓÏØ]w[?ÿs÷ûÞúWöêçï~o°ôóõRDÆ=˜qý†ïfÙû¾ÔŒÈ»¬Ÿ—(úÑW¿áÊ]³Ñ× '–~Æù€×oØðn–q>Ü-ý|Ù«ŸWcî~K®¤°¯¾Ã…¯ÿJööã˜ÿ ëç?Ýmý¼DÑ¾úWÆýÓÕÏCxý:•o¿.ý¬ò­ñ×¥ŸU¾5V×Z|§ô³Ê·ÆêúÏC‹ÕõŸ›û­Ÿæ£uˆègfø•oƒaø¾Eý,ÐL—¯òÀùvâáÕÏ Ð,*ß“Ñ¦¿ú™*á$Š¯ÊwŠoM?“ãÓå©<pž5ëÖãô›_*ß.õÜ_ýLJ@LÇWå3®ýæzp(ÌVYe•UVYe•UVYå{ÑúÏ€Z¿îÿÙ¦uò•  •Gò± Š,X˜iÎ¾ÆàöÛ²TÞÖ×D¹ûKÚmd)ØÐBTïÓ{"NZžœÛnfÈ‘ÁÇRÈ¶žä#³R–dâý‘#´ê$38™M±E˜³ökÒãf[ÍæƒjñgÍŽÙd:¢¯X4ÀˆvÚª­ÓæjV%'TÂJšå‹·Ÿ³K¸íMé}~×¬kì¹Vz™•¼ÏÙ9{ÎÉÐN½ÞóéÜUì2ÓBÖß#I7]ÝÙÂß•CŸû%º‡«à®XLúŠg¶¿“îPosŽ–|öš ‘—š¹é‹ˆK‡OfH9íÌâ%Cñ'”qÚ	>>eï-íPçêi‰)uC¼8÷"%Æµs»	‹sÍÌYORöÈkcü:‚nÓJïvb¦ÿž„Mü~s"Ðññv)ýîô‹Iž×ÖÃÓ@á£Ó{•:7Y’P°"‹žä+Íðmiž¯Ùá¸ÆlÖŒKÞ5;×ØH´žùæ«M*‚¿lÐ¯Øá]›[¼Ts§Wf¬ç¹ÉÚÑôÜ€jÈ­søÿóóÿùùër»7¤m¯*š¹]Jßr©©fR²Û¹/Ý4Ò$

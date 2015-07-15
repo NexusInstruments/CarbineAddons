@@ -93,7 +93,7 @@
         <Control Class="Button" Name="CreditsBtn" Base="BK3:btnHolo_Blue_Med" Font="CRB_ButtonHeader" LAnchorPoint="1" LAnchorOffset="-139" TAnchorPoint="1" TAnchorOffset="-176" RAnchorPoint="1" RAnchorOffset="-8" BAnchorPoint="1" BAnchorOffset="-104" DT_VCENTER="1" DT_CENTER="1" WindowSoundTemplate="Custom" BGColor="white" TextColor="white" TextId="Login_Credits" NormalTextColor="UI_BtnTextBlueNormal" PressedTextColor="UI_BtnTextBluePressed" FlybyTextColor="UI_BtnTextBlueFlyby" PressedFlybyTextColor="UI_BtnTextBluePressedFlyby" DisabledTextColor="UI_BtnTextBlueDisabled" RelativeToClient="1" TooltipColor="" Text="" Tooltip="" Picture="0" IgnoreMouse="0" Sprite="" Template="Default" Visible="1" HideInEditor="0" TestAlpha="1">
             <Event Name="ButtonSignal" Function="OnCredits"/>
         </Control>
-        <Control Class="Window" LAnchorPoint="0.25" LAnchorOffset="-311" TAnchorPoint="0.5" TAnchorOffset="-254" RAnchorPoint="0.25" RAnchorOffset="314" BAnchorPoint="0.5" BAnchorOffset="-118" RelativeToClient="1" Font="Default" Text="" Template="Default" TooltipType="OnCursor" Name="WildstarLogo" BGColor="ffffffff" TextColor="ffffffff" TooltipColor="" Picture="1" IgnoreMouse="1" Sprite="PreGame:UI_Login_Logo" Tooltip="">
+        <Control Class="Window" LAnchorPoint="0.25" LAnchorOffset="-311" TAnchorPoint="0.5" TAnchorOffset="-316" RAnchorPoint="0.25" RAnchorOffset="314" BAnchorPoint="0.5" BAnchorOffset="-118" RelativeToClient="1" Font="Default" Text="" Template="Default" TooltipType="OnCursor" Name="WildstarLogo" BGColor="ffffffff" TextColor="ffffffff" TooltipColor="" Picture="1" IgnoreMouse="1" Sprite="PreGame:UI_Login_Logo" Tooltip="" HideInEditor="0" Visible="1">
             <Control Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="1" TAnchorOffset="-20" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="0" RelativeToClient="1" Font="CRB_InterfaceMedium_O" Text="" Template="Default" TooltipType="OnCursor" Name="VersionStringWnd" BGColor="ffffffff" TextColor="UI_TextHoloBodyHighlight" TooltipColor="" DT_RIGHT="0" TextId="" DT_CENTER="1"/>
         </Control>
     </Form>
@@ -122,4 +122,3 @@
         </Control>
     </Form>
 </Forms>
-ªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª        ÿÿÿÿªªªª

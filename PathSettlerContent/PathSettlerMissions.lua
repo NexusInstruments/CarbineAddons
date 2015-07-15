@@ -429,11 +429,3 @@ end
 
 local PathSettlerMissionsInst = PathSettlerMissions:new()
 PathSettlerMissionsInst:Init()
-int="0" LAnchorOffset="90" TAnchorPoint="0" TAnchorOffset="10" RAnchorPoint="0" RAnchorOffset="130" BAnchorPoint="1" BAnchorOffset="-12" RelativeToClient="1" Font="Default" Text="" Template="Default" TooltipType="OnCursor" Name="AttemptFrame2" BGColor="white" TextColor="white" TooltipColor="" Sprite="kitBtn_HoloNormal" Picture="1" IgnoreMouse="1" Visible="0">
-            <Control Class="Window" LAnchorPoint="0" LAnchorOffset="4" TAnchorPoint="0" TAnchorOffset="4" RAnchorPoint="1" RAnchorOffset="-4" BAnchorPoint="1" BAnchorOffset="-4" RelativeToClient="1" Font="Default" Text="" Template="Default" TooltipType="OnCursor" Name="AttemptIcon" BGColor="white" TextColor="white" TooltipColor="" Picture="1" IgnoreMouse="1" Sprite="" NoClip="0" IgnoreTooltipDelay="1"/>
-        </Control>
-        <Control Class="Window" LAnchorPoint="0" LAnchorOffset="148" TAnchorPoint="0" TAnchorOffset="10" RAnchorPoint="0" RAnchorOffset="188" BAnchorPoint="1" BAnchorOffset="-12" RelativeToClient="1" Font="Default" Text="" Template="Default" TooltipType="OnCursor" Name="AttemptFrame3" BGColor="white" TextColor="white" TooltipColor="" Sprite="kitBtn_HoloNormal" Picture="1" IgnoreMouse="1" Visible="0">
-            <Control Class="Window" LAnchorPoint="0" LAnchorOffset="4" TAnchorPoint="0" TAnchorOffset="4" RAnchorPoint="1" RAnchorOffset="-4" BAnchorPoint="1" BAnchorOffset="-4" RelativeToClient="1" Font="Default" Text="" Template="Default" TooltipType="OnCursor" Name="AttemptIcon" BGColor="white" TextColor="white" TooltipColor="" Picture="1" IgnoreMouse="1" Sprite="" NoClip="0" IgnoreTooltipDelay="1"/>
-        </Control>
-        <Control Class="Window" LAnchorPoint="0" LAnchorOffset="206" TAnchorPoint="0" TAnchorOffset="10" RAnchorPoint="0" RAnchorOffset="246" BAnchorPoint="1" BAnchorOffset="-12" RelativeToClient="1" Font="Default" Text="" Template="Default" TooltipType="OnCursor" Name="AttemptFrame4" BGColor="white" TextColor="white" TooltipColor="" Sprite="kitBtn_HoloNormal" Picture="1" IgnoreMouse="1" Visible="0">
-            <Control Class="Window" LAnchorPoint="0" LAnchorOffset="4" TAnchorPoint="0" TAnchorOffset="4" RAnchorPoint="1" 

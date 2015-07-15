@@ -230,11 +230,4 @@ function Protogames:CheckForProtogames()
 end
 
 local ProtogamesInstance = Protogames:new()
-ProtogamesInstance:Init()ite="CRB_Basekit:kitBase_MetalGrey_Large" Line="0"/>
-        <Event Name="WindowClosed" Function="OnCancel"/>
-    </Form>
-</Forms>
-TextInst = PopupText:new()
-PopupTextInst:Init()
-BÆà@é.Ûn³Æ˜¡Û±Ø„Ï¯<àxÈDc
-i²MÍC‚'³­	YóˆoàÉÌ<;§kL¹§ÛàµpÔöIÏ«%¢3Dà¼«B^‹ãS£;]FgDp®“ÊP‡3Aa•È!È°×/„Éãœ+ëâ”·õø¼z Ó!‡UC­ü—+­ò$ÎÆr«¯_^ğ€O!¿<ïñÈèãs«Œùî¬õèÛ$Ãt/.ÌZ_dÁùÙòj1Ğ[^lí}Ì*+PÙÔkštò·7›,EÅ|½<’‡×¯<òp^ïËGLQ ­òæ@”‘.ç#æPÇ¯‡ÏOug€&g\­N«•Âòõ2ç—H+ø¯Ëóy †İcÙr/Æ†Œz 1?¬‹r/òùš`¼Õ9Of<QwH'û8å»€ğñ½'”VÊse‰Ú[äé2ö#µÈQØß/Z£¶‹êÉ!É‹y‡ †ŸWìe:AšPîÀq0ŞKşÅÔòŞÆğ#¥KZúÂŞ.¨AÏö@şWT$—¸ÁÉ:Î?ó¸Óå?œñı°_ }‘+ŞŠıH‚ŒÇ5òñ¬‚óAiÅ+Íj>HUúÕç§á|ƒ¢>CÏ_ãÃqşKù)ühÀ˜’~¼ö—ùb†È£½p‘7Búõ2ÄEIªõt,˜!êé˜AmçLx2d˜'âñ[€ã©™VG1.ĞòË¿Fv#_çGôaˆ„!fÕ|¨úR§zRGÔåØ?¨1øùD$Ÿi€ÿ4ªùaPõ£š?B(¿'G2AìP•,¬Q,GÏ©$ºá=Bº¡.Çñ7èAX-ª2$
+ProtogamesInstance:Init()

@@ -158,18 +158,3 @@
         <Control Class="Window" LAnchorPoint="0" LAnchorOffset="2" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="-2" BAnchorPoint="1" BAnchorOffset="0" RelativeToClient="1" Font="Default" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="MemberContainer" TooltipColor=""/>
     </Form>
 </Forms>
-ize > 1)
-	self.wndRaidCustomizeRowSizeAdd:Enable(self.tSettings.nRowSize < #ktRowSizeIndexToPixels)
-	self.wndRaidCustomizeRowSizeValue:SetText(self.tSettings.nRowSize)
-	
-	self.wndRaidCustomizeNumColSub:Enable(self.tSettings.nNumColumns > 1)
-	self.wndRaidCustomizeNumColAdd:Enable(self.tSettings.nNumColumns < knNumColumnsMax)
-	self.wndRaidCustomizeNumColValue:SetText(self.tSettings.nNumColumns)
-
-	-- Lock
-	self.wndRaidLockFrameBtn:SetCheck(self.tSettings.bIsLocked)
-	self.wndMain:SetStyle("Sizable", not self.tSettings.bIsLocked)
-	self.wndMain:SetStyle("Moveable", not self.tSettings.bIsLocked)
-	self.wndMain:SetSprite(self.tSettings.bIsLocked and "sprRaid_BaseNoArrow" or "sprRaid_Base")
-	local wndCategoryContainer = self.wndMain:FindChild("RaidCategoryContainer")
-	for idx, wndCategory in pairs(wndCategoryConta

@@ -475,26 +475,3 @@ end
 
 local GuildInst = GuildInfo:new()
 GuildInst:Init()
-"%s m", nDistance))
-	self.wndMain:FindChild("PowerMapContainer"):FindChild("PowerMapRangeText"):SetText(String_GetWeaselString(Apollo.GetString("ExplorerMissions_DistanceNumber"), nDistance))
-
-	-- Color
-	local nRatioColor = CColor.new(0, 1, 0, 1)
-	local nRatioSprite = "CRB_NameplateSprites:sprNp_HealthBarFriendly"
-	if nRatio and nRatio > 0.66 then
-		nRatioColor = CColor.new(1, 0, 0, 1)
-		nRatioSprite = "CRB_NameplateSprites:sprNp_HealthBarHostile"
-	elseif nRatio and nRatio > 0.33 then
-		nRatioColor = CColor.new(248/255, 185/255, 54/255, 1)
-		nRatioSprite = "CRB_NameplateSprites:sprNp_HealthBarNeutral"
-	end
-	wndPowerMapRangeFinder:FindChild("RangeFinderText"):SetTextColor(nRatioColor)
-	self.wndMain:FindChild("PowerMapContainer"):FindChild("PowerMapRangeText"):SetTextColor(nRatioColor)
-
-	-- Progress Bar
-	wndPowerMapRangeFinder:FindChild("RangeFinderProgress"):Show(not bIsWaiting)
-	wndPowerMapRangeFinder:FindChild("RangeFinderProgress"):SetProgress(nRatio)
-	wndPowerMapRangeFinder:FindChild("RangeFinderProgress"):SetFullSprite(nRatioSprite)
-
-	-- Datachron Progress Bar
-	if not bI

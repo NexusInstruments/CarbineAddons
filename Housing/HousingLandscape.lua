@@ -2360,11 +2360,3 @@ function GetWarCoins()
 	end
 	return 0
 end
-l" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_TextHoloBodyHighlight" Template="Default" TooltipType="OnCursor" Name="Body" TooltipColor="" TextId="CRB_This_action_will_destroy_the_decorat" DT_RIGHT="0" DT_CENTER="1" DT_VCENTER="1" Sprite="BK3:UI_BK3_Holo_InsetSimple" Picture="1" IgnoreMouse="1"/>
-    </Form>
-    <Form Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="-20" BAnchorPoint="0" BAnchorOffset="32" RelativeToClient="0" Font="Default" Text="" Template="Default" Name="CategoryListItem" Border="0" Picture="0" SwallowMouseClicks="1" Moveable="0" Escapable="0" Overlapped="0" BGColor="ffffffff" TextColor="ffffffff" TextId="" HScroll="0" UseTemplateBG="0" TooltipColor="" Tooltip="" Visible="1">
-        <Control Class="Button" Base="bk3:btnMetal_ExpandMenu_NoNav" Font="CRB_InterfaceSmall" ButtonType="PushButton" RadioGroup="" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="0" DT_VCENTER="1" DT_CENTER="1" Name="CategoryBtn" BGColor="ffffffff" TextColor="ffffffff" NormalTextColor="UI_BtnTextGoldListNormal" PressedTextColor="UI_BtnTextGoldListPressed" FlybyTextColor="UI_BtnTextGoldListFlyby" PressedFlybyTextColor="UI_BtnTextGoldListPressedFlyby" DisabledTextColor="UI_BtnTextGoldListDisabled" Text="" TextId="HousingLandscape_CategoryBtn" NotRelative="0" TooltipColor="" AutoScaleText="1">
-            <Event Name="ButtonSignal" Function="OnSortByItemSelected"/>
-        </Control>
-    </Form>
-    <Form Class="Window" LAnchorPoint=".5" LAnchorOffset="-171" TAnchorPoint=".5" TAnchorOffset="-198" RAnchorPoint=".5" RAnchorOffset="157" BAnchorPoint=".5" BAnchorOffset="80" RelativeToClient="0" Font="Default" Text="" Template="Default" Name="DecorIcon" Border="0" Picture="0" SwallowMouseClicks="1" Moveable="0" Escapable="0" Overlapped="1" BGColor="ffffffff" TextColor="ff

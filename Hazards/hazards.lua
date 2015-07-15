@@ -213,11 +213,4 @@ end
 
 
 local HazardInst = Hazards:new()
-HazardInst:Init()lertPopout"):Show(bToggle, not bToggle)
-		self.wndMain:FindChild("AlertItemKeybind"):SetSprite(bToggle and "sprAlert_Square_Blue" or "sprAlert_Square_Black")
-	end
-end
-
-local HUDInteractInst = HUDInteract:new()
-HUDInteractInst:Init()
-ö”
+HazardInst:Init()

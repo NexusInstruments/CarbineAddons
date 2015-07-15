@@ -176,15 +176,3 @@
         <Pixie LAnchorPoint="0" LAnchorOffset="15" TAnchorPoint="0" TAnchorOffset="-5" RAnchorPoint="1" RAnchorOffset="-5" BAnchorPoint="0" BAnchorOffset="5" BGColor="ffffffff" Font="Default" TextColor="ffffffff" Text="" Sprite="CRB_UIKitSprites:spr_progressbarSLIM" Line="0"/>
     </Form>
 </Forms>
-ings[eState] then
-		ChatSystemLib.PostOnChannel(ChatSystemLib.ChatChannel_System, String_GetWeaselString(ktChatNotificationStrings[eState], queUpdated:GetTitle()))
-	end
-end
-
-function QuestLog:OnQuestObjectiveUpdated(queUpdated)
-	local queCurrent = self.wndRightSide:GetData()
-	if queCurrent and queCurrent:GetId() == queUpdated:GetId() then
-		self:RedrawEverything()
-	end
-
-	if queCurrent and queCurrent:GetState() == Quest.QuestState_Achieved then -- F

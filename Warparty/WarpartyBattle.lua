@@ -318,11 +318,3 @@ end
 local WarpartyBattleInst = WarpartyBattle:new()
 WarpartyBattleInst:Init()
 
-tNormal" TooltipColor="" UseBaseButtonArt="1" Text="" TextId="VanityPets_SummonPet" Font="CRB_Button" NormalTextColor="UI_BtnTextHoloListNormal" Tooltip="" Visible="1" PressedTextColor="UI_BtnTextHoloListPressed" FlybyTextColor="UI_BtnTextHoloListFlyby" PressedFlybyTextColor="UI_BtnTextHoloListPressedFlyby" DisabledTextColor="UI_BtnTextHoloListDisabled" HideInEditor="1">
-                <Event Name="ButtonSignal" Function="OnSummonPet"/>
-            </Control>
-            <Control Class="Button" Base="CRB_Basekit:kitBtn_Metal_LargeRed" RelativeToClient="1" IfHoldNoSignal="1" DT_VCENTER="1" DT_CENTER="1" NeverBringToFront="1" Picture="0" WindowSoundTemplate="ActionBarButton" LAnchorPoint="0.00000" LAnchorOffset="794" TAnchorPoint="1" TAnchorOffset="-59" RAnchorPoint="0.00000" RAnchorOffset="942" BAnchorPoint="1" BAnchorOffset="-8" IgnoreTooltipDelay="1" TooltipType="OnCursor" Name="DismissPetBtn" BGColor="ffffffff" TextColor="UI_BtnTextHoloListNormal" TooltipColor="" UseBaseButtonArt="1" Text="" TextId="ScientistMission_Dismiss" Font="CRB_Button" NormalTextColor="UI_BtnTextRedNormal" Tooltip="" Visible="1" PressedTextColor="UI_BtnTextRedPressed" FlybyTextColor="UI_BtnTextRedFlyby" PressedFlybyTextColor="UI_BtnTextRedPressedFlyby" DisabledTextColor="UI_BtnTextRedDisabled">
-                <Event Name="ButtonSignal" Function="OnSummonPet"/>
-            </Control>
-        </Control>
-        <Control Class="Window" LAnchorPoint="0" LAnchorOffset="254" TAnchorPoint="0" TAnchorOffset="-9" RAnchorPoint="0" RAnchorOffset="2

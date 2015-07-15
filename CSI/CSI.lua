@@ -134,7 +134,6 @@ function CSI:OnDocumentReady()
 	end
 
 	-- Persistance through reloadui
-	local tActiveCSI = CSIsLib.GetActiveCSI()
 	if CSIsLib.IsCSIRunning() then
 		self:OnProgressClickWindowDisplay(true)
 	end
@@ -675,9 +674,13 @@ function CSI:OnButtonDown()
 
 	if not CSIsLib.IsCSIRunning() and (tCSI.eType == CSIsLib.ClientSideInteractionType_Metronome or tCSI.eType == CSIsLib.ClientSideInteractionType_PrecisionTapping) then
 		CSIsLib.StartActiveCSI()
-		self.wndProgress:FindChild("MetronomeProgress"):SetText(String_GetWeaselString(Apollo.GetString("CSI_MetronomeCount"), self.nMetronomeHits, self.nProgressSwingCount))
-		self.wndProgress:FindChild("ClickTimeFrame"):FindChild("PreviewProgressButtonWindow"):Show(false)
-		self.wndProgress:FindChild("ClickTimeFrame2"):FindChild("PreviewProgressButtonWindow"):Show(false)
+		
+		if self.wndProgress and self.wndProgress:IsValid() then
+			self.wndProgress:FindChild("MetronomeProgress"):SetText(String_GetWeaselString(Apollo.GetString("CSI_MetronomeCount"), self.nMetronomeHits, self.nProgressSwingCount))
+			self.wndProgress:FindChild("ClickTimeFrame"):FindChild("PreviewProgressButtonWindow"):Show(false)
+			self.wndProgress:FindChild("ClickTimeFrame2"):FindChild("PreviewProgressButtonWindow"):Show(false)
+		end
+		
 		self:OnCalculateTimeRemaining()
     end
 
@@ -915,4 +918,3 @@ end
 
 local CSIInst = CSI:new()
 CSIInst:Init()
-    ÿÿÿÿªªªªûû      ÿÿÿÿªªªªûû      ÿÿÿÿªªªªûû      ÿÿÿÿªªªª

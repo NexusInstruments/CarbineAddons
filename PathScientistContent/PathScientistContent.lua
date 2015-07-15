@@ -946,9 +946,3 @@ end
 
 local PathScientistContentInst = PathScientistContent:new()
 PathScientistContentInst:Init()
-t="-20" RelativeToClient="1" Font="CRB_InterfaceMedium" Text="" Template="Default" Name="DeclineNotice" Border="0" Picture="1" SwallowMouseClicks="1" Moveable="1" Escapable="1" Overlapped="1" BGColor="ffffffff" TextColor="ffffffff" NoClip="1" DoNotBlockTooltip="1" TooltipColor="" Sprite="BK3:sprHolo_Alert_Confirm" Visible="0" Tooltip="">
-        <Control Class="Window" LAnchorPoint="0" LAnchorOffset="60" TAnchorPoint="0" TAnchorOffset="30" RAnchorPoint="1" RAnchorOffset="-60" BAnchorPoint="0" BAnchorOffset="106" RelativeToClient="1" Font="CRB_InterfaceMedium" Template="Default" Name="DeclineText" BGColor="ffffffff" TextColor="xkcdReddish" DT_VCENTER="1" DT_CENTER="1" DT_WORDBREAK="1" NewControlDepth="2" TextId="CRB_Player_has_declined" TooltipColor="" Sprite="BK3:UI_BK3_Holo_InsetSimple" Border="0" IgnoreMouse="1" Picture="1"/>
-        <Control Class="Button" Base="BK3:btnHolo_Close" Font="CRB_InterfaceMedium" ButtonType="PushButton" RadioGroup="" LAnchorPoint="1" LAnchorOffset="-61" TAnchorPoint="0" TAnchorOffset="19" RAnchorPoint="1" RAnchorOffset="-19" BAnchorPoint="0" BAnchorOffset="64" DT_VCENTER="1" DT_CENTER="1" Name="CloseBtn" BGColor="ffffffff" TextColor="ffffffff" NewControlDepth="3" NoClip="1" WindowSoundTemplate="CloseWindowPhys" TooltipColor="" NormalTextColor="ffffffff" PressedTextColor="ffffffff" FlybyTextColor="ffffffff" PressedFlybyTextColor="ffffffff" DisabledTextColor="ffffffff">
-            <Event Name="ButtonSignal" Function="OnDeclineAcknowledgeBtn"/>
-        </Control>
-        <Control Class="Button" Base="BK3:btnHolo_Blue_Med" Font="CRB_Button" ButtonType="PushButton" RadioGroup="" LAnchorPoint=".5" LAnchor

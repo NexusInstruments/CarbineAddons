@@ -207,21 +207,3 @@ end
 
 local ProgressLogInst = ProgressLog:new()
 ProgressLogInst:Init()
-oints = {1, 1, 1, 1}, nOffsets = { 0, 0, 0, 0 }})
-		self.wndMain:TransitionMove(tLoc, 0.33)
-		self.wndMain:Show(false, false, 0.2) -- 0.5
-	end
-end
-
-function PopupText:OnPopupText_DestroyAnimationStepThree_QuestLog()
-	if self.wndMain and self.wndMain:IsValid() then
-		local tLoc = WindowLocation.new({ fPoints = {1, 0.75, 1, 0.75}, nOffsets = { 0, 0, 0, 0 }})
-		self.wndMain:TransitionMove(tLoc, 0.33)
-		self.wndMain:Show(false, false, 0.2) -- 0.5
-	end
-end
-
-local PopupTextInst = PopupText:new()
-PopupTextInst:Init()
-BÆà@é.Ûn³Æ˜¡Û±Ø„Ï¯<àxÈDc
-i²MÍC‚'³­	YóˆoàÉÌ<;§kL¹§ÛàµpÔöIÏ«%¢3Dà¼«B^‹ãS£;]FgDp®“ÊP‡3Aa•È!È°×/„Éãœ+ëâ”·õø¼z Ó!‡UžC­ü—+­ò$ÎÆr«¯_^ð€O!¿<ïñÈèãs«Œùî¬õèÛ$Ãt/.ÌZ_dÁùÙòj1ŽÐ[^lí}Ì*+PÙÔkštò·7›,EÅ|½<’‡×¯<òp^ïËGLQ ­òæ@”‘.ç#æPÇ¯‡ÏOug€&g\­N«•Âòõ2ç—H+ø¯Ëóy †ÝcÙr/Æ†Œz 1?¬‹r/òùš`¼Õ9Of<QwHž'û8å»€ðñ½'”VÊse‰Ú[äé2ö#µÈQØß/Z£¶‹êÉ!É‹y‡ †ŸWìe:AšPîÀq0ÞKþÅÔòÞÆð#¥KZúÂÞ.¨AÏö@þWT$—¸ÁÉ:Î?ó¸Óå?œñý°_ }‘+ÞŠýH‚ŒÇ5òñ¬‚óAiÅ+Íj>HUúÕç§á|ƒ¢>CÏ_ãÃqþKù)ühÀ˜’~¼žö—ùb†È£½p‘7Búõ2ÄEIªõt,˜!êé˜AmçLx2d˜'âñ[€ã©™VG1.ÐòË¿Fv#_çGôaˆ„!fÕ|¨úR§zRGÔåØ?¨1øùD$Ÿi€ÿ4ªùaPõ£š?B(¿'G2AìP•,¬Q,GÏ©$ºá=Bº¡.Çñ7èAX-ª2$

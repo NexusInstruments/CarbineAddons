@@ -207,41 +207,3 @@ end
 
 local TradeskillContainerInst = TradeskillContainer:new()
 TradeskillContainerInst:Init()
-.wndMain:FindChild("HobbyMessage"):Show(true)
-end
-
-function TradeskillTrainer:OnLearnTradeskillBtn(wndHandler, wndControl)
-	if not wndHandler or not wndHandler:GetData() then
-		return
-	end
-
-	local nCurrentTradeskill = self.wndMain:FindChild("LearnTradeskillBtn"):GetData()
-	local tCurrTradeskillInfo = CraftingLib.GetTradeskillInfo(nCurrentTradeskill)
-		if not tCurrTradeskillInfo.bIsHarvesting then
-			Event_FireGenericEvent("TradeskillLearnedFromTHOR")
-		else
-	end
-	CraftingLib.LearnTradeskill(nCurrentTradeskill)
-	self:OnClose()
-end
-
-function TradeskillTrainer:OnSwapTradeskillBtn(wndHandler, wndControl) --SwapTradeskillBtn1 or SwapTradeskillBtn2, data is nTradeskillId
-	if not wndHandler or not wndHandler:GetData() then
-		return
-	end
-
-	local nCurrentTradeskill = self.wndMain:FindChild("LearnTradeskillBtn"):GetData()
-	local tCurrTradeskillInfo = CraftingLib.GetTradeskillInfo(nCurrentTradeskill)
-		if not tCurrTradeskillInfo.bIsHarvesting then
-			Event_FireGenericEvent("TradeskillLearnedFromTHOR")
-		else
-	end
-
-	CraftingLib.LearnTradeskill(nCurrentTradeskill, wndHandler:GetData())
-	self:OnClose()
-end
-
-local TradeskillTrainerInst = TradeskillTrainer:new()
-TradeskillTrainerInst:Init()
-ªªª Œ_ó± Ð¾ãXpK    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªªfE*   	fyM­Ç!F=­=¶)*FXsCÏf¿ªº(f%Ÿÿý(F%Ÿêß¨F%Ÿ»ß(F%Ÿ¿Ý(F%?ªŸ(f%ŸÿÝ®fŸ¯»()*F%ÍÁó§!FúhZž	féqZTfE8   o+.# ÿ÷Uo+Y%ð@ÀÕ4+½õ÷ÔQD+Xpb¢5¬"UUUøo+k"ÿUÿ o+k"ÿUÿ o+k"ÿUÿ o+k"ÿUÿ o+k"ÿUÿ o+k"ÿUÿ õ4¬"UUÕ/QD+%	ªõ4+~_ßO+9%$o+.# îÿ_    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª    ªªªª  Óò± ÖŠ,û:ïŽÈß‡Ùx_‘—GŸñ}?ÆÇ y˜±ïú?ö±“÷íÏþÄ¿7FzŽGaMæ»È¾SþþÞÌU¾ïñ±öo.ó×»YþþcqfÞ_´?o'½égo}fh0ãú®âøYˆ»¥Ÿÿ-ÀÛ?aÆõÁ¼s˜±ïú¿,ýŒó3®ßpá*Žq>Ü-ý¼À÷½ZÌU¾ïÕbÆõ.ì‹‡s¤ïûwK?ãþ	3n˜w3ÆýÓÔÏÜÎüç;Å½éçÎÀ 2 ÿd½ØÞÞŽG@lv|h›€ÖŒüa‡ï/ÚŸ_‡~ö~¯Ú¨0>ãpeôýÇGàß`égéo:9
-Kœ}˜qg`zq8ü»[ú÷O˜•3SîÞí}g°ô3Î…%Î>ÌçÃÝÒÏ”ß§Rô3®Ï°å P>`Þ5"¹Øš|÷ô3îŸ0ãúWÆýÓ}þ|oèçvU?KÒoüUý<4xðõ³FÕÏ_Uõó r÷ï[?kTýLñÕ»¬Ÿ/ªú™eßzb˜=ª~TÆýÓÔÏUý|±ªŸ‡«úyh±ªŸ—Uý<´XÕÏƒÌª~Rü5èg´þó-ðN±ªŸUý|/²ªŸ‡«úypYÕÏC‹Uý<È¬êç!Å_ƒ~~  HÕÏ÷«úyH±ªŸ‡«úypYÕÏC‹Uý<È¬êç!Åw^?§”™‡¾~Nöêgi´ôWd-³âõ(†__>çeàÓÏØ]w[?ÿs÷ûÞúWöêçï~o°ôóõRDÆ=˜qý†ïfÙû¾ÔŒÈ»¬Ÿ—(úÑW¿áÊ]³Ñ× '–~Æù€×oØðn–q>Ü-ý|Ù«ŸWcî~K®¤°¯¾Ã…¯ÿJööã˜ÿ ëç?Ýmý¼DÑ¾úWÆýÓÕÏCxý:•o¿.ý¬ò­ñ×¥ŸU¾5V×Z|§ô³Ê·ÆêúÏC‹ÕõŸ›û­Ÿæ£uˆègfø•oƒaø¾Eý,ÐL—¯òÀùvâáÕÏ Ð,*ß“Ñ¦¿ú™*á$Š¯ÊwŠoM?“ãÓå©<pž5ëÖãô›_*ß.õÜ_ýLJ@LÇWå3®ýæzp(ÌVYe•UVYe•UVYå{ÑúÏ€Z¿îÿÙ¦uò•  •Gò± Š,X˜iÎ¾ÆàöÛ²TÞÖ×D¹ûKÚmd)ØÐBTïÓ{"NZžœÛnfÈ‘ÁÇRÈ¶žä#³R–dâý‘#´ê$38™M±E˜³ökÒãf[ÍæƒjñgÍŽÙd:¢¯X4ÀˆvÚª­ÓæjV%'TÂJšå‹·Ÿ³K¸íMé}~×¬kì¹Vz™•¼ÏÙ9{ÎÉÐN½ÞóéÜUì2ÓBÖß#I7]ÝÙÂß•CŸû%º‡«à®XLúŠg¶¿“îPosŽ–|öš ‘—š¹é‹ˆK‡OfH9íÌâ%Cñ'”qÚ	>>eï-íPçêi‰)uC¼8÷"%Æµs»	‹sÍÌYORöÈkcü:‚nÓJïvb¦ÿž„Mü~s"Ðññv)ýîô‹Iž×ÖÃÓ@á£Ó{•:7Y’P°"‹žä+Íðmiž¯Ùá¸ÆlÖŒKÞ5;×ØH´žùæ«M*‚¿lÐ¯Øá]›[¼Ts§Wf¬ç¹ÉÚÑôÜ€jÈ­søÿóóÿùùër»7¤m¯*š¹]Jßr©©fR²Û¹/Ý4Ò$

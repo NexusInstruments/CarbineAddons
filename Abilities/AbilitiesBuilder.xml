@@ -215,50 +215,3 @@
         <Event Name="GenerateTooltip" Function="OnSpellbookProgPieceTooltip"/>
     </Form>
 </Forms>
-se
-		self:P       Pƒ∏@ƒ∏  U
-end
-
-fun       »ƒ∏∏ƒ∏  UrocessAlerts       @≈∏0≈∏  Us()
-
-	if s       ∏≈∏®≈∏  Upty() then
-       0∆∏ ∆∏  UroupContents       ®∆∏ò∆∏  UpHUD()
-		re        «∏«∏  U tMessage =        ò«∏à«∏  Uop()
-	self:       »∏ »∏  Ue.nIcon, tMe       à»∏x»∏  U
-
-function         …∏»∏  UAlert(nMessa       x…∏h…∏  Uxt)
-	if str       …∏‡…∏  Uhen
-		self:       h ∏X ∏  Ueturn
-	end       ‡ ∏– ∏  Usage:FindChi       XÀ∏HÀ∏  Uing[nMessage       –À∏¿À∏  Uself.wndGrou       HÃ∏8Ã∏  UMessageText"       ¿Ã∏∞Ã∏  UText)
-
-	if       8Õ∏(Õ∏  Up() then --        ∞Õ∏†Õ∏  Uuped
-		self       (Œ∏Œ∏  Uld("GroupCon       †Œ∏êŒ∏  Ue)
-		--self       œ∏œ∏  Uld("GroupBag       êœ∏Äœ∏  U TODO TEMP D       –∏¯œ∏  UroupHud:Show       Ä–∏p–∏  Uf.wndGroupMe       ¯–∏Ë–∏  Uf:HelperResi       p—∏`—∏  U
-	self.wndGr       Ë—∏ÿ—∏  U("MessageBir       `“∏P“∏  Ut()
-	self.w       ÿ“∏»“∏  Uhild("Messag       P”∏@”∏  UtSprite("spr       »”∏∏”∏  Ump")
-
-	Apo       @‘∏0‘∏  UupMessageTim       ∏‘∏®‘∏  Uon, false)
-       0’∏ ’∏  U------------       ®’∏ò’∏  U------------        ÷∏÷∏  U------------       ò÷∏à÷∏  U GroupDispla       ◊∏ ◊∏  Ur()
-	self.w       à◊∏x◊∏  Uhild("Messag        ÿ∏◊∏  UFront()
-	se       xÿ∏hÿ∏  UindChild("Me       ÿ∏‡ÿ∏  U):SetSprite(       hŸ∏XŸ∏  UllTemp")
-
-       ‡Ÿ∏–Ÿ∏  Ue:Show(false       X⁄∏H⁄∏  UeGroupConten       –⁄∏¿⁄∏  UTimer("Group       H€∏8€∏  UkfDelayDurat       ¿€∏∞€∏  Us back to pr       8‹∏(‹∏  U
------------       ∞‹∏†‹∏  U------------       (›∏›∏  U------------       †›∏ê›∏  U----
-functi       ﬁ∏ﬁ∏  UrFields() --       êﬁ∏Äﬁ∏  Uor idx =1, #       ﬂ∏¯ﬁ∏  U do
-		self.       Äﬂ∏pﬂ∏  UChild(karMes       ¯ﬂ∏Ëﬂ∏  U:Show(false)       p‡∏`‡∏  UupMessage:Fi       Ë‡∏ÿ‡∏  U"):SetText("       `·∏P·∏  Vssage:FindCh       ÿ·∏»·∏  Vmation"):Set       P‚∏@‚∏  Vunction Grou       »‚∏∏‚∏  VgInstance()       @„∏0„∏  VInstance()
-       ∏„∏®„∏  Á------------       0‰∏ ‰∏  Á------------       ®‰∏ò‰∏  Á------------        Â∏Â∏  ÁR
----------       òÂ∏àÂ∏  Á------------       Ê∏ Ê∏  Á------------       àÊ∏xÊ∏  V------
-
-fu        Á∏Ê∏  ÁHelperResize       xÁ∏hÁ∏  Ácal nOnGoing       Á∏‡Á∏  Á, wndCurr in       hË∏XË∏  ÁPortraitCont       ‡Ë∏–Ë∏  Á do
-		if wn       XÈ∏HÈ∏  Á
-			local n       –È∏¿È∏  ÁnBottom = wn       HÍ∏8Í∏  Áts()
-			nOn       ¿Í∏∞Í∏  ÁngHeight + (       8Î∏(Î∏  Ánd
-	end
-	s       ∞Î∏†Î∏  ÁContainer:Ar       (Ï∏Ï∏  V
-	self.wndGr       †Ï∏êÏ∏  V:SetAnchorOf       Ì∏Ì∏  VingHeight)
-       êÌ∏ÄÌ∏  Vessage:IsSho       Ó∏¯Ì∏  VLeft, nTop,        ÄÓ∏pÓ∏  Álf.wndGroupM       ¯Ó∏ËÓ∏  Vets()
-		nOn       pÔ∏`Ô∏  VngHeight + (       ËÔ∏ÿÔ∏  Vd
-
-	if sel       `∏P∏  Vown() then
-       ÿ∏»∏  V nRight, nBo       PÒ∏@Ò∏  VGroup:GetAnc       »Ò∏∏Ò∏  VoingHeight =       @Ú∏0Ú∏  VBottom - nTo       ∏Ú∏®Ú∏  VdGroupHud:Fi       0Û∏ Û∏  VeVert"):Arra       ®Û∏òÛ∏  Á
-	local nLe        Ù∏Ù∏  Áottom = self       

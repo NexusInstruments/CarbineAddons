@@ -270,23 +270,3 @@ end
 
 local LootStackInst = LootStack:new()
 LootStackInst:Init()
-VCENTER="0" DT_WORDBREAK="1" TooltipColor=""/>
-            <Event Name="ButtonCheck" Function="OnLootListItemCheck"/>
-            <Event Name="GenerateTooltip" Function="OnLootListItemGenerateTooltip"/>
-            <Control Class="Window" LAnchorPoint="0" LAnchorOffset="63" TAnchorPoint=".6" TAnchorOffset="-2" RAnchorPoint="1" RAnchorOffset="-5" BAnchorPoint="1" BAnchorOffset="-1" RelativeToClient="1" Font="CRB_InterfaceSmall" Text="" Name="Type" TextId="" BGColor="ffffffff" TextColor="UI_TextHoloBody" DT_VCENTER="1" DT_WORDBREAK="1" TooltipColor=""/>
-            <Event Name="MouseEnter" Function="OnLootBtnMouseEnter"/>
-            <Event Name="MouseExit" Function="OnLootBtnMouseExit"/>
-        </Control>
-        <Control Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="0" RelativeToClient="1" Font="CRB_HeaderMedium" Text="" BGColor="UI_AlphaPercent60" TextColor="UI_TextHoloBodyHighlight" Template="Default" TooltipType="OnCursor" Name="Blocker" TooltipColor="" Visible="0" Picture="1" Sprite="BasicSprites:BlackFill" NewControlDepth="5" IgnoreMouse="0" DoNotBlockTooltip="1" TextId="CRB_Test_Set_name" DT_CENTER="1" DT_VCENTER="1" HideInEditor="0" DT_WORDBREAK="1"/>
-    </Form>
-</Forms>
-" BGColor="white" TextColor="white" NormalTextColor="white" PressedTextColor="white" FlybyTextColor="white" PressedFlybyTextColor="white" DisabledTextColor="white" RelativeToClient="1" IgnoreTooltipDelay="1" Text="" Tooltip="" TooltipId="" TooltipType="OnCursor" TooltipColor="">
-            <Event Name="ButtonSignal" Function="OnLiveObjectiveHintBtn"/>
-        </Control>
-        <Control Class="MLWindow" LAnchorPoint="0" LAnchorOffset="10" TAnchorPoint="0" TAnchorOffset="5" RAnchorPoint="1" RAnchorOffset="-10" BAnchorPoint="1" BAnchorOffset="-5" RelativeToClient="1" Font="Subtitle" Text="" Template="Default" TooltipType="OnCursor" Name="LiveObjectiveText" BGColor="ffffffff" TextColor="ffffffff" TooltipColor="" TextId="" DT_CENTER="0" DT_VCENTER="1" IgnoreMouse="1" Tooltip="" NewControlDepth="1"/>
-    </Form>
-</Forms>
-Uýž   ¶äã¨   ªUUý¦  H¶$Â    êUUüŽ ´±mý'‚˜  àWUUÔF$mc[?   TUUU­
-€¨Ñ¬ï'    ªªªªM Ó'O’$    ªªªª H’$I’$    ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª ‰‘ÄI’$    ªªªªŠ¦pwÉä    ªªªªó"Prw™ÜAx  -UUUûp 0	n™ßÂ    ½UUýž   ¶äã¨   ªUUý¦  H¶$Â    êUUüŽ ´±mý'‚˜  àWUUÔF$mc[?   TUUU­
-€¨Ñ¬ï'    ªªªªM Ó'O’$    ªªªª H’$I’$    ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª ‰‘ÄI’$    ªªªªŠ¦pwÉä    ªªªªó"Prw™ÜAx  -UUUûp 0	n™ßÂ    ½UUýž   ¶äã¨   ªUUý¦  H¶$Â    êUUüŽ ´±mý'‚˜  àWUUÔF$mc[?   TUUU­
-€¨Ñ¬ï'    ªªªªM Ó'O’$    ªªªª H’$I’$    ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª I$I’$    ªªªª%ïÜI’$    ªªªª^œp»Iž$    ªªªªwÐ¶ÿŸ$    ªªªªy Ð¶ÿŸ$    ªªªªo€ÖÖÿ“$    ªªªªB[?I’$    ªªªª àó$I’$    ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª I$I’$    ªªªª%ïÜI’$    ªªªª^œp»Iž$    ªªªªwÐ¶ÿŸ$    ªªªªy Ð¶ÿŸ$    ªªªªo€ÖÖÿ“$    ªªªªB[?I’$    ªªªª àó$I’$    ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª            ªªªª I$I’$    ªªªª%ïÜI’$    ªªªª^œp»Iž$    ªªªªwÐ¶ÿŸ$    ªªªªy Ð¶ÿŸ$    ªªªªo€ÖÖÿ“$    ªªªªB[?I’$    ªªªª àó$I’$    ªªªª            ªªªª            ªªªª

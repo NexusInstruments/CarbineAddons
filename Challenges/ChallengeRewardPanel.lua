@@ -520,13 +520,3 @@ end
 -----------------------------------------------------------------------------------------------
 local ChallengeRewardPanelInst = ChallengeRewardPanel:new()
 ChallengeRewardPanelInst:Init()
-loBody" TooltipColor="" DT_VCENTER="1" TextId="" IgnoreMouse="1" Tooltip=""/>
-        <Control Class="Button" Base="bk3:btnMetal_ExpandMenu_NoNav" Font="CRB_Button" ButtonType="PushButton" RadioGroup="" LAnchorPoint="0" LAnchorOffset="5" TAnchorPoint="1" TAnchorOffset="-36" RAnchorPoint="1" RAnchorOffset="-4" BAnchorPoint="1" BAnchorOffset="-5" DT_VCENTER="1" DT_CENTER="1" TooltipType="OnCursor" Name="PopoutBuildBtn" BGColor="white" TextColor="white" TooltipColor="" NormalTextColor="UI_BtnTextGoldListNormal" PressedTextColor="UI_BtnTextGoldListPressed" FlybyTextColor="UI_BtnTextGoldListFlyby" PressedFlybyTextColor="UI_BtnTextGoldListPressedFlyby" DisabledTextColor="UI_BtnTextGoldListDisabled" Text="" TextId="BuildMap_BuildBtn" RelativeToClient="1" WindowSoundTemplate="HoloButtonSmall" ButtonTextXMargin="15" NewControlDepth="1">
-            <Event Name="ButtonSignal" Function="OnPopoutBuildBtn"/>
-        </Control>
-        <Event Name="WindowClosed" Function="HideMapHover"/>
-    </Form>
-    <Form Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="0" RAnchorOffset="50" BAnchorPoint="0" BAnchorOffset="50" RelativeToClient="1" Font="Default" Text="" Template="Default" TooltipType="OnCursor" Name="ItemReward" Border="0" Picture="1" SwallowMouseClicks="1" Moveable="0" Escapable="0" Overlapped="0" BGColor="white" TextColor="white" TooltipColor="" IgnoreMouse="1" IgnoreTooltipDelay="1" Sprite="" Tooltip="">
-        <Control Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="0" RelativeToClient="1" Font="CRB_Header9_O" Text="" Template="Default" TooltipType="OnCursor" Name="ItemRewardFrame" BGColor="white" TextColor="white" TooltipColor="" Sprite="BK3:UI_BK3_Holo_InsetSimple" Picture="1" IgnoreMouse="1" NewControlDepth="1" DT_RIGHT="1" DT_BOTTOM="0" DT_CENTER="0" ButtonTextXMargin="10"/>
-        <Control Class="Window" LAnchorPoint="0" LAnchorOffset="4" TAnchorPoint="0" TAnchorOffset="4" RAnchorPoint="1" RAnchorOffset="-4" BAnchorPoint="1" BAnchorOffset="-4" RelativeToClient="1" Font="CRB_InterfaceSmall" Text="" Template="Default" TooltipType="OnCursor" Name="ItemRewardSprite" BGColor="white" TextColor="white" TooltipColor="" Picture="1" IgnoreMouse="1" Sprite="kitBase_HoloTeal_NoBorder" DT_RIGHT="0" DT_BOTTOM="1" TextId="" TooltipFont="CRB_InterfaceSmall_O" DT_CENTER="1"/>
-        <Control Class="Window" LAnchorPoint

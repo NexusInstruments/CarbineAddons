@@ -467,17 +467,3 @@ end
 
 local PathScientistCustomizeInst = PathScientistCustomize:new()
 PathScientistCustomizeInst:Init()
-lf.wndQuestItemNotice:Show(GameLib.DoAnyItemsBeginQuest())
-end
-
-function XPBar:OnToggleFromDatachronIcon()
-	Event_FireGenericEvent("InterfaceMenu_ToggleInventory")
-end
-
----------------------------------------------------------------------------------------------------
--- Tutorial anchor request
----------------------------------------------------------------------------------------------------
-function XPBar:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
-	if eAnchor ~= GameLib.CodeEnumTutorialAnchor.Inventory then return end
-
-	local tRect =

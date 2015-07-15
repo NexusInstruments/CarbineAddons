@@ -655,32 +655,3 @@ end
 
 local DatachronInst = Datachron:new()
 DatachronInst:Init()
-olor="UI_BtnTextRedNormal" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="-1" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="-1" Font="CRB_Button" IgnoreTooltipDelay="1" TooltipColor="" NewControlDepth="6" HideInEditor="0" RechargeBarLAnchorPoint="0" RechargeBarLAnchorOffset="10" RechargeBarTAnchorPoint="0" RechargeBarTAnchorOffset="10" RechargeBarRAnchorPoint="1" RechargeBarRAnchorOffset="-10" RechargeBarBAnchorPoint="1" RechargeBarBAnchorOffset="-10" RechargeBarEmptyColorAttribute="Black" RechargeBarFullColorAttribute="ffffffff" RechargeBarEmptyAttribute="WhiteFill" RechargeBarFullAttribute="spr_HUD_VerticalGoo_Pulse" Text="" UseBaseButtonArt="1" NewWindowDepth="1" TextId="" Tooltip="">
-                    <Event Name="GenerateTooltip" Function="OnGenerateTooltip"/>
-                    <Control Class="Window" LAnchorPoint="1" LAnchorOffset="-87" TAnchorPoint="1" TAnchorOffset="-53" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="0" RelativeToClient="1" Font="CRB_Button" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_BtnTextRedNormal" Template="Default" TooltipType="OnCursor" Name="Text" TooltipColor="" TextId="Housting_ImStuck" DT_VCENTER="1" DT_CENTER="1" Tooltip=""/>
-                </Control>
-            </Control>
-        </Control>
-    </Form>
-</Forms>
--if eGuildType == GuildLib.GuildType_Guild then
-		strGuildType = Apollo.GetString("Guild_GuildTypeGuild")
-	end
-
-	local bIntercepted = self:IsIntercepted( guildSender, eResult )
-
-	local strResidence = Apollo.GetString("Guild_ResidenceNameDefault")
-	if eGuildType == GuildLib.GuildType_WarParty then
-		strResidence = Apollo.GetString("CRB_Warplot")
-	end
-
-	local strRank = ""
-	
-	local strGuildMaster = nil
-	if guildSender then
-		strGuildMaster = guildSender:GetRanks()[1].strName
-		
-		if nRank and nRank ~= 0 then
-			strRank = guildSender:GetRanks()[nRank].strName
-			if not strRank or not string.len(strRank) then
-				strRank = '#' .. tos

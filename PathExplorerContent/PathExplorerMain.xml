@@ -102,4 +102,3 @@
         <Event Name="WindowClosed" Function="CloseContextMenu"/>
     </Form>
 </Forms>
-efault" TooltipType="OnCursor" Name="Label" BGColor="white" TextColor="UI_TextHoloTitle" TooltipColo

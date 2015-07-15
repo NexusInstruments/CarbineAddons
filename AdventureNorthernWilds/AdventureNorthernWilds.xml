@@ -36,26 +36,4 @@
     </Form>
 </Forms>
 
-<!-- War of the Wilds -->PitStops" BGColor="white" TextColor="black" Rotation="0" Font="Default"/>
-        <Pixie LAnchorPoint="0" LAnchorOffset="218" TAnchorPoint="0" TAnchorOffset="51" RAnchorPoint="0" RAnchorOffset="236" BAnchorPoint="0" BAnchorOffset="103" Sprite="BK3:UI_BK3_Holo_Adventure_PitStops" BGColor="white" TextColor="black" Rotation="0" Font="Default"/>
-        <Pixie LAnchorPoint="0" LAnchorOffset="138" TAnchorPoint="0" TAnchorOffset="51" RAnchorPoint="0" RAnchorOffset="156" BAnchorPoint="0" BAnchorOffset="103" Sprite="BK3:UI_BK3_Holo_Adventure_PitStops" BGColor="white" TextColor="black" Rotation="0" Font="Default"/>
-        <Pixie LAnchorPoint="0" LAnchorOffset="65" TAnchorPoint="0" TAnchorOffset="51" RAnchorPoint="0" RAnchorOffset="67" BAnchorPoint="0" BAnchorOffset="103" Sprite="BK3:UI_BK3_Holo_Adventure_LineBreak" BGColor="white" TextColor="black" Rotation="0" Font="Default"/>
-    </Form>
-</Forms>
-== Tooltip.TooltipGenerateType_Macro then
-		xml = XmlDoc.new()
-		xml:AddLine(oArg1)
-		wndControl:SetTooltipDoc(xml)
-	elseif eType == Tooltip.TooltipGenerateType_Spell then
-		Tooltip.GetSpellTooltipForm(self, wndControl, oArg1)
-	elseif eType == Tooltip.TooltipGenerateType_PetCommand then
-		xml = XmlDoc.new()
-		xml:AddLine(oArg2)
-		wndControl:SetTooltipDoc(xml)
-	end
-end
-
------------------------------------------------------------
-local ActionBarShortcut_Singleton = ActionBarShortcut:new()
-ActionBarShortcut_Singleton:Init()
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+<!-- War of the Wilds -->

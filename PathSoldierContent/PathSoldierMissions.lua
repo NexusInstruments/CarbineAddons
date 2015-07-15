@@ -48,7 +48,7 @@ function PathSoldierMissions:OnLoadFromDatachron()
 	Apollo.RegisterEventHandler("LoadSoldierMission", "LoadFromList", self)
 
 	Apollo.RegisterEventHandler("PlayerPathSoldierNewWhackAMoleBurrows", 	"OnPlayerPathSoldierNewWhackAMoleBurrows", self)
-	Apollo.RegisterEventHandler("ChallengeUpdated",						"OnChallengeUpdated", self)
+	Apollo.RegisterEventHandler("ChallengeUpdated",							"OnChallengeUpdated", self)
 	Apollo.RegisterEventHandler("SoldierHoldoutStatus", 					"OnSoldierHoldoutStatusStart", self)
 	Apollo.RegisterEventHandler("SoldierHoldoutNextWave", 					"OnSoldierHoldoutNextWave", self)
 	Apollo.RegisterEventHandler("SoldierHoldoutDeath",						"OnSoldierHoldoutDeath", self)
@@ -86,7 +86,7 @@ end
 
 function PathSoldierMissions:OnChallengeUpdated(nChallengeId)
 	local bActiveChallenge = false
-	
+
 	local tChallenges = ChallengesLib.GetActiveChallengeList()
 	for _, clgCurrent in pairs(tChallenges) do
 		if clgCurrent:IsActivated() then
@@ -94,10 +94,10 @@ function PathSoldierMissions:OnChallengeUpdated(nChallengeId)
 			break
 		end
 	end
-	
+
 	local nOffset = bActiveChallenge and 0.5 or 1
 	local nLeft, nTop, nRight, nBottom = self.wndMain:GetAnchorPoints()
-	
+
 	self.wndMain:FindChild("Timed"):SetAnchorPoints(nLeft, nTop, nOffset, nBottom)
 	self.wndMain:FindChild("Defend"):SetAnchorPoints(nLeft, nTop, nOffset, nBottom)
 	self.wndMain:FindChild("Assault"):SetAnchorPoints(nLeft, nTop, nOffset, nBottom)
@@ -206,7 +206,7 @@ function PathSoldierMissions:DrawMissionDefense(seEvent)
 
 		if nCurrHealth and nMaxHealth then
 			local strLevelText = string.format("%s\n%s", tostring(unit:GetLevel()), tostring(unit:GetName()))
-			
+
 			wndEntry:FindChild("TargetLevel"):SetText(strLevelText)
 			wndEntry:FindChild("TargetModel"):SetData(unit)
 			wndEntry:FindChild("HealthTint"):SetMax(nMaxHealth)
@@ -240,10 +240,10 @@ function PathSoldierMissions:DrawMissionDefense(seEvent)
 		wndDefend:FindChild("TimerLabel"):SetText(Apollo.GetString("SoldierMission_NextWaveLabel"))
 		wndDefend:FindChild("TimerText"):SetText(self:HelperCalcTime(nElapsedTime))
 	end
-	
+
 	local wndWaves = wndDefend:FindChild("WavesElapsed")
 	wndWaves:DestroyChildren()
-	
+
 	if eType == PathMission.PathSoldierEventType_TimedDefend then
 		wndDefend:FindChild("WaveMeter"):Show(false)
 		wndDefend:FindChild("ProgressFrame"):Show(false)
@@ -251,15 +251,15 @@ function PathSoldierMissions:DrawMissionDefense(seEvent)
 		wndDefend:FindChild("TimerLabel"):SetText(Apollo.GetString("SoldierMission_DefendLabel"))
 	else
 		local nProgress = seEvent:GetState() == PathMission.PlayerPathSoldierEventMode_Active and seEvent:GetWavesReleased() or 0
-		
+
 		if seEvent:GetWaveCount() > 0 then
 			for nIdx=1,seEvent:GetWaveCount() do
 				local wndWave = Apollo.LoadForm(self.xmlDoc, "WaveEntry", wndWaves, self)
 				local strSprite = nProgress == nIdx and "Holdouts:spr_Holdouts_WaveGlow" or nProgress > nIdx and "Holdouts:spr_Holdouts_WaveFill" or "Holdouts:spr_Holdouts_WaveDot"
-				
+
 				wndWave:FindChild("Dot"):SetSprite(strSprite)
 			end
-			
+
 			wndWaves:ArrangeChildrenHorz(1)
 		end
 
@@ -287,21 +287,21 @@ function PathSoldierMissions:DrawMissionAssault(seEvent)
 	local eType = seEvent:GetType()
 	local nTotalWaves = seEvent:GetWaveCount()
 	local nCurrWave = seEvent:GetState() == PathMission.PlayerPathSoldierEventMode_Active and seEvent:GetWavesReleased() or 0
-	
+
 	local wndWaves = wndAssault:FindChild("WavesElapsed")
 	wndWaves:DestroyChildren()
-	
+
 	if nTotalWaves > 0 then
 		for nIdx=1,nTotalWaves do
 			local wndWave = Apollo.LoadForm(self.xmlDoc, "WaveEntry", wndWaves, self)
 			local strSprite = nCurrWave == nIdx and "Holdouts:spr_Holdouts_WaveGlow" or nCurrWave > nIdx and "Holdouts:spr_Holdouts_WaveFill" or "Holdouts:spr_Holdouts_WaveDot"
-			
+
 			wndWave:FindChild("Dot"):SetSprite(strSprite)
 		end
-		
+
 		wndWaves:ArrangeChildrenHorz(1)
 	end
-	
+
 	wndAssault:FindChild("WaveMeter"):SetMax(seEvent:GetMaxTime())
 	wndAssault:FindChild("WaveMeter"):SetProgress(nElapsedTime)
 	wndWaves:SetTooltip(String_GetWeaselString(Apollo.GetString("CRB_Waves_Released"), nCurrWave, nTotalWaves))
@@ -466,8 +466,10 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function PathSoldierMissions:DoAFlash()
-	Event_FireGenericEvent("Datachron_FlashIndicators")
-	self.wndMain:FindChild("WaveFlash"):SetSprite("WhiteFlash")
+	if Apollo.GetConsoleVariable("ui.soldierHoldoutDisplayWaveFlash") then
+		Event_FireGenericEvent("Datachron_FlashIndicators")
+		self.wndMain:FindChild("WaveFlash"):SetSprite("WhiteFlash")
+	end
 end
 
 function PathSoldierMissions:HelperCalcTime(nTime)
@@ -477,7 +479,3 @@ end
 
 local PathSoldierMissionsInst = PathSoldierMissions:new()
 PathSoldierMissionsInst:Init()
-or="" Picture="1" IgnoreMouse="1" Sprite="" NoClip="0" IgnoreTooltipDelay="1"/>
-        </Control>
-        <Control Class="Window" LAnchorPoint="0" LAnchorOffset="206" TAnchorPoint="0" TAnchorOffset="10" RAnchorPoint="0" RAnchorOffset="246" BAnchorPoint="1" BAnchorOffset="-12" RelativeToClient="1" Font="Default" Text="" Template="Default" TooltipType="OnCursor" Name="AttemptFrame4" BGColor="white" TextColor="white" TooltipColor="" Sprite="kitBtn_HoloNormal" Picture="1" IgnoreMouse="1" Visible="0">
-            <Control Class="Window" LAnchorPoint="0" LAnchorOffset="4" TAnchorPoint="0" TAnchorOffset="4" RAnchorPoint="1" 
