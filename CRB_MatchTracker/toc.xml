@@ -1,4 +1,0 @@
-<Addon Name="CRB_MatchTracker" APIVersion="2" Author="" Version="" Description="">
-    <Script Name="CRB_MatchTracker.lua"/>
-    <Form Name="CRB_MatchTracker.xml"/>
-</Addon>

@@ -1,6 +1,0 @@
-<Addon Name="CRB_ArenaTeam" APIVersion="2" Author="" Version="" Description="">
-    <Script Name="CRB_ArenaTeam.lua"/>
-    <Form Name="CRB_ArenaTeam.xml"/>
-    <Script Name="CRB_ArenaTeamRegister.lua"/>
-    <Form Name="CRB_ArenaTeamRegister.xml"/>
-</Addon>

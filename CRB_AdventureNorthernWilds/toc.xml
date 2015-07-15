@@ -1,4 +1,0 @@
-<Addon Name="CRB_AdventureNorthernWilds" Version="" Author="" APIVersion="" Description="">
-    <Script Name="CRB_AdventureNorthernWilds.lua"/>
-    <Form Name="CRB_AdventureNorthernWilds.xml"/>
-</Addon>

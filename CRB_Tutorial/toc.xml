@@ -1,6 +1,0 @@
-<Addon Name="CRB_Tutorial" Version="" Author="" APIVersion="" Description="">
-    <Script Name="CRB_TutorialMenu.lua"/>
-    <Form Name="CRB_TutorialMenu.xml"/>
-    <Script Name="CRB_TutorialPrompts.lua"/>
-    <Form Name="CRB_TutorialPrompts.xml"/>
-</Addon>

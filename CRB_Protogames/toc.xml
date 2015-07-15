@@ -1,4 +1,0 @@
-<Addon Name="CRB_Protogames" Version="" Author="" APIVersion="" Description="">
-    <Script Name="CRB_Protogames.lua"/>
-    <Form Name="CRB_Protogames.xml"/>
-</Addon>

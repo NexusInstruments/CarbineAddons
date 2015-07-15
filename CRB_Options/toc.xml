@@ -1,4 +1,0 @@
-<Addon Name="CRB_Options" Version="" OptionsScreen="1" Author="" APIVersion="" Description="">
-    <Script Name="CRB_Options.lua"/>
-    <Form Name="CRB_OptionsForms.xml"/>
-</Addon>

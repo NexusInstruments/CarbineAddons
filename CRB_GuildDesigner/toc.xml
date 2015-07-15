@@ -1,4 +1,0 @@
-<Addon Name="CRB_GuildDesigner" APIVersion="2" Author="" Version="" Description="">
-    <Script Name="CRB_GuildDesigner.lua"/>
-    <Form Name="CRB_GuildDesigner.xml"/>
-</Addon>

@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
-<Addon Author="jjustice" APIVersion="3" Name="CRB_LevelUpUnlocks" Description="Temp slash-command UI for testing Level Up Unlock system" Version="">
-    <Script Name="CRB_LevelUpUnlocks.lua"/>
-    <Form Name="CRB_LevelUpUnlocks.xml"/>
-</Addon>

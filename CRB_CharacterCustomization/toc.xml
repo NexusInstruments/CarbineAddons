@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Addon Author="Carbine" APIVersion="9" Name="CRB_CharacterCustomization" Description="Customize the appearance of your character in-game" Version="">
-    <Script Name="CRB_CharacterCustomization.lua"/>
-    <Form Name="CRB_CharacterCustomization.xml"/>
-</Addon>

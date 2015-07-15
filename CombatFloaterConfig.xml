@@ -1,0 +1,962 @@
+<?xml version="1.0" ?>
+<Forms>
+  <Form Name="CombatFloaterConfig" Class="Window" AntiImmersive="1"
+        LAnchorPoint="0.5" TAnchorPoint="0.5" RAnchorPoint="0.5" BAnchorPoint="0.5"
+        LAnchorOffset="-400" TAnchorOffset="-350" RAnchorOffset="400" BAnchorOffset="350"
+        Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+        Moveable="1" Visible="0"
+       >
+    <Control Name="CombatFloaterConfig_Tree" Class="TreeControl"
+             RelativeToClient="1"
+             LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="0" BAnchorPoint="1"
+             LAnchorOffset="0" TAnchorOffset="0" RAnchorOffset="200" BAnchorOffset="-20"
+             Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+            >
+      <Event Name="TreeSelectionChanged" Function="CombatFloaterConfig_OnTreeSelectionChange" />
+    </Control>
+    <Control Name="CombatFloaterConfig_Close" Class="Button"
+             RelativeToClient="1"
+             LAnchorPoint="1" TAnchorPoint="1" RAnchorPoint="1" BAnchorPoint="1"
+             LAnchorOffset="-50" TAnchorOffset="-20" RAnchorOffset="0" BAnchorOffset="0"
+             Base="DefaultBlankButton"
+             NEEDSLOCALIZATION="1" Text="Close"
+            >
+      <Event Name="ButtonSignal" Function="CombatFloaterConfig_Close_OnPress" />
+    </Control>
+    <Control Name="CombatFloaterConfig_Message" Class="Button" ButtonType="Check"
+             RelativeToClient="1"
+             LAnchorPoint="1" RAnchorPoint="1" TAnchorPoint="0" BAnchorPoint="0"
+             LAnchorOffset="-100" RAnchorOffset="0" TAnchorOffset="0" BAnchorOffset="20"
+             Base="DefaultBlankButton"
+             NEEDSLOCALIZATION="1" Text="Configure Messages"
+            >
+      <Event Name="ButtonCheck" Function="CombatFloaterConfig_Message_OnCheck" />
+      <Event Name="ButtonUncheck" Function="CombatFloaterConfig_Message_OnUncheck" />
+    </Control>
+    <Control Name="CombatFloaterConfig_Options" Class="Window"
+             RelativeToClient="1"
+             LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="1" BAnchorPoint="1"
+             LAnchorOffset="203" TAnchorOffset="0" RAnchorOffset="-200" BAnchorOffset="-20"
+             Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+            >
+      <!-- Row 1: Font Face -->
+      <Control Name="CombatFloaterConfig_Options_FontFaceToggle" Class="Button" ButtonType="Check"
+               RelativeToClient="1"
+               LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="0" BAnchorPoint="0"
+               LAnchorOffset="0" TAnchorOffset="0" RAnchorOffset="16" BAnchorOffset="16"
+               Base="DefaultBlankButton"
+              >
+        <Event Name="ButtonCheck" Function="CombatFloaterConfig_Options_FontFaceToggle_OnCheck" />
+        <Event Name="ButtonUncheck" Function="CombatFloaterConfig_Options_FontFaceToggle_OnUncheck" />
+      </Control>
+      <Control Name="CombatFloaterConfig_Options_FontFaceLabel" Class="Window"
+               RelativeToClient="1"
+               LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="0" BAnchorPoint="0"
+               LAnchorOffset="19" TAnchorOffset="0" RAnchorOffset="79" BAnchorOffset="20"
+               NEEDSLOCALIZATION="1" Text="Font Face:"
+              >
+      </Control>
+      <Control Name="CombatFloaterConfig_Options_FontFace" Class="ComboBox"
+               RelativeToClient="1"
+               LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="1" BAnchorPoint="0"
+               LAnchorOffset="82" TAnchorOffset="0" RAnchorOffset="0" BAnchorOffset="20"
+               Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+              >
+        <Event Name="ComboBoxSelectionChanged" Function="CombatFloaterConfig_Options_FontFace_Changed" />
+      </Control>
+<!-- I was told no more font size... :(
+      Row 2: Font Size
+      <Control Name="CombatFloaterConfig_Options_FontSizeToggle" Class="Button" ButtonType="Check"
+               RelativeToClient="1"
+               LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="0" BAnchorPoint="0"
+               LAnchorOffset="0" TAnchorOffset="23" RAnchorOffset="16" BAnchorOffset="39"
+               Base="DefaultBlankButton"
+              >
+        <Event Name="ButtonCheck" Function="CombatFloaterConfig_Options_FontSizeToggle_OnCheck" />
+        <Event Name="ButtonUncheck" Function="CombatFloaterConfig_Options_FontSizeToggle_OnUncheck" />
+      </Control>
+      <Control Name="CombatFloaterConfig_Options_FontSizeLabel" Class="Window"
+               RelativeToClient="1"
+               LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="0" BAnchorPoint="0"
+               LAnchorOffset="19" TAnchorOffset="23" RAnchorOffset="79" BAnchorOffset="43"
+               NEEDSLOCALIZATION="1" Text="Font Size:"
+              >
+      </Control>
+      <Control Name="CombatFloaterConfig_Options_FontSize" Class="Spinner"
+               RelativeToClient="1"
+               LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="1" BAnchorPoint="0"
+               LAnchorOffset="82" TAnchorOffset="23" RAnchorOffset="0" BAnchorOffset="43"
+               Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+               Min="6" Max="96" Decimals="0"
+              >
+        <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_FontSize_Changed" />
+      </Control>
+-->
+      <!-- Row 3: Font Color -->
+      <Control Name="CombatFloaterConfig_Options_FontColorToggle" Class="Button" ButtonType="Check"
+               RelativeToClient="1"
+               LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="0" BAnchorPoint="0"
+               LAnchorOffset="0" TAnchorOffset="46" RAnchorOffset="16" BAnchorOffset="62"
+               Base="DefaultBlankButton"
+              >
+        <Event Name="ButtonCheck" Function="CombatFloaterConfig_Options_FontColorToggle_OnCheck" />
+        <Event Name="ButtonUncheck" Function="CombatFloaterConfig_Options_FontColorToggle_OnUncheck" />
+      </Control>
+      <Control Name="CombatFloaterConfig_Options_FontColorLabel" Class="Window"
+               RelativeToClient="1"
+               LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="0" BAnchorPoint="0"
+               LAnchorOffset="19" TAnchorOffset="46" RAnchorOffset="79" BAnchorOffset="66"
+               NEEDSLOCALIZATION="1" Text="Font Color:"
+              >
+      </Control>
+      <Control Name="CombatFloaterConfig_Options_FontColor" Class="Button"
+               RelativeToClient="1"
+               LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="1" BAnchorPoint="0"
+               LAnchorOffset="82" TAnchorOffset="46" RAnchorOffset="0" BAnchorOffset="66"
+               Base="DefaultBlankButton"
+              >
+        <Event Name="ButtonSignal" Function="CombatFloaterConfig_Options_FontColor_Pressed" />
+      </Control>
+<!-- I was told no more font flags... :(
+      Row 4: Font Flags
+      <Control Name="CombatFloaterConfig_Options_FontFlagsToggle" Class="Button" ButtonType="Check"
+               RelativeToClient="1"
+               LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="0" BAnchorPoint="0"
+               LAnchorOffset="0" TAnchorOffset="69" RAnchorOffset="16" BAnchorOffset="85"
+               Base="DefaultBlankButton"
+              >
+        <Event Name="ButtonCheck" Function="CombatFloaterConfig_Options_FontFlagsToggle_OnCheck" />
+        <Event Name="ButtonUncheck" Function="CombatFloaterConfig_Options_FontFlagsToggle_OnUncheck" />
+      </Control>
+      <Control Name="CombatFloaterConfig_Options_FontFlagsBold" Class="Button" ButtonType="Check"
+               RelativeToClient="1"
+               LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="0.25" BAnchorPoint="0"
+               LAnchorOffset="19" TAnchorOffset="69" RAnchorOffset="0" BAnchorOffset="89"
+               Base="DefaultBlankButton"
+               NEEDSLOCALIZATION="1" Text="Bold"
+               DT_CENTER="1"
+              >
+        <Event Name="ButtonCheck" Function="CombatFloaterConfig_Options_FontFlagsBold_OnCheck" />
+        <Event Name="ButtonUncheck" Function="CombatFloaterConfig_Options_FontFlagsBold_OnUncheck" />
+      </Control>
+      <Control Name="CombatFloaterConfig_Options_FontFlagsItalic" Class="Button" ButtonType="Check"
+               RelativeToClient="1"
+               LAnchorPoint="0.25" TAnchorPoint="0" RAnchorPoint="0.5" BAnchorPoint="0"
+               LAnchorOffset="0" TAnchorOffset="69" RAnchorOffset="0" BAnchorOffset="89"
+               Base="DefaultBlankButton"
+               NEEDSLOCALIZATION="1"  Text="Italic"
+               DT_CENTER="1"
+              >
+        <Event Name="ButtonCheck" Function="CombatFloaterConfig_Options_FontFlagsItalic_OnCheck" />
+        <Event Name="ButtonUncheck" Function="CombatFloaterConfig_Options_FontFlagsItalic_OnUncheck" />
+      </Control>
+      <Control Name="CombatFloaterConfig_Options_FontFlagsShadow" Class="Button" ButtonType="Check"
+               RelativeToClient="1"
+               LAnchorPoint="0.5" TAnchorPoint="0" RAnchorPoint="0.75" BAnchorPoint="0"
+               LAnchorOffset="0" TAnchorOffset="69" RAnchorOffset="0" BAnchorOffset="89"
+               Base="DefaultBlankButton"
+               NEEDSLOCALIZATION="1"  Text="Shadow"
+               DT_CENTER="1"
+              >
+        <Event Name="ButtonCheck" Function="CombatFloaterConfig_Options_FontFlagsShadow_OnCheck" />
+        <Event Name="ButtonUncheck" Function="CombatFloaterConfig_Options_FontFlagsShadow_OnUncheck" />
+      </Control>
+      <Control Name="CombatFloaterConfig_Options_FontFlagsOutline" Class="Button" ButtonType="Check"
+               RelativeToClient="1"
+               LAnchorPoint="0.75" TAnchorPoint="0" RAnchorPoint="1" BAnchorPoint="0"
+               LAnchorOffset="0" TAnchorOffset="69" RAnchorOffset="0" BAnchorOffset="89"
+               Base="DefaultBlankButton"
+               NEEDSLOCALIZATION="1"  Text="Outline"
+               DT_CENTER="1"
+              >
+        <Event Name="ButtonCheck" Function="CombatFloaterConfig_Options_FontFlagsOutline_OnCheck" />
+        <Event Name="ButtonUncheck" Function="CombatFloaterConfig_Options_FontFlagsOutline_OnUncheck" />
+      </Control>
+-->
+      <!-- Row 5: Location Type -->
+      <Control Name="CombatFloaterConfig_Options_LocationToggle" Class="Button" ButtonType="Check"
+               RelativeToClient="1"
+               LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="0" BAnchorPoint="0"
+               LAnchorOffset="0" TAnchorOffset="92" RAnchorOffset="16" BAnchorOffset="108"
+               Base="DefaultBlankButton"
+              >
+        <Event Name="ButtonCheck" Function="CombatFloaterConfig_Options_LocationToggle_OnCheck" />
+        <Event Name="ButtonUncheck" Function="CombatFloaterConfig_Options_LocationToggle_OnUncheck" />
+      </Control>
+      <Control Name="CombatFloaterConfig_Options_LocationLabel" Class="Window"
+               RelativeToClient="1"
+               LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="0" BAnchorPoint="0"
+               LAnchorOffset="19" TAnchorOffset="92" RAnchorOffset="79" BAnchorOffset="112"
+               NEEDSLOCALIZATION="1" Text="Location:"
+              >
+      </Control>
+      <Control Name="CombatFloaterConfig_Options_Location" Class="ComboBox"
+               RelativeToClient="1"
+               LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="1" BAnchorPoint="0"
+               LAnchorOffset="82" TAnchorOffset="92" RAnchorOffset="0" BAnchorOffset="112"
+               Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+              >
+        <Event Name="ComboBoxSelectionChanged" Function="CombatFloaterConfig_Options_Location_Changed" />
+      </Control>
+      <!-- Row 6: Location Node -->
+      <Control Name="CombatFloaterConfig_Options_LocationNodeLabel" Class="Window"
+               RelativeToClient="1"
+               LAnchorPoint="0" RAnchorPoint="0" TAnchorPoint="0" BAnchorPoint="0"
+               LAnchorOffset="19" RAnchorOffset="79" TAnchorOffset="115" BAnchorOffset="135"
+               NEEDSLOCALIZATION="1" Text="Attachment:"
+              >
+      </Control>
+      <Control Name="CombatFloaterConfig_Options_LocationNode" Class="ComboBox"
+               RelativeToClient="1"
+               LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="1" BAnchorPoint="0"
+               LAnchorOffset="82" TAnchorOffset="115" RAnchorOffset="0" BAnchorOffset="135"
+               Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+              >
+        <Event Name="ComboBoxSelectionChanged" Function="CombatFloaterConfig_Options_LocationNode_Changed" />
+      </Control>
+      <!-- Row 7: Location Offsets -->
+      <Control Name="CombatFloaterConfig_Options_LocationOffsetAngleLabel" Class="Window"
+               RelativeToClient="1"
+               LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="0" BAnchorPoint="0"
+               LAnchorOffset="19" TAnchorOffset="138" RAnchorOffset="79" BAnchorOffset="158"
+               NEEDSLOCALIZATION="1" Text="Offset (degrees):"
+              >
+      </Control>
+      <Control Name="CombatFloaterConfig_Options_LocationOffsetAngle" Class="Spinner"
+               RelativeToClient="1"
+               LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="0.5" BAnchorPoint="0"
+               LAnchorOffset="82" TAnchorOffset="138" RAnchorOffset="-1" BAnchorOffset="158"
+               Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+               Min="0" Max="360" Decimals="1"
+              >
+        <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_LocationOffsetAngle_Changed" />
+      </Control>
+      <Control Name="CombatFloaterConfig_Options_LocationOffsetDistanceLabel" Class="Window"
+               RelativeToClient="1"
+               LAnchorPoint="0.5" TAnchorPoint="0" RAnchorPoint="0.5" BAnchorPoint="0"
+               LAnchorOffset="1" TAnchorOffset="138" RAnchorOffset="80" BAnchorOffset="158"
+               NEEDSLOCALIZATION="1" Text="Offset (distance):"
+              >
+      </Control>
+      <Control Name="CombatFloaterConfig_Options_LocationOffsetDistance" Class="Spinner"
+               RelativeToClient="1"
+               LAnchorPoint="0.5" TAnchorPoint="0" RAnchorPoint="1" BAnchorPoint="0"
+               LAnchorOffset="83" TAnchorOffset="138" RAnchorOffset="0" BAnchorOffset="158"
+               Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+               Min="0" Max="32768" Decimals="2"
+              >
+        <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_LocationOffsetDistance_Changed" />
+      </Control>
+      <!-- BirthEffect -->
+      <Control Name="CombatFloaterConfig_Options_BirthEffect" Class="Window"
+               RelativeToClient="1"
+               LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="1" BAnchorPoint="0"
+               LAnchorOffset="0" TAnchorOffset="158" RAnchorOffset="0" BAnchorOffset="314"
+               Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+              >
+        <!-- Row 1: Duration -->
+        <Control Name="CombatFloaterConfig_Options_BirthEffectToggle" Class="Button" ButtonType="Check"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="0" BAnchorPoint="0"
+                 LAnchorOffset="0" TAnchorOffset="0" RAnchorOffset="16" BAnchorOffset="16"
+                 Base="DefaultBlankButton"
+                >
+          <Event Name="ButtonCheck" Function="CombatFloaterConfig_Options_BirthEffectToggle_OnCheck" />
+          <Event Name="ButtonUncheck" Function="CombatFloaterConfig_Options_BirthEffectToggle_OnUncheck" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_BirthEffect_DurationLabel" Class="Window"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="1" BAnchorPoint="0.14"
+                 LAnchorOffset="19" TAnchorOffset="0" RAnchorOffset="-55" BAnchorOffset="-1"
+                 NEEDSLOCALIZATION="1" Text="Birth Duration:"
+                >
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_BirthEffect_Duration" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0" RAnchorPoint="1" BAnchorPoint="0.14"
+                 LAnchorOffset="-100" TAnchorOffset="0" RAnchorOffset="0" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="20000" Decimals="0"
+                >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_BirthEffect_DurationChanged" />
+        </Control>
+        <!-- Row 2: Scale -->
+        <Control Name="CombatFloaterConfig_Options_BirthEffect_ScaleToggle" Class="Button" ButtonType="Check"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.14" RAnchorPoint="0" BAnchorPoint="0.14"
+                 LAnchorOffset="16" TAnchorOffset="1" RAnchorOffset="32" BAnchorOffset="16"
+                 Base="DefaultBlankButton"
+                >
+          <Event Name="ButtonCheck" Function="CombatFloaterConfig_Options_BirthEffect_ScaleToggle_OnCheck" />
+          <Event Name="ButtonUncheck" Function="CombatFloaterConfig_Options_BirthEffect_ScaleToggle_OnUncheck" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_BirthEffect_ScaleLabel" Class="Window"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.14" RAnchorPoint="1" BAnchorPoint="0.28"
+                 LAnchorOffset="35" TAnchorOffset="1" RAnchorOffset="-100" BAnchorOffset="-1"
+                 NEEDSLOCALIZATION="1" Text="Scale (from...to):"
+                >
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_BirthEffect_ScaleStart" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.14" RAnchorPoint="1" BAnchorPoint="0.28"
+                 LAnchorOffset="-100" TAnchorOffset="1" RAnchorOffset="-50" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="10.0" Decimals="3"
+                >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_BirthEffect_ScaleStartChanged" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_BirthEffect_ScaleEnd" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.14" RAnchorPoint="1" BAnchorPoint="0.28"
+                 LAnchorOffset="-50" TAnchorOffset="1" RAnchorOffset="0" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="10.0" Decimals="3"
+                >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_BirthEffect_ScaleEndChanged" />
+        </Control>
+        <!-- Row 2: Fade -->
+        <Control Name="CombatFloaterConfig_Options_BirthEffect_FadeToggle" Class="Button" ButtonType="Check"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.28" RAnchorPoint="0" BAnchorPoint="0.28"
+                 LAnchorOffset="16" TAnchorOffset="1" RAnchorOffset="32" BAnchorOffset="16"
+                 Base="DefaultBlankButton"
+                >
+          <Event Name="ButtonCheck" Function="CombatFloaterConfig_Options_BirthEffect_FadeToggle_OnCheck" />
+          <Event Name="ButtonUncheck" Function="CombatFloaterConfig_Options_BirthEffect_FadeToggle_OnUncheck" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_BirthEffect_FadeLabel" Class="Window"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.28" RAnchorPoint="1" BAnchorPoint="0.42"
+                 LAnchorOffset="35" TAnchorOffset="1" RAnchorOffset="-100" BAnchorOffset="-1"
+                 NEEDSLOCALIZATION="1" Text="Fade (from...to):"
+                >
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_BirthEffect_FadeStart" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.28" RAnchorPoint="1" BAnchorPoint="0.42"
+                 LAnchorOffset="-100" TAnchorOffset="1" RAnchorOffset="-50" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="1" Decimals="3"
+                >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_BirthEffect_FadeStartChanged" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_BirthEffect_FadeEnd" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.28" RAnchorPoint="1" BAnchorPoint="0.42"
+                 LAnchorOffset="-50" TAnchorOffset="1" RAnchorOffset="0" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="1" Decimals="3"
+                >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_BirthEffect_FadeEndChanged" />
+        </Control>
+        <!-- Row 3: Velocity Direction -->
+        <Control Name="CombatFloaterConfig_Options_BirthEffect_TranslationToggle" Class="Button" ButtonType="Check"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.42" RAnchorPoint="0" BAnchorPoint="0.42"
+                 LAnchorOffset="16" TAnchorOffset="1" RAnchorOffset="32" BAnchorOffset="16"
+                 Base="DefaultBlankButton"
+                >
+          <Event Name="ButtonCheck" Function="CombatFloaterConfig_Options_BirthEffect_TranslationToggle_OnCheck" />
+          <Event Name="ButtonUncheck" Function="CombatFloaterConfig_Options_BirthEffect_TranslationToggle_OnUncheck" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_BirthEffect_VelocityDirectionLabel" Class="Window"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.42" RAnchorPoint="1" BAnchorPoint="0.56"
+                 LAnchorOffset="35" TAnchorOffset="1" RAnchorOffset="-100" BAnchorOffset="-1"
+                 NEEDSLOCALIZATION="1" Text="Velocity [Dir] (from...to):"
+                >
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_BirthEffect_VelocityDirectionStart" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.42" RAnchorPoint="1" BAnchorPoint="0.56"
+                 LAnchorOffset="-100" TAnchorOffset="1" RAnchorOffset="-50" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="360" Decimals="1"
+                >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_BirthEffect_VelocityDirectionStartChanged" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_BirthEffect_VelocityDirectionEnd" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.42" RAnchorPoint="1" BAnchorPoint="0.56"
+                 LAnchorOffset="-50" TAnchorOffset="1" RAnchorOffset="0" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="360" Decimals="1"
+                >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_BirthEffect_VelocityDirectionEndChanged" />
+        </Control>
+        <!-- Row 4: Velocity Magnitude -->
+        <Control Name="CombatFloaterConfig_Options_BirthEffect_VelocityMagnitudeLabel" Class="Window"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.56" RAnchorPoint="1" BAnchorPoint="0.70"
+                 LAnchorOffset="35" TAnchorOffset="1" RAnchorOffset="-100" BAnchorOffset="-1"
+                 NEEDSLOCALIZATION="1" Text="Velocity [Mag] (from...to):"
+                >
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_BirthEffect_VelocityMagnitudeStart" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.56" RAnchorPoint="1" BAnchorPoint="0.70"
+                 LAnchorOffset="-100" TAnchorOffset="1" RAnchorOffset="-50" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="10" Decimals="3"
+                >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_BirthEffect_VelocityMagnitudeStartChanged" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_BirthEffect_VelocityMagnitudeEnd" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.56" RAnchorPoint="1" BAnchorPoint="0.70"
+                 LAnchorOffset="-50" TAnchorOffset="1" RAnchorOffset="0" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="10" Decimals="3"
+                >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_BirthEffect_VelocityMagnitudeEndChanged" />
+        </Control>
+        <!-- Row 5: Acceleration Direction -->
+        <Control Name="CombatFloaterConfig_Options_BirthEffect_AccelerationDirectionLabel" Class="Window"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.70" RAnchorPoint="1" BAnchorPoint="0.84"
+                 LAnchorOffset="35" TAnchorOffset="1" RAnchorOffset="-100" BAnchorOffset="-1"
+                 NEEDSLOCALIZATION="1" Text="Acceleration [Dir] (from...to):"
+                >
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_BirthEffect_AccelerationDirectionStart" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.70" RAnchorPoint="1" BAnchorPoint="0.84"
+                 LAnchorOffset="-100" TAnchorOffset="1" RAnchorOffset="-50" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="360" Decimals="1"
+                >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_BirthEffect_AccelerationDirectionStartChanged" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_BirthEffect_AccelerationDirectionEnd" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.70" RAnchorPoint="1" BAnchorPoint="0.84"
+                 LAnchorOffset="-50" TAnchorOffset="1" RAnchorOffset="0" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="360" Decimals="1"
+                >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_BirthEffect_AccelerationDirectionEndChanged" />
+        </Control>
+        <!-- Row 6: Acceleration Magnitude -->
+        <Control Name="CombatFloaterConfig_Options_BirthEffect_AccelerationDirectionLabel" Class="Window"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.84" RAnchorPoint="1" BAnchorPoint="1"
+                 LAnchorOffset="35" TAnchorOffset="1" RAnchorOffset="-100" BAnchorOffset="-1"
+                 NEEDSLOCALIZATION="1" Text="Acceleration [Mag] (from...to):"
+                >
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_BirthEffect_AccelerationMagnitudeStart" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.84" RAnchorPoint="1" BAnchorPoint="1"
+                 LAnchorOffset="-100" TAnchorOffset="1" RAnchorOffset="-50" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="10" Decimals="3"
+                >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_BirthEffect_AccelerationMagnitudeStartChanged" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_BirthEffect_AccelerationMagnitudeEnd" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.84" RAnchorPoint="1" BAnchorPoint="1"
+                 LAnchorOffset="-50" TAnchorOffset="1" RAnchorOffset="0" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="10" Decimals="3"
+                >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_BirthEffect_AccelerationMagnitudeEndChanged" />
+        </Control>
+      </Control>
+      <!-- LifeEffect -->
+      <Control Name="CombatFloaterConfig_Options_LifeEffect" Class="Window"
+               RelativeToClient="1"
+               LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="1" BAnchorPoint="0"
+               LAnchorOffset="0" TAnchorOffset="321" RAnchorOffset="0" BAnchorOffset="481"
+               Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+              >
+        <!-- Row 1: Duration -->
+        <Control Name="CombatFloaterConfig_Options_LifeEffectToggle" Class="Button" ButtonType="Check"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="0" BAnchorPoint="0"
+                 LAnchorOffset="0" TAnchorOffset="0" RAnchorOffset="16" BAnchorOffset="16"
+                 Base="DefaultBlankButton"
+                >
+          <Event Name="ButtonCheck" Function="CombatFloaterConfig_Options_LifeEffectToggle_OnCheck" />
+          <Event Name="ButtonUncheck" Function="CombatFloaterConfig_Options_LifeEffectToggle_OnUncheck" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_LifeEffect_DurationLabel" Class="Window"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="1" BAnchorPoint="0.14"
+                 LAnchorOffset="19" TAnchorOffset="0" RAnchorOffset="-55" BAnchorOffset="-1"
+                 NEEDSLOCALIZATION="1" Text="Life Duration:"
+                >
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_LifeEffect_Duration" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0" RAnchorPoint="1" BAnchorPoint="0.14"
+                 LAnchorOffset="-100" TAnchorOffset="0" RAnchorOffset="0" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="20000" Decimals="0"
+                >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_LifeEffect_DurationChanged" />
+        </Control>
+        <!-- Row 2: Scale -->
+        <Control Name="CombatFloaterConfig_Options_LifeEffect_ScaleToggle" Class="Button" ButtonType="Check"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.14" RAnchorPoint="0" BAnchorPoint="0.14"
+                 LAnchorOffset="16" TAnchorOffset="1" RAnchorOffset="32" BAnchorOffset="16"
+                 Base="DefaultBlankButton"
+                >
+          <Event Name="ButtonCheck" Function="CombatFloaterConfig_Options_LifeEffect_ScaleToggle_OnCheck" />
+          <Event Name="ButtonUncheck" Function="CombatFloaterConfig_Options_LifeEffect_ScaleToggle_OnUncheck" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_LifeEffect_ScaleLabel" Class="Window"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.14" RAnchorPoint="1" BAnchorPoint="0.28"
+                 LAnchorOffset="35" TAnchorOffset="1" RAnchorOffset="-100" BAnchorOffset="-1"
+                 NEEDSLOCALIZATION="1" Text="Scale (from...to):"
+                >
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_LifeEffect_ScaleStart" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.14" RAnchorPoint="1" BAnchorPoint="0.28"
+                 LAnchorOffset="-100" TAnchorOffset="1" RAnchorOffset="-50" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="10.0" Decimals="3"
+                >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_LifeEffect_ScaleStartChanged" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_LifeEffect_ScaleEnd" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.14" RAnchorPoint="1" BAnchorPoint="0.28"
+                 LAnchorOffset="-50" TAnchorOffset="1" RAnchorOffset="0" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="10.0" Decimals="3"
+                >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_LifeEffect_ScaleEndChanged" />
+        </Control>
+        <!-- Row 2: Fade -->
+        <Control Name="CombatFloaterConfig_Options_LifeEffect_FadeToggle" Class="Button" ButtonType="Check"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.28" RAnchorPoint="0" BAnchorPoint="0.28"
+                 LAnchorOffset="16" TAnchorOffset="1" RAnchorOffset="32" BAnchorOffset="16"
+                 Base="DefaultBlankButton"
+                >
+          <Event Name="ButtonCheck" Function="CombatFloaterConfig_Options_LifeEffect_FadeToggle_OnCheck" />
+          <Event Name="ButtonUncheck" Function="CombatFloaterConfig_Options_LifeEffect_FadeToggle_OnUncheck" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_LifeEffect_FadeLabel" Class="Window"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.28" RAnchorPoint="1" BAnchorPoint="0.42"
+                 LAnchorOffset="35" TAnchorOffset="1" RAnchorOffset="-100" BAnchorOffset="-1"
+                 NEEDSLOCALIZATION="1" Text="Fade (from...to):"
+                >
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_LifeEffect_FadeStart" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.28" RAnchorPoint="1" BAnchorPoint="0.42"
+                 LAnchorOffset="-100" TAnchorOffset="1" RAnchorOffset="-50" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="1" Decimals="3"
+                >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_LifeEffect_FadeStartChanged" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_LifeEffect_FadeEnd" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.28" RAnchorPoint="1" BAnchorPoint="0.42"
+                 LAnchorOffset="-50" TAnchorOffset="1" RAnchorOffset="0" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="1" Decimals="3"
+                >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_LifeEffect_FadeEndChanged" />
+        </Control>
+        <!-- Row 3: Velocity Direction -->
+        <Control Name="CombatFloaterConfig_Options_LifeEffect_TranslationToggle" Class="Button" ButtonType="Check"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.42" RAnchorPoint="0" BAnchorPoint="0.42"
+                 LAnchorOffset="16" TAnchorOffset="1" RAnchorOffset="32" BAnchorOffset="16"
+                 Base="DefaultBlankButton"
+                >
+          <Event Name="ButtonCheck" Function="CombatFloaterConfig_Options_LifeEffect_TranslationToggle_OnCheck" />
+          <Event Name="ButtonUncheck" Function="CombatFloaterConfig_Options_LifeEffect_TranslationToggle_OnUncheck" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_LifeEffect_VelocityDirectionLabel" Class="Window"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.42" RAnchorPoint="1" BAnchorPoint="0.56"
+                 LAnchorOffset="35" TAnchorOffset="1" RAnchorOffset="-100" BAnchorOffset="-1"
+                 NEEDSLOCALIZATION="1" Text="Velocity [Dir] (from...to):"
+                >
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_LifeEffect_VelocityDirectionStart" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.42" RAnchorPoint="1" BAnchorPoint="0.56"
+                 LAnchorOffset="-100" TAnchorOffset="1" RAnchorOffset="-50" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="360" Decimals="1"
+                >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_LifeEffect_VelocityDirectionStartChanged" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_LifeEffect_VelocityDirectionEnd" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.42" RAnchorPoint="1" BAnchorPoint="0.56"
+                 LAnchorOffset="-50" TAnchorOffset="1" RAnchorOffset="0" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="360" Decimals="1"
+                >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_LifeEffect_VelocityDirectionEndChanged" />
+        </Control>
+        <!-- Row 4: Velocity Magnitude -->
+        <Control Name="CombatFloaterConfig_Options_LifeEffect_VelocityDirectionLabel" Class="Window"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.56" RAnchorPoint="1" BAnchorPoint="0.70"
+                 LAnchorOffset="35" TAnchorOffset="1" RAnchorOffset="-100" BAnchorOffset="-1"
+                 NEEDSLOCALIZATION="1" Text="Velocity [Mag] (from...to):"
+                >
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_LifeEffect_VelocityMagnitudeStart" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.56" RAnchorPoint="1" BAnchorPoint="0.70"
+                 LAnchorOffset="-100" TAnchorOffset="1" RAnchorOffset="-50" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="10" Decimals="3"
+                >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_LifeEffect_VelocityMagnitudeStartChanged" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_LifeEffect_VelocityMagnitudeEnd" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.56" RAnchorPoint="1" BAnchorPoint="0.70"
+                 LAnchorOffset="-50" TAnchorOffset="1" RAnchorOffset="0" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="10" Decimals="3"
+                >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_LifeEffect_VelocityManitudeEndChanged" />
+        </Control>
+        <!-- Row 5: Acceleration Direction -->
+        <Control Name="CombatFloaterConfig_Options_LifeEffect_AccelerationDirectionLabel" Class="Window"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.70" RAnchorPoint="1" BAnchorPoint="0.84"
+                 LAnchorOffset="35" TAnchorOffset="1" RAnchorOffset="-100" BAnchorOffset="-1"
+                 NEEDSLOCALIZATION="1" Text="Acceleration [Dir] (from...to):"
+                >
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_LifeEffect_AccelerationDirectionStart" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.70" RAnchorPoint="1" BAnchorPoint="0.84"
+                 LAnchorOffset="-100" TAnchorOffset="1" RAnchorOffset="-50" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="360" Decimals="1"
+                >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_LifeEffect_AccelerationDirectionStartChanged" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_LifeEffect_AccelerationDirectionEnd" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.70" RAnchorPoint="1" BAnchorPoint="0.84"
+                 LAnchorOffset="-50" TAnchorOffset="1" RAnchorOffset="0" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="360" Decimals="1"
+                >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_LifeEffect_AccelerationDirectionEndChanged" />
+        </Control>
+        <!-- Row 6: Acceleration Magnitude -->
+        <Control Name="CombatFloaterConfig_Options_LifeEffect_AccelerationMagnitudeLabel" Class="Window"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.84" RAnchorPoint="1" BAnchorPoint="1"
+                 LAnchorOffset="35" TAnchorOffset="1" RAnchorOffset="-100" BAnchorOffset="-1"
+                 NEEDSLOCALIZATION="1" Text="Acceleration [Mag] (from...to):"
+                >
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_LifeEffect_AccelerationMagnitudeStart" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.84" RAnchorPoint="1" BAnchorPoint="1"
+                 LAnchorOffset="-100" TAnchorOffset="1" RAnchorOffset="-50" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="10" Decimals="3"
+                >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_LifeEffect_AccelerationMagnitudeStartChanged" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_LifeEffect_AccelerationMagnitudeEnd" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.84" RAnchorPoint="1" BAnchorPoint="1"
+                 LAnchorOffset="-50" TAnchorOffset="1" RAnchorOffset="0" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="10" Decimals="3"
+                >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_LifeEffect_AccelerationMagnitudeEndChanged" />
+        </Control>
+      </Control>
+      <!-- DeathEffect -->
+      <Control Name="CombatFloaterConfig_Options_DeathEffect" Class="Window"
+               RelativeToClient="1"
+               LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="1" BAnchorPoint="0"
+               LAnchorOffset="0" TAnchorOffset="484" RAnchorOffset="0" BAnchorOffset="644"
+               Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                    >
+        <!-- Row 1: Duration -->
+        <Control Name="CombatFloaterConfig_Options_DeathEffectToggle" Class="Button" ButtonType="Check"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="0" BAnchorPoint="0"
+                 LAnchorOffset="0" TAnchorOffset="0" RAnchorOffset="16" BAnchorOffset="16"
+                 Base="DefaultBlankButton"
+                        >
+          <Event Name="ButtonCheck" Function="CombatFloaterConfig_Options_DeathEffectToggle_OnCheck" />
+          <Event Name="ButtonUncheck" Function="CombatFloaterConfig_Options_DeathEffectToggle_OnUncheck" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_DeathEffect_DurationLabel" Class="Window"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="1" BAnchorPoint="0.14"
+                 LAnchorOffset="19" TAnchorOffset="0" RAnchorOffset="-55" BAnchorOffset="-1"
+                 NEEDSLOCALIZATION="1" Text="Death Duration:"
+                        >
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_DeathEffect_Duration" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0" RAnchorPoint="1" BAnchorPoint="0.14"
+                 LAnchorOffset="-100" TAnchorOffset="0" RAnchorOffset="0" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="20000" Decimals="0"
+                        >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_DeathEffect_DurationChanged" />
+        </Control>
+        <!-- Row 2: Scale -->
+        <Control Name="CombatFloaterConfig_Options_DeathEffect_ScaleToggle" Class="Button" ButtonType="Check"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.14" RAnchorPoint="0" BAnchorPoint="0.14"
+                 LAnchorOffset="16" TAnchorOffset="1" RAnchorOffset="32" BAnchorOffset="16"
+                 Base="DefaultBlankButton"
+                        >
+          <Event Name="ButtonCheck" Function="CombatFloaterConfig_Options_DeathEffect_ScaleToggle_OnCheck" />
+          <Event Name="ButtonUncheck" Function="CombatFloaterConfig_Options_DeathEffect_ScaleToggle_OnUncheck" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_DeathEffect_ScaleLabel" Class="Window"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.14" RAnchorPoint="1" BAnchorPoint="0.28"
+                 LAnchorOffset="35" TAnchorOffset="1" RAnchorOffset="-100" BAnchorOffset="-1"
+                 NEEDSLOCALIZATION="1" Text="Scale (from...to):"
+                        >
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_DeathEffect_ScaleStart" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.14" RAnchorPoint="1" BAnchorPoint="0.28"
+                 LAnchorOffset="-100" TAnchorOffset="1" RAnchorOffset="-50" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="10.0" Decimals="3"
+                        >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_DeathEffect_ScaleStartChanged" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_DeathEffect_ScaleEnd" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.14" RAnchorPoint="1" BAnchorPoint="0.28"
+                 LAnchorOffset="-50" TAnchorOffset="1" RAnchorOffset="0" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="10.0" Decimals="3"
+                        >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_DeathEffect_ScaleEndChanged" />
+        </Control>
+        <!-- Row 2: Fade -->
+        <Control Name="CombatFloaterConfig_Options_DeathEffect_FadeToggle" Class="Button" ButtonType="Check"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.28" RAnchorPoint="0" BAnchorPoint="0.28"
+                 LAnchorOffset="16" TAnchorOffset="1" RAnchorOffset="32" BAnchorOffset="16"
+                 Base="DefaultBlankButton"
+                        >
+          <Event Name="ButtonCheck" Function="CombatFloaterConfig_Options_DeathEffect_FadeToggle_OnCheck" />
+          <Event Name="ButtonUncheck" Function="CombatFloaterConfig_Options_DeathEffect_FadeToggle_OnUncheck" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_DeathEffect_FadeLabel" Class="Window"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.28" RAnchorPoint="1" BAnchorPoint="0.42"
+                 LAnchorOffset="35" TAnchorOffset="1" RAnchorOffset="-100" BAnchorOffset="-1"
+                 NEEDSLOCALIZATION="1" Text="Fade (from...to):"
+                        >
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_DeathEffect_FadeStart" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.28" RAnchorPoint="1" BAnchorPoint="0.42"
+                 LAnchorOffset="-100" TAnchorOffset="1" RAnchorOffset="-50" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="1" Decimals="3"
+                        >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_DeathEffect_FadeStartChanged" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_DeathEffect_FadeEnd" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.28" RAnchorPoint="1" BAnchorPoint="0.42"
+                 LAnchorOffset="-50" TAnchorOffset="1" RAnchorOffset="0" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="1" Decimals="3"
+                        >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_DeathEffect_FadeEndChanged" />
+        </Control>
+        <!-- Row 3: Velocity Direction -->
+        <Control Name="CombatFloaterConfig_Options_DeathEffect_TranslationToggle" Class="Button" ButtonType="Check"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.42" RAnchorPoint="0" BAnchorPoint="0.42"
+                 LAnchorOffset="16" TAnchorOffset="1" RAnchorOffset="32" BAnchorOffset="16"
+                 Base="DefaultBlankButton"
+                        >
+          <Event Name="ButtonCheck" Function="CombatFloaterConfig_Options_DeathEffect_TranslationToggle_OnCheck" />
+          <Event Name="ButtonUncheck" Function="CombatFloaterConfig_Options_DeathEffect_TranslationToggle_OnUncheck" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_DeathEffect_VelocityDirectionLabel" Class="Window"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.42" RAnchorPoint="1" BAnchorPoint="0.56"
+                 LAnchorOffset="35" TAnchorOffset="1" RAnchorOffset="-100" BAnchorOffset="-1"
+                 NEEDSLOCALIZATION="1" Text="Velocity [Dir] (from...to):"
+                        >
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_DeathEffect_VelocityDirectionStart" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.42" RAnchorPoint="1" BAnchorPoint="0.56"
+                 LAnchorOffset="-100" TAnchorOffset="1" RAnchorOffset="-50" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="360" Decimals="1"
+                        >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_DeathEffect_VelocityDirectionStartChanged" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_DeathEffect_VelocityDirectionEnd" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.42" RAnchorPoint="1" BAnchorPoint="0.56"
+                 LAnchorOffset="-50" TAnchorOffset="1" RAnchorOffset="0" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="360" Decimals="1"
+                        >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_DeathEffect_VelocityDirectionEndChanged" />
+        </Control>
+        <!-- Row 4: Velocity Magnitude -->
+        <Control Name="CombatFloaterConfig_Options_DeathEffect_VelocityMagnitudeLabel" Class="Window"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.56" RAnchorPoint="1" BAnchorPoint="0.70"
+                 LAnchorOffset="35" TAnchorOffset="1" RAnchorOffset="-100" BAnchorOffset="-1"
+                 NEEDSLOCALIZATION="1" Text="Velocity [Mag] (from...to):"
+                        >
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_DeathEffect_VelocityMagnitudeStart" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.56" RAnchorPoint="1" BAnchorPoint="0.70"
+                 LAnchorOffset="-100" TAnchorOffset="1" RAnchorOffset="-50" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="10" Decimals="3"
+                        >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_DeathEffect_VelocityMagnitudeStartChanged" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_DeathEffect_VelocityMagnitudeEnd" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.56" RAnchorPoint="1" BAnchorPoint="0.70"
+                 LAnchorOffset="-50" TAnchorOffset="1" RAnchorOffset="0" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="10" Decimals="3"
+                        >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_DeathEffect_VelocityMagnitudeEndChanged" />
+        </Control>
+        <!-- Row 5: Acceleration Direction -->
+        <Control Name="CombatFloaterConfig_Options_DeathEffect_AccelerationDirectionLabel" Class="Window"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.70" RAnchorPoint="1" BAnchorPoint="0.84"
+                 LAnchorOffset="35" TAnchorOffset="1" RAnchorOffset="-100" BAnchorOffset="-1"
+                 NEEDSLOCALIZATION="1" Text="Acceleration [Dir] (from...to):"
+                        >
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_DeathEffect_AccelerationDirectionStart" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.70" RAnchorPoint="1" BAnchorPoint="0.84"
+                 LAnchorOffset="-100" TAnchorOffset="1" RAnchorOffset="-50" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="360" Decimals="1"
+                        >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_DeathEffect_AccelerationDirectionStartChanged" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_DeathEffect_AccelerationDirectionEnd" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.70" RAnchorPoint="1" BAnchorPoint="0.84"
+                 LAnchorOffset="-50" TAnchorOffset="1" RAnchorOffset="0" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="360" Decimals="1"
+                        >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_DeathEffect_AccelerationDirectionEndChanged" />
+        </Control>
+        <!-- Row 6: Acceleration Magnitude -->
+        <Control Name="CombatFloaterConfig_Options_DeathEffect_AccelerationMagnitudeLabel" Class="Window"
+                 RelativeToClient="1"
+                 LAnchorPoint="0" TAnchorPoint="0.84" RAnchorPoint="1" BAnchorPoint="1"
+                 LAnchorOffset="35" TAnchorOffset="1" RAnchorOffset="-100" BAnchorOffset="-1"
+                 NEEDSLOCALIZATION="1" Text="Acceleration [Mag] (from...to):"
+                        >
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_DeathEffect_AccelerationMagnitudeStart" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.84" RAnchorPoint="1" BAnchorPoint="1"
+                 LAnchorOffset="-100" TAnchorOffset="1" RAnchorOffset="-50" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="10" Decimals="3"
+                        >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_DeathEffect_AccelerationMagnitudeStartChanged" />
+        </Control>
+        <Control Name="CombatFloaterConfig_Options_DeathEffect_AccelerationMagnitudeEnd" Class="Spinner"
+                 RelativeToClient="1"
+                 LAnchorPoint="1" TAnchorPoint="0.84" RAnchorPoint="1" BAnchorPoint="1"
+                 LAnchorOffset="-50" TAnchorOffset="1" RAnchorOffset="0" BAnchorOffset="-1"
+                 Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                 Min="0" Max="10" Decimals="3"
+                        >
+          <Event Name="SpinnerChanged" Function="CombatFloaterConfig_Options_DeathEffect_AccelerationMagnitudeEndChanged" />
+        </Control>
+      </Control>
+    </Control>
+    <Control Name="CombatFloaterMessageConfig" Class="Window"
+             LAnchorPoint="1" TAnchorPoint="0" RAnchorPoint="1" BAnchorPoint="1"
+             LAnchorOffset="-200" TAnchorOffset="20" RAnchorOffset="0" BAnchorOffset="-20"
+             Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                >
+      <Control Name="CombatFloaterMessageConfig_SourceGrid" Class="Grid"
+               RelativeToClient="1"
+               LAnchorPoint="0" TAnchorPoint="0" RAnchorPoint="1" BAnchorPoint=".5"
+               LAnchorOffset="0" TAnchorOffset="0" RAnchorOffset="0" BAnchorOffset="-10"
+               Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                    >
+        <Event Name="GridSelChange" Function="CombatFloaterMessageConfig_Source_SelectionChanged" />
+      </Control>
+      <Control Name="CombatFloaterMessageConfig_AddMessage" Class="Button"
+               RelativeToClient="1"
+               LAnchorPoint="0.333" TAnchorPoint=".5" RAnchorPoint="0.333" BAnchorPoint="0.5"
+               LAnchorOffset="-30" TAnchorOffset="-10" RAnchorOffset="30" BAnchorOffset="10"
+               Base="DefaultBlankButton"
+               NEEDSLOCALIZATION="1" Text="Add"
+                    >
+        <Event Name="ButtonSignal" Function="CombatFloaterMessageConfig_AddMessage_Pressed" />
+      </Control>
+      <Control Name="CombatFloaterMessageConfig_RemoveMessage" Class="Button"
+               RelativeToClient="1"
+               LAnchorPoint="0.666" TAnchorPoint=".5" RAnchorPoint="0.666" BAnchorPoint="0.5"
+               LAnchorOffset="-30" TAnchorOffset="-10" RAnchorOffset="30" BAnchorOffset="10"
+               Base="DefaultBlankButton"
+               NEEDSLOCALIZATION="1" Text="Remove"
+                    >
+        <Event Name="ButtonSignal" Function="CombatFloaterMessageConfig_RemoveMessage_Pressed" />
+      </Control>
+
+      <Control Name="CombatFloaterMessageConfig_MessageGrid" Class="Grid"
+               RelativeToClient="1"
+               LAnchorPoint="0" TAnchorPoint="0.5" RAnchorPoint="1" BAnchorPoint="1"
+               LAnchorOffset="0" TAnchorOffset="10" RAnchorOffset="0" BAnchorOffset="-20"
+               Template="Control" Border="1" Sprite="WhiteFill" BGColor="Black" Picture="1"
+                    >
+        <Event Name="GridSelChange" Function="CombatFloaterMessageConfig_Message_SelectionChanged" />
+      </Control>
+      <Control Name="CombatFloaterMessageConfig_MessageUp" Class="Button"
+               RelativeToClient="1"
+               LAnchorPoint=".333" TAnchorPoint="1" RAnchorPoint=".333" BAnchorPoint="1"
+               LAnchorOffset="-30" TAnchorOffset="-20" RAnchorOffset="30" BAnchorOffset="0"
+               Base="DefaultBlankButton"
+               NEEDSLOCALIZATION="1" Text="Up"
+                    >
+        <Event Name="ButtonSignal" Function="CombatFloaterMessageConfig_MessageUp_Pressed" />
+      </Control>
+      <Control Name="CombatFloaterMessageConfig_MessageDown" Class="Button"
+               RelativeToClient="1"
+               LAnchorPoint=".666" TAnchorPoint="1" RAnchorPoint=".666" BAnchorPoint="1"
+               LAnchorOffset="-30" TAnchorOffset="-20" RAnchorOffset="30" BAnchorOffset="0"
+               Base="DefaultBlankButton"
+               NEEDSLOCALIZATION="1" Text="Down"
+                    >
+        <Event Name="ButtonSignal" Function="CombatFloaterMessageConfig_MessageDown_Pressed" />
+      </Control>
+    </Control>
+  </Form>
+</Forms>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           

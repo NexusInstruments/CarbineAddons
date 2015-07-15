@@ -1,0 +1,199 @@
+<?xml version="1.0" ?>
+<Defaults>
+  <Control Class="Window" 
+           LAnchorPoint="0" LAnchorOffset="10"
+           TAnchorPoint="0" TAnchorOffset="10"
+           RAnchorPoint="0" RAnchorOffset="50"
+           BAnchorPoint="0" BAnchorOffset="30"
+           RelativeToClient="1"
+           Font="Default"
+           Text=""
+           BGColor="UI_WindowBGDefault" 
+           TextColor="UI_WindowTextDefault"
+           Template="Default"
+           TooltipType="OnCursor"
+           />
+  <Control Class="ProgressBar" Text=""
+           LAnchorPoint="0" LAnchorOffset="10"
+           TAnchorPoint="0" TAnchorOffset="10"
+           RAnchorPoint="0" RAnchorOffset="90"
+           BAnchorPoint="0" BAnchorOffset="30"
+           AutoSetText="0" UseValues="1" RelativeToClient="1"
+           SetTextToProgress="1"
+           DT_CENTER="1" DT_VCENTER="1"
+           ProgressEmpty="ManaEmpty"
+           ProgressFull="ManaFull"
+           TooltipType="OnCursor"
+          >
+  </Control>
+  <Control Class="Button" Base="" Font="DefaultButton"
+       ButtonType="PushButton" RadioGroup=""
+       LAnchorPoint="0" LAnchorOffset="10"
+       TAnchorPoint="0" TAnchorOffset="10"
+       RAnchorPoint="0" RAnchorOffset="42"
+       BAnchorPoint="0" BAnchorOffset="42"
+       DT_VCENTER="1" DT_CENTER="1"
+       BGColor="UI_BtnBGDefault" 
+       TextColor="UI_BtnTextDefault"
+       NormalTextColor="UI_BtnTextDefault"
+       PressedTextColor="UI_BtnTextDefault"
+       FlybyTextColor="UI_BtnTextDefault"
+       PressedFlybyTextColor="UI_BtnTextDefault"
+       DisabledTextColor="UI_BtnTextDefault"
+       TooltipType="OnCursor">
+    <Event Name="ButtonSignal" Function="YourFunctionName"/>
+  </Control>
+  <Control Class="ActionBarButton" Base="Button_ActionBarBlank"
+           RelativeToClient="1" IfHoldNoSignal="1"
+           DT_VCENTER="1" DT_CENTER="1" NeverBringToFront="1"
+           Picture="0" WindowSoundTemplate="ActionBarButton"
+           LAnchorPoint="0.00000" LAnchorOffset="7"
+           TAnchorPoint="0.00000" TAnchorOffset="7"
+           RAnchorPoint="0.00000" RAnchorOffset="45"
+           BAnchorPoint="0.00000" BAnchorOffset="45"
+           IgnoreTooltipDelay="1" TooltipType="OnCursor"
+  >
+  </Control>
+  <Control Class="AbilityItemWindow" 
+           LAnchorPoint="0" LAnchorOffset="7" 
+           TAnchorPoint="0" TAnchorOffset="7" 
+           RAnchorPoint="0" RAnchorOffset="45" 
+           BAnchorPoint="0" BAnchorOffset="45" 
+           RelativeToClient="1" DT_CENTER="1" DT_VCENTER="1" 
+           IgnoreTooltipDelay="1" ListItem="1" TooltipType="OnCursor" IgnoreMouse="1">
+  </Control>
+  <Control Class="BagWindow"
+           LAnchorPoint="0" LAnchorOffset="2"
+           TAnchorPoint="0" TAnchorOffset="2"
+           RAnchorPoint="0" RAnchorOffset="252"
+           BAnchorPoint="0" BAnchorOffset="252"
+           RelativeToClient="0" Sprite="CRB_UIKitSprites:spr_baseframe"
+           SquareSize="50" BoxesPerRow="5"
+           Template="CRB_Normal" TooltipType="OnCursor"
+           Border="0" NoClip="1" SwallowMouseClicks="1"
+           UseTemplateBG="1" VScroll="0" IgnoreTooltipDelay="1" NewQuestOverlaySprite="ClientSprites:sprItem_NewQuest">
+  </Control>
+  <Control Class="BuffWindow" Visible="1" NoClip="1" HarmfulBuffs="1" BuffIndex="1" Hero="0" 
+           BGColor="ffffffff" TextColor="ffffffff" IgnoreTooltipDelay="1" 
+           LAnchorPoint="0.00000" LAnchorOffset="7" 
+           TAnchorPoint="0.00000" TAnchorOffset="7" 
+           RAnchorPoint="0.00000" RAnchorOffset="45" 
+           BAnchorPoint="0.00000" BAnchorOffset="45" TooltipType="OnCursor">
+  </Control>
+  <Control Class="CostumeWindow" 
+           LAnchorPoint="0" LAnchorOffset="5" 
+           TAnchorPoint="0" TAnchorOffset="5" 
+           RAnchorPoint="0" RAnchorOffset="300" 
+           BAnchorPoint="0" BAnchorOffset="400" RelativeToClient="1" Font="Default" 
+           Text="" Template="Default" Name="Costume" 
+           BGColor="ffffffff" TextColor="ffffffff" 
+           Camera="Paperdoll" Animated="1" TooltipType="OnCursor"/>
+  <Control Class="CharacterFrame" 
+           LAnchorPoint="0" LAnchorOffset="5" 
+           TAnchorPoint="0" TAnchorOffset="5" 
+           RAnchorPoint="0" RAnchorOffset="300" 
+           BAnchorPoint="0" BAnchorOffset="400" 
+           RelativeToClient="1" Font="Default" 
+           BGColor="ffffffff" TextColor="ffffffff" 
+           Overlapped="1" TestAlpha="1" SwallowMouseClicks="1" Escapable="0" 
+           UseTransitionSprite="0" TransitionShowHide="1" NoClip="0" TooltipType="OnCursor">
+  </Control>
+  <Control Class="IconButton" ContentType="" ContentId="" 
+           RelativeToClient="1" NoClip="1" 
+           LAnchorPoint="0" LAnchorOffset="0" 
+           TAnchorPoint="0" TAnchorOffset="0" 
+           RAnchorPoint="0" RAnchorOffset="50" 
+           BAnchorPoint="0" BAnchorOffset="50" 
+           BGColor="ffffffff" TextColor="ffffffff" TooltipType="OnCursor">
+  </Control>
+  <Control Class="ItemSlotWindow" 
+           LAnchorPoint="0" LAnchorOffset="6" 
+           TAnchorPoint="0" TAnchorOffset="6" 
+           RAnchorPoint="0" RAnchorOffset="62" 
+           BAnchorPoint="0" BAnchorOffset="62" 
+           RelativeToClient="1" Font="Default" 
+           BGColor="ffffffff" TextColor="ffffffff" 
+           WhenEmpty="btn_Armor_HeadNormal" EquipmentSlot="2" IgnoreTooltipDelay="1" TooltipType="OnCursor">
+  </Control>
+  <Control Class="LootWindow" 
+           LAnchorPoint="0" LAnchorOffset="7" 
+           TAnchorPoint="0" TAnchorOffset="7" 
+           RAnchorPoint="0" RAnchorOffset="157" 
+           BAnchorPoint="0" BAnchorOffset="157" RelativeToClient="0" 
+           Font="CRB_InterfaceMedium" Sprite="CRB_UIKitSprites:spr_baseframe" 
+           Text="" Template="CRB_Normal" 
+           BGColor="ffffffff" TextColor="ffffffff"
+           NewControlDepth="1" NoClip="1" SwallowMouseClicks="1" UseTemplateBG="1" TooltipType="OnCursor"
+           VScroll="0" IgnoreTooltipDelay="1" SquareSize="50" BoxesPerRow="3" NewQuestOverlaySprite="ClientSprites:sprItem_NewQuest">
+  </Control>
+  <Control Class="MiniMapWindow" 
+           LAnchorPoint="0" LAnchorOffset="3" 
+           TAnchorPoint="0" TAnchorOffset="3" 
+           RAnchorPoint="0" RAnchorOffset="200" 
+           BAnchorPoint="0" BAnchorOffset="200" 
+           RelativeToClient="1" Font="Default" Text="" 
+           Template="Default" BGColor="ffffffff" TextColor="ffffffff"  
+           NewControlDepth="2" Mask="ui\textures\UI_CRB_HUD_MiniMap_Mask.tex" 
+           CircularItems="1" ItemRadius=".7" IgnoreMouse="1" NewWindowDepth="0" 
+           TooltipType="OnCursor" MapOrientation="0">
+  </Control>
+  <Control Class="ProtostarMapWindow"
+           LAnchorPoint="0" LAnchorOffset="10"
+           TAnchorPoint="0" TAnchorOffset="10"
+           RAnchorPoint="0" RAnchorOffset="522"
+           BAnchorPoint="0" BAnchorOffset="522" RelativeToClient="0"
+           Template="CRB_Normal" TooltipType="OnCursor"
+           BGColor="ffffffff" TextColor="ffffffff"
+           NewControlDepth="1" NoClip="1" SwallowMouseClicks="1" 
+           VScroll="0" IgnoreTooltipDelay="1">
+  </Control>
+  <Control Class="WorldFixedWindow" 
+           LAnchorPoint="SELF" LAnchorOffset="-50" 
+           TAnchorPoint="0" TAnchorOffset="-150" 
+           RAnchorPoint="0" RAnchorOffset="50" 
+           BAnchorPoint="0" BAnchorOffset="-50" 
+           RelativeToClient="1" Font="Default" Text="" TooltipType="OnCursor"
+           Template="Default" Border="0" Picture="0" SwallowMouseClicks="1" 
+           Moveable="0" Escapable="0" Overlapped="1" 
+           BGColor="ffffffff" TextColor="ffffffff" 
+           IgnoreMouse="1" Visible="0" TransitionShowHide="0">
+  </Control>
+  <Control Class="ZoneMapWindow" 
+           LAnchorPoint="0" LAnchorOffset="1" 
+           TAnchorPoint="0" TAnchorOffset="1" 
+           RAnchorPoint="1" RAnchorOffset="-1" 
+           BAnchorPoint="1" BAnchorOffset="-1" 
+           RelativeToClient="1" Text="" Template="CRB_HologramFramedThick" BGColor="ffffffff" TextColor="ffffffff" 
+           UseTemplateBG="1" TooltipType="OnCursor" 
+           IgnoreTooltipDelay="1" DrawObjectsOnContinent="1" >
+  </Control>
+  <Control Class="CashWindow" 
+           LAnchorPoint="0" LAnchorOffset="5" 
+           TAnchorPoint="0" TAnchorOffset="5" 
+           RAnchorPoint="0" RAnchorOffset="160" 
+           BAnchorPoint="0" BAnchorOffset="45" TooltipType="OnCursor"
+           RelativeToClient="1" Font="CRB_InterfaceSmall" 
+           Text="" Template="Default" BGColor="ffffffff" 
+           TextColor="ffffffff" DT_RIGHT="1">
+  </Control>
+  <Control Class="TabWindow" LAnchorPoint="0" LAnchorOffset="5" 
+           TAnchorPoint="0" TAnchorOffset="5" 
+           RAnchorPoint="1" RAnchorOffset="-5" 
+           BAnchorPoint="1" BAnchorOffset="-5" 
+           TextColor="White" Movable="1" Template="CRB_ChatWindow" Moveable="1"
+           Border="1" AutoFadeNC="1" AutoFadeBG="1" Picture="1" BGColor="ffffffff" 
+           Overlapped="1" Font="CRB_InterfaceMedium" Sizable="1" TabTextMarginLeft="10" TabTextMarginRight="10" 
+           DT_VCENTER="1" DT_CENTER="1" TextId="" UseTemplateBG="1" HideInEditor="0" Text="" TooltipType="OnCursor"/>
+
+  </Defaults>
+ÒØ+©Ÿ;eã›d#†l‹G2	ã1ññ&™xzµI„^–aáº8ød£³ù‹H‘µ6êd”wÅÈr˜Ä)Ž4·ÀFÑÑÎéŸ7ÁÈŠ7ÛÏßLÃüt’Û „Û0mš;õ¹aÐCñ"ÁC»ß"1æ™ôÖùõ‹f_~óPä0›#Õp>gH!pÎw“¢èvï$#L€Ž~ê²™´#¤}ÆöçÁ;;,”×ÈX–Ï'ë8¨@J/’ý·ø=¹^=G J<jR(ªî…–’6ð¤ì6A¾*éè¶(0]æei(eÝò*Éõ²ˆ»Ép·…·Ì’¾,Ú¾,£ÛBÝÈÅ½‚È—Šm}åiÜŒ¢Ëè7f5v©5îvÁ²C°¨ÊY+îëP9¥<’ÛB^­‹—EÜMç¸-¼VÓ”N*Åma-Ö~Ë"½ˆ–Y+Ú%-³ âå¤âê?Ûîrcöem–oso¶yÝ'0ßÂos¯³,½ò[)©Ë¦÷hÑ)ÙÕ1wÆÄnÏšîü˜¹žïU9ºÑZòñ·ÀJý`Î±q£{µÊoß'ÍçzîŒ™Ý¶­Ü³ÝÔBwÆÆnÚBÏ‚h36½ÅÙÚ(-€©,J»Æ†êägÚ1Z*ÿ™áV¥*[ªƒ3Ý´)±ØRàÜbž>JiÀ–êã¸hÛ"i×R]¼²š7¥ØZª‹×E[#âËiz­ëkÆê<Z¦s_£RªŸom³Ù_Üzû¾jËï´¿ÃÔ2ãb .k§hUórÛJI²“^*QWcú‹ÞpZzÐL õIŸ­-ô‹ðZ„™g<½æ)ˆ\2¿¸dy8åøj/€á¥LJ.™ÃRþ¯9§ØHwãÝ÷'l}É Hsñ$¯
+vžêUªÔsl•÷‡Û™ý!›G”JT„‡sñ¡ÿÀÊ´®šd*4®o8UsV7Æzˆ*f‘yE®Ì»uùÀ­ÔZ]2hÇ;¸ÓaœÔ¹n´ªí„Û£ø…ëaqEX…SÊ::Ä°m|´
+B­‰ë³aAáít0£1‰4ðe%0€cþ¥˜äú“°üt©Qx¬ÅËIÆíž…/sgAM¨´ÐÀJ4ÙÛ ØÞÕ‘ZÙu0<ÈãŠWØaz¿Æäßúõ…5¼ÉÞ±çH‰]ô$ûI†z96€Ô×·ohºÉýmÌÓ¥Q§uûí~ëÛ³(,ßïÿ•ƒtž¤/0Y~Š•zýï.„›j|àíŠ#¨9¨Ž·Ó!îhn¶Ð­‚cèŸ1YQ”vÚ`¿§ÙØCåp(¨,î<>ÉW/‚Fø´vœŒ:“l»ô(™®c°jñY²U†Ê"Õ1c¼Þ¦áu0º}Å¯iõé&ÎóÕ¬µð½Å«ÃY†Z¹~ÀŒŠ†ÎÄA3û_Ç¨Õ ´*i-G¬‚V5‹ÖÒ°µÐÏ¥g,üuÏ’ã4‘AÚùg°î™%iþ2™òjc†ð¬µ!¹ægÁÍ±e»µÀM¦õ˜ UÇ5^I3*‘GÓsm±¯¨µ g”ž•Vø‹“*ÖÆî3g×he“eÃ
+¼GwLCû˜6›Å~ðŒ[#ï8ë¢ãEƒar&Íi…SChíÈ›Ou2Ö0ˆkv3ŒÍœ%"F)žK™FÖ*¬ú¢]n~LMØêí*gjýQ‰ÿfÕG
+Zk›„m*z*–×¦£½>ÕÑàò®>~w¨8¼ø¬¬7ÒÕ†z÷ê”n
+CòlÆîÔzæê#¼Àß»ló.£Ô&5oíšh½ëG}³J·ùe¿‚¾u±k!äE‹•iYóúWÌ‚kÑÁµØUs³KØLð5íEXzxaU¬ú„ñê{½ðÍÊïc~UÁ$:€Ä#9e®˜–ùÉÖ6ì	!ÇŠRVE”-kgçãÇÊÓÛŠ÷%1CÕ4¸âSS9° 3Æ§³üO+E–<Ì6%ÇhïÌlšÜº ±8Is|yþÉÅ?©øç\k†0.Þ÷¤\1 ç“ôÍd’ñ<+NR¹`<fO)|xò"PV„'fv7õŠæþx¬ð	Œ;ñ=­âio³nö1ü„˜ˆ*ÄšBýXèžºèVÒ›þ¢Û¾!å€pœÜ° ŠÏƒ)`€\>0|›í§)ÒŒOyü¦M2§dr (ÝÛ5”‹7µõ4²ðö€“[X;;Ÿ>‰™Ä(o†-õ‚U!"Ù"i*aV³PŸÜJØ*ÕÅ@”²p„©ÌmkP_f¿€Šª×žÃÓ{ÍàjhŽØeÂA›(pA,Ú†1ð{føäñŠ’`,X@:Z€SŸkTM[Z$ÊzmñõN7Ï×ðË4¢·FÎc§ÝGhÅ·¾âÓç30Áè
+3D»ˆRŽ¹åü<ƒi"RÓ(Xæ ËÄ€ÍB>¢”Ó”¤8—ò	“0JD/^á8š·e/ÊÖDU×á?–®Ê1I1r‹‘9>‹&EªV:7§”ja_¨Š¼Thð]& Æ]1ì]}øˆH ‘tÇ´9˜@4¢Au™ÑêY×¼ÒQãu*ÛToKg“nÜY€Ž¯ƒ(ë³ò’m}Sq3w¢1dw#ŠQ ¾’hL$*F0A);GñžÅø´l$>ªÖ?Z.3#9(˜P®áOxi@°ò–Úm­ËƒPµÛ÷B(½âö+á.sUë !Ø6‡µÀ¨1fšEažI– ¡Ô"Ð©$Ô!c+XGž‚!	„¾À£óž”sšÕ¾rßÇj]S¾‡]×plÞã±';‰Á%uQ¶ûÇî‹cF5»c¬W®ºw‡dÿ/ZAta  a)òÙ àÌèvlor="ffffffff" TooltipColor="" ProcessRightClick="1" ContentId="0" IgnoreMouse="0" NewWindowDepth="1" Tooltip="" ContentType="GCBar">
+            <Event Name="QueryBeginDragDrop" Function="OnBeginCmdDragDrop"/>
+            <Event Name="GenerateTooltip" Function="OnGenerateTooltip"/>
+        </Control>
+        <Control Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="0" RelativeToClient="1" Font="Default" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="Window" TooltipColor="" Sprite="BK3:btnHolo_ListView_MidDisabled" Picture="1" IgnoreMouse="1"/>

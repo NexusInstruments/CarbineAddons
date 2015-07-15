@@ -1,6 +1,0 @@
-<Addon Name="CRB_PathExplorerContent" Version="" Author="" APIVersion="" Description="">
-    <Script Name="PathExplorerMain.lua"/>
-    <Script Name="PathExplorerMissions.lua"/>
-    <Form Name="PathExplorerMain.xml"/>
-    <Form Name="PathExplorerMissions.xml"/>
-</Addon>

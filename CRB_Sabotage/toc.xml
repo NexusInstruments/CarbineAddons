@@ -1,4 +1,0 @@
-<Addon Name="CRB_Sabotage" Version="" Author="" APIVersion="" Description="">
-    <Script Name="CRB_Sabotage.lua"/>
-    <Form Name="CRB_Sabotage.xml"/>
-</Addon>

@@ -1,8 +1,0 @@
-<Addon Name="CRB_Warparty" APIVersion="2" Author="" Version="" Description="">
-    <Script Name="CRB_Warparty.lua"/>
-    <Form Name="CRB_Warparty.xml"/>
-    <Script Name="CRB_WarpartyRegister.lua"/>
-    <Form Name="CRB_WarpartyRegister.xml"/>
-    <Script Name="CRB_WarpartyBattle.lua"/>
-    <Form Name="CRB_WarpartyBattle.xml"/>
-</Addon>

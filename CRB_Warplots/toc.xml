@@ -1,4 +1,0 @@
-<Addon Name="CRB_Warplots" Version="" Author="" APIVersion="" Description="">
-    <Script Name="CRB_Warplots.lua"/>
-    <Form Name="CRB_Warplots.xml"/>
-</Addon>

@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
-<Addon Author="Carbine" APIVersion="3" Name="CRB_NeighborList" Version="" Description="">
-    <Script Name="NeighborsList.lua"/>
-    <Form Name="NeighborsList.xml"/>
-</Addon>

@@ -1,4 +1,0 @@
-<Addon Name="CRB_LootConfirm" Version="" Author="" APIVersion="" Description="">
-    <Script Name="CRB_LootConfirm.lua"/>
-    <Form Name="CRB_LootConfirm.xml"/>
-</Addon>

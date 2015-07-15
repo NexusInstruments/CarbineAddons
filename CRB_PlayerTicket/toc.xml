@@ -1,4 +1,0 @@
-<Addon Name="CRB_PlayerTicket" Version="" Author="" APIVersion="" Description="">
-    <Script Name="CRB_PlayerTicket.lua"/>
-    <Form Name="CRB_PlayerTicket.xml"/>
-</Addon>

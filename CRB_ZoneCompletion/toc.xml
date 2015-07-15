@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
-<Addon Author="Josh Thomas" APIVersion="3" Name="CRB_ZoneCompletion" Description="Zone and World Completion UI" Version="">
-    <Script Name="CRB_ZoneCompletion.lua"/>
-    <Form Name="CRB_ZoneCompletion.xml"/>
-</Addon>

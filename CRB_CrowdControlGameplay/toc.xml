@@ -1,4 +1,0 @@
-<Addon Name="CRB_CrowdControlGameplay" APIVersion="2" Author="" Version="" Description="">
-    <Script Name="CRB_CrowdControlGameplay.lua"/>
-    <Form Name="CRB_CrowdControlGameplay.xml"/>
-</Addon>

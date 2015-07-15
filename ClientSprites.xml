@@ -1,0 +1,863 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Sprites>
+    <Folder Name="CharacterCreateCards_" Path="ui\screens\CharacterCreate\Cards" Width="512" Height="256"/>
+    <Folder Name="Icon_TutorialSmall_" Path="ui\icon\Tutorial\Small" Width="250" Height="250"/>
+    <Folder Name="Icon_TutorialMedium_" Path="ui\icon\Tutorial\Medium" Width="400" Height="300"/>
+    <Folder Name="Icon_TutorialLarge_" Path="ui\icon\Tutorial\Large" Width="640" Height="480"/>
+    <Folder Name="Icon_TutorialXLarge_" Path="ui\icon\Tutorial\XLarge" Width="800" Height="600"/>
+    <Folder Name="Icon_TutorialDevStyle_" Path="ui\icon\Tutorial\DevStyle" Width="512" Height="512"/>
+    <Sprite Name="Clear" Cycle="1">
+        <Frame Texture="UI\Clear.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="TreeControlVLine" Cycle="1">
+        <Frame Texture="UI\JonsTestTexture.bmp" x0="112" x1="112" x2="128" x3="128" x4="128" x5="128" y0="32" y1="32" y2="48" y3="48" y4="48" y5="48" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="TreeControlLastNodeLine" Cycle="1">
+        <Frame Texture="UI\JonsTestTexture.bmp" x0="112" x1="112" x2="128" x3="128" x4="128" x5="128" y0="48" y1="48" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="TreeControlNodeLine" Cycle="1">
+        <Frame Texture="UI\JonsTestTexture.bmp" x0="112" x1="112" x2="128" x3="128" x4="128" x5="128" y0="64" y1="64" y2="80" y3="80" y4="80" y5="80" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="TreeControlCollapse" Cycle="1">
+        <Frame Texture="UI\JonsTestTexture.bmp" x0="112" x1="112" x2="128" x3="128" x4="128" x5="128" y0="80" y1="80" y2="96" y3="96" y4="96" y5="96" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="TreeControlExpand" Cycle="1">
+        <Frame Texture="UI\JonsTestTexture.bmp" x0="112" x1="112" x2="128" x3="128" x4="128" x5="128" y0="96" y1="96" y2="112" y3="112" y4="112" y5="112" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="MiniMapFrame" Cycle="1">
+        <Frame Texture="UI\MiniMapFrame.bmp" x0="5" x1="5" x2="225" x3="225" x4="225" x5="225" y0="6" y1="6" y2="225" y3="225" y4="225" y5="225" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="MiniMapPlayerArrow" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\MiniMapPieces_0_0.bmp" x0="0" x1="0" x2="33" x3="33" x4="33" x5="33" y0="0" y1="0" y2="39" y3="39" y4="39" y5="39" Stretchy="1" HotspotX="16" HotspotY="19" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="MiniMapCameraCone" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_MiniMapCone.bmp" x0="0" x1="0" x2="128" x3="128" x4="128" x5="128" y0="0" y1="0" y2="128" y3="128" y4="128" y5="128" Stretchy="1" HotspotX="64" HotspotY="64" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="MiniMapObject" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\MiniMapPieces_73_106.bmp" x0="1" x1="1" x2="12" x3="12" x4="12" x5="12" y0="1" y1="1" y2="12" y3="12" y4="12" y5="12" Stretchy="1" HotspotX="5" HotspotY="5" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="MiniMapObjectEdge" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\MiniMapPieces_35_8.bmp" x0="0" x1="0" x2="25" x3="25" x4="25" x5="25" y0="0" y1="0" y2="25" y3="25" y4="25" y5="25" Stretchy="1" HotspotX="12" HotspotY="12" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Selection" Cycle="1">
+        <Frame Texture="UI\SanctuaryPieces.bmp" x0="64" x1="64" x2="64" x3="64" x4="128" x5="128" y0="64" y1="64" y2="64" y3="64" y4="128" y5="128" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Scoreboard" Cycle="1">
+        <Frame Texture="UI\Scoreboard.bmp" x0="0" x1="0" x2="128" x3="128" x4="128" x5="128" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.500" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="PlayerHuddie" Cycle="1">
+        <Frame Texture="UI\UI_Unit_Frames.bmp" x0="0" x1="226" x2="226" x3="226" x4="226" x5="226" y0="0" y1="83" y2="83" y3="83" y4="83" y5="83" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="PlayerHuddie_Old" Cycle="1">
+        <Frame Texture="UI\512_SanctuaryTest.bmp" x0="306" x1="306" x2="512" x3="512" x4="512" x5="512" y0="0" y1="0" y2="92" y3="92" y4="92" y5="92" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="TargetHuddie" Cycle="1">
+        <Frame Texture="UI\UI_Unit_Frames.bmp" x0="0" x1="226" x2="226" x3="226" x4="226" x5="226" y0="0" y1="83" y2="83" y3="83" y4="83" y5="83" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="NameBackground_Old" Cycle="1">
+        <Frame Texture="UI\NameBackground.bmp" x0="0" x1="0" x2="116" x3="116" x4="116" x5="116" y0="0" y1="0" y2="17" y3="17" y4="17" y5="17" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="NameBackground" Cycle="1">
+        <Frame Texture="UI\NameBackground.bmp" x0="0" x1="0" x2="161" x3="161" x4="161" x5="161" y0="0" y1="0" y2="25" y3="25" y4="25" y5="25" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="NameBackgroundTarget" Cycle="1">
+        <Frame Texture="UI\NameBackground.bmp" x0="17" x1="17" x2="116" x3="116" x4="116" x5="116" y0="0" y1="0" y2="25" y3="25" y4="25" y5="25" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="NameBackgroundTarget_Old" Cycle="1">
+        <Frame Texture="UI\NameBackground.bmp" x0="0" x1="0" x2="161" x3="161" x4="161" x5="161" y0="32" y1="32" y2="57" y3="57" y4="57" y5="57" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="SpellChargeHuddie" Cycle="1">
+        <Frame Texture="UI\CastingBars.bmp" x0="0" x1="0" x2="239" x3="239" x4="239" x5="239" y0="91" y1="91" y2="128" y3="128" y4="128" y5="128" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="SpellChargeHuddie2" Cycle="1">
+        <Frame Texture="UI\CastingBars.bmp" x0="0" x1="0" x2="239" x3="239" x4="239" x5="239" y0="99" y1="99" y2="128" y3="128" y4="128" y5="128" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="SpellChargeFull" Cycle="1">
+        <Frame Texture="UI\CastingBars.bmp" x0="0" x1="0" x2="217" x3="217" x4="217" x5="217" y0="0" y1="0" y2="15" y3="15" y4="15" y5="15" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="SpellChargeFullRed" Cycle="1">
+        <Frame Texture="UI\CastingBars.bmp" x0="0" x1="0" x2="217" x3="217" x4="217" x5="217" y0="16" y1="16" y2="31" y3="31" y4="31" y5="31" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="SpellChargeFullGreen" Cycle="1">
+        <Frame Texture="UI\CastingBars.bmp" x0="0" x1="0" x2="217" x3="217" x4="217" x5="217" y0="32" y1="32" y2="47" y3="47" y4="47" y5="47" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="SpellChargeFullBlue" Cycle="1">
+        <Frame Texture="UI\CastingBars.bmp" x0="0" x1="0" x2="217" x3="217" x4="217" x5="217" y0="48" y1="48" y2="63" y3="63" y4="63" y5="63" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="SpellChargeEdgeGlow" Cycle="1">
+        <Frame Texture="UI\CastingBars.bmp" x0="235" x1="235" x2="256" x3="256" x4="256" x5="256" y0="0" y1="0" y2="21" y3="21" y4="21" y5="21" Stretchy="1" HotspotX="11" HotspotY="11" Duration="0.125" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\CastingBars.bmp" x0="235" x1="235" x2="256" x3="256" x4="256" x5="256" y0="22" y1="22" y2="43" y3="43" y4="43" y5="43" Stretchy="1" HotspotX="11" HotspotY="11" Duration="0.125" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\CastingBars.bmp" x0="235" x1="235" x2="256" x3="256" x4="256" x5="256" y0="44" y1="44" y2="65" y3="65" y4="65" y5="65" Stretchy="1" HotspotX="11" HotspotY="11" Duration="0.125" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\CastingBars.bmp" x0="235" x1="235" x2="256" x3="256" x4="256" x5="256" y0="66" y1="66" y2="87" y3="87" y4="87" y5="87" Stretchy="1" HotspotX="11" HotspotY="11" Duration="0.125" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\CastingBars.bmp" x0="235" x1="235" x2="256" x3="256" x4="256" x5="256" y0="44" y1="44" y2="65" y3="65" y4="65" y5="65" Stretchy="1" HotspotX="11" HotspotY="11" Duration="0.125" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\CastingBars.bmp" x0="235" x1="235" x2="256" x3="256" x4="256" x5="256" y0="22" y1="22" y2="43" y3="43" y4="43" y5="43" Stretchy="1" HotspotX="11" HotspotY="11" Duration="0.125" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\CastingBars.bmp" x0="235" x1="235" x2="256" x3="256" x4="256" x5="256" y0="0" y1="0" y2="21" y3="21" y4="21" y5="21" Stretchy="1" HotspotX="11" HotspotY="11" Duration="0.125" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="HealthFull" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_Unitframes_0_128.bmp" x0="0" x1="1" x2="15" x3="16" x4="30" x5="31" y0="0" y1="0" y2="0" y3="0" y4="0" y5="29" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="StaminaFull" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_Unitframes_32_128.bmp" x0="0" x1="1" x2="15" x3="16" x4="30" x5="31" y0="0" y1="0" y2="0" y3="0" y4="0" y5="29" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="HealthEmpty" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_Unitframes_0_160.bmp" x0="0" x1="1" x2="15" x3="16" x4="30" x5="31" y0="0" y1="0" y2="0" y3="0" y4="0" y5="29" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="StaminaEmpty" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_Unitframes_32_160.bmp" x0="0" x1="1" x2="15" x3="16" x4="30" x5="31" y0="0" y1="0" y2="0" y3="0" y4="0" y5="29" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="ManaFull" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_Unitframes_64_128.bmp" x0="0" x1="1" x2="15" x3="16" x4="30" x5="31" y0="0" y1="0" y2="0" y3="0" y4="0" y5="29" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="ManaEmpty" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_Unitframes_64_160.bmp" x0="0" x1="1" x2="15" x3="16" x4="30" x5="31" y0="0" y1="0" y2="0" y3="0" y4="0" y5="29" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="HoverHealthFull" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_Unitframes_96_128.bmp" x0="0" x1="1" x2="15" x3="16" x4="30" x5="31" y0="0" y1="0" y2="0" y3="0" y4="0" y5="29" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="HoverHealthEmpty" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_Unitframes_96_160.bmp" x0="0" x1="1" x2="15" x3="16" x4="30" x5="31" y0="0" y1="0" y2="0" y3="0" y4="0" y5="29" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="CommunicatorIcon" Cycle="1">
+        <Frame Texture="UI\Interface\UI_Buttons_Comm.dds" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="GroupLeaderIcon" Cycle="1">
+        <Frame Texture="UI\Interface\crown.dds" x0="0" x1="0" x2="32" x3="32" x4="32" x5="32" y0="0" y1="0" y2="32" y3="32" y4="32" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="GroupLootIcon" Cycle="1">
+        <Frame Texture="UI\Interface\bag.dds" x0="0" x1="0" x2="32" x3="32" x4="32" x5="32" y0="0" y1="0" y2="32" y3="32" y4="32" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="GroupMasterLootIcon" Cycle="1">
+        <Frame Texture="UI\Interface\bagmaster.dds" x0="0" x1="0" x2="32" x3="32" x4="32" x5="32" y0="0" y1="0" y2="32" y3="32" y4="32" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="GroupRandomLootIcon" Cycle="1">
+        <Frame Texture="UI\Interface\dice.dds" x0="0" x1="0" x2="32" x3="32" x4="32" x5="32" y0="0" y1="0" y2="32" y3="32" y4="32" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="GroupRangerIcon" Cycle="1">
+        <Frame Texture="UI\Interface\ranger.dds" x0="0" x1="0" x2="32" x3="32" x4="32" x5="32" y0="0" y1="0" y2="32" y3="32" y4="32" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="GroupWarriorIcon" Cycle="1">
+        <Frame Texture="UI\Interface\warrior.dds" x0="0" x1="0" x2="32" x3="32" x4="32" x5="32" y0="0" y1="0" y2="32" y3="32" y4="32" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="RaisedBorder" Cycle="1">
+        <Frame Texture="UI\JonsTestTexture.bmp" x0="0" x1="0" x2="0" x3="2" x4="14" x5="16" y0="0" y1="0" y2="0" y3="2" y4="14" y5="16" HotspotX="0" HotspotY="0" Duration="0.500" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="SunkenBorder" Cycle="1">
+        <Frame Texture="UI\JonsTestTexture.bmp" x0="0" x1="0" x2="0" x3="2" x4="14" x5="16" y0="16" y1="16" y2="16" y3="18" y4="30" y5="32" HotspotX="0" HotspotY="0" Duration="0.500" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="DefaultBorderLeft" Cycle="1">
+        <Frame Texture="UI\JonsTestTexture.bmp" x0="0" x1="2" x2="2" x3="2" x4="2" x5="2" y0="2" y1="2" y2="2" y3="2" y4="14" y5="14" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="DefaultBorderRight" Cycle="1">
+        <Frame Texture="UI\JonsTestTexture.bmp" x0="14" x1="14" x2="14" x3="14" x4="14" x5="16" y0="2" y1="2" y2="2" y3="2" y4="14" y5="14" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="DefaultBorderTop" Cycle="1">
+        <Frame Texture="UI\JonsTestTexture.bmp" x0="0" x1="0" x2="0" x3="2" x4="14" x5="16" y0="0" y1="0" y2="0" y3="0" y4="2" y5="2" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="DefaultBorderBottom" Cycle="1">
+        <Frame Texture="UI\JonsTestTexture.bmp" x0="0" x1="0" x2="0" x3="2" x4="14" x5="16" y0="14" y1="14" y2="14" y3="14" y4="14" y5="16" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="DefaultScrollInternal" Cycle="1">
+        <Frame Texture="UI\JonsTestTexture.bmp" x0="0" x1="0" x2="0" x3="2" x4="14" x5="16" y0="32" y1="32" y2="32" y3="32" y4="46" y5="48" HotspotX="0" HotspotY="0" Duration="0.500" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="ProgressBarEmpty" Cycle="1">
+        <Frame Texture="UI\JonsTestTexture.bmp" x0="0" x1="2" x2="2" x3="2" x4="126" x5="128" y0="112" y1="114" y2="114" y3="114" y4="118" y5="120" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="ProgressBarFull" Cycle="1">
+        <Frame Texture="UI\JonsTestTexture.bmp" x0="0" x1="2" x2="2" x3="2" x4="126" x5="128" y0="120" y1="122" y2="122" y3="122" y4="126" y5="128" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="ProgressBarTickOff" Cycle="1">
+        <Frame Texture="UI\CastingBars.bmp" x0="0" x1="0" x2="14" x3="14" x4="14" x5="14" y0="64" y1="64" y2="78" y3="78" y4="78" y5="78" Stretchy="1" HotspotX="7" HotspotY="7" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="ProgressBarTickOn" Cycle="1">
+        <Frame Texture="UI\CastingBars.bmp" x0="15" x1="15" x2="29" x3="29" x4="29" x5="29" y0="64" y1="64" y2="78" y3="78" y4="78" y5="78" Stretchy="1" HotspotX="7" HotspotY="7" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="PBComboPointsEmpty" Cycle="1">
+        <Frame Texture="UI\UI_ComboPoints.bmp" x0="0" x1="0" x2="128" x3="128" x4="128" x5="128" y0="0" y1="0" y2="16" y3="16" y4="16" y5="16" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="PBComboPointsFull" Cycle="1">
+        <Frame Texture="UI\UI_ComboPoints.bmp" x0="0" x1="0" x2="128" x3="128" x4="128" x5="128" y0="16" y1="16" y2="32" y3="32" y4="32" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="HappyFace" Cycle="1">
+        <Frame Texture="UI\JonsTestTexture.bmp" x0="96" x1="96" x2="128" x3="128" x4="128" x5="128" y0="0" y1="0" y2="32" y3="32" y4="32" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="BagWindowInfoBox" Cycle="1">
+        <Frame Texture="UI\ChatWindow.bmp" x0="0" x1="12" x2="32" x3="32" x4="52" x5="64" y0="0" y1="12" y2="32" y3="32" y4="52" y5="64" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="GreyBevBorderTopLeft" Cycle="1">
+        <Frame Texture="UI\ChatWindow.bmp" x0="0" x1="12" x2="12" x3="12" x4="12" x5="12" y0="0" y1="12" y2="12" y3="12" y4="12" y5="12" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="GreyBevBorderTopRight" Cycle="1">
+        <Frame Texture="UI\ChatWindow.bmp" x0="52" x1="64" x2="64" x3="64" x4="64" x5="64" y0="0" y1="12" y2="12" y3="12" y4="12" y5="12" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="GreyBevBorderBottomLeft" Cycle="1">
+        <Frame Texture="UI\ChatWindow.bmp" x0="0" x1="12" x2="12" x3="12" x4="12" x5="12" y0="52" y1="64" y2="64" y3="64" y4="64" y5="64" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="GreyBevBorderBottomRight" Cycle="1">
+        <Frame Texture="UI\ChatWindow.bmp" x0="52" x1="64" x2="64" x3="64" x4="64" x5="64" y0="52" y1="64" y2="64" y3="64" y4="64" y5="64" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="GreyBevBorderLeft" Cycle="1">
+        <Frame Texture="UI\ChatWindow.bmp" x0="0" x1="12" x2="12" x3="12" x4="12" x5="12" y0="12" y1="16" y2="32" y3="32" y4="48" y5="52" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="GreyBevBorderRight" Cycle="1">
+        <Frame Texture="UI\ChatWindow.bmp" x0="52" x1="64" x2="64" x3="64" x4="64" x5="64" y0="12" y1="16" y2="32" y3="32" y4="48" y5="52" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="GreyBevBorderTop" Cycle="1">
+        <Frame Texture="UI\ChatWindow.bmp" x0="12" x1="16" x2="32" x3="32" x4="48" x5="52" y0="0" y1="12" y2="12" y3="12" y4="12" y5="12" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="GreyBevBorderBottom" Cycle="1">
+        <Frame Texture="UI\ChatWindow.bmp" x0="12" x1="16" x2="32" x3="32" x4="48" x5="52" y0="52" y1="64" y2="64" y3="64" y4="64" y5="64" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="GreyBevMiddle" Cycle="1">
+        <Frame Texture="UI\ChatWindow.bmp" x0="6" x1="6" x2="58" x3="58" x4="58" x5="58" y0="6" y1="6" y2="58" y3="58" y4="58" y5="58" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="GreyDetailBorderTopLeft" Cycle="1">
+        <Frame Texture="UI\Interface\UI_Ability_Frame.bmp" x0="161" x1="170" x2="170" x3="170" x4="170" x5="170" y0="6" y1="11" y2="11" y3="11" y4="11" y5="11" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="GreyDetailBorderTopRight" Cycle="1">
+        <Frame Texture="UI\Interface\UI_Ability_Frame.dds" x0="191" x1="200" x2="200" x3="200" x4="200" x5="200" y0="6" y1="11" y2="11" y3="11" y4="11" y5="11" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="GreyDetailBorderBottomLeft" Cycle="1">
+        <Frame Texture="UI\Interface\UI_Ability_Frame.dds" x0="161" x1="170" x2="170" x3="170" x4="170" x5="170" y0="56" y1="59" y2="59" y3="59" y4="59" y5="59" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="GreyDetailBorderBottomRight" Cycle="1">
+        <Frame Texture="UI\Interface\UI_Ability_Frame.dds" x0="191" x1="200" x2="200" x3="200" x4="200" x5="200" y0="56" y1="59" y2="59" y3="59" y4="59" y5="59" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="GreyDetailBorderLeft" Cycle="1">
+        <Frame Texture="UI\Interface\UI_Ability_Frame.dds" x0="161" x1="170" x2="170" x3="170" x4="170" x5="170" y0="11" y1="56" y2="56" y3="56" y4="56" y5="56" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="GreyDetailBorderRight" Cycle="1">
+        <Frame Texture="UI\Interface\UI_Ability_Frame.dds" x0="191" x1="200" x2="200" x3="200" x4="200" x5="200" y0="11" y1="56" y2="56" y3="56" y4="56" y5="56" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="GreyDetailBorderTop" Cycle="1">
+        <Frame Texture="UI\Interface\UI_Ability_Frame.dds" x0="170" x1="178" x2="179" x3="181" x4="182" x5="191" y0="6" y1="11" y2="11" y3="11" y4="11" y5="11" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="GreyDetailBorderBottom" Cycle="1">
+        <Frame Texture="UI\Interface\UI_Ability_Frame.dds" x0="170" x1="178" x2="179" x3="181" x4="182" x5="191" y0="56" y1="59" y2="59" y3="59" y4="59" y5="59" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="GreyDetailMiddle" Cycle="1">
+        <Frame Texture="UI\Interface\UI_Ability_Frame.dds" x0="170" x1="170" x2="191" x3="191" x4="191" x5="191" y0="11" y1="11" y2="56" y3="56" y4="56" y5="56" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Reticle" Cycle="1">
+        <Frame Texture="UI\Reticle.bmp" x0="0" x1="0" x2="256" x3="256" x4="256" x5="256" y0="0" y1="0" y2="256" y3="256" y4="256" y5="256" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Frustum" Cycle="1">
+        <Frame Texture="UI\UI_Frustum.bmp" x0="0" x1="0" x2="256" x3="256" x4="256" x5="256" y0="0" y1="0" y2="256" y3="256" y4="256" y5="256" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="ReticleDot" Cycle="1">
+        <Frame Texture="UI\ReticleDot.bmp" x0="7" x1="7" x2="10" x3="10" x4="10" x5="10" y0="7" y1="7" y2="10" y3="10" y4="10" y5="10" Stretchy="1" HotspotX="1" HotspotY="1" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="IconicButtonBase" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_ButtonFrame_0_0.tga" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="IconicButtonEdgeGlow" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_ButtonFrame_64_0.tga" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="IconicButtonInnerGlow1" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_ButtonFrame_128_0.tga" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="IconicButtonInnerGlow2" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_ButtonFrame_192_0.tga" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="IconicButtonInnerGlow3" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_ButtonFrame_256_0.tga" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="BagWindow_Full" Cycle="1">
+        <Frame Texture="UI\OpaqueWindow.bmp" x0="0" x1="13" x2="31" x3="33" x4="51" x5="64" y0="0" y1="11" y2="31" y3="33" y4="51" y5="64" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="BagWindow_Bar" Cycle="1">
+        <Frame Texture="UI\Clear.bmp" x0="13" x1="13" x2="25" x3="26" x4="37" x5="37" y0="7" y1="16" y2="17" y3="20" y4="21" y5="29" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="BagWindow_Top" Cycle="1">
+        <Frame Texture="UI\OpaqueWindow.bmp" x0="0" x1="13" x2="31" x3="33" x4="51" x5="64" y0="0" y1="13" y2="29" y3="30" y4="51" y5="51" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="BagWindow_Middle" Cycle="1">
+        <Frame Texture="UI\OpaqueWindow.bmp" x0="0" x1="13" x2="31" x3="33" x4="51" x5="64" y0="13" y1="13" y2="19" y3="20" y4="24" y5="24" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="BagWindow_Bottom" Cycle="1">
+        <Frame Texture="UI\OpaqueWindow.bmp" x0="0" x1="13" x2="31" x3="33" x4="51" x5="64" y0="13" y1="13" y2="31" y3="33" y4="51" y5="64" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="BagWindow_Left" Cycle="1">
+        <Frame Texture="UI\OpaqueWindow.bmp" x0="0" x1="13" x2="13" x3="13" x4="13" x5="13" y0="13" y1="13" y2="19" y3="19" y4="19" y5="19" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="BagWindow_Right" Cycle="1">
+        <Frame Texture="UI\OpaqueWindow.bmp" x0="51" x1="51" x2="51" x3="51" x4="51" x5="64" y0="13" y1="13" y2="19" y3="19" y4="19" y5="19" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="BagWindowBox" Cycle="1">
+        <Frame Texture="UI\BagWindowBox.bmp" x0="0" x1="10" x2="31" x3="33" x4="54" x5="64" y0="0" y1="10" y2="31" y3="33" y4="54" y5="64" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="BagWindowMouseOver" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\BagWindowMouseOver.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="BagWindowClick" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\BagWindowClick.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="ItemIcon_Generic" Cycle="1">
+        <Frame Texture="UI\ItemIcons_Test.bmp" x0="192" x1="192" x2="256" x3="256" x4="256" x5="256" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_BerserkerStance" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Icons_Abilities.dds" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_Slash" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Icons_Abilities.dds" x0="64" x1="64" x2="128" x3="128" x4="128" x5="128" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_Execute" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Icons_Abilities.dds" x0="128" x1="128" x2="192" x3="192" x4="192" x5="192" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_WeaponBlock" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Icons_Abilities.dds" x0="192" x1="192" x2="256" x3="256" x4="256" x5="256" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_Pierce" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Icons_Abilities.dds" x0="256" x1="256" x2="320" x3="320" x4="320" x5="320" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_Hobble" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Icons_Abilities.dds" x0="320" x1="320" x2="384" x3="384" x4="384" x5="384" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_Sprint" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Icons_Abilities.dds" x0="320" x1="320" x2="384" x3="384" x4="384" x5="384" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_Bladestorm" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Icons_Abilities.dds" x0="384" x1="384" x2="448" x3="448" x4="448" x5="448" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_Impale" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Icons_Abilities.dds" x0="448" x1="448" x2="512" x3="512" x4="512" x5="512" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_Enrage" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Icons_Abilities.dds" x0="512" x1="512" x2="576" x3="576" x4="576" x5="576" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_BerserkerFury" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Icons_Abilities.dds" x0="576" x1="576" x2="640" x3="640" x4="640" x5="640" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_PowerSlash" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Icons_Abilities.dds" x0="640" x1="640" x2="704" x3="704" x4="704" x5="704" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_DefenderStance" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Icons_Abilities.dds" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="64" y1="64" y2="128" y3="128" y4="128" y5="128" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_ShieldBash" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Icons_Abilities.dds" x0="64" x1="64" x2="128" x3="128" x4="128" x5="128" y0="64" y1="64" y2="128" y3="128" y4="128" y5="128" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_ShieldBlock" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Icons_Abilities.dds" x0="128" x1="128" x2="192" x3="192" x4="192" x5="192" y0="64" y1="64" y2="128" y3="128" y4="128" y5="128" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_Recover" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Icons_Abilities.dds" x0="192" x1="192" x2="256" x3="256" x4="256" x5="256" y0="64" y1="64" y2="128" y3="128" y4="128" y5="128" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_ShieldSlice" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Icons_Abilities.dds" x0="256" x1="256" x2="320" x3="320" x4="320" x5="320" y0="64" y1="64" y2="128" y3="128" y4="128" y5="128" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_ShieldThrow" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Icons_Abilities.dds" x0="448" x1="448" x2="512" x3="512" x4="512" x5="512" y0="64" y1="64" y2="128" y3="128" y4="128" y5="128" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_Slam" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Icons_Abilities.dds" x0="512" x1="512" x2="576" x3="576" x4="576" x5="576" y0="64" y1="64" y2="128" y3="128" y4="128" y5="128" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_JuggernautRage" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Icons_Abilities.dds" x0="576" x1="576" x2="640" x3="640" x4="640" x5="640" y0="64" y1="64" y2="128" y3="128" y4="128" y5="128" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_ShootRifle" Cycle="1">
+        <Frame Texture="UI\Iconbar_Ranger.dds" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_ChargedShot" Cycle="1">
+        <Frame Texture="UI\Iconbar_Ranger.dds" x0="64" x1="64" x2="128" x3="128" x4="128" x5="128" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_Wound" Cycle="1">
+        <Frame Texture="UI\Iconbar_Ranger.dds" x0="128" x1="128" x2="192" x3="192" x4="192" x5="192" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_Kneecap" Cycle="1">
+        <Frame Texture="UI\Iconbar_Ranger.dds" x0="192" x1="192" x2="256" x3="256" x4="256" x5="256" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_ToxicShot" Cycle="1">
+        <Frame Texture="UI\Iconbar_Ranger.dds" x0="256" x1="256" x2="320" x3="320" x4="320" x5="320" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_ArmorPierce" Cycle="1">
+        <Frame Texture="UI\Iconbar_Ranger.dds" x0="320" x1="320" x2="384" x3="384" x4="384" x5="384" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_Explosive" Cycle="1">
+        <Frame Texture="UI\Iconbar_Ranger.dds" x0="384" x1="384" x2="448" x3="448" x4="448" x5="448" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_ShootPistols" Cycle="1">
+        <Frame Texture="UI\Iconbar_Ranger.dds" x0="512" x1="512" x2="576" x3="576" x4="576" x5="576" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_Reload" Cycle="1">
+        <Frame Texture="UI\Iconbar_Ranger.dds" x0="576" x1="576" x2="640" x3="640" x4="640" x5="640" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_ForceField" Cycle="1">
+        <Frame Texture="UI\Iconbar_Ranger.dds" x0="640" x1="640" x2="704" x3="704" x4="704" x5="704" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Icon_MedKit" Cycle="1">
+        <Frame Texture="UI\Iconbar_Ranger.dds" x0="704" x1="704" x2="768" x3="768" x4="768" x5="768" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestComplete" Cycle="1">
+        <Frame Texture="UI\Interface\Quest_Complete.tga" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestIncomplete" Cycle="1">
+        <Frame Texture="UI\Interface\Quest_Incomplete.tga" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestNew" Cycle="1">
+        <Frame Texture="UI\Interface\Quest_New.tga" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestGossip" Cycle="1">
+        <Frame Texture="UI\Interface\Quest_Gossip.tga" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestHighlight" Cycle="1">
+        <Frame Texture="UI\Interface\Quest_Highlight.tga" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="32" y3="32" y4="32" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="UI_Temp_Armor" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Temp_Armor.DDS" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="UI_Grimoire_01" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Quest_Icons.DDS" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="UI_Disguise_01" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Quest_Icons.DDS" x0="65" x1="65" x2="129" x3="129" x4="129" x5="129" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="UI_Couplers_01" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Quest_Icons.DDS" x0="129" x1="129" x2="193" x3="193" x4="193" x5="193" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="UI_Tools_01" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Quest_Icons.DDS" x0="193" x1="193" x2="257" x3="257" x4="257" x5="257" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="UI_KeyCard_01" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Quest_Icons.DDS" x0="257" x1="257" x2="321" x3="321" x4="321" x5="321" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="UI_AmmoCrate_01" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Quest_Icons.DDS" x0="321" x1="321" x2="385" x3="385" x4="385" x5="385" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="UI_Temp_Quest" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Temp_Quest.DDS" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="UI_Temp_Weapon" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Temp_Weapon.DDS" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="UI_Temp_Sellitem" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Temp_Sellitem.DDS" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="UI_Disconnect_Icon" Cycle="1">
+        <Frame Texture="UI\Icons\UI_Disconnect_Icon.DDS" x0="0" x1="0" x2="256" x3="256" x4="256" x5="256" y0="0" y1="0" y2="256" y3="256" y4="256" y5="256" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="CashIcon_Platinum" Cycle="1">
+        <Frame Texture="UI\MoneyIcons.bmp" x0="0" x1="0" x2="32" x3="32" x4="32" x5="32" y0="0" y1="0" y2="32" y3="32" y4="32" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="CashIcon_Gold" Cycle="1">
+        <Frame Texture="UI\MoneyIcons.bmp" x0="32" x1="32" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="32" y3="32" y4="32" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="CashIcon_Silver" Cycle="1">
+        <Frame Texture="UI\MoneyIcons.bmp" x0="64" x1="64" x2="96" x3="96" x4="96" x5="96" y0="0" y1="0" y2="32" y3="32" y4="32" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="CashIcon_Copper" Cycle="1">
+        <Frame Texture="UI\MoneyIcons.bmp" x0="96" x1="96" x2="128" x3="128" x4="128" x5="128" y0="0" y1="0" y2="32" y3="32" y4="32" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="CashIcon_Dollar" Cycle="1">
+        <Frame Texture="UI\MoneyIcons.bmp" x0="128" x1="128" x2="160" x3="160" x4="160" x5="160" y0="0" y1="0" y2="32" y3="32" y4="32" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="CashIcon_Crown" Cycle="1">
+        <Frame Texture="UI\MoneyIcons.bmp" x0="160" x1="160" x2="192" x3="192" x4="192" x5="192" y0="0" y1="0" y2="32" y3="32" y4="32" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="CashIcon_Star" Cycle="1">
+        <Frame Texture="UI\MoneyIcons.bmp" x0="192" x1="192" x2="224" x3="224" x4="224" x5="224" y0="0" y1="0" y2="32" y3="32" y4="32" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="CashIcon_Sickle" Cycle="1">
+        <Frame Texture="UI\MoneyIcons.bmp" x0="224" x1="224" x2="256" x3="256" x4="256" x5="256" y0="0" y1="0" y2="32" y3="32" y4="32" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="ZLockIndicator" Cycle="1">
+        <Frame Texture="UI\UI_ZLockIndicator.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="32" HotspotY="32" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="TargetOffscreenLeft" Cycle="1">
+        <Frame Texture="UI\UI_ScreenArrows.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="32" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="TargetOffscreenBottom" Cycle="1">
+        <Frame Texture="UI\UI_ScreenArrows.bmp" x0="64" x1="64" x2="128" x3="128" x4="128" x5="128" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="32" HotspotY="64" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="TargetOffscreenRight" Cycle="1">
+        <Frame Texture="UI\UI_ScreenArrows.bmp" x0="128" x1="128" x2="192" x3="192" x4="192" x5="192" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="64" HotspotY="32" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="TargetOffscreenTop" Cycle="1">
+        <Frame Texture="UI\UI_ScreenArrows.bmp" x0="192" x1="192" x2="256" x3="256" x4="256" x5="256" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="32" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="TargetOffscreenLeftBorder" Cycle="1">
+        <Frame Texture="UI\UI_ScreenArrows.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="64" y1="64" y2="128" y3="128" y4="128" y5="128" Stretchy="1" HotspotX="0" HotspotY="32" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="TargetOffscreenBottomBorder" Cycle="1">
+        <Frame Texture="UI\UI_ScreenArrows.bmp" x0="64" x1="64" x2="128" x3="128" x4="128" x5="128" y0="64" y1="64" y2="128" y3="128" y4="128" y5="128" Stretchy="1" HotspotX="32" HotspotY="64" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="TargetOffscreenRightBorder" Cycle="1">
+        <Frame Texture="UI\UI_ScreenArrows.bmp" x0="128" x1="128" x2="192" x3="192" x4="192" x5="192" y0="64" y1="64" y2="128" y3="128" y4="128" y5="128" Stretchy="1" HotspotX="64" HotspotY="32" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="TargetOffscreenTopBorder" Cycle="1">
+        <Frame Texture="UI\UI_ScreenArrows.bmp" x0="192" x1="192" x2="256" x3="256" x4="256" x5="256" y0="64" y1="64" y2="128" y3="128" y4="128" y5="128" Stretchy="1" HotspotX="32" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="StanceIcon_Elementalist1Active" Cycle="1">
+        <Frame Texture="UI\UI_Elementalist_Stances.bmp" x0="0" x1="0" x2="128" x3="128" x4="128" x5="128" y0="0" y1="0" y2="128" y3="128" y4="128" y5="128" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="StanceIcon_Elementalist1Inactive" Cycle="1">
+        <Frame Texture="UI\UI_Elementalist_Stances.bmp" x0="128" x1="128" x2="256" x3="256" x4="256" x5="256" y0="0" y1="0" y2="128" y3="128" y4="128" y5="128" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="StanceIcon_Elementalist0Active" Cycle="1">
+        <Frame Texture="UI\UI_Elementalist_Stances.bmp" x0="0" x1="0" x2="128" x3="128" x4="128" x5="128" y0="128" y1="128" y2="256" y3="256" y4="256" y5="256" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="StanceIcon_Elementalist0Inactive" Cycle="1">
+        <Frame Texture="UI\UI_Elementalist_Stances.bmp" x0="128" x1="128" x2="256" x3="256" x4="256" x5="256" y0="128" y1="128" y2="256" y3="256" y4="256" y5="256" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="StanceIcon_Warrior0Inactive" Cycle="1">
+        <Frame Texture="UI\UI_Warrior_Stances.bmp" x0="128" x1="128" x2="256" x3="256" x4="256" x5="256" y0="128" y1="128" y2="256" y3="256" y4="256" y5="256" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="StanceIcon_Warrior1Active" Cycle="1">
+        <Frame Texture="UI\UI_Warrior_Stances.bmp" x0="0" x1="0" x2="128" x3="128" x4="128" x5="128" y0="0" y1="0" y2="128" y3="128" y4="128" y5="128" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="StanceIcon_Warrior1Inactive" Cycle="1">
+        <Frame Texture="UI\UI_Warrior_Stances.bmp" x0="128" x1="128" x2="256" x3="256" x4="256" x5="256" y0="0" y1="0" y2="128" y3="128" y4="128" y5="128" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="StanceIcon_Warrior0Active" Cycle="1">
+        <Frame Texture="UI\UI_Warrior_Stances.bmp" x0="0" x1="0" x2="128" x3="128" x4="128" x5="128" y0="128" y1="128" y2="256" y3="256" y4="256" y5="256" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="MouseOverlay" Cycle="1">
+        <Frame Texture="UI\UI_Mouse.bmp" x0="0" x1="0" x2="192" x3="192" x4="192" x5="192" y0="0" y1="0" y2="192" y3="192" y4="192" y5="192" Stretchy="1" HotspotX="96" HotspotY="32" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="HitRing" Cycle="1">
+        <Frame Texture="UI\UI_HitRing.bmp" x0="0" x1="0" x2="256" x3="256" x4="256" x5="256" y0="0" y1="0" y2="256" y3="256" y4="256" y5="256" Stretchy="1" HotspotX="128" HotspotY="128" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="LootCloseBox" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_Accept_Decline_0_64.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="TargetHealthBarFull" Cycle="1">
+        <Frame Texture="UI\UI_Unit_Frames.bmp" x0="17" x1="152" x2="152" x3="152" x4="152" x5="152" y0="86" y1="103" y2="103" y3="103" y4="103" y5="103" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="TargetManaBarFull" Cycle="1">
+        <Frame Texture="UI\UI_Unit_Frames.bmp" x0="22" x1="142" x2="142" x3="142" x4="142" x5="142" y0="103" y1="116" y2="116" y3="116" y4="116" y5="116" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="TargetStaminaBarFull" Cycle="1">
+        <Frame Texture="UI\UI_Unit_Frames.bmp" x0="19" x1="135" x2="135" x3="135" x4="135" x5="135" y0="116" y1="128" y2="128" y3="128" y4="128" y5="128" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestJewel_Accept" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_QuestJewels_0_320.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestJewel_MoreInfo" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_QuestJewels_64_320.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestJewel_Decline" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_QuestJewels_128_320.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestJewel_SilverRing" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_QuestJewels_0_384.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestJewel_GoldRing" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_QuestJewels_64_384.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestJewel_Offer_Grey" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_QuestJewels_0_0.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestJewel_Incomplete_Grey" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_QuestJewels_64_0.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestJewel_Offer_Green" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_QuestJewels_0_64.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestJewel_Incomplete_Green" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_QuestJewels_64_64.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestJewel_Offer_Yellow" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_QuestJewels_0_128.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestJewel_Incomplete_Yellow" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_QuestJewels_64_128.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestJewel_Offer_Orange" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_QuestJewels_0_192.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestJewel_Incomplete_Orange" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_QuestJewels_64_192.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestJewel_Offer_Red" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_QuestJewels_0_256.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestJewel_Incomplete_Red" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_QuestJewels_64_256.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestJewel_Complete_Grey" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_QuestJewels_128_0.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestJewel_Complete_Green" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_QuestJewels_128_64.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestJewel_Complete_Yellow" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_QuestJewels_128_128.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestJewel_Complete_Orange" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_QuestJewels_128_192.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestJewel_Complete_Red" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_QuestJewels_128_256.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="ChatBubbleRight" Cycle="1">
+        <Frame Texture="UI\UI_ChatBubble_Right.bmp" x0="0" x1="9" x2="22" x3="39" x4="55" x5="64" y0="0" y1="9" y2="20" y3="31" y4="42" y5="64" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="ChatBubbleLeft" Cycle="1">
+        <Frame Texture="UI\UI_ChatBubble_Left.bmp" x0="0" x1="29" x2="35" x3="41" x4="48" x5="64" y0="0" y1="15" y2="21" y3="42" y4="49" y5="64" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="LockedSymbol" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\BagWindowButtons_2_32.bmp" x0="40" x1="40" x2="53" x3="53" x4="53" x5="53" y0="0" y1="0" y2="14" y3="14" y4="14" y5="14" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="UnlockedSymbol" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\BagWindowButtons_55_32.bmp" x0="0" x1="0" x2="18" x3="18" x4="18" x5="18" y0="0" y1="0" y2="14" y3="14" y4="14" y5="14" Stretchy="1" HotspotX="5" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="EliteMobGold" Cycle="1">
+        <Frame Texture="UI\UI_Elite.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="124" y3="124" y4="124" y5="124" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Frenzy_EmptyBlack" Cycle="1">
+        <Frame Texture="UI\UI_FrenzyBar.bmp" x0="0" x1="0" x2="280" x3="280" x4="280" x5="280" y0="0" y1="0" y2="73" y3="73" y4="73" y5="73" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ff000000" EndColor="ff000000"/>
+    </Sprite>
+    <Sprite Name="Frenzy_Empty" Cycle="1">
+        <Frame Texture="UI\UI_FrenzyBar.bmp" x0="0" x1="0" x2="280" x3="280" x4="280" x5="280" y0="0" y1="0" y2="73" y3="73" y4="73" y5="73" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="Frenzy_Full" Cycle="1">
+        <Frame Texture="UI\UI_FrenzyBar.bmp" x0="0" x1="0" x2="280" x3="280" x4="280" x5="280" y0="129" y1="129" y2="202" y3="202" y4="202" y5="202" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffff0000" EndColor="ffff0000"/>
+    </Sprite>
+    <Sprite Name="Frenzy_Frame" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_Unitframes_0_192.bmp" x0="0" x1="0" x2="399" x3="399" x4="399" x5="399" y0="0" y1="0" y2="35" y3="35" y4="35" y5="35" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="EliteNameplate" Cycle="1">
+        <Frame Texture="UI\UI_Elite.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="128" y3="128" y4="128" y5="128" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="PlusHealthBarFull" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_Unitframes_64_320.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="PlusHealthBarEmpty" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_Unitframes_64_384.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="LeftBracketBarFull" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_Unitframes_0_320.bmp" x0="0" x1="0" x2="43" x3="43" x4="43" x5="43" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="LeftBracketBarEmpty" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_Unitframes_0_384.bmp" x0="0" x1="0" x2="43" x3="43" x4="43" x5="43" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="RightBracketBarFull" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_Unitframes_149_320.bmp" x0="0" x1="0" x2="43" x3="43" x4="43" x5="43" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="RightBracketBarEmpty" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_Unitframes_149_384.bmp" x0="0" x1="0" x2="43" x3="43" x4="43" x5="43" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="HuddieLevelCircle" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_Unitframes_1_449.bmp" x0="0" x1="0" x2="28" x3="28" x4="28" x5="28" y0="0" y1="0" y2="28" y3="28" y4="28" y5="28" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="ComboStarEmpty" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_Unitframes_32_448.bmp" x0="0" x1="0" x2="32" x3="32" x4="32" x5="32" y0="0" y1="0" y2="32" y3="32" y4="32" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="ComboStarFull" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_Unitframes_32_480.bmp" x0="0" x1="0" x2="32" x3="32" x4="32" x5="32" y0="0" y1="0" y2="32" y3="32" y4="32" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="ComboBloodEmpty" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_ComboIcons_30_30.bmp" x0="0" x1="0" x2="23" x3="23" x4="23" x5="23" y0="26" y1="26" y2="53" y3="53" y4="53" y5="53" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="ComboBloodFill" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_ComboIcons_30_30.bmp" x0="0" x1="0" x2="23" x3="23" x4="23" x5="23" y0="0" y1="0" y2="27" y3="27" y4="27" y5="27" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="ComboShieldEmpty" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_ComboIcons_2_57.bmp" x0="0" x1="0" x2="21" x3="21" x4="21" x5="21" y0="0" y1="0" y2="25" y3="25" y4="25" y5="25" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="ComboShieldFull" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_ComboIcons_2_2.bmp" x0="0" x1="0" x2="21" x3="21" x4="21" x5="21" y0="0" y1="0" y2="25" y3="25" y4="25" y5="25" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.500" StartColor="ffffffff" EndColor="ff0000ff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_ComboIcons_2_2.bmp" x0="0" x1="0" x2="21" x3="21" x4="21" x5="21" y0="0" y1="0" y2="25" y3="25" y4="25" y5="25" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.500" StartColor="ff0000ff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestJewel_Choose_QuestNew" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_QuestJewels_0_448.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestJewel_Choose_QuestContinue" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_QuestJewels_64_448.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestJewel_Choose_QuestComplete" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_QuestJewels_128_448.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="AB_Activate" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_ActionBarButton_Active.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffff0000" EndColor="ffffff00"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_ActionBarButton_Active.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffff00" EndColor="ffff0000"/>
+    </Sprite>
+    <Sprite Name="Huddie_Portrait_Frame" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_Unitframes_224_384.bmp" x0="0" x1="10" x2="32" x3="32" x4="54" x5="64" y0="0" y1="10" y2="32" y3="32" y4="54" y5="64" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="MiniMapNewQuest" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\MiniMapPieces_4_65.bmp" x0="0" x1="0" x2="24" x3="24" x4="24" x5="24" y0="0" y1="0" y2="28" y3="28" y4="28" y5="28" Stretchy="1" HotspotX="11" HotspotY="16" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="MiniMapQuestContinue" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\MiniMapPieces_36_65.bmp" x0="0" x1="0" x2="24" x3="24" x4="24" x5="24" y0="0" y1="0" y2="28" y3="28" y4="28" y5="28" Stretchy="1" HotspotX="12" HotspotY="16" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="MiniMapQuestComplete" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\MiniMapPieces_68_65.bmp" x0="0" x1="0" x2="25" x3="25" x4="25" x5="25" y0="0" y1="0" y2="28" y3="28" y4="28" y5="28" Stretchy="1" HotspotX="12" HotspotY="17" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="HuddieNameplateFrame" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_Unitframes_0_288.bmp" x0="0" x1="5" x2="83" x3="84" x4="163" x5="168" y0="0" y1="5" y2="10" y3="11" y4="19" y5="24" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="ComboShieldFill" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_ComboIcons_2_30.bmp" x0="0" x1="0" x2="21" x3="21" x4="21" x5="21" y0="0" y1="0" y2="25" y3="25" y4="25" y5="25" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="ComboBloodFull" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_ComboIcons_30_2.bmp" x0="0" x1="0" x2="23" x3="23" x4="23" x5="23" y0="0" y1="0" y2="27" y3="27" y4="27" y5="27" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.500" StartColor="ffffffff" EndColor="ffff0000"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_ComboIcons_30_2.bmp" x0="0" x1="0" x2="23" x3="23" x4="23" x5="23" y0="0" y1="0" y2="27" y3="27" y4="27" y5="27" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.500" StartColor="ffff0000" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="QuestJewel_Details" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_QuestJewels_192_320.bmp" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="UI_Gleam" Cycle="1">
+        <Frame Texture="UI\Icons\Icon_Highlight.tga" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.300" StartColor="0" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="MiniMapCommIcon" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\Comm_Icon.tga" x0="0" x1="0" x2="32" x3="32" x4="32" x5="32" y0="0" y1="0" y2="32" y3="32" y4="32" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="ActionBarFrame" Cycle="1">
+        <Frame Texture="UI\ActionBar\UI_a_actionbar_BaseTexture.tga" x0="0" x1="0" x2="1231" x3="1231" x4="1231" x5="1231" y0="0" y1="0" y2="102" y3="102" y4="102" y5="102" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="DialogInnerFrame" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_DialogInnerFrame.bmp" x0="0" x1="6" x2="31" x3="32" x4="58" x5="64" y0="0" y1="6" y2="31" y3="32" y4="58" y5="64" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="MiniMapSoonQuest" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\MiniMapPieces_4_65.bmp" x0="0" x1="0" x2="24" x3="24" x4="24" x5="24" y0="0" y1="0" y2="28" y3="28" y4="28" y5="28" Stretchy="1" HotspotX="11" HotspotY="16" Duration="1.000" StartColor="ff4e4e4e" EndColor="ff4e4e4e"/>
+    </Sprite>
+    <Sprite Name="TooltipClusterDifficulty" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_TooltipClusterDifficulty.tga" x0="0" x1="0" x2="11" x3="11" x4="11" x5="11" y0="0" y1="0" y2="11" y3="11" y4="11" y5="11" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="MiniMapFriendDiamond" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\MiniMapPieces_41_102.bmp" x0="0" x1="0" x2="0" x3="0" x4="0" x5="16" y0="0" y1="0" y2="0" y3="0" y4="0" y5="17" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="WhiteFlash" Cycle="0">
+        <Frame Texture="UI\Assets\Textures\UI_WhiteBG.bmp" x0="0" x1="0" x2="0" x3="0" x4="64" x5="64" y0="0" y1="0" y2="0" y3="0" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.100" StartColor="64ffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\Textures\UI_WhiteBG.bmp" x0="0" x1="0" x2="0" x3="0" x4="64" x5="64" y0="0" y1="0" y2="0" y3="0" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.600" StartColor="ffffffff" EndColor="ffffff"/>
+    </Sprite>
+    <Sprite Name="WhiteCirclePulse" Cycle="1">
+        <Frame Texture="UI\UI_WhiteCircle.bmp" x0="0" x1="0" x2="0" x3="0" x4="0" x5="256" y0="0" y1="0" y2="0" y3="0" y4="0" y5="256" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="64ffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\UI_WhiteCircle.bmp" x0="0" x1="0" x2="0" x3="0" x4="0" x5="256" y0="0" y1="0" y2="0" y3="0" y4="0" y5="256" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="64ffffff"/>
+    </Sprite>
+    <Sprite Name="sprItem_New" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="70" y0="0" y1="0" y2="0" y3="0" y4="0" y5="69" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="70" y0="69" y1="69" y2="69" y3="69" y4="69" y5="138" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="70" y0="138" y1="138" y2="138" y3="138" y4="138" y5="207" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="70" y0="207" y1="207" y2="207" y3="207" y4="207" y5="276" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="70" y0="276" y1="276" y2="276" y3="276" y4="276" y5="345" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="70" y0="345" y1="345" y2="345" y3="345" y4="345" y5="414" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="70" x1="70" x2="70" x3="70" x4="70" x5="140" y0="0" y1="0" y2="0" y3="0" y4="0" y5="69" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="70" x1="70" x2="70" x3="70" x4="70" x5="140" y0="69" y1="69" y2="69" y3="69" y4="69" y5="138" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="70" x1="70" x2="70" x3="70" x4="70" x5="140" y0="138" y1="138" y2="138" y3="138" y4="138" y5="207" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="70" x1="70" x2="70" x3="70" x4="70" x5="140" y0="207" y1="207" y2="207" y3="207" y4="207" y5="276" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="70" x1="70" x2="70" x3="70" x4="70" x5="140" y0="276" y1="276" y2="276" y3="276" y4="276" y5="345" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="70" x1="70" x2="70" x3="70" x4="70" x5="140" y0="345" y1="345" y2="345" y3="345" y4="345" y5="414" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="140" x1="140" x2="140" x3="140" x4="140" x5="210" y0="0" y1="0" y2="0" y3="0" y4="0" y5="69" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="140" x1="140" x2="140" x3="140" x4="140" x5="210" y0="69" y1="69" y2="69" y3="69" y4="69" y5="138" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="140" x1="140" x2="140" x3="140" x4="140" x5="210" y0="138" y1="138" y2="138" y3="138" y4="138" y5="207" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="140" x1="140" x2="140" x3="140" x4="140" x5="210" y0="207" y1="207" y2="207" y3="207" y4="207" y5="276" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="140" x1="140" x2="140" x3="140" x4="140" x5="210" y0="276" y1="276" y2="276" y3="276" y4="276" y5="345" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="140" x1="140" x2="140" x3="140" x4="140" x5="210" y0="345" y1="345" y2="345" y3="345" y4="345" y5="414" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="210" x1="210" x2="210" x3="210" x4="210" x5="280" y0="0" y1="0" y2="0" y3="0" y4="0" y5="69" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="210" x1="210" x2="210" x3="210" x4="210" x5="280" y0="69" y1="69" y2="69" y3="69" y4="69" y5="138" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="210" x1="210" x2="210" x3="210" x4="210" x5="280" y0="138" y1="138" y2="138" y3="138" y4="138" y5="207" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="210" x1="210" x2="210" x3="210" x4="210" x5="280" y0="207" y1="207" y2="207" y3="207" y4="207" y5="276" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="210" x1="210" x2="210" x3="210" x4="210" x5="280" y0="276" y1="276" y2="276" y3="276" y4="276" y5="345" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="210" x1="210" x2="210" x3="210" x4="210" x5="280" y0="345" y1="345" y2="345" y3="345" y4="345" y5="414" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="280" x1="280" x2="280" x3="280" x4="280" x5="350" y0="0" y1="0" y2="0" y3="0" y4="0" y5="69" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="280" x1="280" x2="280" x3="280" x4="280" x5="350" y0="69" y1="69" y2="69" y3="69" y4="69" y5="138" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="280" x1="280" x2="280" x3="280" x4="280" x5="350" y0="138" y1="138" y2="138" y3="138" y4="138" y5="207" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="280" x1="280" x2="280" x3="280" x4="280" x5="350" y0="207" y1="207" y2="207" y3="207" y4="207" y5="276" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="280" x1="280" x2="280" x3="280" x4="280" x5="350" y0="276" y1="276" y2="276" y3="276" y4="276" y5="345" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_NewItem.tga" x0="280" x1="280" x2="280" x3="280" x4="280" x5="350" y0="345" y1="345" y2="345" y3="345" y4="345" y5="414" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="sprItem_NewQuest" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="84" y0="0" y1="0" y2="0" y3="0" y4="0" y5="83" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="84" y0="83" y1="83" y2="83" y3="83" y4="83" y5="166" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="84" y0="166" y1="166" y2="166" y3="166" y4="166" y5="249" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="84" y0="249" y1="249" y2="249" y3="249" y4="249" y5="332" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="84" y0="332" y1="332" y2="332" y3="332" y4="332" y5="415" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="84" y0="415" y1="415" y2="415" y3="415" y4="415" y5="498" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="84" x1="84" x2="84" x3="84" x4="84" x5="168" y0="0" y1="0" y2="0" y3="0" y4="0" y5="83" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="84" x1="84" x2="84" x3="84" x4="84" x5="168" y0="83" y1="83" y2="83" y3="83" y4="83" y5="166" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="84" x1="84" x2="84" x3="84" x4="84" x5="168" y0="166" y1="166" y2="166" y3="166" y4="166" y5="249" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="84" x1="84" x2="84" x3="84" x4="84" x5="168" y0="249" y1="249" y2="249" y3="249" y4="249" y5="332" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="84" x1="84" x2="84" x3="84" x4="84" x5="168" y0="332" y1="332" y2="332" y3="332" y4="332" y5="415" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="84" x1="84" x2="84" x3="84" x4="84" x5="168" y0="415" y1="415" y2="415" y3="415" y4="415" y5="498" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="168" x1="168" x2="168" x3="168" x4="168" x5="252" y0="0" y1="0" y2="0" y3="0" y4="0" y5="83" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="168" x1="168" x2="168" x3="168" x4="168" x5="252" y0="83" y1="83" y2="83" y3="83" y4="83" y5="166" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="168" x1="168" x2="168" x3="168" x4="168" x5="252" y0="166" y1="166" y2="166" y3="166" y4="166" y5="249" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="168" x1="168" x2="168" x3="168" x4="168" x5="252" y0="249" y1="249" y2="249" y3="249" y4="249" y5="332" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="168" x1="168" x2="168" x3="168" x4="168" x5="252" y0="332" y1="332" y2="332" y3="332" y4="332" y5="415" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="168" x1="168" x2="168" x3="168" x4="168" x5="252" y0="415" y1="415" y2="415" y3="415" y4="415" y5="498" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="252" x1="252" x2="252" x3="252" x4="252" x5="336" y0="0" y1="0" y2="0" y3="0" y4="0" y5="83" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="252" x1="252" x2="252" x3="252" x4="252" x5="336" y0="83" y1="83" y2="83" y3="83" y4="83" y5="166" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="252" x1="252" x2="252" x3="252" x4="252" x5="336" y0="166" y1="166" y2="166" y3="166" y4="166" y5="249" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="252" x1="252" x2="252" x3="252" x4="252" x5="336" y0="249" y1="249" y2="249" y3="249" y4="249" y5="332" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="252" x1="252" x2="252" x3="252" x4="252" x5="336" y0="332" y1="332" y2="332" y3="332" y4="332" y5="415" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="252" x1="252" x2="252" x3="252" x4="252" x5="336" y0="415" y1="415" y2="415" y3="415" y4="415" y5="498" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="336" x1="336" x2="336" x3="336" x4="336" x5="420" y0="0" y1="0" y2="0" y3="0" y4="0" y5="83" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="336" x1="336" x2="336" x3="336" x4="336" x5="420" y0="83" y1="83" y2="83" y3="83" y4="83" y5="166" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="336" x1="336" x2="336" x3="336" x4="336" x5="420" y0="166" y1="166" y2="166" y3="166" y4="166" y5="249" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="336" x1="336" x2="336" x3="336" x4="336" x5="420" y0="249" y1="249" y2="249" y3="249" y4="249" y5="332" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="336" x1="336" x2="336" x3="336" x4="336" x5="420" y0="332" y1="332" y2="332" y3="332" y4="332" y5="415" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_QuestStart.tga" x0="336" x1="336" x2="336" x3="336" x4="336" x5="420" y0="415" y1="415" y2="415" y3="415" y4="415" y5="498" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="MiniMapMarkerTiny" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\MiniMapPieces_12_110.bmp" x0="0" x1="0" x2="0" x3="6" x4="6" x5="6" y0="0" y1="0" y2="0" y3="6" y4="6" y5="6" Stretchy="1" HotspotX="3" HotspotY="3" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="sprWhiteScribbleX" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_WhiteXScribble.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="32" y0="0" y1="0" y2="0" y3="0" y4="0" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="LootCloseBox_Holo" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_Holo_CloseCancel.tex" x0="0" x1="0" x2="64" x3="64" x4="64" x5="64" y0="0" y1="0" y2="64" y3="64" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <AutoButton Name="DefaultBlankButton" Texture="UI\JonsTestTexture.bmp" x0="80" x1="82" x2="88" x3="88" x4="94" x5="96" y0="0" y1="2" y2="8" y3="8" y4="14" y5="16" StateBits="31" Direction="Down"/>
+    <AutoButton Name="YellowButton" Texture="UI\UI_Buttons_Yellow.bmp" x0="0" x1="15" x2="65" x3="66" x4="114" x5="128" y0="0" y1="12" y2="19" y3="20" y4="27" y5="39" StateBits="23" Direction="Across"/>
+    <AutoButton Name="QuestDialogX" Texture="UI\UI_Buttons_X.bmp" x0="0" x1="0" x2="0" x3="0" x4="0" x5="32" y0="0" y1="0" y2="0" y3="0" y4="0" y5="32" StateBits="23" Direction="Across"/>
+    <AutoButton Name="MiniMapPlus" Texture="UI\UI_Buttons_PlusMinus.bmp" x0="0" x1="0" x2="0" x3="0" x4="0" x5="32" y0="0" y1="0" y2="0" y3="0" y4="0" y5="32" StateBits="23" Direction="Across"/>
+    <AutoButton Name="MiniMapMinus" Texture="UI\UI_Buttons_PlusMinus.bmp" x0="0" x1="0" x2="0" x3="0" x4="0" x5="32" y0="32" y1="32" y2="32" y3="32" y4="32" y5="64" StateBits="23" Direction="Across"/>
+    <AutoButton Name="RedCheckbox" Texture="UI\UI_Buttons_Checkbox.bmp" x0="0" x1="0" x2="0" x3="0" x4="0" x5="32" y0="0" y1="0" y2="0" y3="0" y4="0" y5="32" StateBits="31" Direction="Across"/>
+    <AutoButton Name="DefaultHScrollLeftButton" Texture="UI\JonsTestTexture.bmp" x0="17" x1="17" x2="17" x3="17" x4="17" x5="31" y0="0" y1="0" y2="0" y3="0" y4="0" y5="13" StateBits="31" Direction="Down"/>
+    <AutoButton Name="DefaultHScrollRightButton" Texture="UI\JonsTestTexture.bmp" x0="32" x1="32" x2="32" x3="32" x4="32" x5="46" y0="0" y1="0" y2="0" y3="0" y4="0" y5="13" StateBits="31" Direction="Down"/>
+    <AutoButton Name="DefaultVScrollUpButton" Texture="UI\JonsTestTexture.bmp" x0="47" x1="47" x2="47" x3="47" x4="47" x5="60" y0="0" y1="0" y2="0" y3="0" y4="0" y5="14" StateBits="31" Direction="Down"/>
+    <AutoButton Name="DefaultVScrollDownButton" Texture="UI\JonsTestTexture.bmp" x0="61" x1="61" x2="61" x3="61" x4="61" x5="74" y0="0" y1="0" y2="0" y3="0" y4="0" y5="14" StateBits="31" Direction="Down"/>
+    <AutoButton Name="BagWindowClose" Texture="UI\Assets\TexPieces\BagWindowButtons_0_0.bmp" x0="0" x1="0" x2="0" x3="0" x4="0" x5="17" y0="0" y1="0" y2="0" y3="0" y4="0" y5="16" StateBits="7" Direction="Across"/>
+    <AutoButton Name="BagWindowExpand" Texture="UI\Assets\TexPieces\BagWindowButtons_0_16.bmp" x0="0" x1="0" x2="0" x3="0" x4="0" x5="17" y0="0" y1="0" y2="0" y3="0" y4="0" y5="16" StateBits="3" Direction="Across"/>
+    <AutoButton Name="BagWindowLock" Texture="UI\Assets\TexPieces\BagWindowButtons_2_32.bmp" x0="0" x1="0" x2="0" x3="0" x4="0" x5="18" y0="0" y1="0" y2="0" y3="0" y4="0" y5="13" StateBits="15" Direction="Across"/>
+    <AutoButton Name="BagWindowOptions" Texture="UI\Assets\TexPieces\BagWindowButtons_0_49.bmp" x0="0" x1="0" x2="0" x3="0" x4="0" x5="14" y0="0" y1="0" y2="0" y3="0" y4="0" y5="13" StateBits="7" Direction="Across"/>
+    <AutoButton Name="TopBar_Bag" Texture="UI\UI_Bag.bmp" x0="0" x1="0" x2="0" x3="0" x4="0" x5="32" y0="0" y1="0" y2="0" y3="0" y4="0" y5="32" StateBits="15" Direction="Across"/>
+    <AutoButton Name="TopBar_Options" Texture="UI\UI_Options.bmp" x0="0" x1="0" x2="0" x3="0" x4="32" x5="32" y0="0" y1="0" y2="0" y3="0" y4="32" y5="32" Stretchy="1" StateBits="15" Direction="Across"/>
+    <AutoButton Name="TopBar_Quest" Texture="UI\UI_Chalice.bmp" x0="0" x1="0" x2="0" x3="0" x4="0" x5="32" y0="0" y1="0" y2="0" y3="0" y4="0" y5="32" StateBits="7" Direction="Across"/>
+    <AutoButton Name="TopBar_Outfit" Texture="UI\Assets\TexPieces\UI_Outfit.bmp" x0="0" x1="0" x2="0" x3="0" x4="0" x5="32" y0="0" y1="0" y2="0" y3="0" y4="0" y5="32" StateBits="15" Direction="Across"/>
+    <AutoButton Name="TopBar_Spellbook" Texture="UI\UI_Spellbook.bmp" x0="0" x1="0" x2="0" x3="0" x4="0" x5="32" y0="0" y1="0" y2="0" y3="0" y4="0" y5="32" StateBits="15" Direction="Across"/>
+    <AutoButton Name="DefaultVScrollThumb" Texture="UI\JonsTestTexture.bmp" x0="16" x1="17" x2="19" x3="26" x4="27" x5="29" y0="80" y1="82" y2="83" y3="91" y4="92" y5="94" StateBits="3" Direction="Down"/>
+    <AutoButton Name="DefaultHScrollThumb" Texture="UI\JonsTestTexture.bmp" x0="32" x1="34" x2="35" x3="43" x4="44" x5="46" y0="80" y1="82" y2="83" y3="90" y4="92" y5="93" StateBits="3" Direction="Down"/>
+    <AutoIconButton Name="Button_Bag" NormalUnderIcon="BagWindowBox" NormalIcon="BagWindowBox" NormalOverIcon="" PressedUnderIcon="" PressedIcon="BagWindowBox" PressedOverIcon="BagWindowClick" FlybyUnderIcon="" FlybyIcon="BagWindowBox" FlybyOverIcon="BagWindowMouseOver" PressedFlybyUnderIcon="" PressedFlybyIcon="BagWindowBox" PressedFlybyOverIcon="BagWindowClick" DisabledUnderIcon="" DisabledIcon="BagWindowBox" DisabledOverIcon=""/>
+    <AutoIconButton Name="Button_ActionBarBlank" NormalUnderIcon="IconicButtonBase" NormalIcon="IconicButtonBase" NormalOverIcon="" PressedUnderIcon="IconicButtonBase" PressedIcon="IconicButtonBase" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="IconicButtonBase" FlybyOverIcon="" PressedFlybyUnderIcon="IconicButtonBase" PressedFlybyIcon="IconicButtonBase" PressedFlybyOverIcon="" DisabledUnderIcon="IconicButtonBase" DisabledIcon="IconicButtonBase" DisabledOverIcon=""/>
+    <AutoIconButton Name="Button_BerserkerStance" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_BerserkerStance" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_BerserkerStance" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_BerserkerStance" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_BerserkerStance" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_BerserkerStance" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_Slash" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_Slash" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_Slash" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_Slash" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_Slash" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_Slash" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_Execute" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_Execute" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_Execute" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_Execute" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_Execute" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_Execute" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_WeaponBlock" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_WeaponBlock" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_WeaponBlock" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_WeaponBlock" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_WeaponBlock" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_WeaponBlock" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_Pierce" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_Pierce" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_Pierce" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_Pierce" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_Pierce" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_Pierce" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_Hobble" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_Hobble" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_Hobble" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_Hobble" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_Hobble" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_Hobble" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_Sprint" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_Sprint" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_Sprint" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_Sprint" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_Sprint" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_Sprint" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_Bladestorm" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_Bladestorm" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_Bladestorm" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_Bladestorm" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_Bladestorm" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_Bladestorm" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_Impale" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_Impale" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_Impale" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_Impale" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_Impale" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_Impale" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_Enrage" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_Enrage" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_Enrage" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_Enrage" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_Enrage" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_Enrage" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_BerserkerFury" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_BerserkerFury" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_BerserkerFury" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_BerserkerFury" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_BerserkerFury" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_BerserkerFury" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_PowerSlash" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_PowerSlash" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_PowerSlash" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_PowerSlash" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_PowerSlash" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_PowerSlash" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_DefenderStance" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_DefenderStance" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_DefenderStance" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_DefenderStance" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_DefenderStance" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_DefenderStance" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_ShieldBash" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_ShieldBash" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_ShieldBash" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_ShieldBash" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_ShieldBash" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_ShieldBash" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_ShieldBlock" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_ShieldBlock" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_ShieldBlock" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_ShieldBlock" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_ShieldBlock" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_ShieldBlock" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_Recover" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_Recover" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_Recover" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_Recover" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_Recover" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_Recover" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_ShieldSlice" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_ShieldSlice" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_ShieldSlice" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_ShieldSlice" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_ShieldSlice" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_ShieldSlice" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_ShieldThrow" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_ShieldThrow" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_ShieldThrow" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_ShieldThrow" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_ShieldThrow" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_ShieldThrow" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_Slam" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_Slam" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_Slam" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_Slam" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_Slam" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_Slam" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_JuggernautRage" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_JuggernautRage" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_JuggernautRage" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_JuggernautRage" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_JuggernautRage" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_JuggernautRage" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_ShootRifle" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_ShootRifle" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_ShootRifle" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_ShootRifle" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_ShootRifle" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_ShootRifle" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_ChargedShot" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_ChargedShot" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_ChargedShot" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_ChargedShot" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_ChargedShot" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_ChargedShot" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_Wound" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_Wound" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_Wound" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_Wound" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_Wound" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_Wound" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_Kneecap" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_Kneecap" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_Kneecap" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_Kneecap" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_Kneecap" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_Kneecap" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_ToxicShot" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_ToxicShot" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_ToxicShot" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_ToxicShot" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_ToxicShot" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_ToxicShot" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_ArmorPierce" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_ArmorPierce" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_ArmorPierce" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_ArmorPierce" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_ArmorPierce" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_ArmorPierce" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_Explosive" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_Explosive" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_Explosive" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_Explosive" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_Explosive" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_Explosive" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_ShootPistols" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_ShootPistols" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_ShootPistols" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_ShootPistols" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_ShootPistols" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_ShootPistols" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_Reload" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_Reload" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_Reload" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_Reload" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_Reload" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_Reload" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_ForceField" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_ForceField" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_ForceField" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_ForceField" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_ForceField" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_ForceField" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_MedKit" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_MedKit" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_MedKit" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_MedKit" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_MedKit" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_MedKit" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="UI_Tools_01" NormalUnderIcon="IconicButtonBase" NormalIcon="UI_Tools_01" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="UI_Tools_01" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="UI_Tools_01" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="UI_Tools_01" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="UI_Tools_01" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <Sprite Name="WhitePulse" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_WhiteBG.bmp" x0="0" x1="0" x2="0" x3="0" x4="64" x5="64" y0="0" y1="0" y2="0" y3="0" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="64ffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\Textures\UI_WhiteBG.bmp" x0="0" x1="0" x2="0" x3="0" x4="64" x5="64" y0="0" y1="0" y2="0" y3="0" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.600" StartColor="ffffffff" EndColor="ffffff"/>
+    </Sprite>
+</Sprites>
+ëÿ!ã ê¯·ÿ!ã bøê.!ã 5õ©ª!ã ˆ­µþ!ã îÿÿÿ!ã ÿïëï!ã þ×ÿë!ã ê×÷ù!ã Š‹¯û!ã þÿÿëã ã  Š®!ã *.ÖÛ!ã €€àxã ã     !ãúþÿÿã ã     ã ã     ã Ãº®º¾!Ãª¢êê!Ã‚++«!ã §Šªªã ã     !ã *½ª¨!ã "
+
+!ã «¢¨ª!ã {ÞÚz!ã e««é!ã ëÂêš!ã âkö¬!ã *½­ß$!ã ¿¿ÿß!ã ÿÿ®ÿ!ã ­¸¨ª!ã «¿¿ÿ$)Ãÿÿþú!ã ­î»ë!ã ÿïÿÿ!ã ©é«è$!ã ûûÿý!ã ÿ¿¿»!ã þþþÿ!ã újª¦!ã *ªªz!ã ª»ïï!ã *‹ÿþ!!º«ª«$)ã ÿûê¾!!®ªºº$)!ÿëêú$)!Þúï­!ã òúúª$)!ÿêë»!ã ï«êŠ!ã þúê«

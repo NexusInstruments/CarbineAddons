@@ -1,4 +1,0 @@
-<Addon Name="CRB_Nameplates" Version="" Author="" APIVersion="" Description="">
-    <Script Name="CRB_Nameplates.lua"/>
-    <Form Name="CRB_Nameplates.xml"/>
-</Addon>

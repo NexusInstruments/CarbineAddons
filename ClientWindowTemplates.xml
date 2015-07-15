@@ -1,0 +1,206 @@
+<?xml version="1.0" ?>
+<WindowTemplates>
+    <!-- sprites go here -->
+    <!-- sprite -->
+    <WindowSoundTemplate Name="Custom" ButtonDown="" ButtonClick="" ButtonUpCancel="" MouseLeave="" MouseEnter="" />
+    <WindowSoundTemplate Name="DefaultSounds" ButtonDown="TestPlaySoftClick" ButtonClick="" ButtonUpCancel="" MouseLeave="" MouseEnter="" />
+    <WindowSoundTemplate Name="ActionBarButton" ButtonDown="PlayUIAbilityClick" />
+    <WindowTemplate Name="Default" BorderTopLeft="" BorderTop="DefaultBorderTop" BorderTopRight="" BorderRight="DefaultBorderRight" BorderBottomRight="" BorderBottom="DefaultBorderBottom" BorderBottomLeft="" BorderLeft="DefaultBorderLeft" ClientFrame="SunkenBorder" DefaultCursor="Default" ResizeNSCursor="DefaultResizeNS" ResizeEWCursor="DefaultResizeEW" ResizeNESWCursor="DefaultResizeNESW" ResizeNWSECursor="DefaultResizeNWSE">
+        <HScroll Internal="DefaultScrollInternal">
+            <IncButton Auto="DefaultHScrollRightButton" ButtonSoundTemplate="Test" />
+            <DecButton Auto="DefaultHScrollLeftButton" />
+            <Thumb Auto="DefaultHScrollThumb" />
+        </HScroll>
+        <VScroll Internal="DefaultScrollInternal">
+            <IncButton Auto="DefaultVScrollDownButton" />
+            <DecButton Auto="DefaultVScrollUpButton" />
+            <Thumb Auto="DefaultVScrollThumb" />
+        </VScroll>
+        <BlankButton Auto="DefaultBlankButton" />
+    </WindowTemplate>
+    <WindowTemplate Name="Control" BorderTopLeft="" BorderTop="DefaultBorderTop" BorderTopRight="" BorderRight="DefaultBorderRight" BorderBottomRight="" BorderBottom="DefaultBorderBottom" BorderBottomLeft="" BorderLeft="DefaultBorderLeft" ClientFrame="SunkenBorder" DefaultCursor="Default" ResizeNSCursor="DefaultResizeNS" ResizeEWCursor="DefaultResizeEW" ResizeNESWCursor="DefaultResizeNESW" ResizeNWSECursor="DefaultResizeNWSE">
+        <HScroll Internal="DefaultScrollInternal">
+            <IncButton Auto="DefaultHScrollRightButton" />
+            <DecButton Auto="DefaultHScrollLeftButton" />
+            <Thumb Auto="DefaultHScrollThumb" />
+        </HScroll>
+        <VScroll Internal="DefaultScrollInternal">
+            <IncButton Auto="DefaultVScrollDownButton" />
+            <DecButton Auto="DefaultVScrollUpButton" />
+            <Thumb Auto="DefaultVScrollThumb" />
+        </VScroll>
+        <BlankButton Auto="DefaultBlankButton" />
+    </WindowTemplate>
+    <WindowTemplate Name="GreyBev" BorderTopLeft="GreyBevBorderTopLeft" BorderTop="GreyBevBorderTop" BorderTopRight="GreyBevBorderTopRight" BorderRight="GreyBevBorderRight" BorderBottomRight="GreyBevBorderBottomRight" BorderBottom="GreyBevBorderBottom" BorderBottomLeft="GreyBevBorderBottomLeft" BorderLeft="GreyBevBorderLeft" ClientFrame="GreyBevMiddle" DefaultCursor="Default" ResizeNSCursor="DefaultResizeNS" ResizeEWCursor="DefaultResizeEW" ResizeNESWCursor="DefaultResizeNESW" ResizeNWSECursor="DefaultResizeNWSE">
+        <HScroll Internal="DefaultScrollInternal">
+            <IncButton Auto="DefaultHScrollRightButton" />
+            <DecButton Auto="DefaultHScrollLeftButton" />
+            <Thumb Auto="DefaultHScrollThumb" />
+        </HScroll>
+        <VScroll Internal="DefaultScrollInternal">
+            <IncButton Auto="DefaultVScrollDownButton" />
+            <DecButton Auto="DefaultVScrollUpButton" />
+            <Thumb Auto="DefaultVScrollThumb" />
+        </VScroll>
+        <BlankButton Auto="DefaultBlankButton" />
+    </WindowTemplate>
+    <WindowTemplate Name="Tooltip" SingleBorderFrame="BagWindow_Full" ClientFrame="BlackFill" DefaultCursor="Default" ResizeNSCursor="DefaultResizeNS" ResizeEWCursor="DefaultResizeEW" ResizeNESWCursor="DefaultResizeNESW" ResizeNWSECursor="DefaultResizeNWSE">
+        <HScroll Internal="DefaultScrollInternal">
+            <IncButton Auto="DefaultHScrollRightButton" />
+            <DecButton Auto="DefaultHScrollLeftButton" />
+            <Thumb Auto="DefaultHScrollThumb" />
+        </HScroll>
+        <VScroll Internal="DefaultScrollInternal">
+            <IncButton Auto="DefaultVScrollDownButton" />
+            <DecButton Auto="DefaultVScrollUpButton" />
+            <Thumb Auto="DefaultVScrollThumb" />
+        </VScroll>
+        <BlankButton Auto="DefaultBlankButton" />
+    </WindowTemplate>
+    <WindowTemplate Name="GreyBevInnerFrame" SingleBorderFrame="DialogInnerFrame" ClientFrame="GreyBevMiddle" DefaultCursor="Default" ResizeNSCursor="DefaultResizeNS" ResizeEWCursor="DefaultResizeEW" ResizeNESWCursor="DefaultResizeNESW" ResizeNWSECursor="DefaultResizeNWSE">
+        <HScroll Internal="DefaultScrollInternal">
+            <IncButton Auto="DefaultHScrollRightButton" />
+            <DecButton Auto="DefaultHScrollLeftButton" />
+            <Thumb Auto="DefaultHScrollThumb" />
+        </HScroll>
+        <VScroll Internal="DefaultScrollInternal">
+            <IncButton Auto="DefaultVScrollDownButton" />
+            <DecButton Auto="DefaultVScrollUpButton" />
+            <Thumb Auto="DefaultVScrollThumb" />
+        </VScroll>
+        <BlankButton Auto="DefaultBlankButton" />
+    </WindowTemplate>
+    <WindowTemplate Name="ActionBar" BorderTopLeft="GreyBevBorderTopLeft" BorderTop="GreyBevBorderTop" BorderTopRight="GreyBevBorderTopRight" BorderRight="GreyBevBorderRight" BorderBottomRight="GreyBevBorderBottomRight" BorderBottom="GreyBevBorderBottom" BorderBottomLeft="GreyBevBorderBottomLeft" BorderLeft="GreyBevBorderLeft" ClientFrame="GreyBevMiddle" DefaultCursor="Default" ResizeNSCursor="DefaultResizeNS" ResizeEWCursor="DefaultResizeEW" ResizeNESWCursor="DefaultResizeNESW" ResizeNWSECursor="DefaultResizeNWSE">
+        <HScroll Internal="DefaultScrollInternal">
+            <IncButton Auto="DefaultHScrollRightButton" />
+            <DecButton Auto="DefaultHScrollLeftButton" />
+            <Thumb Auto="DefaultHScrollThumb" />
+        </HScroll>
+        <VScroll Internal="DefaultScrollInternal">
+            <IncButton Auto="DefaultVScrollDownButton" />
+            <DecButton Auto="DefaultVScrollUpButton" />
+            <Thumb Auto="DefaultVScrollThumb" />
+        </VScroll>
+        <BlankButton Auto="YellowButton" />
+    </WindowTemplate>
+    <WindowTemplate Name="GreyBevTab" BorderTopLeft="RaisedBorder" BorderTop="RaisedBorder" BorderTopRight="RaisedBorder" BorderRight="GreyBevBorderRight" BorderBottomRight="GreyBevBorderBottomRight" BorderBottom="GreyBevBorderBottom" BorderBottomLeft="GreyBevBorderBottomLeft" BorderLeft="GreyBevBorderLeft" ClientFrame="GreyBevMiddle" DefaultCursor="Default" ResizeNSCursor="DefaultResizeNS" ResizeEWCursor="DefaultResizeEW" ResizeNESWCursor="DefaultResizeNESW" ResizeNWSECursor="DefaultResizeNWSE">
+        <HScroll Internal="DefaultScrollInternal">
+            <IncButton Auto="DefaultHScrollRightButton" />
+            <DecButton Auto="DefaultHScrollLeftButton" />
+            <Thumb Auto="DefaultHScrollThumb" />
+        </HScroll>
+        <VScroll Internal="DefaultScrollInternal">
+            <IncButton Auto="DefaultVScrollDownButton" />
+            <DecButton Auto="DefaultVScrollUpButton" />
+            <Thumb Auto="DefaultVScrollThumb" />
+        </VScroll>
+        <BlankButton Auto="DefaultBlankButton" />
+    </WindowTemplate>
+    <WindowTemplate Name="GreyDetail" BorderTopLeft="GreyDetailBorderTopLeft" BorderTop="GreyDetailBorderTop" BorderTopRight="GreyDetailBorderTopRight" BorderRight="GreyDetailBorderRight" BorderBottomRight="GreyDetailBorderBottomRight" BorderBottom="GreyDetailBorderBottom" BorderBottomLeft="GreyDetailBorderBottomLeft" BorderLeft="GreyDetailBorderLeft" ClientFrame="GreyDetailMiddle" DefaultCursor="Default" ResizeNSCursor="DefaultResizeNS" ResizeEWCursor="DefaultResizeEW" ResizeNESWCursor="DefaultResizeNESW" ResizeNWSECursor="DefaultResizeNWSE">
+        <HScroll Internal="DefaultScrollInternal">
+            <IncButton Auto="DefaultHScrollRightButton" />
+            <DecButton Auto="DefaultHScrollLeftButton" />
+            <Thumb Auto="DefaultHScrollThumb" />
+        </HScroll>
+        <VScroll Internal="DefaultScrollInternal">
+            <IncButton Auto="DefaultVScrollDownButton" />
+            <DecButton Auto="DefaultVScrollUpButton" />
+            <Thumb Auto="DefaultVScrollThumb" />
+        </VScroll>
+        <BlankButton Auto="DefaultBlankButton" />
+    </WindowTemplate>
+    <WindowTemplate Name="HologramDialog" BorderTopLeft="HoloDlgBorderTopLeft" BorderTop="HoloDlgBorderTop" BorderTopRight="HoloDlgBorderTopRight" BorderRight="HoloDlgBorderRight" BorderBottomRight="HoloDlgBorderBottomRight" BorderBottom="HoloDlgBorderBottom" BorderBottomLeft="HoloDlgBorderBottomLeft" BorderLeft="HoloDlgBorderLeft" ClientFrame="HoloDlgMiddle" DefaultCursor="Default" ResizeNSCursor="DefaultResizeNS" ResizeEWCursor="DefaultResizeEW" ResizeNESWCursor="DefaultResizeNESW" ResizeNWSECursor="DefaultResizeNWSE">
+        <VScroll Internal="">
+            <IncButton Auto="HoloArrowDownBtn" />
+            <DecButton Auto="HoloArrowUpBtn" />
+            <Thumb Auto="HoloScrollbarThumb" />
+        </VScroll>
+        <BlankButton Auto="DefaultBlankButton" />
+    </WindowTemplate>
+    <WindowTemplate Name="HologramControl1" SingleBorderFrame="HoloFrame1" ClientFrame="HoloFrameMiddle1" DefaultCursor="Default" ResizeNSCursor="DefaultResizeNS" ResizeEWCursor="DefaultResizeEW" ResizeNESWCursor="DefaultResizeNESW" ResizeNWSECursor="DefaultResizeNWSE">
+        <VScroll Internal="">
+            <IncButton Auto="HoloArrowDownBtn" />
+            <DecButton Auto="HoloArrowUpBtn" />
+            <Thumb Auto="HoloScrollbarThumb" />
+        </VScroll>
+        <BlankButton Auto="DefaultBlankButton" />
+    </WindowTemplate>
+    <WindowTemplate Name="HologramControl2" SingleBorderFrame="HoloFrame2" ClientFrame="HoloFrameMiddle2" DefaultCursor="Default" ResizeNSCursor="DefaultResizeNS" ResizeEWCursor="DefaultResizeEW" ResizeNESWCursor="DefaultResizeNESW" ResizeNWSECursor="DefaultResizeNWSE">
+        <VScroll Internal="">
+            <IncButton Auto="HoloArrowDownBtn" />
+            <DecButton Auto="HoloArrowUpBtn" />
+            <Thumb Auto="HoloScrollbarThumb" />
+        </VScroll>
+        <BlankButton Auto="DefaultBlankButton" />
+    </WindowTemplate>
+    <WindowTemplate Name="HologramControl3" SingleBorderFrame="HoloFrame3" ClientFrame="HoloFrameMiddle3" DefaultCursor="Default" ResizeNSCursor="DefaultResizeNS" ResizeEWCursor="DefaultResizeEW" ResizeNESWCursor="DefaultResizeNESW" ResizeNWSECursor="DefaultResizeNWSE">
+        <VScroll Internal="">
+            <IncButton Auto="HoloArrowDownBtn" />
+            <DecButton Auto="HoloArrowUpBtn" />
+            <Thumb Auto="HoloScrollbarThumb" />
+        </VScroll>
+        <BlankButton Auto="DefaultBlankButton" />
+    </WindowTemplate>
+    <WindowTemplate Name="OldMetal" SingleBorderFrame="OldMetalFrame" ClientFrame="OldMetalClientFrame" DefaultCursor="Default" ResizeNSCursor="DefaultResizeNS" ResizeEWCursor="DefaultResizeEW" ResizeNESWCursor="DefaultResizeNESW" ResizeNWSECursor="DefaultResizeNWSE">
+        <VScroll Internal="">
+            <IncButton Auto="OldMetalDownButton" />
+            <DecButton Auto="OldMetalUpButton" />
+            <Thumb Auto="OldMetalVScrollThumb" />
+        </VScroll>
+        <BlankButton Auto="OldMetalButton" />
+    </WindowTemplate>
+    <WindowTemplate Name="OldMetalControl" SingleBorderFrame="OldMetalControlFrame" ClientFrame="OldMetalControlClientFrame" DefaultCursor="Default" ResizeNSCursor="DefaultResizeNS" ResizeEWCursor="DefaultResizeEW" ResizeNESWCursor="DefaultResizeNESW" ResizeNWSECursor="DefaultResizeNWSE">
+        <VScroll Internal="">
+            <IncButton Auto="OldMetalDownButton" />
+            <DecButton Auto="OldMetalUpButton" />
+            <Thumb Auto="OldMetalVScrollThumb" />
+        </VScroll>
+        <BlankButton Auto="OldMetalButton" />
+    </WindowTemplate>
+    <WindowTemplate Name="ChatWindow" BorderTopLeft="ChatBorderTopLeft" BorderTop="ChatBorderTop" BorderTopRight="ChatBorderTopRight" BorderRight="ChatBorderRight" BorderBottomRight="ChatLogSprites:ChatBorderBottomRight" BorderBottom="ChatBorderBottom" BorderBottomLeft="ChatLogSprites:ChatBorderBottomLeft" BorderLeft="ChatBorderLeft" ClientFrame="sprChatBackground" DefaultCursor="Default" ResizeNSCursor="DefaultResizeNS" ResizeEWCursor="DefaultResizeEW" ResizeNESWCursor="DefaultResizeNESW" ResizeNWSECursor="DefaultResizeNWSE">
+        <HScroll Internal="DefaultScrollInternal">
+            <IncButton Auto="DefaultHScrollRightButton" ButtonSoundTemplate="Test" />
+            <DecButton Auto="DefaultHScrollLeftButton" />
+            <Thumb Auto="DefaultHScrollThumb" />
+        </HScroll>
+        <VScroll Internal="DefaultScrollInternal">
+            <IncButton Auto="ChatLogVScrollDown" />
+            <DecButton Auto="ChatLogVScrollUp" />
+            <Thumb Auto="ChatScrollThumb" />
+        </VScroll>
+        <BlankButton Auto="DefaultBlankButton" />
+    </WindowTemplate>
+    <WindowTemplate Name="CombatLog" BorderTopLeft="ChatBorderTopLeft" BorderTop="ChatBorderTop" BorderTopRight="ChatBorderTopRight" BorderRight="ChatBorderRight" BorderBottomRight="ChatLogSprites:ChatBorderBigBottomRight" BorderBottom="ChatBorderBigBottom" BorderBottomLeft="ChatLogSprites:ChatBorderBigBottomLeft" BorderLeft="ChatBorderLeft" ClientFrame="sprChatBackground" DefaultCursor="Default" ResizeNSCursor="DefaultResizeNS" ResizeEWCursor="DefaultResizeEW" ResizeNESWCursor="DefaultResizeNESW" ResizeNWSECursor="DefaultResizeNWSE">
+        <HScroll Internal="DefaultScrollInternal">
+            <IncButton Auto="DefaultHScrollRightButton" ButtonSoundTemplate="Test" />
+            <DecButton Auto="DefaultHScrollLeftButton" />
+            <Thumb Auto="DefaultHScrollThumb" />
+        </HScroll>
+        <VScroll Internal="DefaultScrollInternal">
+            <IncButton Auto="ChatLogVScrollDown" />
+            <DecButton Auto="ChatLogVScrollUp" />
+            <Thumb Auto="ChatScrollThumb" />
+        </VScroll>
+        <BlankButton Auto="DefaultBlankButton" />
+    </WindowTemplate>
+    <WindowTemplate Name="QuestLogEpisodeList" DefaultCursor="Default" ResizeNSCursor="DefaultResizeNS" ResizeEWCursor="DefaultResizeEW" ResizeNESWCursor="DefaultResizeNESW" ResizeNWSECursor="DefaultResizeNWSE">
+        <VScroll Internal="">
+            <IncButton Auto="btnQuestEpisodeDown" />
+            <DecButton Auto="btnQuestEpisodeUp" />
+            <Thumb Auto="QuestLogSprites:QuestVScrollThumb" />
+        </VScroll>
+    </WindowTemplate>
+    <WindowTemplate Name="QuestLogQuestDesc" DefaultCursor="Default" ResizeNSCursor="DefaultResizeNS" ResizeEWCursor="DefaultResizeEW" ResizeNESWCursor="DefaultResizeNESW" ResizeNWSECursor="DefaultResizeNWSE">
+        <VScroll Internal="">
+            <IncButton Auto="btnQuestScrollDown" />
+            <DecButton Auto="btnQuestScrollUp" />
+            <Thumb Auto="QuestLogSprites:QuestVScrollThumb" />
+        </VScroll>
+    </WindowTemplate>
+</WindowTemplates>
+="0" Name="SimpleConfirmTooltipPrice" TooltipColor="" HideInEditor="0" Visible="1" SkipZeroes="1" IgnoreMouse="1"/>
+            <Control Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="1" TAnchorOffset="-42" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="-23" RelativeToClient="1" Font="CRB_InterfaceSmall" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_TextHoloTitle" Template="Default" TooltipType="OnCursor" Name="AdvancedConfirmSellFeeText" TooltipColor="" TextId="Market_ListingFeePercent" Sprite="" Picture="1" IgnoreMouse="1"/>
+        </Control>
+    </Form>
+    <Form Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="0" RAnchorOffset="250" BAnchorPoint="0" BAnchorOffset="51" RelativeToClient="1" Font="Default" Text="" Template="Default" TooltipType="OnCursor" Name="CopyToClipboardTooltip" Border="0" Picture="1" SwallowMouseClicks="1" Moveable="0" Escapable="0" Overlapped="1" BGColor="white" TextColor="white" TooltipColor="" Sprite="" IgnoreMouse="1" Tooltip="">
+        <Control Class="Window" LAnchorPoint="0" LAnchorOffset="-20" TAnchorPoint="0" TAnchorOffset="-20" RAnchorPoint="1" RAnchorOffset="20" BAnchorPoint="1" BAnchorOffset="20" RelativeToClient="1" Font="Default" Text="" BGColor="UI_WindowBGDef

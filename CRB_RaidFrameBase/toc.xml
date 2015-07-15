@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
-<Addon Author="Carbine" APIVersion="1" Name="CRB_RaidFrameBase" Description="" Version="">
-    <Form Name="CRB_RaidFrameBase.xml"/>
-    <Script Name="CRB_RaidFrameBase.lua"/>
-</Addon>

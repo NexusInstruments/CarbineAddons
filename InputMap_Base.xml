@@ -1,0 +1,343 @@
+<?xml version="1.0" ?>
+<InputBindings>
+    <Input Name="CharacterPanel">
+        <Key Device="Keyboard" Code="25" EventType="Click" MetaKeys="" />
+    </Input>
+    <Input Name="Inventory">
+        <Key Device="Keyboard" Code="23" EventType="Click" MetaKeys="" />
+    </Input>
+    <Input Name="QuestLog">
+    </Input>
+    <Input Name="Communicator">
+        <Key Device="Keyboard" Code="46" EventType="Click" MetaKeys="" />
+    </Input>
+    <Input Name="Escape">
+        <Key Device="Keyboard" Code="1" EventType="Click" MetaKeys="" />
+    </Input>
+    <Input Name="Select">
+        <Key Device="Mouse" Code="0" EventType="Click" MetaKeys="" />
+    </Input>
+    <Input Name="MouseInteract">
+        <Key Device="Mouse" Code="1" EventType="Click" MetaKeys="" MouseOverInteractive="True" MouseOverHostile="False" />
+        <Key Device="Mouse" Code="0" EventType="DoubleClick" MetaKeys="" MouseOverInteractive="True" MouseOverHostile="False" />
+    </Input>
+    <Input Name="Interact">
+		<Key Device="Keyboard" Code="33" EventType="Raw" MetaKeys="" />
+	</Input>
+    <Input Name="HostileInteract">
+        <Key Device="Mouse" Code="1" EventType="Click" MetaKeys="" MouseOverInteractive="False" MouseOverHostile="True" />
+        <Key Device="Mouse" Code="0" EventType="DoubleClick" MetaKeys="" MouseOverInteractive="False" MouseOverHostile="True" />
+    </Input>
+    <Input Name="TargetSelf">
+        <Key Device="Keyboard" Code="59" EventType="Click" MetaKeys="" />
+    </Input>
+    <Input Name="TargetParty1">
+        <Key Device="Keyboard" Code="60" EventType="Click" MetaKeys="" />
+    </Input>
+    <Input Name="TargetParty2">
+        <Key Device="Keyboard" Code="61" EventType="Click" MetaKeys="" />
+    </Input>
+    <Input Name="TargetParty3">
+        <Key Device="Keyboard" Code="62" EventType="Click" MetaKeys="" />
+    </Input>
+    <Input Name="TargetParty4">
+        <Key Device="Keyboard" Code="63" EventType="Click" MetaKeys="" />
+    </Input>
+    <Input Name="TargetNextEnemy">
+        <Key Device="Keyboard" Code="15" EventType="Click" MetaKeys="" />
+    </Input>
+    <Input Name="TargetNextFriend">
+        <Key Device="Keyboard" Code="15" EventType="Click" MetaKeys="CTRL" />
+    </Input>
+    <Input Name="MoveForward">
+        <Key Device="Keyboard" Code="17" EventType="Raw" MetaKeys="" />
+        <Key Device="Keyboard" Code="328" EventType="Raw" MetaKeys="" />
+    </Input>
+    <Input Name="MoveBackward">
+        <Key Device="Keyboard" Code="31" EventType="Raw" MetaKeys="" />
+        <Key Device="Keyboard" Code="336" EventType="Raw" MetaKeys="" />
+    </Input>
+    <Input Name="StrafeLeft">
+        <Key Device="Keyboard" Code="16" EventType="Raw" MetaKeys="" />
+    </Input>
+    <Input Name="StrafeRight">
+        <Key Device="Keyboard" Code="18" EventType="Raw" MetaKeys="" />
+    </Input>
+    <Input Name="DashForward"/>
+    <Input Name="DashBackward"/>
+    <Input Name="DashLeft"/>
+    <Input Name="DashRight"/>
+    <Input Name="TurnLeft">
+        <Key Device="Keyboard" Code="30" EventType="Raw" MetaKeys="" />
+        <Key Device="Keyboard" Code="331" EventType="Raw" MetaKeys="" />
+    </Input>
+    <Input Name="TurnRight">
+        <Key Device="Keyboard" Code="32" EventType="Raw" MetaKeys="" />
+        <Key Device="Keyboard" Code="333" EventType="Raw" MetaKeys="" />
+    </Input>
+    <Input Name="MouseTurn">
+        <Key Device="Mouse" Code="1" EventType="Raw" MetaKeys="" />
+    </Input>
+    <Input Name="SprintModifier">
+        <Key Device="Keyboard" Code="42" EventType="Raw" MetaKeys="" />
+        <Key Device="Keyboard" Code="54" EventType="Raw" MetaKeys="" />
+    </Input>
+    <Input Name="Control">
+        <Key Device="Keyboard" Code="29" EventType="Raw" MetaKeys="" />
+        <Key Device="Keyboard" Code="285" EventType="Raw" MetaKeys="" />
+    </Input>
+    <Input Name="VacuumLoot">
+        <Key Device="Keyboard" Code="47" EventType="Click" MetaKeys="" />
+    </Input>
+    <Input Name="PathAction">
+		<Key Device="Keyboard" Code="34" EventType="Click" MetaKeys="" />
+	</Input>
+    <Input Name="PathAction2">
+		<Key Device="Keyboard" Code="34" EventType="Click" MetaKeys="CTRL" />
+	</Input>
+	<Input Name="ToggleScannerBot">
+		<Key Device="Keyboard" Code="338" EventType="Click" MetaKeys="" />
+	</Input>
+    <Input Name="Jump">
+        <Key Device="Keyboard" Code="57" EventType="Raw" MetaKeys="" />
+        <Key Device="Keyboard" Code="82" EventType="Raw" MetaKeys="" />
+    </Input>
+    <Input Name="ToggleWalk">
+        <Key Device="Keyboard" Code="83" EventType="Click" MetaKeys="" />
+    </Input>
+    <Input Name="ToggleAutoRun">
+        <Key Device="Keyboard" Code="325" EventType="Click" MetaKeys="" />
+    </Input>
+    <Input Name="CameraIn">
+        <Key Device="Mouse" Code="5" EventType="Click" MetaKeys="" />
+    </Input>
+    <Input Name="CameraOut">
+        <Key Device="Mouse" Code="6" EventType="Click" MetaKeys="" />
+    </Input>
+    <Input Name="MouseLook">
+        <Key Device="Mouse" Code="0" EventType="Raw" MetaKeys="" />
+    </Input>
+	<Input Name="CastObjectiveAbility">
+		<Key Device="Keyboard" Code="20" EventType="Click" MetaKeys="" />
+	</Input>
+	<Input Name="CastMiscSpell">
+		<Key Device="Keyboard" Code="327" EventType="Click" MetaKeys="" />
+	</Input>
+    <Input Name="LimitedActionSet1">
+        <Key Device="Keyboard" Code="2" EventType="Raw" MetaKeys="" />
+    </Input>
+    <Input Name="LimitedActionSet2">
+        <Key Device="Keyboard" Code="3" EventType="Raw" MetaKeys="" />
+    </Input>
+    <Input Name="LimitedActionSet3">
+        <Key Device="Keyboard" Code="4" EventType="Raw" MetaKeys="" />
+    </Input>
+    <Input Name="LimitedActionSet4">
+        <Key Device="Keyboard" Code="5" EventType="Raw" MetaKeys="" />
+    </Input>
+    <Input Name="LimitedActionSet5">
+        <Key Device="Keyboard" Code="6" EventType="Raw" MetaKeys="" />
+    </Input>
+    <Input Name="LimitedActionSet6">
+        <Key Device="Keyboard" Code="7" EventType="Raw" MetaKeys="" />
+    </Input>
+    <Input Name="LimitedActionSet7">
+        <Key Device="Keyboard" Code="8" EventType="Raw" MetaKeys="" />
+    </Input>
+    <Input Name="LimitedActionSet8">
+        <Key Device="Keyboard" Code="9" EventType="Raw" MetaKeys="" />
+    </Input>
+    <Input Name="CastGadgetAbility">
+        <Key Device="Keyboard" Code="10" EventType="Raw" MetaKeys="" />
+    </Input>	
+    <Input Name="CastPathAbility">
+        <Key Device="Keyboard" Code="11" EventType="Raw" MetaKeys="" />
+    </Input>
+    <Input Name="ActionBar1_Slot1">
+        <Key Device="Keyboard" Code="2" EventType="Raw" MetaKeys="CTRL" />
+    </Input>
+    <Input Name="ActionBar1_Slot2">
+        <Key Device="Keyboard" Code="3" EventType="Raw" MetaKeys="CTRL" />
+    </Input>
+    <Input Name="ActionBar1_Slot3">
+        <Key Device="Keyboard" Code="4" EventType="Raw" MetaKeys="CTRL" />
+    </Input>
+    <Input Name="ActionBar1_Slot4">
+        <Key Device="Keyboard" Code="5" EventType="Raw" MetaKeys="CTRL" />
+    </Input>
+    <Input Name="ActionBar1_Slot5">
+        <Key Device="Keyboard" Code="6" EventType="Raw" MetaKeys="CTRL" />
+    </Input>
+    <Input Name="ActionBar1_Slot6">
+        <Key Device="Keyboard" Code="7" EventType="Raw" MetaKeys="CTRL" />
+    </Input>
+    <Input Name="ActionBar1_Slot7">
+        <Key Device="Keyboard" Code="8" EventType="Raw" MetaKeys="CTRL" />
+    </Input>
+    <Input Name="ActionBar1_Slot8">
+        <Key Device="Keyboard" Code="9" EventType="Raw" MetaKeys="CTRL" />
+    </Input>
+    <Input Name="ActionBar1_Slot9">
+        <Key Device="Keyboard" Code="10" EventType="Raw" MetaKeys="CTRL" />
+    </Input>
+    <Input Name="ActionBar1_Slot10">
+        <Key Device="Keyboard" Code="11" EventType="Raw" MetaKeys="CTRL" />
+    </Input>
+    <Input Name="ActionBar1_Slot11">
+        <Key Device="Keyboard" Code="12" EventType="Raw" MetaKeys="CTRL" />
+    </Input>
+    <Input Name="ActionBar1_Slot12">
+        <Key Device="Keyboard" Code="13" EventType="Raw" MetaKeys="CTRL" />
+    </Input>
+    <Input Name="ActionBar2_Slot1">
+        <Key Device="Keyboard" Code="2" EventType="Raw" MetaKeys="ALT" />
+    </Input>
+    <Input Name="ActionBar2_Slot2">
+        <Key Device="Keyboard" Code="3" EventType="Raw" MetaKeys="ALT" />
+    </Input>
+    <Input Name="ActionBar2_Slot3">
+        <Key Device="Keyboard" Code="4" EventType="Raw" MetaKeys="ALT" />
+    </Input>
+    <Input Name="ActionBar2_Slot4">
+        <Key Device="Keyboard" Code="5" EventType="Raw" MetaKeys="ALT" />
+    </Input>
+    <Input Name="ActionBar2_Slot5">
+        <Key Device="Keyboard" Code="6" EventType="Raw" MetaKeys="ALT" />
+    </Input>
+    <Input Name="ActionBar2_Slot6">
+        <Key Device="Keyboard" Code="7" EventType="Raw" MetaKeys="ALT" />
+    </Input>
+    <Input Name="ActionBar2_Slot7">
+        <Key Device="Keyboard" Code="8" EventType="Raw" MetaKeys="ALT" />
+    </Input>
+    <Input Name="ActionBar2_Slot8">
+        <Key Device="Keyboard" Code="9" EventType="Raw" MetaKeys="ALT" />
+    </Input>
+    <Input Name="ActionBar2_Slot9">
+        <Key Device="Keyboard" Code="10" EventType="Raw" MetaKeys="ALT" />
+    </Input>
+    <Input Name="ActionBar2_Slot10">
+        <Key Device="Keyboard" Code="11" EventType="Raw" MetaKeys="ALT" />
+    </Input>
+    <Input Name="ActionBar2_Slot11">
+        <Key Device="Keyboard" Code="12" EventType="Raw" MetaKeys="ALT" />
+    </Input>
+    <Input Name="ActionBar2_Slot12">
+        <Key Device="Keyboard" Code="13" EventType="Raw" MetaKeys="ALT" />
+    </Input>
+	<Input Name="FloatingActionBar_Slot1">
+        <Key Device="Keyboard" Code="59" EventType="Click" MetaKeys="CTRL" />
+    </Input>
+    <Input Name="FloatingActionBar_Slot2">
+        <Key Device="Keyboard" Code="60" EventType="Click" MetaKeys="CTRL" />
+    </Input>
+    <Input Name="FloatingActionBar_Slot3">
+        <Key Device="Keyboard" Code="61" EventType="Click" MetaKeys="CTRL" />
+    </Input>
+    <Input Name="FloatingActionBar_Slot4">
+        <Key Device="Keyboard" Code="62" EventType="Click" MetaKeys="CTRL" />
+    </Input>
+    <Input Name="FloatingActionBar_Slot5">
+        <Key Device="Keyboard" Code="63" EventType="Click" MetaKeys="CTRL" />
+    </Input>
+	<Input Name="FloatingActionBar_Slot6">
+        <Key Device="Keyboard" Code="64" EventType="Click" MetaKeys="CTRL" />
+    </Input>	
+    <Input Name="NextActionBar">
+        <Key Device="Keyboard" Code="337" EventType="Click" MetaKeys="" />
+    </Input>
+    <Input Name="PreviousActionBar">
+        <Key Device="Keyboard" Code="329" EventType="Click" MetaKeys="" />
+    </Input>
+	<Input Name="Mount">
+        <Key Device="Keyboard" Code="44" EventType="Click" MetaKeys="" />
+    </Input>
+	<Input Name="UsePotion">
+        <Key Device="Keyboard" Code="45" EventType="Click" MetaKeys="" />
+    </Input>
+    <Input Name="ToggleInterface">
+        <Key Device="Keyboard" Code="44" EventType="Click" MetaKeys="ALT" />
+    </Input>
+    <Input Name="ToggleFramerate">
+        <Key Device="Keyboard" Code="33" EventType="Click" MetaKeys="CTRL" />
+    </Input>
+    <Input Name="WorldMap">
+        <Key Device="Keyboard" Code="50" EventType="Click" MetaKeys="" />
+    </Input>
+    <Input Name="LimitedActionSetBuilder">
+        <Key Device="Keyboard" Code="48" EventType="Click" MetaKeys="" />
+    </Input>
+    <Input Name="ToggleWeapons">
+        <Key Device="Keyboard" Code="43" EventType="Click" MetaKeys="" />
+    </Input>
+    <Input Name="CastInnateAbility">
+		<Key Device="Keyboard" Code="19" EventType="Raw" MetaKeys="" />
+	</Input>
+    <Input Name="Codex">
+		<Key Device="Keyboard" Code="38" EventType="Click" MetaKeys="" />
+    </Input>
+    <Input Name="GroupFinder">
+		<Key Device="Keyboard" Code="49" EventType="Click" MetaKeys="" />
+    </Input>
+    <Input Name="Social">
+		<Key Device="Keyboard" Code="24" EventType="Click" MetaKeys="" />
+    </Input>
+    <Input Name="ChatReply">
+		<Key Device="Keyboard" Code="19" EventType="Click" MetaKeys="CTRL" />
+    </Input>
+    <Input Name="Tradeskills">
+		<Key Device="Keyboard" Code="37" EventType="Click" MetaKeys="" />
+    </Input>
+    <Input Name="StunBreakoutUp">
+        <Key Device="Keyboard" Code="17" EventType="Raw" MetaKeys=""/>
+    </Input>
+    <Input Name="StunBreakoutDown">
+        <Key Device="Keyboard" Code="31" EventType="Raw" MetaKeys=""/>
+    </Input>
+    <Input Name="StunBreakoutLeft">
+        <Key Device="Keyboard" Code="30" EventType="Raw" MetaKeys=""/>
+        <Key Device="Keyboard" Code="16" EventType="Raw" MetaKeys=""/>
+    </Input>
+    <Input Name="StunBreakoutRight">
+        <Key Device="Keyboard" Code="32" EventType="Raw" MetaKeys=""/>
+        <Key Device="Keyboard" Code="18" EventType="Raw" MetaKeys=""/>
+    </Input>
+</InputBindings>
+     <Thumb Auto="ChatScrollThumb" />
+        </VScroll>
+        <BlankButton Auto="DefaultBlankButton" />
+    </WindowTemplate>
+    <WindowTemplate Name="CombatLog" BorderTopLeft="ChatBorderTopLeft" BorderTop="ChatBorderTop" BorderTopRight="ChatBorderTopRight" BorderRight="ChatBorderRight" BorderBottomRight="ChatLogSprites:ChatBorderBigBottomRight" BorderBottom="ChatBorderBigBottom" BorderBottomLeft="ChatLogSprites:ChatBorderBigBottomLeft" BorderLeft="ChatBorderLeft" ClientFrame="sprChatBackground" DefaultCursor="Default" ResizeNSCursor="DefaultResizeNS" ResizeEWCursor="DefaultResizeEW" ResizeNESWCursor="DefaultResizeNESW" ResizeNWSECursor="DefaultResizeNWSE">
+        <HScroll Internal="DefaultScrollInternal">
+            <IncButton Auto="DefaultHScrollRightButton" ButtonSoundTemplate="Test" />
+            <DecButton Auto="DefaultHScrollLeftButton" />
+            <Thumb Auto="DefaultHScrollThumb" />
+        </HScroll>
+        <VScroll Internal="DefaultScrollInternal">
+            <IncButton Auto="ChatLogVScrollDown" />
+            <DecButton Auto="ChatLogVScrollUp" />
+            <Thumb Auto="ChatScrollThumb" />
+        </VScroll>
+        <BlankButton Auto="DefaultBlankButton" />
+    </WindowTemplate>
+    <WindowTemplate Name="QuestLogEpisodeList" DefaultCursor="Default" ResizeNSCursor="DefaultResizeNS" ResizeEWCursor="DefaultResizeEW" ResizeNESWCursor="DefaultResizeNESW" ResizeNWSECursor="DefaultResizeNWSE">
+        <VScroll Internal="">
+            <IncButton Auto="btnQuestEpisodeDown" />
+            <DecButton Auto="btnQuestEpisodeUp" />
+            <Thumb Auto="QuestLogSprites:QuestVScrollThumb" />
+        </VScroll>
+    </WindowTemplate>
+    <WindowTemplate Name="QuestLogQuestDesc" DefaultCursor="Default" ResizeNSCursor="DefaultResizeNS" ResizeEWCursor="DefaultResizeEW" ResizeNESWCursor="DefaultResizeNESW" ResizeNWSECursor="DefaultResizeNWSE">
+        <VScroll Internal="">
+            <IncButton Auto="btnQuestScrollDown" />
+            <DecButton Auto="btnQuestScrollUp" />
+            <Thumb Auto="QuestLogSprites:QuestVScrollThumb" />
+        </VScroll>
+    </WindowTemplate>
+</WindowTemplates>
+="0"Û ÞÐði `½©p-KfirmTooltipPrice" TooltipColor="" HideInEditor="0" Visible="1" SkipZeroes="1" IgnoreMouse="1"/>
+            <Control Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="1" TAnchorOffset="-42" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="-23" RelativeToClient="1" Font="CRB_InterfaceSmall" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_TextHoloTitle" Template="Default" TooltipType="OnCursor" Name="AdvancedConfirmSellFeeText" TooltipColor="" TextId="Market_ListingFeePercent" Sprite="" Picture="1" IgnoreMouse="1"/>
+        </Control>
+    </Form>
+    <Form Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="0" RAnchorOffset="250" BAnchorPoint="0" BAnchorOffset="51" RelativeToClient="1" Font="Default" Text="" Template="Default" TooltipType="OnCursor" Name="CopyToClipboardTooltip" Border="0" Picture="1" SwallowMouseClicks="1" Moveable="0" Escapable="0" Overlapped="1" BGColor="white" TextColor="white" TooltipColor="" Sprite="" IgnoreMouse="1" Tooltip="">
+        <Control Class="Window" LAnchorPoint="0" LAnchorOffset="-20" TAnchorPoint="0" TAnchorOffset="-20" RAnchorPoint="1" RAnchorOffset="20" BAnchorPoint="1" BAnchorOffset="20" RelativeToClient="1" Font="Default" Text="" BGColor="UI_WindowBGDef

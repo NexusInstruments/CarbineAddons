@@ -1,4 +1,0 @@
-<Addon Name="CRB_Datachron" Version="" Author="" APIVersion="" Description="">
-    <Script Name="CRB_Datachron.lua"/>
-    <Form Name="CRB_Datachron.xml"/>
-</Addon>

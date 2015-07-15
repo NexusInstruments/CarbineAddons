@@ -1,0 +1,2815 @@
+<FloaterConfiguration version="0">
+  <Floater type="General">
+    <Options type="Normal">
+      <Font>
+        <Face>Thin30</Face>
+        <Size>40</Size>
+        <Color>white</Color>
+        <Flag>
+          <GfxFont_3D />
+          <GfxFont_Bold />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Source" attachment="NAME">
+        <Angle>0.000000</Angle>
+        <Distance>0.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+        <TotalDamage />
+      </MessageFormat>
+      <Birth duration="1000">
+        <Translation>
+          <VelocityDirectionMin>180.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>180.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>1.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>1.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="1000">
+        <Translation>
+          <VelocityDirectionMin>180.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>180.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>1.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>1.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Life>
+      <Death duration="1000">
+        <Translation>
+          <VelocityDirectionMin>180.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>180.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>1.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>1.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="Achievement">
+    <Options type="Normal">
+      <Font>
+        <Face>Thick</Face>
+        <Size>14</Size>
+        <Color>fffff000</Color>
+        <Flag>
+          <GfxFont_3D />
+        </Flag>
+      </Font>
+      <Location type="Screen">
+        <Angle>0.000000</Angle>
+        <Distance>-250.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+      </MessageFormat>
+      <Birth duration="200">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>1.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>1.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>0.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>0.500000</Begin>
+          <End>0.500000</End>
+        </Scale>
+      </Birth>
+      <Life duration="3000">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>1.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>1.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>0.500000</Begin>
+          <End>0.500000</End>
+        </Scale>
+      </Life>
+      <Death duration="500">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>1.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>1.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>0.500000</Begin>
+          <End>0.500000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="Experience">
+    <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Size>20</Size>
+        <Color>ffbf00a6</Color>
+      </Font>
+      <Location type="Screen">
+        <Angle>0.000000</Angle>
+        <Distance>150.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+      </MessageFormat>
+      <Birth duration="200">
+        <Fade>
+          <Begin>0.500000</Begin>
+          <End>1.000000</End>
+        </Fade>
+      </Birth>
+      <Life duration="1000" />
+      <Death duration="1000">
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="QuestUpdate">
+    <Options type="Normal">
+      <Font>
+        <Face>Thick</Face>
+        <Size>18</Size>
+        <Color>fffff000</Color>
+        <Flag>
+          <GfxFont_3D />
+        </Flag>
+      </Font>
+      <Location type="Screen">
+        <Angle>0.000000</Angle>
+        <Distance>-1000.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+      </MessageFormat>
+      <Birth duration="200">
+        <Translation>
+          <VelocityDirectionMin>270.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>270.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>2.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>2.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>0.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>0.500000</Begin>
+          <End>0.500000</End>
+        </Scale>
+      </Birth>
+      <Life duration="3000">
+        <Translation>
+          <VelocityDirectionMin>270.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>270.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>2.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>2.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>0.500000</Begin>
+          <End>0.500000</End>
+        </Scale>
+      </Life>
+      <Death duration="500">
+        <Translation>
+          <VelocityDirectionMin>270.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>270.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>2.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>2.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>0.500000</Begin>
+          <End>0.500000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="Location Change">
+    <Options type="Normal">
+      <Font>
+		<Face>ThinOutlineShadow30</Face>
+        <Size>30</Size>
+        <Color>ff00ff00</Color>
+		<Flag>
+          <GfxFont_3D />
+          <GfxFont_Bold />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+      </Flag>
+      </Font>
+
+      <Location type="Screen">
+        <Angle>180.000000</Angle>
+        <Distance>200.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+      </MessageFormat>
+      <Birth duration="200">
+        <Fade>
+          <Begin>0.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+      </Birth>
+      <Life duration="5000">
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+      </Life>
+      <Death duration="500">
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="Combat">
+    <Options type="Normal">
+      <Font>
+        <Size>30</Size>
+        <Color>white</Color>
+	 <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Target" attachment="NAME">
+        <Angle>0.000000</Angle>
+        <Distance>-1.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+        <TotalDamage />
+      </MessageFormat>
+      <Birth duration="200">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>1.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>1.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="500">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>1.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>1.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+      </Life>
+      <Death duration="500">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>1.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>1.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="Combat Damage">
+    <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Color>ffffff33</Color>
+	 <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <MessageFormat>
+        <TotalDamage />
+      </MessageFormat>
+    </Options>
+  </Floater>
+  <Floater type="Combat Damage Done">
+    <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Size>30</Size>
+        <Color>ffffff33</Color>
+	 <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Target" attachment="NAME">
+        <Angle>0.000000</Angle>
+        <Distance>-1.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+        <TotalDamage />
+      </MessageFormat>
+    <Birth duration="200">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.500000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.500000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.2000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="200">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.300000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.300000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.200000</Begin>
+          <End>1.100000</End>
+        </Scale>
+      </Life>
+      <Death duration="500">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.100000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.100000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.00000</Begin>
+          <End>0.800000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater> />
+  <Floater type="Shallow Done">
+    <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Size>30</Size>
+        <Color>ffffff33</Color>
+	 <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Target" attachment="NAME">
+        <Angle>0.000000</Angle>
+        <Distance>-1.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+        <TotalDamage />
+      </MessageFormat>
+    <Birth duration="200">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.500000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.500000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.2000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="200">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.300000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.300000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.200000</Begin>
+          <End>1.100000</End>
+        </Scale>
+      </Life>
+      <Death duration="500">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.100000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.100000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.00000</Begin>
+          <End>0.800000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater> />
+  <Floater type="Combat Damage Done Critical">
+    <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Size>30</Size>
+        <Color>ffFF8C00</Color>
+         <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Target" attachment="NAME">
+        <Angle>0.000000</Angle>
+        <Distance>-1.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+        <TotalDamage />
+      </MessageFormat>
+      <Birth duration="200">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.500000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.500000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>2.500000</Begin>
+          <End>1.8000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="650">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.30000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.300000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.500000</End>
+        </Scale>w
+      </Life>
+      <Death duration="50">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.100000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.100000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="Combat Damage Taken">
+    <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Color>ConHard</Color>
+ <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="None">
+        <Angle>0.000000</Angle>
+        <Distance>1.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+        <TotalDamage />
+      </MessageFormat>
+    <Birth duration="100">
+        <Translation>
+          <VelocityDirectionMin>180.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>180.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.500000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.500000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.2000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="100">
+        <Translation>
+          <VelocityDirectionMin>180.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>180.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.300000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.300000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.200000</Begin>
+          <End>1.100000</End>
+        </Scale>
+      </Life>
+      <Death duration="300">
+        <Translation>
+          <VelocityDirectionMin>180.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>180.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.100000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.100000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.00000</Begin>
+          <End>0.800000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="Combat Damage Taken Critical">
+    <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Size>30</Size>
+        <Color>ConHard</Color>
+ <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="None">
+       <Angle>0.000000</Angle>
+        <Distance>1.000000</Distance>
+      </Location>
+     <Birth duration="200">
+        <Translation>
+          <VelocityDirectionMin>180.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>180.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.500000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.500000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>2.000000</Begin>
+          <End>1.7000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="650">
+        <Translation>
+          <VelocityDirectionMin>180.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>180.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.30000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.300000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.500000</End>
+        </Scale>
+      </Life>
+      <Death duration="50">
+        <Translation>
+          <VelocityDirectionMin>180.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>180.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.100000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.100000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+         <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="Combat Healing">
+    <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Color>ff00ff00</Color>
+ <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+    </Options>
+  </Floater>
+  <Floater type="Combat Healing Done">
+    <Options type="Normal">
+      <Font>
+
+        <Color>ff00ff00</Color>
+        <Size>60</Size>
+      </Font>
+      <Location type="Target" attachment="NAME">
+        <Angle>0.000000</Angle>
+        <Distance>-1.000000</Distance>
+      </Location>
+      <Birth duration="200">
+        <Scale>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="500">
+        <Scale>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Life>
+      <Death duration="500">
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater> />
+  <Floater type="Combat Healing Done Critical">
+    <Options type="Normal">
+      <Font>     
+	<Face>ThinOutlineShadow30</Face>
+        <Color>ff00ff00</Color>
+        <Size>30</Size>
+ <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Target" attachment="NAME">
+        <Angle>0.000000</Angle>
+        <Distance>-1.000000</Distance>
+      </Location>
+      <Birth duration="200">
+        <Scale>
+          <Begin>2.000000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="500">
+        <Scale>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Life>
+      <Death duration="500">
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="Combat Healing Taken">
+    <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Color>ff00ff00</Color>
+        <Size>30</Size>
+	 <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Self" attachment="BASE">
+        <Angle>0.000000</Angle>
+        <Distance>1.000000</Distance>
+      </Location>
+      <Birth duration="200">
+        <Scale>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="500">
+        <Scale>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Life>
+      <Death duration="500">
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="Combat Healing Taken Critical">
+    <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Color>ff00ff00</Color>
+        <Size>30</Size>
+ <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Self" attachment="BASE">
+        <Angle>0.000000</Angle>
+        <Distance>1.000000</Distance>
+      </Location>
+      <Birth duration="200">
+        <Scale>
+          <Begin>2.000000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="500">
+        <Scale>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Life>
+      <Death duration="500">
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="Combat Death">
+    <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Size>30</Size>
+        <Color>white</Color>
+ <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Target" attachment="NAME">
+        <Angle>0.000000</Angle>
+        <Distance>1.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+      </MessageFormat>
+      <Birth duration="50">
+        <Scale>
+          <Begin>1.000000</Begin>
+          <End>1.500000</End>
+        </Scale>
+      </Birth>
+      <Life duration="50">
+        <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Life>
+      <Death duration="1500">
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="Error">
+    <Options type="Normal">
+      <Font>
+     <Face>ThinOutline18</Face>
+        <Size>14</Size>
+        <Color>ff00ffff</Color>
+ <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Screen">
+        <Angle>0.000000</Angle>
+        <Distance>-50.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+      </MessageFormat>
+      <Birth duration="500">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>1.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>1.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>0.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>0.500000</Begin>
+          <End>0.500000</End>
+        </Scale>
+      </Birth>
+      <Life duration="1000">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>1.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>1.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>0.500000</Begin>
+          <End>0.500000</End>
+        </Scale>
+      </Life>
+      <Death duration="500">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>1.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>1.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>0.500000</Begin>
+          <End>0.500000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="SpellFailure">
+    <Options type="Normal">
+      <Font>
+        <Face>ThinOutline18</Face>
+        <Size>14</Size>
+        <Color>ConHard</Color>`
+      <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Screen">
+        <Angle>0.000000</Angle>
+        <Distance>-250.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+      </MessageFormat>
+      <Birth duration="100">
+        <Fade>
+          <Begin>0.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+      </Birth>
+      <Life duration="1000">
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+      </Life>
+      <Death duration="500">
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="SpellFailure_Target_Head">
+    <Options type="Normal">
+      <Font>
+        <Face>ThinOutlineShadow18</Face>
+        <Size>14</Size>
+        <Color>ff00fff0</Color>`
+        <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Target" attachment="CHESTCTR_BB">
+        <Angle>0.000000</Angle>
+        <Distance>0.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+      </MessageFormat>
+      <Birth duration="100">
+        <Fade>
+          <Begin>0.500000</Begin>
+          <End>1.000000</End>
+        </Fade>
+      </Birth>
+      <Life duration="1000">
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+      </Life>
+      <Death duration="100">
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="SpellFailure_Target_Feet">
+    <Options type="Normal">
+      <Font>
+        <Face>ThinOutlineShadow18</Face>
+        <Size>14</Size>
+        <Color>ff00fff0</Color>`
+        <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Screen">
+        <Angle>0.000000</Angle>
+        <Distance>250.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+      </MessageFormat>
+      <Birth duration="100">
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+      </Birth>
+      <Life duration="1000">
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+      </Life>
+      <Death duration="100">
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="SpellFailure_Short">
+    <Options type="Normal">
+      <Font>
+        <Face>ThinOutlineShadow18</Face>
+        <Size>14</Size>
+        <Color>ff00fff0</Color>`
+        <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Screen">
+        <Angle>0.000000</Angle>
+        <Distance>250.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+      </MessageFormat>
+      <Birth duration="50">
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+      </Birth>
+      <Life duration="750">
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+      </Life>
+      <Death duration="50">
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="SpellFailure_Medium">
+    <Options type="Normal">
+      <Font>
+        <Face>ThinOutlineShadow18</Face>
+        <Size>14</Size>
+        <Color>ff00fff0</Color>`
+        <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Screen">
+        <Angle>0.000000</Angle>
+        <Distance>250.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+      </MessageFormat>
+      <Birth duration="100">
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+      </Birth>
+      <Life duration="1000">
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+      </Life>
+      <Death duration="100">
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="SpellFailure_Long">
+    <Options type="Normal">
+      <Font>
+        <Face>ThinOutlineShadow18</Face>
+        <Size>14</Size>
+        <Color>ff00fff0</Color>`
+        <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Screen">
+        <Angle>0.000000</Angle>
+        <Distance>250.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+      </MessageFormat>
+      <Birth duration="100">
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+      </Birth>
+      <Life duration="2000">
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+      </Life>
+      <Death duration="100">
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="AutoAttack">
+    <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Size>30</Size>
+        <Color>white</Color>
+ <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Target" attachment="NAME">
+        <Angle>0.000000</Angle>
+        <Distance>-1.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+        <TotalDamage />
+      </MessageFormat>
+  <Birth duration="200">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.500000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.500000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.2000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="200">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.300000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.300000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.200000</Begin>
+          <End>1.100000</End>
+        </Scale>
+      </Life>
+      <Death duration="500">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.100000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.100000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.00000</Begin>
+          <End>0.800000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater>  
+  <Floater type="AutoAttack_Critical">
+    <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Size>30</Size>
+        <Color>white</Color>
+         <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Target" attachment="NAME">
+        <Angle>0.000000</Angle>
+        <Distance>-1.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+        <TotalDamage />
+      </MessageFormat>
+      <Birth duration="200">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.500000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.500000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>2.500000</Begin>
+          <End>1.8000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="650">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.30000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.300000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.500000</End>
+        </Scale>w
+      </Life>
+      <Death duration="50">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.100000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.100000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater>
+        <Floater type="AutoAttack_SpellSlinger">
+    <Options type="Normal">
+      <Font>
+      <face>ThinOutlineShadow30</face>
+        <Size>30</Size>
+        <Color>white</Color>
+      </Font>
+	<Location type="Target" attachment="NAME">
+        <Angle>0.000000</Angle>
+        <Distance>-1.000000</Distance>
+      </Location>
+   <Birth duration="200">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.500000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.500000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.2000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="200">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.300000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.300000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.200000</Begin>
+          <End>1.100000</End>
+        </Scale>
+      </Life>
+      <Death duration="500">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.100000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.100000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+          <Scale>
+          <Begin>1.00000</Begin>
+          <End>0.800000</End>
+        </Scale>
+      </Death>
+      <MessageFormat>
+        <TotalDamage />
+      </MessageFormat>
+    </Options>
+  </Floater>
+  <Floater type="Faction">
+    <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Size>14</Size>
+        <Color>ffbf00a6</Color>
+      </Font>
+      <Location type="Screen">
+        <Angle>0.000000</Angle>
+        <Distance>100.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+      </MessageFormat>
+      <Birth duration="200">
+        <Fade>
+          <Begin>0.500000</Begin>
+          <End>1.000000</End>
+        </Fade>
+      </Birth>
+      <Life duration="1000" />
+      <Death duration="1000">
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="Loot_Base">
+    <Options type="Normal">
+      <Font>
+        <Face>ThinOutlineShadow18</Face>
+        <Size>20</Size>
+        <Color>white</Color>
+        <Flag>
+          <GfxFont_3D />
+          <GfxFont_Bold />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+	  <Location type="Source" attachment="Name">
+        <Angle>0.000000</Angle>
+        <Distance>-2.00000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+      </MessageFormat>
+		<Birth duration="400">
+			<Translation>
+			  <VelocityDirectionMin>250.000000</VelocityDirectionMin>
+			  <VelocityDirectionMax>250.000000</VelocityDirectionMax>
+			  <VelocityMagnitudeMin>2.000000</VelocityMagnitudeMin>
+			  <VelocityMagnitudeMax>2.000000</VelocityMagnitudeMax>
+			  <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+			  <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+			  <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+			  <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+			</Translation>
+			<Fade>
+			  <Begin>0.250000</Begin>
+			  <End>1.000000</End>
+			</Fade>
+			<Scale>
+			  <Begin>0.100000</Begin>
+			  <End>0.750000</End>
+			</Scale>
+		</Birth>
+      <Life duration="3000">
+        <Translation>
+          <VelocityDirectionMin>250.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>250.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>3.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>3.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.750000</End>
+        </Fade>
+        <Scale>
+          <Begin>0.75000</Begin>
+          <End>0.75000</End>
+        </Scale>
+      </Life>
+      <Death duration="500">
+        <Translation>
+          <VelocityDirectionMin>250.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>250.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>0.750000</Begin>
+          <End>0.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>0.750000</Begin>
+          <End>0.750000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="Loot_Average">
+    <Options type="Normal">
+      <Font>
+        <Face>ThinOutlineShadow30</Face>
+        <Size>20</Size>
+        <Color>white</Color>
+        <Flag>
+          <GfxFont_3D />
+          <GfxFont_Bold />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+    </Options>
+  </Floater>
+  <Floater type="Loot_Good">
+    <Options type="Normal">
+      <Font>
+        <Face>ThinOutlineShadow30</Face>
+        <Size>20</Size>
+        <Color>ff00ff00</Color>
+        <Flag>
+          <GfxFont_3D />
+          <GfxFont_Bold />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+    </Options>
+  </Floater>
+  <Floater type="Loot_Excellent">
+    <Options type="Normal">
+      <Font>
+        <Face>ThinOutlineShadow18</Face>
+        <Size>40</Size>
+        <Color>ff0000ff</Color>
+        <Flag>
+          <GfxFont_3D />
+          <GfxFont_Bold />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+    </Options>
+  </Floater>
+  <Floater type="Loot_Superb" />
+  <Floater type="Loot_Exquisite" />
+  <Floater type="Loot_Phenomenal" />
+  <Floater type="Loot_Extraordinary" />
+  <Floater type="Loot_Legendary" />
+  <Floater type="Loot_QuestActivate">
+    <Options type="Normal">
+      <Font>
+        <Face>Thin30</Face>
+        <Size>40</Size>
+        <Color>ffffd700</Color>
+        <Flag>
+          <GfxFont_3D />
+          <GfxFont_Bold />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Source" attachment="NAME">
+        <Angle>0.000000</Angle>
+        <Distance>0.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+      </MessageFormat>
+      <Birth duration="600">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>1.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>1.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>0.250000</Begin>
+          <End>1.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>0.100000</Begin>
+          <End>2.000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="600">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>1.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>1.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.900000</End>
+        </Fade>
+        <Scale>
+          <Begin>2.000000</Begin>
+          <End>1.50000</End>
+        </Scale>
+      </Life>
+      <Death duration="3500">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.400000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.400000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>0.900000</Begin>
+          <End>0.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.50000</Begin>
+          <End>0.050000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="Block Done">
+    <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Size>30</Size>
+        <Color>ffffff33</Color>
+	 <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+	</Flag>
+      </Font>
+      <Location type="Target" attachment="NAME">
+        <Angle>0.000000</Angle>
+        <Distance>-1.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+      </MessageFormat>
+     <Birth duration="200">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.500000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.500000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.2000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="200">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.300000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.300000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.200000</Begin>
+          <End>1.100000</End>
+        </Scale>
+      </Life>
+      <Death duration="500">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.100000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.100000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.00000</Begin>
+          <End>0.800000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="Parry Done">
+    <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Size>30</Size>
+        <Color>ffffff33</Color>
+	 <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+	</Flag>
+      </Font>
+      <Location type="Target" attachment="NAME">
+        <Angle>0.000000</Angle>
+        <Distance>-1.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+      </MessageFormat>
+       <Birth duration="200">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.500000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.500000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.2000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="200">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.300000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.300000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.200000</Begin>
+          <End>1.100000</End>
+        </Scale>
+      </Life>
+      <Death duration="500">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.100000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.100000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.00000</Begin>
+          <End>0.800000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="Dodge Done">
+    <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Size>30</Size>
+        <Color>ffffff33</Color>
+	 <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+	</Flag>
+      </Font>
+      <Location type="Target" attachment="NAME">
+        <Angle>0.000000</Angle>
+        <Distance>-1.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+      </MessageFormat>
+      <Birth duration="200">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.500000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.500000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.2000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="200">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.300000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.300000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.200000</Begin>
+          <End>1.100000</End>
+        </Scale>
+      </Life>
+      <Death duration="500">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.100000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.100000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.00000</Begin>
+          <End>0.800000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="Shallow Done">
+    <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Size>20</Size>
+        <Color>ffffff33</Color>
+	 <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Target" attachment="NAME">
+        <Angle>0.000000</Angle>
+        <Distance>-1.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+      </MessageFormat>
+     <Birth duration="200">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.500000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.500000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.2000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="200">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.300000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.300000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.200000</Begin>
+          <End>1.100000</End>
+        </Scale>
+      </Life>
+      <Death duration="500">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.100000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.100000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.00000</Begin>
+          <End>0.800000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater> />
+  <Floater type="Falling Damage Done">
+    <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Size>30</Size>
+        <Color>ConHard</Color>
+	 <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Target" attachment="NAME">
+        <Angle>0.000000</Angle>
+        <Distance>-1.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+      </MessageFormat>
+    <Birth duration="200">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.500000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.500000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.2000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="200">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.300000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.300000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.200000</Begin>
+          <End>1.100000</End>
+        </Scale>
+      </Life>
+      <Death duration="500">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.100000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.100000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.00000</Begin>
+          <End>0.800000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater> />
+  <Floater type="No Effect Done">
+    <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Size>30</Size>
+        <Color>ffffff33</Color>
+	 <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Target" attachment="NAME">
+        <Angle>0.000000</Angle>
+        <Distance>-1.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+      </MessageFormat>
+      <Birth duration="200">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>1.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>1.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>2.000000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="500">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>1.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>1.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+      </Life>
+      <Death duration="500">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>1.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>1.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+      </Death>
+    </Options>
+  </Floater> />
+  <Floater type="Block Taken">
+    <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Color>ConHard</Color>
+	 <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />  2
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Self" attachment="BASE">
+    <Angle>0.000000</Angle>
+        <Distance>1.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+      </MessageFormat>
+      <Birth duration="200">
+        <Translation>
+          <VelocityDirectionMin>180.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>180.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.500000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.500000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>2.000000</Begin>
+          <End>1.7000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="650">
+        <Translation>
+          <VelocityDirectionMin>180.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>180.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.30000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.300000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.500000</End>
+        </Scale>
+      </Life>
+      <Death duration="50">
+        <Translation>
+          <VelocityDirectionMin>180.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>180.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.100000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.100000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+         <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="Parry Taken">
+    <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Color>ConHard</Color>
+	 <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Self" attachment="BASE">
+   <Angle>0.000000</Angle>
+        <Distance>1.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+      </MessageFormat>
+    <Birth duration="200">
+        <Translation>
+          <VelocityDirectionMin>180.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>180.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.500000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.500000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>2.000000</Begin>
+          <End>1.7000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="650">
+        <Translation>
+          <VelocityDirectionMin>180.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>180.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.30000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.300000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.500000</End>
+        </Scale>
+      </Life>
+      <Death duration="50">
+        <Translation>
+          <VelocityDirectionMin>180.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>180.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.100000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.100000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+         <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="Dodge Taken">
+    <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Color>ConHard</Color>
+ <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Self" attachment="BASE">
+<Angle>0.000000</Angle>
+        <Distance>1.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+      </MessageFormat>
+     <Birth duration="200">
+        <Translation>
+          <VelocityDirectionMin>180.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>180.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.500000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.500000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>2.000000</Begin>
+          <End>1.7000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="650">
+        <Translation>
+          <VelocityDirectionMin>180.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>180.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.30000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.300000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.500000</End>
+        </Scale>
+      </Life>
+      <Death duration="50">
+        <Translation>
+          <VelocityDirectionMin>180.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>180.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.100000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.100000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+         <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="Shallow Taken">
+    <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Color>ConHard</Color>
+        <Size>20</Size>
+ <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Self" attachment="BASE">
+      <Angle>0.000000</Angle>
+        <Distance>1.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+      </MessageFormat>
+      <Birth duration="100">
+        <Translation>
+          <VelocityDirectionMin>180.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>180.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.500000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.500000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.2000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="100">
+        <Translation>
+          <VelocityDirectionMin>180.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>180.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.300000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.300000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.200000</Begin>
+          <End>1.100000</End>
+        </Scale>
+      </Life>
+      <Death duration="300">
+        <Translation>
+          <VelocityDirectionMin>180.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>180.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.100000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.100000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.00000</Begin>
+          <End>0.800000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="No Effect Taken">
+    <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Color>ConHard</Color>
+	 <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Self" attachment="BASE">
+        <Angle>0.000000</Angle>
+        <Distance>1.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+      </MessageFormat>
+        <Birth duration="200">
+        <Translation>
+          <VelocityDirectionMin>180.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>180.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.500000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.500000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>2.000000</Begin>
+          <End>1.7000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="650">
+        <Translation>
+          <VelocityDirectionMin>180.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>180.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.30000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.300000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.500000</End>
+        </Scale>
+      </Life>
+      <Death duration="50">
+        <Translation>
+          <VelocityDirectionMin>180.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>180.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.100000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.100000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+         <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="Absorption Taken">
+    <Options type="Normal">
+      <Font>
+        <Face>Thin30</Face>
+        <Size>40</Size>
+        <Color>ff00ff00</Color>
+        <Flag>
+          <GfxFont_3D />
+          <GfxFont_Bold />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Source" attachment="NAME">
+        <Angle>0.000000</Angle>
+        <Distance>0.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+        <AbsorbedDamage />
+      </MessageFormat>
+      <Birth duration="1000">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>1.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>1.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="1000">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>1.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>1.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Life>
+      <Death duration="1000">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>1.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>1.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="Absorption Done">
+    <Options type="Normal">
+      <Font>
+        <Face>Thin30</Face>
+        <Size>40</Size>
+        <Color>ConHard</Color>
+        <Flag>
+          <GfxFont_3D />
+          <GfxFont_Bold />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Source" attachment="NAME">
+        <Angle>0.000000</Angle>
+        <Distance>0.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+        <AbsorbedDamage />
+      </MessageFormat>
+      <Birth duration="1000">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>1.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>1.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="1000">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>1.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>1.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Life>
+      <Death duration="1000">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>1.000000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>1.000000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="Transference Taken">
+   <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Size>30</Size>
+        <Color>ffffff33</Color>
+	 <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Target" attachment="NAME">
+        <Angle>0.000000</Angle>
+        <Distance>-1.000000</Distance>
+      </Location>
+      <MessageFormat>
+        <Message />
+        <TotalDamage />
+      </MessageFormat>
+    <Birth duration="200">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.500000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.500000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.500000</Begin>
+          <End>1.2000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="200">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.300000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.300000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Scale>
+          <Begin>1.200000</Begin>
+          <End>1.100000</End>
+        </Scale>
+      </Life>
+      <Death duration="500">
+        <Translation>
+          <VelocityDirectionMin>0.000000</VelocityDirectionMin>
+          <VelocityDirectionMax>0.000000</VelocityDirectionMax>
+          <VelocityMagnitudeMin>0.100000</VelocityMagnitudeMin>
+          <VelocityMagnitudeMax>0.100000</VelocityMagnitudeMax>
+          <AccelerationDirectionMin>0.000000</AccelerationDirectionMin>
+          <AccelerationDirectionMax>0.000000</AccelerationDirectionMax>
+          <AccelerationMagnitudeMin>0.000000</AccelerationMagnitudeMin>
+          <AccelerationMagnitudeMax>0.000000</AccelerationMagnitudeMax>
+        </Translation>
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.00000</Begin>
+          <End>0.800000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater>
+  <Floater type="Transference Done">
+     <Options type="Normal">
+      <Font>
+     <Face>ThinOutlineShadow30</Face>
+        <Color>ff00ff00</Color>
+        <Size>30</Size>
+	 <Flag>
+          <GfxFont_3D />
+          <GfxFont_Shadow />
+          <GfxFont_Outline />
+        </Flag>
+      </Font>
+      <Location type="Self" attachment="BASE">
+        <Angle>0.000000</Angle>
+        <Distance>1.000000</Distance>
+      </Location>
+      <Birth duration="200">
+        <Scale>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Birth>
+      <Life duration="500">
+        <Scale>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Life>
+      <Death duration="500">
+        <Fade>
+          <Begin>1.000000</Begin>
+          <End>0.000000</End>
+        </Fade>
+        <Scale>
+          <Begin>1.000000</Begin>
+          <End>1.000000</End>
+        </Scale>
+      </Death>
+    </Options>
+  </Floater>
+</FloaterConfiguration>
+dOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_Slash" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_Slash" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_Slash" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_Slash" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_Slash" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_Slash" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_Execute" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_Execute" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_Execute" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_Execute" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_Execute" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_Execute" DisabledOverIcon="IconicButtonInnerGlow3"/>
+    <AutoIconButton Name="Button_WeaponBlock" NormalUnderIcon="IconicButtonBase" NormalIcon="Icon_WeaponBlock" NormalOverIcon="" PressedUnderIcon="IconicButtonEdgeGlow" PressedIcon="Icon_WeaponBlock" PressedOverIcon="" FlybyUnderIcon="IconicButtonBase" FlybyIcon="Icon_WeaponBlock" FlybyOverIcon="IconicButtonInnerGlow1" PressedFlybyUnderIcon="IconicButtonEdgeGlow" PressedFlybyIcon="Icon_WeaponBlock" PressedFlybyOverIcon="IconicButtonInnerGlow2" DisabledUnderIcon="IconicButtonBase" DisabledIcon="Icon_WeaponBlock" DisabledOverIcon="IconicBu

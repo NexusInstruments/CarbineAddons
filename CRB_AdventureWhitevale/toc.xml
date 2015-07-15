@@ -1,4 +1,0 @@
-<Addon Name="CRB_AdventureWhitevale" Version="" APIVersion="2" Author="" Description="">
-    <Script Name="CRB_AdventureWhitevale.lua"/>
-    <Form Name="WhitevaleAdventure.xml"/>
-</Addon>

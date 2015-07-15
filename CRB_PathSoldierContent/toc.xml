@@ -1,6 +1,0 @@
-<Addon Name="CRB_PathSoldierContent" Version="" Author="" APIVersion="" Description="">
-    <Form Name="PathSoldierMain.xml"/>
-    <Script Name="PathSoldierMain.lua"/>
-    <Form Name="PathSoldierMissions.xml"/>
-    <Script Name="PathSoldierMissions.lua"/>
-</Addon>

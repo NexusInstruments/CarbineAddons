@@ -1,4 +1,0 @@
-<Addon Name="CRB_CombatLog" Version="" Author="" APIVersion="" Description="">
-    <Script Name="CRB_CombatLog.lua"/>
-    <Form Name="CRB_CombatLog.xml"/>
-</Addon>

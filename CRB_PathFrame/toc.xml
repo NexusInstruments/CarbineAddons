@@ -1,4 +1,0 @@
-<Addon Name="CRB_PathFrame" Version="" Author="" APIVersion="" Description="">
-    <Script Name="CRB_PathFrame.lua"/>
-    <Form Name="CRB_PathFrame.xml"/>
-</Addon>

@@ -1,4 +1,0 @@
-<Addon Name="CRB_Keybind" Version="" APIVersion="2" Author="" Description="">
-    <Script Name="CRB_Keybind.lua"/>
-    <Form Name="CRB_KeybindingForms.xml"/>
-</Addon>

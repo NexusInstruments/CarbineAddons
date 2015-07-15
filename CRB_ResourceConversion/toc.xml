@@ -1,4 +1,0 @@
-<Addon Name="CRB_ResourceConversion" Version="" Author="" APIVersion="" Description="">
-    <Script Name="CRB_ResourceConversion.lua"/>
-    <Form Name="CRB_ResourceConversion.xml"/>
-</Addon>

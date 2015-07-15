@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Addon Author="Carbine" APIVersion="3" Name="CRB_WarpartyBank" Description="" Version="">
-    <Script Name="CRB_WarpartyBank.lua"/>
-    <Form Name="CRB_WarpartyBank.xml"/>
-</Addon>

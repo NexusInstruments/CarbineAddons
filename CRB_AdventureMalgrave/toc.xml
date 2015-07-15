@@ -1,4 +1,0 @@
-<Addon Name="CRB_AdventureMalgrave" Version="" Author="" APIVersion="" Description="">
-    <Script Name="CRB_AdventureMalgrave.lua"/>
-    <Form Name="CRB_AdventureMalgrave.xml"/>
-</Addon>

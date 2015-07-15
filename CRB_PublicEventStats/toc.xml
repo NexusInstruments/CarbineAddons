@@ -1,4 +1,0 @@
-<Addon Name="CRB_PublicEventStats" Author="" APIVersion="2" Version="" Description="">
-    <Script Name="CRB_PublicEventStats.lua"/>
-    <Form Name="CRB_PublicEventStats.xml"/>
-</Addon>

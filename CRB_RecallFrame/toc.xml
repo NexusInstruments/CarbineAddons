@@ -1,4 +1,0 @@
-<Addon APIVersion="3" Name="CRB_RecallFrame" Author="" Version="" Description="">
-    <Script Name="CRB_RecallFrame.lua"/>
-    <Form Name="CRB_RecallFrame.xml"/>
-</Addon>

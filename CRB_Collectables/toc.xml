@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Addon Author="" APIVersion="9" Name="CRB_Collectables" Description="" Version="">
-    <Script Name="CRB_Collectables.lua"/>
-    <Form Name="CRB_Collectables.xml"/>
-</Addon>

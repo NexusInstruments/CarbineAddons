@@ -1,4 +1,0 @@
-<Addon Name="CRB_QuestLog" Author="" APIVersion="2" Version="" Description="">
-    <Script Name="CRB_QuestLog.lua"/>
-    <Form Name="CRB_QuestLog.xml"/>
-</Addon>

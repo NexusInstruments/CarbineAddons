@@ -1,4 +1,0 @@
-<Addon Name="CRB_GuildContentRoster" APIVersion="1" Author="" Version="" Description="">
-    <Script Name="GuildRoster.lua"/>
-    <Form Name="GuildRoster.xml"/>
-</Addon>

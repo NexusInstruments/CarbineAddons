@@ -1,4 +1,0 @@
-<Addon Name="CRB_ObjectiveTracker" Version="" Author="" APIVersion="" Description="">
-    <Script Name="CRB_ObjectiveTracker.lua"/>
-    <Form Name="CRB_ObjectiveTracker.xml"/>
-</Addon>

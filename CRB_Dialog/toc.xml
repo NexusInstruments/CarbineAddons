@@ -1,4 +1,0 @@
-<Addon Name="CRB_Dialog" Version="" Author="" APIVersion="" Description="">
-    <Script Name="CRB_Dialog.lua"/>
-    <Form Name="CRB_Dialog.xml"/>
-</Addon>

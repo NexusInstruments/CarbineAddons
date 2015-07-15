@@ -1,4 +1,0 @@
-<Addon Name="CRB_ToolTips" Version="" Author="" APIVersion="" Description="">
-    <Script Name="CRB_ToolTips.lua"/>
-    <Form Name="TooltipsForms.xml"/>
-</Addon>

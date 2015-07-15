@@ -1,4 +1,0 @@
-<Addon Name="CRB_ChatLog" Version="" Author="" APIVersion="" Description="">
-    <Script Name="CRB_ChatLog.lua"/>
-    <Form Name="CRB_ChatLog.xml"/>
-</Addon>

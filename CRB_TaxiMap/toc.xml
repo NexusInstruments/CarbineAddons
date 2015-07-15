@@ -1,4 +1,0 @@
-<Addon Name="CRB_TaxiMap" Version="" Author="" APIVersion="" Description="">
-    <Script Name="CRB_TaxiMap.lua"/>
-    <Form Name="CRB_TaxiMap.xml"/>
-</Addon>

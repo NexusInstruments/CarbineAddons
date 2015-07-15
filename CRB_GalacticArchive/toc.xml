@@ -1,4 +1,0 @@
-<Addon Name="CRB_GalacticArchive" Version="" Author="" APIVersion="" Description="">
-    <Script Name="CRB_GalacticArchive.lua"/>
-    <Form Name="CRB_GalacticArchive.xml"/>
-</Addon>

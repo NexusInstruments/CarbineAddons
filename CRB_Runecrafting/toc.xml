@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
-<Addon Author="Carbine" APIVersion="3" Name="CRB_Runecrafting" Description="" Version="">
-    <Script Name="CRB_Runecrafting.lua"/>
-    <Form Name="CRB_Runecrafting.xml"/>
-</Addon>

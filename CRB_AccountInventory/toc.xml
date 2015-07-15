@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Addon Author="Carbine" APIVersion="3" Name="CRB_AccountInventory" Description="" Version="">
-    <Script Name="CRB_AccountInventory.lua"/>
-    <Form Name="CRB_AccountInventory.xml"/>
-</Addon>

@@ -1,0 +1,449 @@
+<?xml version="1.0" ?>
+<Sprites>
+  <!-- sprites go here -->
+  <!-- sprite -->
+  <Sprite Name="TB_DiamondOuterBracketLeft">
+    <Frame Texture="UI\UI_TargetBox.bmp"
+           Left="0" Top="0" Width="37" Height="72"
+           HotspotX="40" HotspotY="35"/>
+  </Sprite>
+  <Sprite Name="TB_DiamondOuterBracketRight">
+    <Frame Texture="UI\UI_TargetBox.bmp"
+           Left="37" Top="0" Width="37" Height="72"
+           HotspotX="-5" HotspotY="35"/>
+  </Sprite>
+  <Sprite Name="TB_DiamondInnerBracketLeft">
+    <Frame Texture="UI\UI_TargetBox.bmp"
+           Left="75" Top="20" Width="21" Height="37"
+           HotspotX="37" HotspotY="18"/>
+  </Sprite>
+  <Sprite Name="TB_DiamondInnerBracketTop">
+    <Frame Texture="UI\UI_TargetBox.bmp"
+           Left="96" Top="0" Width="36" Height="21"
+           HotspotX="17" HotspotY="37"/>
+  </Sprite>
+  <Sprite Name="TB_DiamondInnerBracketRight">
+    <Frame Texture="UI\UI_TargetBox.bmp"
+           Left="132" Top="20" Width="21" Height="37"
+           HotspotX="-18" HotspotY="18"/>
+  </Sprite>
+  <Sprite Name="TB_DiamondInnerBracketBottom">
+    <Frame Texture="UI\UI_TargetBox.bmp"
+           Left="96" Top="57" Width="36" Height="21"
+           HotspotX="17" HotspotY="-18"/>
+  </Sprite>
+
+  <Sprite Name="TB_CircleOuterBracketLeft">
+    <Frame Texture="UI\UI_TargetBox.bmp"
+           Left="153" Top="0" Width="18" Height="52"
+           HotspotX="31" HotspotY="26"/>
+  </Sprite>
+  <Sprite Name="TB_CircleOuterBracketRight">
+    <Frame Texture="UI\UI_TargetBox.bmp"
+           Left="171" Top="0" Width="18" Height="52"
+           HotspotX="-13" HotspotY="26"/>
+  </Sprite>
+  <Sprite Name="TB_CircleInnerBracketTL">
+    <Frame Texture="UI\UI_TargetBox.bmp"
+           Left="190" Top="0" Width="26" Height="26"
+           HotspotX="26" HotspotY="26"/>
+  </Sprite>
+  <Sprite Name="TB_CircleInnerBracketTR">
+    <Frame Texture="UI\UI_TargetBox.bmp"
+           Left="216" Top="0" Width="26" Height="26"
+           HotspotX="0" HotspotY="26"/>
+  </Sprite>
+  <Sprite Name="TB_CircleInnerBracketBL">
+    <Frame Texture="UI\UI_TargetBox.bmp"
+           Left="190" Top="26" Width="26" Height="26"
+           HotspotX="26" HotspotY="0"/>
+  </Sprite>
+  <Sprite Name="TB_CircleInnerBracketBR">
+    <Frame Texture="UI\UI_TargetBox.bmp"
+           Left="216" Top="26" Width="26" Height="26"
+           HotspotX="0" HotspotY="0"/>
+  </Sprite>
+
+  <Sprite Name="TB_OctagonOuterBracketLeft">
+    <Frame Texture="UI\UI_TargetBox.bmp"
+           Left="154" Top="53" Width="17" Height="54"
+           HotspotX="30" HotspotY="27"/>
+  </Sprite>
+  <Sprite Name="TB_OctagonOuterBracketRight">
+    <Frame Texture="UI\UI_TargetBox.bmp"
+           Left="171" Top="53" Width="17" Height="54"
+           HotspotX="-13" HotspotY="27"/>
+  </Sprite>
+  <Sprite Name="TB_OctagonInnerBracketTL">
+    <Frame Texture="UI\UI_TargetBox.bmp"
+           Left="190" Top="54" Width="26" Height="26"
+           HotspotX="26" HotspotY="26"/>
+  </Sprite>
+  <Sprite Name="TB_OctagonInnerBracketTR">
+    <Frame Texture="UI\UI_TargetBox.bmp"
+           Left="216" Top="54" Width="26" Height="26"
+           HotspotX="0" HotspotY="26"/>
+  </Sprite>
+  <Sprite Name="TB_OctagonInnerBracketBL">
+    <Frame Texture="UI\UI_TargetBox.bmp"
+           Left="190" Top="80" Width="26" Height="26"
+           HotspotX="26" HotspotY="0"/>
+  </Sprite>
+  <Sprite Name="TB_OctagonInnerBracketBR">
+    <Frame Texture="UI\UI_TargetBox.bmp"
+           Left="216" Top="80" Width="26" Height="26"
+           HotspotX="0" HotspotY="0"/>
+  </Sprite>
+
+
+
+  <TargetBox Name="Hostile">
+    <TargetBoxPiece Sprite="TB_DiamondOuterBracketLeft" Shade="Red">
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax="0"
+             XAtMax="-60" YAtMax="0"
+             XAtMin="-10" YAtMin="0"
+             />
+      <Phase OpacityAtMin="0" OpacityAtMax="0"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+    </TargetBoxPiece>
+    <TargetBoxPiece Sprite="TB_DiamondOuterBracketRight" Shade="Red">
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax="0"
+             XAtMax="60" YAtMax="0"
+             XAtMin="10" YAtMin="0"
+             />
+      <Phase OpacityAtMin="0" OpacityAtMax="0"
+             XAtMax="60" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+    </TargetBoxPiece>
+    <TargetBoxPiece Sprite="TB_DiamondInnerBracketLeft" Shade="Red">
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax="0.3"
+             XAtMax="-60" YAtMax="0"
+             XAtMin="-10" YAtMin="0"
+             />
+    </TargetBoxPiece>
+    <TargetBoxPiece Sprite="TB_DiamondInnerBracketTop" Shade="Red">
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax="0.3"
+             XAtMax="0" YAtMax="-60"
+             XAtMin="0" YAtMin="-10"
+             />
+    </TargetBoxPiece>
+    <TargetBoxPiece Sprite="TB_DiamondInnerBracketRight" Shade="Red">
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax="0.3"
+             XAtMax="60" YAtMax="0"
+             XAtMin="10" YAtMin="0"
+             />
+    </TargetBoxPiece>
+    <TargetBoxPiece Sprite="TB_DiamondInnerBracketBottom" Shade="Red">
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax="0.3"
+             XAtMax="0" YAtMax="60"
+             XAtMin="0" YAtMin="10"
+             />
+    </TargetBoxPiece>
+  </TargetBox>
+
+  <TargetBox Name="Neutral">
+    <TargetBoxPiece Sprite="TB_DiamondOuterBracketLeft" Shade="Yellow">
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax="0"
+             XAtMax="-60" YAtMax="0"
+             XAtMin="-10" YAtMin="0"
+             />
+      <Phase OpacityAtMin="0" OpacityAtMax="0"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+    </TargetBoxPiece>
+    <TargetBoxPiece Sprite="TB_DiamondOuterBracketRight" Shade="Yellow">
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax="0"
+             XAtMax="60" YAtMax="0"
+             XAtMin="10" YAtMin="0"
+             />
+      <Phase OpacityAtMin="0" OpacityAtMax="0"
+             XAtMax="60" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+    </TargetBoxPiece>
+    <TargetBoxPiece Sprite="TB_DiamondInnerBracketLeft" Shade="Yellow">
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax="0.3"
+             XAtMax="-60" YAtMax="0"
+             XAtMin="-10" YAtMin="0"
+             />
+    </TargetBoxPiece>
+    <TargetBoxPiece Sprite="TB_DiamondInnerBracketTop" Shade="Yellow">
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax="0.3"
+             XAtMax="0" YAtMax="-60"
+             XAtMin="0" YAtMin="-10"
+             />
+    </TargetBoxPiece>
+    <TargetBoxPiece Sprite="TB_DiamondInnerBracketRight" Shade="Yellow">
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax="0.3"
+             XAtMax="60" YAtMax="0"
+             XAtMin="10" YAtMin="0"
+             />
+    </TargetBoxPiece>
+    <TargetBoxPiece Sprite="TB_DiamondInnerBracketBottom" Shade="Yellow">
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax="0.3"
+             XAtMax="0" YAtMax="60"
+             XAtMin="0" YAtMin="10"
+             />
+    </TargetBoxPiece>
+  </TargetBox>
+
+  <TargetBox Name="Friendly">
+    <TargetBoxPiece Sprite="TB_CircleOuterBracketLeft" Shade="ff2aa2ff">
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax="0"
+             XAtMax="-60" YAtMax="0"
+             XAtMin="-10" YAtMin="0"
+             />
+      <Phase OpacityAtMin="0" OpacityAtMax="0"
+             XAtMax="-60" YAtMax="0"
+             XAtMin="-10" YAtMin="0"
+             />
+    </TargetBoxPiece>
+    <TargetBoxPiece Sprite="TB_CircleOuterBracketRight" Shade="ff2aa2ff">
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax="0"
+             XAtMax="60" YAtMax="0"
+             XAtMin="10" YAtMin="0"
+             />
+      <Phase OpacityAtMin="0" OpacityAtMax="0"
+             XAtMax="60" YAtMax="0"
+             XAtMin="10" YAtMin="0"
+             />
+    </TargetBoxPiece>
+    <TargetBoxPiece Sprite="TB_CircleInnerBracketTL" Shade="ff2aa2ff">
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax="0.3"
+             XAtMax="-60" YAtMax="-60"
+             XAtMin="-10" YAtMin="-10"
+             />
+    </TargetBoxPiece>
+    <TargetBoxPiece Sprite="TB_CircleInnerBracketTR" Shade="ff2aa2ff">
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax="0.3"
+             XAtMax="60" YAtMax="-60"
+             XAtMin="10" YAtMin="-10"
+             />
+    </TargetBoxPiece>
+    <TargetBoxPiece Sprite="TB_CircleInnerBracketBL" Shade="ff2aa2ff">
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax="0.3"
+             XAtMax="-60" YAtMax="60"
+             XAtMin="-10" YAtMin="10"
+             />
+    </TargetBoxPiece>
+    <TargetBoxPiece Sprite="TB_CircleInnerBracketBR" Shade="ff2aa2ff">
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax="0.3"
+             XAtMax="60" YAtMax="60"
+             XAtMin="10" YAtMin="10"
+             />
+    </TargetBoxPiece>
+  </TargetBox>
+
+  <TargetBox Name="Interactive">
+    <TargetBoxPiece Sprite="TB_OctagonOuterBracketLeft" Shade="Green">
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax="0"
+             XAtMax="-60" YAtMax="0"
+             XAtMin="-10" YAtMin="0"
+             />
+      <Phase OpacityAtMin="0" OpacityAtMax="0"
+             XAtMax="-60" YAtMax="0"
+             XAtMin="-10" YAtMin="0"
+             />
+    </TargetBoxPiece>
+    <TargetBoxPiece Sprite="TB_OctagonOuterBracketRight" Shade="Green">
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax="0"
+             XAtMax="60" YAtMax="0"
+             XAtMin="10" YAtMin="0"
+             />
+      <Phase OpacityAtMin="0" OpacityAtMax="0"
+             XAtMax="60" YAtMax="0"
+             XAtMin="10" YAtMin="0"
+             />
+    </TargetBoxPiece>
+    <TargetBoxPiece Sprite="TB_OctagonInnerBracketTL" Shade="Green">
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax="0.3"
+             XAtMax="-60" YAtMax="-60"
+             XAtMin="-10" YAtMin="-10"
+             />
+    </TargetBoxPiece>
+    <TargetBoxPiece Sprite="TB_OctagonInnerBracketTR" Shade="Green">
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax="0.3"
+             XAtMax="60" YAtMax="-60"
+             XAtMin="10" YAtMin="-10"
+             />
+    </TargetBoxPiece>
+    <TargetBoxPiece Sprite="TB_OctagonInnerBracketBL" Shade="Green">
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax="0.3"
+             XAtMax="-60" YAtMax="60"
+             XAtMin="-10" YAtMin="10"
+             />
+    </TargetBoxPiece>
+    <TargetBoxPiece Sprite="TB_OctagonInnerBracketBR" Shade="Green">
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax=".3"
+             XAtMax="0" YAtMax="0"
+             XAtMin="0" YAtMin="0"
+             />
+      <Phase OpacityAtMin=".3" OpacityAtMax="0.3"
+             XAtMax="60" YAtMax="60"
+             XAtMin="10" YAtMin="10"
+             />
+    </TargetBoxPiece>
+  </TargetBox>
+</Sprites>
+
+t="0" TAnchorOffset="-20" RAnchorPoint="1" RAnchorOffset="20" BAnchorPoint="1" BAnchorOffset="20" RelativeToClient="1" Font="Default" Text="" BGColor="UI_WindowBGDef

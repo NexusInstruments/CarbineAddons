@@ -1,4 +1,0 @@
-<Addon Name="CRB_GuildContentInfo" APIVersion="1" Author="" Version="" Description="">
-    <Script Name="GuildInfo.lua"/>
-    <Form Name="GuildInfo.xml"/>
-</Addon>

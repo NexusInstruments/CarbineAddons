@@ -1,4 +1,0 @@
-<Addon Name="CRB_MiniMap" Version="" Author="" APIVersion="" Description="">
-    <Script Name="CRB_MiniMap.lua"/>
-    <Form Name="CRB_MiniMap.xml"/>
-</Addon>

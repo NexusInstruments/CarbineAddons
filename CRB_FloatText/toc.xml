@@ -1,6 +1,0 @@
-<Addon Name="CRB_FloatText" Version="" Author="" APIVersion="" Description="">
-    <Script Name="CRB_FloatText.lua"/>
-    <Script Name="CRB_FloatTextPanel.lua"/>
-    <Form Name="TestCRB_FloatTextForms.xml"/>
-    <Form Name="CRB_FloatTextPanel.xml"/>
-</Addon>

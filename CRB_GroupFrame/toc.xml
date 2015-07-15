@@ -1,6 +1,0 @@
-<Addon Name="CRB_GroupFrame" Version="" Author="" APIVersion="" Description="">
-    <Script Name="CRB_GroupFrame.lua"/>
-    <Form Name="CRB_GroupFrame.xml"/>
-    <Script Name="CRB_GroupFrameOptions.lua"/>
-    <Form Name="CRB_GroupFrameOptions.xml"/>
-</Addon>

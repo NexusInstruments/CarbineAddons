@@ -1,5 +1,0 @@
-<Addon Name="CRB_Crafting" Version="" Author="" APIVersion="" Description="">
-    <Script Name="CRB_Crafting.lua"/>
-    <Script Name="CircuitBoardSchematic.lua"/>
-    <Form Name="CRB_Crafting.xml"/>
-</Addon>
