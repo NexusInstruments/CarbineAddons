@@ -16,8 +16,9 @@ local ktResultMap = {
 	[GuildLib.GuildResult_Success] = { nType = knTypString, value = Apollo.GetString("GuildResult_Success"), arParameters = { } },
 	[GuildLib.GuildResult_AtMaxGuildCount] = { nType = knTypeString, value = Apollo.GetString("GuldResult_AtMaxCount"), arParameters = { "strGuildType" } },
 	[GuildLib.GuildResult_MaxWarPartyCount] = { nType = knTypeString, value = Apollo.GetString("GuldResult_AtMaxCount"), arParameters = { "strGuildType" } },
-	[GuildLib.GuildResult_AtMaxCircleCount] = { nType = knTypeString, value = Apollo.GetString("GuldResult_AtMaxCount"), arParameters = { "strGuildType" } },
+	[GuildLib.GuildResult_AtMaxCircleCount] = { nType = knTypeString, value = Apollo.GetString("GuildResult_MaxCircles"), arParameters = { "strGuildType" } },
 	[GuildLib.GuildResult_MaxArenaTeamCount] = { nType = knTypeString, value = Apollo.GetString("GuildResult_MaxArenaTeamForSize"), arParameters = { } },
+	[GuildLib.GuildResult_AtMaxCommunityCount] = { nType = knTypeString, value = Apollo.GetString("GuldResult_AtMaxCount"), arParameters = { "strGuildType" } },
 	[GuildLib.GuildResult_CannotModifyResidenceWithActiveGame] = { nType = knTypeString, value = Apollo.GetString("GuildResult_CannotModifyWithActiveGame"), arParameters = { "strResidence" } },
 	[GuildLib.GuildResult_GenericActiveGameFailure] = { nType = knTypeString, value = Apollo.GetString("GuildResult_CannotModifyWithActiveGame"), arParameters = { "strGuildType" } },
 	[GuildLib.GuildResult_CannotChangeRanksWithActiveGame] = { nType = knTypeString, value = Apollo.GetString("GuildResult_CannotModifyWithActiveGame"), arParameters = { "strGuildType" } },
@@ -33,7 +34,7 @@ local ktResultMap = {
 	[GuildLib.GuildResult_CharacterNotInYourGuild] = { nType = knTypeString, value = Apollo.GetString("GuildResult_NotInYourGuild"), arParameters = { "tName", "strGuildType" } },
 	[GuildLib.GuildResult_CannotKickHigherOrEqualRankedMember] = { nType = knTypeString, value = Apollo.GetString("GuildResult_UnableToKick"), arParameters = { "tName" } },
 	[GuildLib.GuildResult_KickedMember] = { nType = knTypeString, value = Apollo.GetString("GuildResult_HasBeenKicked"), arParameters = { "tName" } },
-	[GuildLib.GuildResult_NoPendingInvites] = { nType = knTypeString, value = Apollo.GetString("GuildResult_NoPendingInvites"), arParameters = { "strGuildType" } },
+	[GuildLib.GuildResult_NoPendingInvites] = { nType = knTypeString, value = Apollo.GetString("GuildResult_NoPendingInvites"), arParameters = { } },
 	[GuildLib.GuildResult_PendingInviteExpired] = { nType = knTypeString, value = Apollo.GetString("GuildResult_InviteExpired"), arParameters = { "tName" } },
 	[GuildLib.GuildResult_CannotPromoteMemberAboveYourRank] = { nType = knTypeString, value = Apollo.GetString("GuildResult_CannotPromote"), arParameters = { "tName" } },
 	[GuildLib.GuildResult_PromotedToGuildMaster] = { nType = knTypeString, value = Apollo.GetString("GuildResult_PromotedToLeader"), arParameters = { "tName", "strGuildMaster" } },
@@ -53,6 +54,7 @@ local ktResultMap = {
 	[GuildLib.GuildResult_VoteStarted] = { nType = knTypeString, value = Apollo.GetString("GuildResult_VoteStarted"), arParameters = { "strGuildType", "tName" } },
 	[GuildLib.GuildResult_InviteAccepted] = { nType = knTypeString, value = Apollo.GetString("GuildResult_PlayerJoined"), arParameters = { "tName", "strGuildType" } },
 	[GuildLib.GuildResult_InviteDeclined] = { nType = knTypeString, value = Apollo.GetString("GuildResult_InviteDeclined"), arParameters = { "tName", "strGuildType" } },
+	[GuildLib.GuildResult_CharacterNotAHomeowner] = { nType = knTypeString, value = Apollo.GetString("Neighbors_NotAHomeowner"), arParameters = { "tName" } },
 	[GuildLib.GuildResult_GuildNameUnavailable] = { nType = knTypeString, value = Apollo.GetString("GuildRegistration_NameUnavailable"), arParameters = { "strGuildType" } },
 	[GuildLib.GuildResult_GuildDisbanded] = { nType = knTypeString, value = Apollo.GetString("GuildResult_Disbanded"), arParameters = { "tName" } },
 	[GuildLib.GuildResult_RankModified] = { nType = knTypeString, value = Apollo.GetString("GuildResult_RankModified"), arParameters = { "tRank", "tName" } },
@@ -113,6 +115,7 @@ local ktResultMap = {
 	[GuildLib.GuildResult_RequiresPerkPurchase] = { nType = knTypeString, value = Apollo.GetString("GuildResult_PerkPrereqNotMet"), arParameters = { } },
 	[GuildLib.GuildResult_PerkNotActivateable] = { nType = knTypeString, value = Apollo.GetString("GuildResult_PerkCanNotActivate"), arParameters = { } },
 	[GuildLib.GuildResult_PrivilegeRestricted] = { nType = knTypeString, value = Apollo.GetString("GuildResult_PrivilegeRestricted"), arParameters = { "strGuildType" } },
+	[GuildLib.GuildResult_InviteRestrictedNoEntitlement] = { nType = knTypeString, value = Apollo.GetString("GuildResult_InviteRestrictedNoEntitlement"), arParameters = { "strGuildType" } },
 	[GuildLib.GuildResult_InvalidMessageOfTheDay] = { nType = knTypeString, value = Apollo.GetString("GuildResult_InvalidMotD"), arParameters = { } },
 	[GuildLib.GuildResult_InvalidMemberNote] = { nType = knTypeString, value = Apollo.GetString("GuildResult_InvalidNote"), arParameters = { } },
 	[GuildLib.GuildResult_InsufficentMembers] = { nType = knTypeString, value = Apollo.GetString("GuildResult_InsufficientMembers"), arParameters = { } },
@@ -129,6 +132,7 @@ local ktResultMap = {
 	[GuildLib.GuildResult_CannotCreateWhileInQueue] = { nType = knTypeString, value = Apollo.GetString("GuildResult_CannotCreateWhileInQueue"), arParameters = { } },
 	[GuildLib.GuildResult_RenameNotAvailable] = { nType = knTypeString, value = Apollo.GetString("GuildResult_RenameNotAvailable"), arParameters = { } },
 	[GuildLib.GuildResult_RankLacksSufficientPermissions] = { nType = knTypeFunction, value = function(bIntercepted) return bIntercepted and Apollo.GetString("GuildDesigner_NoPermissions") or Apollo.GetString("GuildResult_InsufficientPermissions") end, arParameters = { "bIntercepted" } },
+	[GuildLib.GuildResult_MustBeHomeowner] = { nType = knTypeFunction, value = Apollo.GetString("Neighbors_NotAHomeownerSelf"), arParameters = { } },
 	[GuildLib.GuildResult_NotHighEnoughLevel] = { nType = knTypeFunction, value = function(eGuildType, strGuildType)
 		local strResult
 		if eGuildType and (eGuildType == GuildLib.GuildType_ArenaTeam_2v2 or eGuildType == GuildLib.GuildType_ArenaTeam_3v3 or eGuildType == GuildLib.GuildType_ArenaTeam_5v5) then

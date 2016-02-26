@@ -147,7 +147,7 @@ function Sabotage:OnWarPlotOneSecMatchTimer()
 	
 	-- Building Blue Team's Info
 	self:DrawHealth(self.tBlueInfo[LuaEnumBlueTeamInfo.Health], self.wndBlueBar, self.wndMain:FindChild("Blue:CurrentProgress"))
-	
+
 	local tSlots = {}
 	for idx, tData in pairs(self.tBombCarriers) do
 		if not tSlots[idx] then
@@ -228,7 +228,25 @@ function Sabotage:DrawHealth(peoHealth, wndBar, wndProgress)
 	wndBar:SetTooltip(string.format("%s: %s / %s", strTeam, Apollo.FormatNumber(nCurrentHealth, 0, true), Apollo.FormatNumber(nMaxHealth, 0, true)))
 	
 	wndProgress:Show(nCurrentHealth > 0)
-	wndProgress:SetText(Apollo.FormatNumber(nCurrentHealth / nMaxHealth * 100, 1, true).."%")
+	wndProgress:SetText(Apollo.FormatNumber(nCurrentHealth / nMaxHealth * 100, 0, true).."%")
+
+	-- Display labels to indicate team assignment
+	local eTeam = MatchingGame.GetPVPMatchState().eMyTeam
+	local blueTeamText = self.wndMain:FindChild("Blue:TeamText")
+	local redTeamText = self.wndMain:FindChild("Red:TeamText")
+			
+	if eTeam == 1  then
+		blueTeamText:SetText(Apollo.GetString("Sabotage_OwnCore"))
+		redTeamText:SetText(Apollo.GetString("Sabotage_EnemyCore"))
+		redTeamText:SetTextColor("UI_BtnTextGrayListNormal")
+	else
+		redTeamText:SetText(Apollo.GetString("Sabotage_OwnCore"))
+		blueTeamText:SetText(Apollo.GetString("Sabotage_EnemyCore"))
+		blueTeamText:SetTextColor("UI_BtnTextGrayListNormal")
+	end	
+
+	blueTeamText:Show(nCurrentHealth > 0)
+	redTeamText:Show(nCurrentHealth > 0)
 end
 
 function Sabotage:DrawBomb(wndBomb)

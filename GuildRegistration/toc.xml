@@ -3,4 +3,6 @@
     <Form Name="GuildRegistration.xml" />
 	<Script Name="CircleRegistration.lua" />
     <Form Name="CircleRegistration.xml" />
+	<Script Name="CommunityRegistration.lua" />
+    <Form Name="CommunityRegistration.xml" />
 </Addon>

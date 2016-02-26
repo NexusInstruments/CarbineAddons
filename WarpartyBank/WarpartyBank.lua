@@ -27,8 +27,13 @@ local knUsePermissionAll		= 8 -- TODO super hard coded hack
 local knUsePermissionNone		= 1 -- TODO super hard coded hack
 
 --[[ Permissions also attached to GetRanks()
-bDisband, bRankCreate, bChangeRankPermissions, bSpendInfluence, bRankRename, bVote, bChangeMemberRank
-bInvite, bKick, bEmblemAndStandard, bMemberChat, bCouncilChat, bBankTabRename, bNeighborhood
+bRankCreate, bChangeRankPermissions, bSpendInfluence, bRankRename, bVote, bChangeMemberRank,
+bInvite, bKick, bEmblemAndStandard, bMemberChat, bCouncilChat, bBankTabRename,
+bMessageOfTheDay, bRecruit, bBankTabLog, bCanActivatePlugs, bCanAddDeployablesHousing,
+bCanAddPlugHousing, bCanUpgradePlugWarplot, bCanRemovePlugHousing, bCanPayUpkeepPlugsHousing,
+bCanRepairPlugsInMatch, bCanIssueASurrenderVoteForAWarplot, bCanQueueTheWarparty,
+bCanUseWarplotVehicles, bCanKickPlayersFromWarplot, bCanDecorateCommunity,
+bCanChangeCommunityRemodelOptions, bCanReserveCommunityPlot, bCanRemoveCommunityPlotReservation
 ]]--
 
 function WarpartyBank:new(o)
@@ -52,6 +57,9 @@ function WarpartyBank:OnDocumentReady()
         return
     end
 
+    Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+    self:OnWindowManagementReady()
+
     Apollo.RegisterEventHandler("WarPartyBankerOpen", 		"WarPartyInitialize", self) -- notification you opened the WarParty bank.
     Apollo.RegisterEventHandler("GuildBankTab", 			"OnGuildBankTab", self) -- noficiation that a guild bank tab is loaded.
     Apollo.RegisterEventHandler("GuildBankItem", 			"OnGuildBankItem", self) -- noficiation of a change to a specific item that exists on a tab.
@@ -66,6 +74,10 @@ function WarpartyBank:OnDocumentReady()
     Apollo.RegisterEventHandler("PlayerCurrencyChanged", 		"OnPlayerCurrencyChanged", self)
 
     self.tTabPerks = {}
+end
+
+function WarpartyBank:OnWindowManagementReady()
+    Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("WarpartyBank_Title")})
 end
 
 function WarpartyBank:WarPartyInitialize()
@@ -196,7 +208,7 @@ function WarpartyBank:OnGuildBankTab(guildOwner, nTab)
     for idx, tCurrData in ipairs(guildOwner:GetBankTab(nTab)) do -- This doesn't hit the server, but we can still use GuildBankItem for updating afterwards
         self:HelperDrawBankItem(tCurrData.itemInSlot, nTab, tCurrData.nIndex)
     end
-    self.wndMain:FindChild("MainBankScrollbar"):ArrangeChildrenTiles(0)
+    self.wndMain:FindChild("MainBankScrollbar"):ArrangeChildrenTiles(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function WarpartyBank:HelperDrawBankItem(itemDrawing, nTab, nInventorySlot)
@@ -384,7 +396,7 @@ function WarpartyBank:DrawTabPermissions()
     for idx = 1, nTabCount do
         self:BuildPermissionIndividualTab(wndParent, guildOwner, bCanEditRanks, tCurrRankData, idx)
     end
-    wndParent:FindChild("PermissionsGridRowItems"):ArrangeChildrenTiles(1)
+    wndParent:FindChild("PermissionsGridRowItems"):ArrangeChildrenTiles(Window.CodeEnumArrangeOrigin.Middle)
 end
 
 function WarpartyBank:BuildPermissionIndividualTab(wndParent, guildOwner, bCanEditRanks, tCurrRankData, nBankTab)
@@ -514,8 +526,8 @@ function WarpartyBank:OnBankTabBtnMgmt()
             nTabCounter = nTabCounter + 1
         end
     end
-    wndParent:FindChild("MgmtBankTabContainer"):ArrangeChildrenVert(0)
-    --wndParent:FindChild("MgmtBankTabContainer"):ArrangeChildrenVert(0, function(a,b) return ktWhichPerksAreGuildTabs[a:GetData()] < ktWhichPerksAreGuildTabs[b:GetData()] end)
+    wndParent:FindChild("MgmtBankTabContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+    --wndParent:FindChild("MgmtBankTabContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function(a,b) return ktWhichPerksAreGuildTabs[a:GetData()] < ktWhichPerksAreGuildTabs[b:GetData()] end)
 end
 
 function WarpartyBank:OnLeaderOptionsEditBoxChanged(wndHandler, wndControl)

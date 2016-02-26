@@ -248,13 +248,8 @@ function GroupDisplay:OnSave(eType)
 		return
 	end
 
-	local locInviteLocation = self.wndGroupInviteDialog and self.wndGroupInviteDialog:GetLocation() or self.locSavedInviteLoc
-	local locMentorLocation = self.wndMentor and self.wndMentor:GetLocation() or self.locSavedMentorLoc
-
 	local tSave =
 	{
-		tInviteLocation 			= locInviteLocation and locInviteLocation:ToTable() or nil,
-		tMentorLocation 			= locMentorLocation and locMentorLocation:ToTable() or nil,
 		bNeverShowRaidConvertNotice = self.bNeverShowRaidConvertNotice or false,
 		fInviteTimerStart 			= self.fInviteTimerStartTime,
 		strInviterName 				= self.strInviterName,
@@ -271,14 +266,6 @@ function GroupDisplay:OnRestore(eType, tSavedData)
 	end
 
 	self.bNeverShowRaidConvertNotice = tSavedData.bNeverShowRaidConvertNotice or false
-
-	if tSavedData.tInviteLocation then
-		self.locSavedInviteLoc = WindowLocation.new(tSavedData.tInviteLocation)
-	end
-
-	if tSavedData.tMentorLocation then
-		self.locSavedMentorLoc = WindowLocation.new(tSavedData.tMentorLocation)
-	end
 
 	if tSavedData.fInviteTimerStart then
 		local tInviteData = GroupLib.GetInvite()
@@ -309,8 +296,6 @@ function GroupDisplay:OnDocumentReady()
 	if self.xmlDoc == nil then
 		return
 	end
-
-	Apollo.RegisterEventHandler("WindowManagementReady", 	"OnWindowManagementReady", self)
 
 	Apollo.RegisterEventHandler("Group_Invited",			"OnGroupInvited", self)				-- ( name )
 	Apollo.RegisterEventHandler("Group_Invite_Result",		"OnGroupInviteResult", self)		-- ( name, result )
@@ -368,16 +353,12 @@ function GroupDisplay:OnDocumentReady()
 
 	self.wndGroupInviteDialog 	= Apollo.LoadForm(self.xmlDoc, "GroupInviteDialog", nil, self)
 	self.wndGroupInviteDialog:Show(false, true)
-	if self.locSavedInviteLoc then
-		self.wndGroupInviteDialog:MoveToLocation(self.locSavedInviteLoc)
-	end
 
 	self.wndInviteMemberList 	= self.wndGroupInviteDialog:FindChild("InviteMemberList")
 	self.nInviteTimer 			= knInviteTimeout
 
 	self.eChatChannel 			= ChatSystemLib.ChatChannel_Party
 
-	self.wndGroupInviteDialog:Show(false)
 	if self.fInviteTimerStartTime then
 		self:OnGroupInvited(self.strInviterName)
 	end
@@ -389,9 +370,6 @@ function GroupDisplay:OnDocumentReady()
 
 	self.wndMentor 				= Apollo.LoadForm(self.xmlDoc, "GroupMentorDialog", nil, self)
 	self.wndMentor:Show(false, true)
-	if self.locSavedMentorLoc then
-		self.wndMentor:MoveToLocation(self.locSavedMentorLoc)
-	end
 
 	if self.fMentorTimerStartTime then
 		self:OnGroupMentor(GroupLib.GetMentoringList(), GameLib:GetPlayerUnit():IsMentoring(), false)
@@ -414,7 +392,7 @@ function GroupDisplay:OnDocumentReady()
 		self.wndGroupMessage:FindChild(karMessageIconString[idx]):Show(false)
 	end
 
-	self.wndRequest:Show(false)
+	self.wndRequest:Close()
 
 	Event_FireGenericEvent("GenericEvent_InitializeGroupLeaderOptions", self.wndGroupHud:FindChild("GroupControlsBtn"))
 	-- TEMP HACK: Try again in case this loads first
@@ -429,10 +407,15 @@ function GroupDisplay:OnDocumentReady()
 			Apollo.StartTimer("GroupUpdateTimer")
 		end
 	end
+
+	Apollo.RegisterEventHandler("WindowManagementReady", 	"OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 end
 
 function GroupDisplay:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("Group_CurrentGroup")})
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndGroupHud, strName = Apollo.GetString("Group_CurrentGroup")})
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("CRB_Invite_To_Group")})
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndGroupInviteDialog, strName = Apollo.GetString("CRB_Invite_To_Group")})
 end
 
@@ -548,7 +531,7 @@ function GroupDisplay:OnGroupJoinRequest(strInviterName) -- builds the invite wh
 	-- a join message means that someone has requested to join our existing party
 	local str = String_GetWeaselString(Apollo.GetString("GroupJoinRequest"), strInviterName)
 	self.wndRequest:FindChild("Title"):SetText(str)
-	self.wndRequest:Show(true)
+	self.wndRequest:Invoke()
 	ChatSystemLib.PostOnChannel(self.eChatChannel, str, "")
 end
 
@@ -557,7 +540,7 @@ function GroupDisplay:OnGroupReferral(nMemberIndex, strTarget) -- builds the inv
 	-- a join message means that someone has requested to join our existing party
 	local str = String_GetWeaselString(Apollo.GetString("GroupReferral"), strTarget)
 	self.wndRequest:FindChild("Title"):SetText(str)
-	self.wndRequest:Show(true)
+	self.wndRequest:Invoke()
 	ChatSystemLib.PostOnChannel(self.eChatChannel, str, "")
 end
 
@@ -573,7 +556,7 @@ end
 
 function GroupDisplay:OnGroupInviteDialogAccept()
 	GroupLib.AcceptInvite()
-	self.wndGroupInviteDialog:Show(false)
+	self.wndGroupInviteDialog:Close()
 	self.fInviteTimerStartTime = nil
 	Apollo.StopTimer("InviteTimer")
 	Sound.Play(Sound.PlayUISocialPartyInviteAccept)
@@ -581,7 +564,7 @@ end
 
 function GroupDisplay:OnGroupInviteDialogDecline()
 	GroupLib.DeclineInvite()
-	self.wndGroupInviteDialog:Show(false)
+	self.wndGroupInviteDialog:Close()
 	self.fInviteTimerStartTime = nil
 	Apollo.StopTimer("InviteTimer")
 	Sound.Play(Sound.PlayUISocialPartyInviteDecline)
@@ -590,7 +573,7 @@ end
 function GroupDisplay:OnReportGroupInviteSpamBtn()
 	Event_FireGenericEvent("GenericEvent_ReportPlayerGroupInvite", 30 - self.fInviteTimerDelta) -- Order is important
 	-- GroupLib.DeclineInvite() -- Do NOT decline the invite. The report system needs it still valid for full details.
-	self.wndGroupInviteDialog:Show(false)
+	self.wndGroupInviteDialog:Close()
 	self.fInviteTimerStartTime = nil
 	Apollo.StopTimer("InviteTimer")
 end
@@ -873,7 +856,7 @@ function GroupDisplay:DrawMemberPortrait(tPortrait, tMemberInfo)
 
 	local bDead = tMemberInfo.nHealth == 0 and tMemberInfo.nHealthMax ~= 0
 	if bDead then
-		tPortrait.wndName:SetTextColor(ApolloColor.new("xkcdReddish"))
+		tPortrait.wndName:SetTextColor(ApolloColor.new("Reddish"))
 	elseif bOutOfRange or not tMemberInfo.bIsOnline then
 		tPortrait.wndName:SetTextColor(ApolloColor.new("UI_WindowTitleGray"))
 	else
@@ -895,7 +878,7 @@ function GroupDisplay:DrawMemberPortrait(tPortrait, tMemberInfo)
 	local unitTarget = GameLib.GetTargetUnit()
 	tPortrait.wndGroupPortraitBtn:SetCheck(unitTarget and unitTarget == unitMember) --tPortrait.unitMember
 
-	tPortrait.wndHud:FindChild("GroupPortraitArrangeVert"):ArrangeChildrenVert(1)
+	tPortrait.wndHud:FindChild("GroupPortraitArrangeVert"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.Middle)
 
 	if tMemberInfo.nHealth > 0 then
 		self:HelperUpdateHealth(tPortrait, tMemberInfo)
@@ -1081,11 +1064,11 @@ function GroupDisplay:OnGroupOperationResult(strMemberName, eResult)
 end
 
 function GroupDisplay:OnGroupAcceptInvite() -- I've accepted an invitation
-	self.wndGroupInviteDialog:Show(false)
+	self.wndGroupInviteDialog:Close()
 end
 
 function GroupDisplay:OnGroupDeclineInvite() -- I've declined an invitation
-	self.wndGroupInviteDialog:Show(false)
+	self.wndGroupInviteDialog:Close()
 end
 
 function GroupDisplay:OnLootRollUpdate()
@@ -1111,7 +1094,7 @@ function GroupDisplay:OnGroupLeft(eReason)
 
 	self:AddToQueue(ktGroupLeftResultStrings[eReason].strIcon, strMsg)
 
-	self.wndRequest:Show(false)
+	self.wndRequest:Close()
 	self.wndLeaveGroup:Show(false)
 
 	self:DestroyGroup()
@@ -1283,7 +1266,7 @@ function GroupDisplay:OnGroupInviteResult(strCharacterName, eResult)
 
 		if eResult == GroupLib.Result.ExpiredInvitee then
 			self.fInviteTimerStartTime = nil
-			self.wndGroupInviteDialog:Show(false)
+			self.wndGroupInviteDialog:Close()
 		end
 	end
 end
@@ -1307,7 +1290,7 @@ function GroupDisplay:OnGroupRequestResult(strCharacterName, eResult, bIsJoin)
 			self:AddToQueue(ktJoinRequestResultStrings[eResult].strIcon, strMsg)
 
 			if eResult == GroupLib.Result.ExpiredInvitee then
-				self.wndRequest:Show(false)
+				self.wndRequest:Close()
 			end
 		end
 	else
@@ -1321,7 +1304,7 @@ function GroupDisplay:OnGroupRequestResult(strCharacterName, eResult, bIsJoin)
 			self:AddToQueue(ktReferralStrings[eResult].strIcon, strMsg)
 
 			if eResult == GroupLib.Result.ExpiredInvitee then
-				self.wndRequest:Show(false)
+				self.wndRequest:Close()
 			end
 		end
 	end
@@ -1436,7 +1419,7 @@ function GroupDisplay:HelperResizeGroupContents()
 		nOnGoingHeight = nOnGoingHeight + (nBottom - nTop)
 	end
 
-	self.wndGroupHud:FindChild("GroupArrangeVert"):ArrangeChildrenVert(0)
+	self.wndGroupHud:FindChild("GroupArrangeVert"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 	local nLeft, nTop, nRight, nBottom = self.wndGroupHud:GetAnchorOffsets()
 	self.wndGroupHud:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nOnGoingHeight + 47) -- TODO Hard coded formatting
@@ -1501,7 +1484,7 @@ function GroupDisplay:OnGroupMentor(tMemberList, bCurrentlyMentoring, bUpdateOnl
 	self.wndMentor:FindChild("Timer"):SetData(knMentorTimeout)
 	Apollo.CreateTimer("MentorTimer", 1.000, false)
 
-	self.wndMentor:Show(true)
+	self.wndMentor:Invoke()
 end
 
 function GroupDisplay:OnToggleMentorItem(wndHandler, wndCtrl)
@@ -1531,7 +1514,7 @@ function GroupDisplay:OnMentorPlayerBtn(wndHandler, wndCtrl)
 
 	GroupLib.AcceptMentoring(unitStudent)
 
-	self.wndMentor:Show(false)
+	self.wndMentor:Close()
 	self.fMentorTimerStartTime = nil
 	Apollo.StopTimer("MentorTimer")
 end
@@ -1540,13 +1523,13 @@ function GroupDisplay:OnCancelMentoringBtn(wndHandler, wndCtrl)
 	-- this is the button for canceling the mentoring status of this player
 	GroupLib.CancelMentoring()
 
-	self.wndMentor:Show(false)
+	self.wndMentor:Close()
 	self.fMentorTimerStartTime = nil
 	Apollo.StopTimer("MentorTimer")
 end
 
 function GroupDisplay:OnMentorCloseBtn(wndHandler, wndCtrl)
-	self.wndMentor:Show(false)
+	self.wndMentor:Close()
 	self.fMentorTimerStartTime = nil
 	Apollo.StopTimer("MentorTimer")
 
@@ -1605,12 +1588,12 @@ function GroupDisplay:OnMentorAOITimer()
 end
 
 function GroupDisplay:OnAcceptRequest()
-	self.wndRequest:Show(false)
+	self.wndRequest:Close()
 	GroupLib.AcceptRequest()
 end
 
 function GroupDisplay:OnDenyRequest()
-	self.wndRequest:Show(false)
+	self.wndRequest:Close()
 	GroupLib.DenyRequest()
 end
 

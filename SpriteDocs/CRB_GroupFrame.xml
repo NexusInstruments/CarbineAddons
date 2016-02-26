@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Sprites>
+    <Sprite Name="sprGroup_LeaderFrame" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Basekit_0_1221.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="79" y0="0" y1="0" y2="0" y3="0" y4="0" y5="44" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="sprGroup_HoloFrame" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Basekit_236_711.tga" x0="0" x1="18" x2="56" x3="95" x4="127" x5="141" y0="0" y1="0" y2="0" y3="46" y4="95" y5="111" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="sprGroup_HoloInactive" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Basekit_378_712.tga" x0="0" x1="0" x2="0" x3="6" x4="62" x5="68" y0="0" y1="0" y2="0" y3="6" y4="24" y5="30" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="sprGroup_HealthWarn_Base" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Basekit_1090_560.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="236" y0="0" y1="0" y2="0" y3="0" y4="0" y5="40" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="sprGroup_HealthWarn_Dead" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Basekit_1090_640.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="236" y0="0" y1="0" y2="0" y3="0" y4="0" y5="40" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="sprGroup_HealthWarn_Pulse" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Basekit_1090_600.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="236" y0="0" y1="0" y2="0" y3="0" y4="0" y5="40" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.500" StartColor="ffffff" EndColor="c8ffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Basekit_1090_600.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="236" y0="0" y1="0" y2="0" y3="0" y4="0" y5="40" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.250" StartColor="c8ffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Basekit_1090_600.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="236" y0="0" y1="0" y2="0" y3="0" y4="0" y5="40" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.250" StartColor="ffffffff" EndColor="c8ffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Basekit_1090_600.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="236" y0="0" y1="0" y2="0" y3="0" y4="0" y5="40" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.250" StartColor="c8ffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Basekit_1090_600.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="236" y0="0" y1="0" y2="0" y3="0" y4="0" y5="40" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.250" StartColor="ffffffff" EndColor="c8ffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Basekit_1090_600.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="236" y0="0" y1="0" y2="0" y3="0" y4="0" y5="40" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.250" StartColor="c8ffffff" EndColor="ffffffff"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Basekit_1090_600.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="236" y0="0" y1="0" y2="0" y3="0" y4="0" y5="40" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.500" StartColor="ffffffff" EndColor="ffffff"/>
+    </Sprite>
+    <Sprite Name="sprGroup_Disconnected" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Basekit_2128_382.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="51" y0="0" y1="0" y2="0" y3="0" y4="0" y5="38" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="sprGroup_Target" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Basekit_2209_115.tga" x0="0" x1="0" x2="0" x3="0" x4="0" x5="21" y0="0" y1="0" y2="0" y3="0" y4="0" y5="21" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="ffffffff" EndColor="ffffffff"/>
+    </Sprite>
+    <Sprite Name="sprGroup_PulseGlow_Anim" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="319" y0="64" y1="64" y2="64" y3="64" y4="64" y5="128" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.600" StartColor="UI_AlphaPercent0" EndColor="white"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="319" y0="64" y1="64" y2="64" y3="64" y4="64" y5="128" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.600" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="319" y0="64" y1="64" y2="64" y3="64" y4="64" y5="128" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.600" StartColor="white" EndColor="UI_AlphaPercent0"/>
+    </Sprite>
+    <Sprite Name="sprGroup_LeftBracket" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="22" x1="22" x2="22" x3="22" x4="22" x5="44" y0="140" y1="140" y2="140" y3="140" y4="140" y5="183" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprGroup_ArrowIndicator" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="154" x1="154" x2="154" x3="154" x4="154" x5="168" y0="150" y1="150" y2="150" y3="150" y4="150" y5="170" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprGroup_Pulse_Anim" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="1" x1="1" x2="1" x3="1" x4="1" x5="320" y0="192" y1="192" y2="192" y3="192" y4="192" y5="256" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.060" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="1" x1="1" x2="1" x3="1" x4="1" x5="320" y0="255" y1="255" y2="255" y3="255" y4="255" y5="319" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.060" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="1" x1="1" x2="1" x3="1" x4="1" x5="320" y0="318" y1="318" y2="318" y3="318" y4="318" y5="382" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.060" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="1" x1="1" x2="1" x3="1" x4="1" x5="320" y0="383" y1="383" y2="383" y3="383" y4="383" y5="447" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.060" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="1" x1="1" x2="1" x3="1" x4="1" x5="320" y0="383" y1="383" y2="383" y3="383" y4="383" y5="447" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.060" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="1" x1="1" x2="1" x3="1" x4="1" x5="320" y0="448" y1="448" y2="448" y3="448" y4="448" y5="512" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.060" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="1" x1="1" x2="1" x3="1" x4="1" x5="320" y0="511" y1="511" y2="511" y3="511" y4="511" y5="575" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.060" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="1" x1="1" x2="1" x3="1" x4="1" x5="320" y0="574" y1="574" y2="574" y3="574" y4="574" y5="638" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.060" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="1" x1="1" x2="1" x3="1" x4="1" x5="320" y0="637" y1="637" y2="637" y3="637" y4="637" y5="701" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.060" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="2" x1="2" x2="2" x3="2" x4="2" x5="321" y0="700" y1="700" y2="700" y3="700" y4="700" y5="764" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.060" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="2" x1="2" x2="2" x3="2" x4="2" x5="321" y0="700" y1="700" y2="700" y3="700" y4="700" y5="764" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.060" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="1" x1="1" x2="1" x3="1" x4="1" x5="320" y0="763" y1="763" y2="763" y3="763" y4="763" y5="827" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.060" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="1" x1="1" x2="1" x3="1" x4="1" x5="320" y0="826" y1="826" y2="826" y3="826" y4="826" y5="890" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.060" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="2" x1="2" x2="2" x3="2" x4="2" x5="321" y0="889" y1="889" y2="889" y3="889" y4="889" y5="953" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.060" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="2" x1="2" x2="2" x3="2" x4="2" x5="321" y0="889" y1="889" y2="889" y3="889" y4="889" y5="953" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.060" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="319" y0="952" y1="952" y2="952" y3="952" y4="952" y5="1016" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.060" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="320" x1="320" x2="320" x3="320" x4="320" x5="639" y0="0" y1="0" y2="0" y3="0" y4="0" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.060" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="321" x1="321" x2="321" x3="321" x4="321" x5="640" y0="63" y1="63" y2="63" y3="63" y4="63" y5="127" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.060" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="322" x1="322" x2="322" x3="322" x4="322" x5="641" y0="127" y1="127" y2="127" y3="127" y4="127" y5="191" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.060" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="321" x1="321" x2="321" x3="321" x4="321" x5="640" y0="192" y1="192" y2="192" y3="192" y4="192" y5="256" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.060" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="320" x1="320" x2="320" x3="320" x4="320" x5="639" y0="255" y1="255" y2="255" y3="255" y4="255" y5="319" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.060" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="321" x1="321" x2="321" x3="321" x4="321" x5="640" y0="318" y1="318" y2="318" y3="318" y4="318" y5="382" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.060" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="321" x1="321" x2="321" x3="321" x4="321" x5="640" y0="383" y1="383" y2="383" y3="383" y4="383" y5="447" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.060" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprGroup_PulseStroke" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="320" y0="0" y1="0" y2="0" y3="0" y4="0" y5="60" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Composite Name="sprGroup_HealthWarn_Composite" Cycle="0">
+        <Layer Name="sprGroup_HealthWarn_Base"/>
+        <Layer Name="sprGroup_HealthWarn_Pulse"/>
+    </Composite>
+    <Composite Name="sprGroup_WarnDebuff_Composite" Cycle="1">
+        <Layer Name="sprGroup_PulseGlow_Anim"/>
+        <Layer Name="sprGroup_PulseStroke"/>
+        <Layer Name="sprGroup_Pulse_Anim"/>
+    </Composite>
+    <AutoButton Name="sprGroup_Btn_Holo" Texture="UI\Assets\TexPieces\UI_CRB_Basekit_1572_1253.tga" x0="0" x1="0" x2="0" x3="45" x4="54" x5="74" y0="0" y1="0" y2="0" y3="0" y4="0" y5="36" StateBits="31" Direction="Across"/>
+    <AutoButton Name="sprGroup_Btn_Options" Texture="UI\Assets\TexPieces\UI_CRB_Basekit_1793_836.tga" x0="0" x1="0" x2="0" x3="0" x4="21" x5="21" y0="0" y1="0" y2="0" y3="0" y4="19" y5="19" Stretchy="1" StateBits="31" Direction="Across"/>
+    <Sprite Name="sprGroup_RightBracket" Cycle="1">
+        <Frame Texture="UI\Assets\TexPieces\UI_CRB_Anim_DebuffPulse.tex" x0="83" x1="83" x2="83" x3="83" x4="83" x5="105" y0="140" y1="140" y2="140" y3="140" y4="140" y5="183" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+</Sprites>

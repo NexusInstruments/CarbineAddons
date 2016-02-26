@@ -15,9 +15,12 @@ local knXCursorOffset = 10
 local knYCursorOffset = 25
 
 local ContextMenuPlayer = {}
+
+-- Bottom to top
 local ktSortOrder =
 {
 	["nil"] 				= 0,
+	["BtnPvPFlag"]			= 1,
 	["BtnLeaveGroup"] 		= 1,
 	["BtnInvite"] 			= 1,
 	["BtnReportChat"] 		= 2,
@@ -351,29 +354,37 @@ function ContextMenuPlayer:RedrawAll()
 	if unitTarget and unitTarget:IsACharacter() then
 		if unitTarget ~= unitPlayer then
 			self:HelperBuildRegularButton(wndButtonList, "BtnInspect", Apollo.GetString("ContextMenu_Inspect"))
-		end
-
-		if unitTarget ~= unitPlayer then -- Trade always visible, just enabled/disabled
+			
+			-- Trade always visible, just enabled/disabled
 			local eCanTradeResult = P2PTrading.CanInitiateTrade(unitTarget)
 			local wndCurr = self:HelperBuildRegularButton(wndButtonList, "BtnTrade", Apollo.GetString("ContextMenu_Trade"))
 			self:HelperEnableDisableRegularButton(wndCurr, eCanTradeResult == P2PTrading.P2PTradeError_Ok or eCanTradeResult == P2PTrading.P2PTradeError_TargetRangeMax)
-		end
-
-		--[[if unitTarget ~= unitPlayer then -- Assist always visible
-			local wndCurr = self:HelperBuildRegularButton(wndButtonList, "BtnAssist", Apollo.GetString("ContextMenu_Assist"))
-			self:HelperEnableDisableRegularButton(wndCurr, unitTarget:GetTarget())
-		end]]--
-
-		-- Duel
-		local eCurrentZonePvPRules = GameLib.GetCurrentZonePvpRules()
-		if unitTarget ~= unitPlayer and (not eCurrentZonePvPRules or eCurrentZonePvPRules ~= GameLib.CodeEnumZonePvpRules.Sanctuary) then
-			if GameLib.GetDuelOpponent(unitPlayer) == unitTarget then
-				if GameLib.GetDuelState() == GameLib.CodeEnumDuelState.Dueling then
-					self:HelperBuildRegularButton(wndButtonList, "BtnForfeit", Apollo.GetString("ContextMenu_ForfeitDuel")) --TODO: LOCALIZATION
+			
+			-- Duel
+			local eCurrentZonePvPRules = GameLib.GetCurrentZonePvpRules()
+			if not eCurrentZonePvPRules or eCurrentZonePvPRules ~= GameLib.CodeEnumZonePvpRules.Sanctuary then
+				if GameLib.GetDuelOpponent(unitPlayer) == unitTarget and GameLib.GetDuelState() == GameLib.CodeEnumDuelState.Dueling then
+					self:HelperBuildRegularButton(wndButtonList, "BtnForfeit", Apollo.GetString("ContextMenu_ForfeitDuel"))
+				else
+					self:HelperBuildRegularButton(wndButtonList, "BtnDuel", Apollo.GetString("ContextMenu_Duel"))
 				end
-			else
-				self:HelperBuildRegularButton(wndButtonList, "BtnDuel", Apollo.GetString("ContextMenu_Duel"))
 			end
+		else
+			-- PvP Flag
+			local wndBtnPvPFlag = nil
+			local tFlagInfo = GameLib.GetPvpFlagInfo()
+			if tFlagInfo.bIsFlagged and tFlagInfo.nCooldown == 0 then
+				wndBtnPvPFlag = self:HelperBuildRegularButton(wndButtonList, "BtnPvPFlag", Apollo.GetString("MatchMaker_TurnPvPOff"))
+			else
+				wndBtnPvPFlag = self:HelperBuildRegularButton(wndButtonList, "BtnPvPFlag", Apollo.GetString("MatchMaker_TurnPvPOn")) 
+			end
+			wndBtnPvPFlag:Enable(not tFlagInfo.bIsForced)
+			local strColor = "UI_BtnTextBlueNormal"
+			if tFlagInfo.bIsForced then
+				strColor = "UI_BtnTextBlueDisabled"
+			end
+			wndBtnPvPFlag:FindChild("BtnText"):SetTextColor(strColor)
+			
 		end
 	end
 
@@ -579,29 +590,41 @@ function ContextMenuPlayer:ResizeAndRedraw()
 
 	if not self.bSortedAndSized then
 		self.bSortedAndSized = true
-		local nHeight = wndButtonList:ArrangeChildrenVert(0, function(a,b) return (ktSortOrder[a:GetData()] or 0) > (ktSortOrder[b:GetData()] or 0) end)
-		local nLeft, nTop, nRight, nBottom = self.wndMain:GetAnchorOffsets()
-		self.wndMain:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nHeight + 60)
+		local nHeight = wndButtonList:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function(a,b) return (ktSortOrder[a:GetData()] or 0) > (ktSortOrder[b:GetData()] or 0) end)
+		local nMainLeft, nMainTop, nMainRight, nMainBottom = self.wndMain:FindChild("ContextMenuPlayerContainer"):GetAnchorOffsets()
+		
+		self.wndMain:FindChild("ContextMenuPlayerContainer"):SetAnchorOffsets(nMainLeft, nMainTop, nMainRight, nMainTop + nHeight + 60)
 
 		-- Other lists
+		local nOtherLeft = 0
+		local nOtherTop = 0
+		local nOtherRight = 0
+		local nOtherBottom = 0
+		local nOtherHeight = 0
+				
 		if self.wndMain:FindChild("GroupPopoutItems") then
-			nHeight = self.wndMain:FindChild("GroupPopoutItems"):ArrangeChildrenVert(0)
-			nLeft, nTop, nRight, nBottom = self.wndMain:FindChild("GroupPopoutFrame"):GetAnchorOffsets()
-			self.wndMain:FindChild("GroupPopoutFrame"):SetAnchorOffsets(nLeft, nTop, nRight, nTop + nHeight + 60)
+			nOtherHeight = self.wndMain:FindChild("GroupPopoutItems"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+			nOtherLeft, nOtherTop, nOtherRight, nOtherBottom = self.wndMain:FindChild("GroupPopoutFrame"):GetAnchorOffsets()
+			self.wndMain:FindChild("GroupPopoutFrame"):SetAnchorOffsets(nOtherLeft, nOtherTop, nOtherRight, nOtherTop + nOtherHeight + 60)
 		end
 		if self.wndMain:FindChild("SocialListPopoutItems") then
-			nHeight = self.wndMain:FindChild("SocialListPopoutItems"):ArrangeChildrenVert(0)
-			nLeft, nTop, nRight, nBottom = self.wndMain:FindChild("SocialListPopoutFrame"):GetAnchorOffsets()
-			self.wndMain:FindChild("SocialListPopoutFrame"):SetAnchorOffsets(nLeft, nTop, nRight, nTop + nHeight + 60)
+			nOtherHeight = self.wndMain:FindChild("SocialListPopoutItems"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+			nOtherLeft, nOtherTop, nOtherRight, nOtherBottom = self.wndMain:FindChild("SocialListPopoutFrame"):GetAnchorOffsets()
+			self.wndMain:FindChild("SocialListPopoutFrame"):SetAnchorOffsets(nOtherLeft, nOtherTop, nOtherRight, nOtherTop + nOtherHeight + 60)
 		end
 		if self.wndMain:FindChild("GuildListPopoutItems") then
-			nHeight = self.wndMain:FindChild("GuildListPopoutItems"):ArrangeChildrenVert(0)
-			nLeft, nTop, nRight, nBottom = self.wndMain:FindChild("GuildListPopoutFrame"):GetAnchorOffsets()
-			self.wndMain:FindChild("GuildListPopoutFrame"):SetAnchorOffsets(nLeft, nTop, nRight, nTop + nHeight + 60)
+			nOtherHeight = self.wndMain:FindChild("GuildListPopoutItems"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+			nOtherLeft, nOtherTop, nOtherRight, nOtherBottom = self.wndMain:FindChild("GuildListPopoutFrame"):GetAnchorOffsets()
+			self.wndMain:FindChild("GuildListPopoutFrame"):SetAnchorOffsets(nOtherLeft, nOtherTop, nOtherRight, nOtherTop + nOtherHeight + 60)
 		end
 		if self.wndMain:FindChild("MarkerListPopoutItems") then
-			self.wndMain:FindChild("MarkerListPopoutItems"):ArrangeChildrenTiles(0)
+			self.wndMain:FindChild("MarkerListPopoutItems"):ArrangeChildrenTiles(Window.CodeEnumArrangeOrigin.LeftOrTop)
 		end
+
+		-- Set anchors on the container to include both windows
+		local nLeft, nTop, nRight, nBottom = self.wndMain:GetAnchorOffsets()		
+		self.wndMain:SetAnchorOffsets(nLeft, nTop, nRight + nOtherRight, nTop + nHeight + nOtherHeight + 60)
+		
 	end
 
 	self:CheckWindowBounds()
@@ -717,7 +740,7 @@ function ContextMenuPlayer:ProcessContextClick(eButtonType)
 		unitTarget:ShowHintArrow()
 	elseif eButtonType == "BtnAddRival" then
 		FriendshipLib.AddByName(FriendshipLib.CharacterFriendshipType_Rival, strTarget)
-		Event_FireGenericEvent("GenericEvent_SystemChannelMessage", String_GetWeaselString(Apollo.GetString("Social_AddedToRivals"), strTarget))
+		--Event_FireGenericEvent("GenericEvent_SystemChannelMessage", String_GetWeaselString(Apollo.GetString("Social_AddedToRivals"), strTarget))
 	elseif eButtonType == "BtnIgnore" then
 		FriendshipLib.AddByName(FriendshipLib.CharacterFriendshipType_Ignore, strTarget)
 	elseif eButtonType == "BtnAddFriend" then
@@ -732,10 +755,10 @@ function ContextMenuPlayer:ProcessContextClick(eButtonType)
 		self.guildCurr:Kick(strTarget)
 	elseif eButtonType == "BtnUnfriend" then
 		FriendshipLib.Remove(tCharacterData.tFriend.nId, FriendshipLib.CharacterFriendshipType_Friend)
-		Event_FireGenericEvent("GenericEvent_SystemChannelMessage", String_GetWeaselString(Apollo.GetString("Social_RemovedFromFriends"), strTarget))
+		--Event_FireGenericEvent("GenericEvent_SystemChannelMessage", String_GetWeaselString(Apollo.GetString("Social_RemovedFromFriends"), strTarget))
 	elseif eButtonType == "BtnUnignore" then
 		FriendshipLib.Remove(tCharacterData.tFriend.nId, FriendshipLib.CharacterFriendshipType_Ignore)
-		Event_FireGenericEvent("GenericEvent_SystemChannelMessage", String_GetWeaselString(Apollo.GetString("Social_RemovedFromIgnore"), strTarget))
+		--Event_FireGenericEvent("GenericEvent_SystemChannelMessage", String_GetWeaselString(Apollo.GetString("Social_RemovedFromIgnore"), strTarget))
 	elseif eButtonType == "BtnAddNeighbor" then
 		HousingLib.NeighborInviteByName(strTarget)
 		Event_FireGenericEvent("GenericEvent_SystemChannelMessage", String_GetWeaselString(Apollo.GetString("Social_AddedToNeighbors"), strTarget))
@@ -785,6 +808,8 @@ function ContextMenuPlayer:ProcessContextClick(eButtonType)
 		Event_FireGenericEvent("GenericEvent_ReportPlayerUnit", unitTarget)
 	elseif eButtonType == "BtnReportChat" and self.nReportId then
 		Event_FireGenericEvent("GenericEvent_ReportPlayerChat", self.nReportId)
+	elseif eButtonType == "BtnPvPFlag" then
+		GameLib.TogglePvpFlags()
 	elseif eButtonType and string.find(eButtonType, "BtnMark") ~= 0 and unitTarget then
 		unitTarget:SetTargetMarker(tonumber(string.sub(eButtonType, string.len("BtnMark_"))))
 	end

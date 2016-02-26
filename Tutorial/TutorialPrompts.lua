@@ -12,51 +12,58 @@ local TutorialPrompts = {}
 -----------------------------------------------------------------------------------------------
 -- Constants
 -----------------------------------------------------------------------------------------------
--- table of tutorial enums; values are the name of the component in the display, the anchor orientation, hOffset, vOffset, special
-local kTutorialComponents =
+local kstrDefaultLabel = Apollo.GetString("Tutorials_DefaultLabel")
+local knInAnimationTime = 0.4
+local knOutAnimationTime = 0.4
+
+local knAnimationOffset = 20
+
+local ktHOrientation =
 {
-	[GameLib.CodeEnumTutorialAnchor.None] 						= {"None", 					1,    0,   0},
-	[GameLib.CodeEnumTutorialAnchor.Abilities] 					= {"Abilities", 			4, 	 30, 190},
-	[GameLib.CodeEnumTutorialAnchor.Character] 					= {"Character Panel", 		8, -560,-450},
-	[GameLib.CodeEnumTutorialAnchor.Mail] 						= {"Mail", 					4, 	 50,  65},
-	[GameLib.CodeEnumTutorialAnchor.GalacticArchive] 			= {"Galactic Archive", 		8,  -40,-590},
-	[GameLib.CodeEnumTutorialAnchor.Social] 					= {"Social Panel", 			4,  340,  20},
-	[GameLib.CodeEnumTutorialAnchor.GroupFinder] 				= {"Group Finder", 			8, -50, -480},
-	[GameLib.CodeEnumTutorialAnchor.AbilityBar] 				= {"Action Bar", 			4,  208, -10},
-	[GameLib.CodeEnumTutorialAnchor.Codex] 						= {"Codex", 				8,  18,   22},
-	[GameLib.CodeEnumTutorialAnchor.Challenge] 					= {"Challenges", 			2,  0,  -4},
-	[GameLib.CodeEnumTutorialAnchor.Datachron] 					= {"Datachron", 			4,  -20, -30},
-	[GameLib.CodeEnumTutorialAnchor.Inventory] 					= {"Inventory", 			4,   -2, -25},
-	[GameLib.CodeEnumTutorialAnchor.MiniMap] 					= {"MiniMap", 				3,  -40,  -2},
-	[GameLib.CodeEnumTutorialAnchor.QuestTracker] 				= {"Quest Tracker", 		4,   10,  -95, true},
-	[GameLib.CodeEnumTutorialAnchor.HUDAlert] 					= {"HUD Alerts", 			5, -122, -20},
-	[GameLib.CodeEnumTutorialAnchor.PressAndHold] 				= {"CSI: Press & Hold", 	5, -112, -24},
-	[GameLib.CodeEnumTutorialAnchor.RapidTapping] 				= {"CSI: Rapid Tap", 		5, -112, -24},
-	[GameLib.CodeEnumTutorialAnchor.PrecisionTapping] 			= {"CSI: Precision Tap",	5, -118, -20},
-	[GameLib.CodeEnumTutorialAnchor.Memory] 					= {"CSI: Memory", 			5,    0,   0},
-	[GameLib.CodeEnumTutorialAnchor.Keypad] 					= {"CSI: Keypad", 			5,    0,   0},
-	[GameLib.CodeEnumTutorialAnchor.Metronome] 					= {"CSI: Metronome", 		5, -118, -20},
-	[GameLib.CodeEnumTutorialAnchor.SprintMeter]				= {"Sprint Meter", 			4,    0,  20},
-	[GameLib.CodeEnumTutorialAnchor.DashMeter]					= {"Dash Meter", 			4,    50, 10},
-	[GameLib.CodeEnumTutorialAnchor.InnateAbility]				= {"Innate Ability", 		4,  138, -10},
-	[GameLib.CodeEnumTutorialAnchor.ClassResource]				= {"Class Mechanic", 		5,  -40, 330},
-	[GameLib.CodeEnumTutorialAnchor.BuffFrame]					= {"Buff Frame", 			4,  220, -30},
-	[GameLib.CodeEnumTutorialAnchor.QuestCommunicatorReceived]	= {"Communicator Turn In", 	4,  -15,  -80, true},
-	[GameLib.CodeEnumTutorialAnchor.HealthBar]					= {"Health Bar", 			4,   75, -10},
-	[GameLib.CodeEnumTutorialAnchor.ShieldBar]					= {"Shield Bar", 			6,  -75, -10},
-	[GameLib.CodeEnumTutorialAnchor.Recall]						= {"Recall", 				5,    7, -20},
-	[GameLib.CodeEnumTutorialAnchor.InterruptArmor]						= {"Interrupt Armor", 				5,    0, -40},
-	
+	tEast =
+	{
+		[GameLib.CodeEnumTutorialAnchorOrientation.East] = true,
+		[GameLib.CodeEnumTutorialAnchorOrientation.Northeast] = true,
+		[GameLib.CodeEnumTutorialAnchorOrientation.Southeast] = true,
+	},
+	tWest =
+	{
+		[GameLib.CodeEnumTutorialAnchorOrientation.West] = true,
+		[GameLib.CodeEnumTutorialAnchorOrientation.Northwest] = true,
+		[GameLib.CodeEnumTutorialAnchorOrientation.Southwest] = true,
+	},
+	tCenter =
+	{
+		[GameLib.CodeEnumTutorialAnchorOrientation.North] = true,
+		[GameLib.CodeEnumTutorialAnchorOrientation.South] = true,
+	},
 }
 
-local kstrDefaultLabel = Apollo.GetString("Tutorials_DefaultLabel")
+local ktVOrientation =
+{
+	tNorth =
+	{
+		[GameLib.CodeEnumTutorialAnchorOrientation.North] = true,
+		[GameLib.CodeEnumTutorialAnchorOrientation.Northeast] = true,
+		[GameLib.CodeEnumTutorialAnchorOrientation.Northwest] = true,
+	},
+	tSouth = 
+	{
+		[GameLib.CodeEnumTutorialAnchorOrientation.South] = true,
+		[GameLib.CodeEnumTutorialAnchorOrientation.Southeast] = true,
+		[GameLib.CodeEnumTutorialAnchorOrientation.Southwest] = true,
+	},
+	tCenter =
+	{
+		[GameLib.CodeEnumTutorialAnchorOrientation.East] = true,
+		[GameLib.CodeEnumTutorialAnchorOrientation.West] = true,
+	},
+}
 
 function TutorialPrompts:new(o)
     o = o or {}
     setmetatable(o, self)
     self.__index = self
-
-	o.arDelayedHintWindows = {}
 
     return o
 end
@@ -78,49 +85,24 @@ function TutorialPrompts:OnDocumentReady()
 	if self.xmlDoc == nil then
 		return
 	end
-    -- Register handlers for events, slash commands and timer, etc.
-    -- e.g. Apollo.RegisterEventHandler("KeyDown", "OnKeyDown", self)
-	Apollo.RegisterSlashCommand("showtutorial", 					"OnSlashShowTutorial", self)
-	Apollo.RegisterSlashCommand("TutorialPromptTest", 				"OnTutorialPromptTest", self)
-	
-	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchorResponse", "DrawHintWindow", self)
+
 	Apollo.RegisterEventHandler("ShowTutorial", 					"OnShowTutorial", self)
 	Apollo.RegisterEventHandler("ForceTutorial", 					"OnForceTutorial", self)
 	Apollo.RegisterEventHandler("TutorialPlaybackEnded", 			"OnTutorialPlaybackEnded", self)
-	Apollo.RegisterEventHandler("OptionsUpdated_ShowTutorials", 			"OnShowTutorialsUpdated", self)
+	Apollo.RegisterEventHandler("OptionsUpdated_ShowTutorials", 	"OnShowTutorialsUpdated", self)
+	Apollo.RegisterEventHandler("Tutorial_ShowCallout",				"ShowTutorialCallout", self)
+	Apollo.RegisterEventHandler("Tutorial_HideCallout",				"HideTutorialCallout", self)
 
 	-- Stun Events
 	Apollo.RegisterEventHandler("ActivateCCStateStun", "OnActivateCCStateStun", self)
 	Apollo.RegisterEventHandler("RemoveCCStateStun", "OnRemoveCCStateStun", self)
 
-    -- load our forms
-    self.wndMain = Apollo.LoadForm(self.xmlDoc, "TutorialTesterForm", nil, self)
-    self.wndMain:Show(false)
-
 	self.wndAlertContainer = Apollo.LoadForm(self.xmlDoc, "AlertContainer", "FixedHudStratum", self)
-
-	self.tComponentList = {}
-	for keyEnum, valueTable in pairs(kTutorialComponents) do
-		local wnd = Apollo.LoadForm(self.xmlDoc, "ComponentSelectBtn", self.wndMain:FindChild("TutorialComponentList"), self)
-		wnd:SetData(keyEnum)
-		wnd:SetText("    " .. valueTable[1])
-		table.insert(self.tComponentList, wnd)
-	end
 
 	self.bAllViewSetting = g_InterfaceOptions and not g_InterfaceOptions.Carbine.bShowTutorials or false
 	self.bTypeViewSetting = false
-
-	--set up a default/min size
-	local wndTempHint = Apollo.LoadForm(self.xmlDoc, "HintWindow", nil, self)
-	self.tDefHintRec = {}
-	self.tDefHintRec.l, self.tDefHintRec.t, self.tDefHintRec.r, self.tDefHintRec.b = wndTempHint:GetRect()
-	self.tDefHintTextOffsets = {}
-	self.tDefHintTextOffsets.l, self.tDefHintTextOffsets.t, self.tDefHintTextOffsets.r, self.tDefHintTextOffsets.b = wndTempHint:FindChild("HintTextWnd"):GetAnchorOffsets()
-	wndTempHint:Destroy()
-
-	self.wndMain:FindChild("TutorialComponentList"):ArrangeChildrenVert()
-
-	-- TODO: Dangerous. This requires exact form naming.
+	
+	-- The values returned in GetTutorialLayouts require very specific window names.  Changing the name of these forms in XML will cause lua errors.
 	self.wndForms = {}
 	for idx, tCurrLayout in ipairs(GameLib.GetTutorialLayouts()) do
 		local wndCurr = Apollo.LoadForm(self.xmlDoc, tCurrLayout.strForm, nil, self)
@@ -134,23 +116,19 @@ function TutorialPrompts:OnDocumentReady()
 				nHeight = nBottom - nTop
 			}
 			wndCurr:SetData(tData)
-			wndCurr:Show(false, true)
-			self.wndForms[tCurrLayout.nId] = wndCurr --8
+			self.wndForms[tCurrLayout.nId] = wndCurr
 		end
 	end
 	
 	self.tAutoCloseTutorials = {}
-	Apollo.RegisterTimerHandler("AutoCloseTutorial", "OnAutoCloseTutorialInterval", self)
-	Apollo.CreateTimer("AutoCloseTutorial", 1.0, true)
-	Apollo.StopTimer("AutoCloseTutorial")
-
-	self.timerHintWindowDelay = ApolloTimer.Create(1, false, "OnHintWindowDelayTimer", self)
+	self.timerAutoClose = ApolloTimer.Create(1.0, true, "OnAutoCloseTutorialInterval", self)
+	self.timerAutoClose:Stop()
 	
 	self.wndTransparentTutorial = nil
 	self.tDisplayedPrompts = {}
 	self.tPendingTutorials = {}
+	self.tVisibleCallouts = {}
 
-	self:OnResetAll()
 	self:UpdatePending()
 end
 
@@ -171,12 +149,6 @@ function TutorialPrompts:UpdatePending()
 	end
 end
 
-function TutorialPrompts:OnSlashShowTutorial(strCommand, strArg1) -- TODO TEMP: Testing method until a Tutorial Shower window gets put in, for nroth
-	if not strArg1 or string.len(strArg1) == 0 then return end
-
-	self:OnShowTutorial(strArg1)
-end
-
 function TutorialPrompts:OnTutorialPlaybackEnded()
 	-- audio playback ended; if the transparent type is shown, destroy it
 	if self.wndTransparentTutorial ~= nil then
@@ -188,8 +160,8 @@ end
 -- TutorialPromptsForm Functions
 -----------------------------------------------------------------------------------------------
 
-function TutorialPrompts:OnShowTutorial(nTutorialId, bInstantPopUp, strPopupText, eAnchor)
-	if g_InterfaceOptions and not g_InterfaceOptions.Carbine.bShowTutorials then
+function TutorialPrompts:OnShowTutorial(nTutorialId, bInstantPopUp, strPopupText, eAnchor, bForce)
+	if not bForce and g_InterfaceOptions and not g_InterfaceOptions.Carbine.bShowTutorials then
 		return
 	end
 	
@@ -258,7 +230,7 @@ function TutorialPrompts:OnAutoCloseTutorialInterval()
 		if wndTutorial:IsValid() then
 			local wndTimer = wndTutorial:FindChild("Timer")
 			if wndTimer:GetData() == 0 then --1 second left
-				wndTutorial:Show(false)
+				wndTutorial:Close()
 				table.remove(self.tAutoCloseTutorials, idx)
 			else
 				local nTimeLeft = wndTimer:GetData() - 1
@@ -274,7 +246,7 @@ function TutorialPrompts:OnAutoCloseTutorialInterval()
 	end
 	
 	if #self.tAutoCloseTutorials == 0 then
-		Apollo.StopTimer("AutoCloseTutorial")
+		self.timerAutoClose:Stop()
 		self.wndAlertContainer:DestroyChildren()
 	end
 end
@@ -284,7 +256,7 @@ function TutorialPrompts:AddAutoCloseTutorial(wndTutorial)
 	
 	--timer stops if the count is 0. We're about to add one so restart it.
 	if #self.tAutoCloseTutorials == 0 then
-		Apollo.StartTimer("AutoCloseTutorial")
+		self.timerAutoClose:Start()
 	end
 	
 	table.insert(self.tAutoCloseTutorials, wndTutorial)
@@ -309,121 +281,13 @@ function TutorialPrompts:UpdateAlerts()
 				wnd:SetTooltip(String_GetWeaselString(Apollo.GetString("Tutorials_ClickToLearn"), tTutorial[1].strTitle))
 				wnd:Show(true)
 				wnd:FindChild("IconHoverGlow"):Show(false, true)
-				if #self.tPendingTutorials <= 5 then
-					--wnd:FindChild("TransitionSprite"):SetSprite("sprWinAnim_BirthSmallTemp")
-				end
 				
 				self:AddAutoCloseTutorial(wnd)
 			end
 		end
 
-		self.wndAlertContainer:ArrangeChildrenHorz(2)
+		self.wndAlertContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.RightOrBottom)
 	end
-end
-
-function TutorialPrompts:DrawHintWindow(eAnchor, nTutorialId, strPopupText, tRect)
-	self.arDelayedHintWindows[#self.arDelayedHintWindows + 1] = { ["eAnchor"]=eAnchor, ["nTutorialId"]=nTutorialId, ["strPopupText"]=strPopupText, ["tRect"]=tRect }
-	self.timerHintWindowDelay:Start()
-end
-
-function TutorialPrompts:OnHintWindowDelayTimer()
-	for idx, tHintWindow in pairs(self.arDelayedHintWindows) do
-		self:DelayedDrawHintWindow(tHintWindow.eAnchor, tHintWindow.nTutorialId, tHintWindow.strPopupText, tHintWindow.tRect)
-	end
-
-	self.arDelayedHintWindows = {}
-end
-
-function TutorialPrompts:DelayedDrawHintWindow(eAnchor, nTutorialId, strPopupText, tRect)
-	if self.tDisplayedPrompts[eAnchor] ~= nil then
-		self.tDisplayedPrompts[eAnchor]:Destroy()
-		self.tDisplayedPrompts[eAnchor] = nil
-	end
-
-	-- Early out for incomplete tutorial
-	if eAnchor == nil or nTutorialId == nil or tRect == nil or strPopupText == nil or strPopupText == "" then return false end
-
-	local wnd = Apollo.LoadForm(self.xmlDoc, "HintWindow", "TooltipStratum", self)
-	wnd:SetData(eAnchor)
-
-	local tTutorial	 = GameLib.GetTutorial(nTutorialId)
-
-	if tTutorial ~= nil then
-		wnd:FindChild("PanelToggleContainer"):Show(true)
-		wnd:FindChild("PanelToggleContainer"):FindChild("HintAlertBtn"):Show(false, true)
-		wnd:FindChild("HintAlertPrompt"):SetData(nTutorialId)
-		wnd:FindChild("HintAlertBtn"):SetData(nTutorialId)
-	else
-		wnd:FindChild("PanelToggleContainer"):Show(false)
-		GameLib.MarkTutorialViewed(nTutorialId, true)
-	end
-	
-	wnd:FindChild("BGArt_Prompt"):Show(tTutorial ~= nil)
-	
-	if tTutorial == nil then
-		wnd:FindChild("BGArt_NoPrompt"):Show(true)	
-		Sound.Play(Sound.PlayUIMiniMapPing)
-		wnd:FindChild("BGArt_NoPrompt:BGArt_Flicker"):SetSprite("BK3:sprHolo_Accent_Rounded_FlashAnim")
-		wnd:FindChild("BGArt_NoPrompt:BGArt_Refresh"):SetSprite("BK3:UI_BK3_Holo_RefreshReflectionSquare_anim")
-	end
-	
-	-- Crazy resize time!
-	local wndText = wnd:FindChild("HintTextWnd")
-	wndText:SetText(strPopupText)
-	wndText:SetHeightToContentHeight()
-	local lText, tText, rText, bText = wndText:GetAnchorOffsets()
-	local nTextHeight = bText-tText
-
-	if nTextHeight < (self.tDefHintTextOffsets.b - self.tDefHintTextOffsets.t) then -- smaller than default box size;don't resize the frame, just center the text
-		local nWndHeight = self.tDefHintRec.b - self.tDefHintRec.t
-		wndText:SetAnchorOffsets(lText, (nWndHeight/2)-(nTextHeight/2), rText, (nWndHeight/2)+(nTextHeight/2))
-	else
-		wnd:SetAnchorOffsets(self.tDefHintRec.l, self.tDefHintRec.t, self.tDefHintRec.r, bText + (self.tDefHintRec.b-self.tDefHintTextOffsets.b))
-	end
-
-	-- Show the right connector
-	for i = 1, 8 do
-		wnd:FindChild("ConnectorContainer"):FindChild("Connector" .. i):Show(i == kTutorialComponents[eAnchor][2])
-	end
-
-	-- Time to boogie:
-	if kTutorialComponents[eAnchor] == nil then return false end
-
-	local lSized, tSized, rSized, bSized = wnd:GetRect()
-	local nSizedWidth = rSized-lSized
-	local nSizedHeight = bSized-tSized
-	local tEntry = kTutorialComponents[eAnchor]
-
-	-- The time indicates the UI's position, not the tutorial hint's
-	if tEntry[2] == 1 then -- noon
-		wnd:Move((tRect.r-tRect.l)/2 + tEntry[3], tRect.b + tEntry[4], nSizedWidth, nSizedHeight)
-	elseif tEntry[2] == 2 then -- 1:30
-		wnd:Move(tRect.l - nSizedWidth + tEntry[3], tRect.b + tEntry[4], nSizedWidth, nSizedHeight)
-	elseif tEntry[2] == 3 then -- 3:00
-		wnd:Move(tRect.l - nSizedWidth + tEntry[3], (tRect.t + (tRect.b-tRect.t)/2)-nSizedHeight/2+ tEntry[4], nSizedWidth, nSizedHeight)
-	elseif tEntry[2] == 4 then -- 4:30
-		if tEntry[5] ~= true then -- top of a UI
-			wnd:Move(tRect.l - nSizedWidth + tEntry[3], tRect.t - nSizedHeight + tEntry[4], nSizedWidth, nSizedHeight)
-		else -- bottom of a UI
-			wnd:Move(tRect.l - nSizedWidth + tEntry[3], tRect.b - nSizedHeight + tEntry[4], nSizedWidth, nSizedHeight)
-		end
-	elseif tEntry[2] == 5 then -- 6:00
-		wnd:Move(tRect.l+((tRect.r-tRect.l)/2) - (nSizedWidth/2) + tEntry[3], tRect.t - nSizedHeight + tEntry[4], nSizedWidth, nSizedHeight)
-	elseif tEntry[2] == 6 then -- 7:30
-		wnd:Move(tRect.r + tEntry[3], tRect.t - nSizedHeight + tEntry[4], nSizedWidth, nSizedHeight)
-	elseif tEntry[2] == 7 then -- 9:00
-		wnd:Move(tRect.r + tEntry[3], tRect.t+((tRect.b-tRect.t)/2)-nSizedHeight/2 + tEntry[4], nSizedWidth, nSizedHeight)
-	elseif tEntry[2] == 8 then -- 10:30
-		wnd:Move(tRect.r + tEntry[3], tRect.b + tEntry[4], nSizedWidth, nSizedHeight)
-	else  -- no idea, use noon
-		wnd:Move((tRect.r-tRect.l)/2 + tEntry[3], tRect.b + tEntry[4], nSizedWidth, nSizedHeight)
-	end
-
-	local posL, posT, posR, posB = wnd:GetRect()
-	
-	self:AddAutoCloseTutorial(wnd)
-	wnd:Show(true)
-	self.tDisplayedPrompts[eAnchor] = wnd
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -458,7 +322,7 @@ function TutorialPrompts:OnTutorialAlertBtn(wndHandler, wndControl)
 	end
 
 	local nEntryToPull = nil
-	for idx, nEntry in pairs(self.tPendingTutorials) do -- idx is i-sequenced, v is the nId
+	for idx, nEntry in pairs(self.tPendingTutorials) do 
 		if nEntry == nId then
 			self:RemoveAlert(idx)
 		end
@@ -484,26 +348,6 @@ end
 ---------------------------------------------------------------------------------------------------
 -- HintWindow Functions
 ---------------------------------------------------------------------------------------------------
-function TutorialPrompts:OnCloseHintWindow(wndHandler, wndControl)
-
-	if wndHandler ~= wndControl then return false end
-	local wndParent = wndControl:GetParent():GetParent()
-	local nEnum = wndControl:GetParent():GetParent():GetData()
-
-	if wndParent:FindChild("PanelToggleContainer"):IsShown() then
-		local idx = wndParent:FindChild("HintAlertBtn"):GetData()
-		self:RemoveAlert(idx)
-		GameLib.MarkTutorialViewed(idx, true)
-	end
-
-	for idx, wnd in pairs(self.tDisplayedPrompts) do
-		if wnd:GetData() == nEnum then
-			wnd:Destroy()
-			self.tDisplayedPrompts[idx] = nil
-		end
-	end
-end
-
 function TutorialPrompts:OnHintMouseEnter(wndHandler, wndControl)
 	if wndHandler ~= wndControl then return false end
 	wndControl:FindChild("HintAlertBtn"):Show(true)
@@ -514,18 +358,6 @@ function TutorialPrompts:OnHintMouseExit(wndHandler, wndControl)
 	wndControl:FindChild("HintAlertBtn"):Show(false)
 end
 
-function TutorialPrompts:OnHoverGlowMouseEnter(wndHandler, wndControl)
-	--[[if wndHandler:FindChild("IconHoverGlow") then
-		wndHandler:FindChild("IconHoverGlow"):Show(true)
-	end	--]]
-end
-
-function TutorialPrompts:OnHoverGlowMouseExit(wndHandler, wndControl)
-	--[[if wndHandler:FindChild("IconHoverGlow") then
-		wndHandler:FindChild("IconHoverGlow"):Show(false, true)
-	end	--]]
-end
-
 ---------------------------------------------------------------------------------------------------
 -- Tutorial Panel Functions
 ---------------------------------------------------------------------------------------------------
@@ -534,7 +366,7 @@ function TutorialPrompts:DrawTutorialPage(nTutorialId, nPassedPage) --(wndArg, n
 	GameLib.StopTutorialSound() -- Stops any sounds currently being played by the Tutorial system
 
 	for idx, wnd in pairs(self.wndForms) do
-		wnd:Show(false)
+		wnd:Close()
 	end
 
 	self.wndTransparentTutorial = nil
@@ -698,18 +530,15 @@ function TutorialPrompts:DrawTutorialPage(nTutorialId, nPassedPage) --(wndArg, n
 		-- set data
 	end
 
-	wnd:Show(true)
-	wnd:ToFront()
+	wnd:Invoke()
 end
 
 function TutorialPrompts:OnWindowMove(wndHandler, wndControl)
-
-local tWndData = wndHandler:GetData()
-local nLeft, nTop = wndHandler:GetAnchorOffsets()
-tWndData.nLeft = nLeft
-tWndData.nTop = nTop
-wndHandler:SetData(tWndData)--saving left and top, windows width and height doesn't change while moving
-
+	local tWndData = wndHandler:GetData()
+	local nLeft, nTop = wndHandler:GetAnchorOffsets()
+	tWndData.nLeft = nLeft
+	tWndData.nTop = nTop
+	wndHandler:SetData(tWndData)--saving left and top, windows width and height doesn't change while moving
 end
 --------------------------------------------------------------------------------------------
 -- Custom function for transparent tutorials; these only have 1 page and should have a sound
@@ -732,8 +561,7 @@ function TutorialPrompts:DrawTransparentTutorialPage(nTutorialId, nPassedPage)
 		GameLib.PlayTutorialSound(nTutorialId, nPassedPage)
 	end
 
-	self.wndTransparentTutorial:Show(true)
-	self.wndTransparentTutorial:ToFront()
+	self.wndTransparentTutorial:Invoke()
 end
 
 
@@ -814,53 +642,6 @@ function TutorialPrompts:OnShowTutorialsUpdated()
 	self.bAllViewSetting = not g_InterfaceOptions.Carbine.bShowTutorials
 end
 
----------------------------------------------------------------------------------------------------
--- TutorialTesterForm Functions
----------------------------------------------------------------------------------------------------
-function TutorialPrompts:OnTutorialPromptTest()
-	self:OnResetAll()
-	self.wndMain:Show(true)
-end
-
-function TutorialPrompts:OnCancel()
-	self.wndMain:Show(false) -- hide the window
-end
-
--- Verify the tutorial can be sent
-function TutorialPrompts:OnTutorialTesterChanged( wndHandler, wndControl, strText )
-	local tTutorial = {}
-	tTutorial.strPopupText = self.wndMain:FindChild("LabelEntryWnd"):GetText()
-
-	if self.wndMain:FindChild("NoTutorialBtn"):IsChecked() then -- artificial number just to send the signal
-		--self.wndMain:FindChild("IDEntryWnd"):SetText("")
-		self.wndMain:FindChild("IDEntryWnd"):SetTextColor(ApolloColor.new("UI_TextMetalBody"))
-		tTutorial.id = 100000
-	else
-		self.wndMain:FindChild("IDEntryWnd"):SetTextColor(ApolloColor.new("white"))
-		tTutorial.id = tonumber(self.wndMain:FindChild("IDEntryWnd"):GetText())
-	end
-
-	if tTutorial.strPopupText == kstrDefaultLabel and self.wndMain:FindChild("UseTutorialBtn"):IsChecked() then
-		self.wndMain:FindChild("LabelEntryWnd"):SetTextColor(ApolloColor.new("UI_TextMetalBody"))
-		tTutorial.strPopupText = ""
-	else
-		self.wndMain:FindChild("LabelEntryWnd"):SetTextColor(ApolloColor.new("white"))
-	end
-
-	-- Get button selection
-	tTutorial.eAnchor = nil
-	for i = 1, #self.tComponentList do
-		if self.tComponentList[i]:IsChecked() then
-			tTutorial.eAnchor = self.tComponentList[i]:GetData()
-		end
-	end
-
-	self.wndMain:FindChild("OkButton"):SetData(tTutorial)
-	local bEnable = (self.wndMain:FindChild("NoTutorialBtn"):IsChecked() and tTutorial.strPopupText ~= "" and tTutorial.eAnchor ~= GameLib.CodeEnumTutorialAnchor.None)
-	or (self.wndMain:FindChild("UseTutorialBtn"):IsChecked() and tTutorial.id ~= nil and tTutorial.id ~= "" and tTutorial.id ~= 0)
-	self.wndMain:FindChild("OkButton"):Enable(bEnable)
-end
-
 function TutorialPrompts:OnPreviewTutorialBtn(wndHandler, wndControl)
 	local tTutorial = wndControl:GetData()
 
@@ -870,44 +651,165 @@ function TutorialPrompts:OnPreviewTutorialBtn(wndHandler, wndControl)
 	end
 end
 
--- Define general functions here
-function TutorialPrompts:OnResetAll()
-	self.wndMain:FindChild("LabelEntryWnd"):SetText(kstrDefaultLabel)
-	self.wndMain:FindChild("LabelEntryWnd"):SetTextColor(ApolloColor.new("white"))
-	self.wndMain:FindChild("IDEntryWnd"):SetText("")
-	self.wndMain:FindChild("LabelEntryWnd"):ClearFocus()
-	self.wndMain:FindChild("IDEntryWnd"):ClearFocus()
-	self.wndMain:FindChild("NoTutorialBtn"):SetCheck(true)
-	self.wndMain:FindChild("UseTutorialBtn"):SetCheck(false)
 
-	local wndDefault = nil
-	for i = 1, #self.tComponentList do
-		self.tComponentList[i]:SetCheck(self.tComponentList[i]:GetData() == GameLib.CodeEnumTutorialAnchor.None)
-		if self.tComponentList[i]:GetData() == GameLib.CodeEnumTutorialAnchor.None then
-			 wndDefault = self.tComponentList[i]
-		end
+---------------------------------
+-- Tutorial Callouts
+---------------------------------
+function TutorialPrompts:ShowTutorialCallout(eAnchor, idTutorial, strPopupText, wndAnchor, eOrientationOverride)
+	if self.tVisibleCallouts[eAnchor] then
+		return
+	end
+	
+	local wndTutorial = Apollo.LoadForm("TutorialPrompts.xml", "HintWindow", wndAnchor, self)
+	wndTutorial:SetData(eAnchor)
+	wndTutorial:FindChild("CloseContainer:CloseTutorialBtn"):SetData(eAnchor)
+	
+	local tTutorial	 = GameLib.GetTutorial(idTutorial)
+
+	if tTutorial then
+		wndTutorial:FindChild("PanelToggleContainer"):Show(true)
+		wndTutorial:FindChild("BGArt_Prompt"):Show(true)
+		local wndHint = wndTutorial:FindChild("PanelToggleContainer:HintAlertBtn")
+		wndHint:Show(false, true)
+		wndHint:SetData(idTutorial)
+	else
+		wndTutorial:FindChild("PanelToggleContainer"):Show(false)
+		wndTutorial:FindChild("BGArt_NoPrompt"):Show(true)
+		GameLib.MarkTutorialViewed(idTutorial, true)
+		Sound.Play(Sound.PlayUIMiniMapPing)
+	end
+	
+	-- Setting text and resizing
+	local wndText = wndTutorial:FindChild("HintTextWnd")
+	wndText:SetText(strPopupText)	
+	wndText:SetHeightToContentHeight()
+	
+	local nTextLeft, nTextTop, nTextRight, nTextBottom = wndText:GetAnchorOffsets()
+	local nTextOldLeft, nTextOldTop, nTextOldRight, nTextOldBottom = wndText:GetOriginalLocation():GetOffsets()
+	local nTutorialLeft, nTutorialTop, nTutorialRight, nTutorialBottom = wndTutorial:GetAnchorOffsets()
+	local nTextHeight = nTextBottom - nTextTop
+
+	if nTextHeight < (nTextOldBottom - nTextOldTop) then -- smaller than default box size;don't resize the frame, just center the text
+		local nWndHeight = wndTutorial:GetHeight()
+		wndText:SetAnchorOffsets(nTextLeft, (nWndHeight / 2) - (nTextHeight / 2), nTextRight, (nWndHeight / 2) + (nTextHeight / 2))
+	else
+		wndTutorial:SetAnchorOffsets(nTutorialLeft, nTutorialTop, nTutorialRight, nTextBottom + (nTutorialBottom - nTextOldBottom))
+	end
+	
+	-- Moving the window and setting up the arrow animation
+	local tAnchorInfo = GameLib.GetTutorialAnchorInfo(eAnchor)
+
+	if tAnchorInfo == nil then 
+		return
+	end
+	
+	local eOrientation = tAnchorInfo.eTutorialAnchorOrientation
+	if eOrientationOverride then
+		eOrientation = eOrientationOverride
 	end
 
-	if wndDefault ~= nil then
-		self.wndMain:FindChild("TutorialComponentList"):EnsureChildVisible(wndDefault)
-	end
+	local tWindowLocation = {}
+	local wndConnector = wndTutorial:FindChild("ConnectorContainer:Connector" .. eOrientation)
+	local tData = 
+	{
+		locStart = wndConnector:GetLocation(),
+		locEnd = nil,
+		nCount = 1,
+	}
 
-	self.wndMain:FindChild("OkButton"):SetData(nil)
-	self.wndMain:FindChild("OkButton"):Enable(false)
+	local tLocEnd = tData.locStart:ToTable()
+	local nArrowEndLocLeft, nArrowEndLocTop, nArrowEndLocRight, nArrowEndLocBottom = tData.locStart:GetOffsets()
+	
+	local nNewWidth = wndTutorial:GetWidth()
+	local nNewHeight = wndTutorial:GetHeight()
+	
+	local nArrowWidth = wndConnector:GetWidth()
+	local nArrowHeight = wndConnector:GetHeight()
+	
+	local nAnchorWidth = wndAnchor:GetWidth()
+	local nAnchorHeight = wndAnchor:GetHeight()
+
+	-- Calculating the window's horizontal position and the arrow's horizontal animation
+	if ktHOrientation.tEast[eOrientation] then
+		tWindowLocation.Left = tAnchorInfo.nHorizOffset - nArrowWidth - nNewWidth
+		
+		nArrowEndLocLeft = nArrowEndLocLeft + knAnimationOffset
+		nArrowEndLocRight = nArrowEndLocRight + knAnimationOffset
+	elseif ktHOrientation.tWest[eOrientation] then
+		tWindowLocation.Left = tAnchorInfo.nHorizOffset + nArrowWidth + nAnchorWidth
+		
+		nArrowEndLocLeft = nArrowEndLocLeft - knAnimationOffset
+		nArrowEndLocRight = nArrowEndLocRight - knAnimationOffset
+	elseif ktHOrientation.tCenter[eOrientation] then
+		tWindowLocation.Left = tAnchorInfo.nHorizOffset - (nNewWidth / 2) + (nAnchorWidth / 2)
+	end
+	
+	-- Calculating the window's vertical position and the arrow's vertical animation
+	if ktVOrientation.tNorth[eOrientation] then
+		tWindowLocation.Top = tAnchorInfo.nVertOffset + nArrowHeight + nAnchorHeight
+		
+		nArrowEndLocTop = nArrowEndLocTop - knAnimationOffset
+		nArrowEndLocBottom = nArrowEndLocBottom - knAnimationOffset
+	elseif ktVOrientation.tSouth[eOrientation] then
+		tWindowLocation.Top = tAnchorInfo.nVertOffset - nArrowHeight - nNewHeight
+		
+		nArrowEndLocTop = nArrowEndLocTop + knAnimationOffset
+		nArrowEndLocBottom = nArrowEndLocBottom + knAnimationOffset
+	elseif ktVOrientation.tCenter[eOrientation] then
+		tWindowLocation.Top = tAnchorInfo.nVertOffset - (nNewHeight / 2) + (nAnchorHeight / 2)
+	end
+	
+	wndTutorial:Move(tWindowLocation.Left, tWindowLocation.Top, nNewWidth, nNewHeight)
+
+	tLocEnd.nOffsets = {nArrowEndLocLeft, nArrowEndLocTop, nArrowEndLocRight, nArrowEndLocBottom}
+	tData.locEnd = WindowLocation.new(tLocEnd)
+	wndConnector:SetData(tData)
+	wndConnector:TransitionMove(tData.locEnd, knOutAnimationTime, Window.MoveMethod.EaseInQuart)
+	
+	wndConnector:Show(true)
+	wndTutorial:Show(true)
+	
+	self.tVisibleCallouts[eAnchor] = wndTutorial
+	self:AddAutoCloseTutorial(wndTutorial)
 end
 
----------------------------------------------------------------------------------------------------
--- ComponentSelectBtn Functions
----------------------------------------------------------------------------------------------------
-
-function TutorialPrompts:OnComponentSelect( wndHandler, wndControl, eMouseButton )
-	local nSelected = wndControl:GetData()
-
-	for i = 1, #self.tComponentList do
-		self.tComponentList[i]:SetCheck(self.tComponentList[i]:GetData() == nSelected)
+function TutorialPrompts:HideTutorialCallout(eAnchor)
+	if self.tVisibleCallouts[eAnchor] and self.tVisibleCallouts[eAnchor]:IsValid() then
+		self.tVisibleCallouts[eAnchor]:Close()
 	end
+end
 
-	self:OnTutorialTesterChanged()
+function TutorialPrompts:OnCloseCallout(wndHandler, wndControl)
+	if wndHandler == wndControl then
+		self.tVisibleCallouts[wndHandler:GetData()] = nil
+		wndHandler:Destroy()
+	end
+end
+
+function TutorialPrompts:OnCloseCalloutBtn(wndHandler, wndControl)
+	if wndHandler == wndControl then
+		local eAnchor = wndHandler:GetData()
+		if self.tVisibleCallouts[eAnchor] then
+			self.tVisibleCallouts[eAnchor]:Close()
+		end
+	end
+end
+
+function TutorialPrompts:OnWindowTransitionComplete(wndHandler, wndControl)
+	if wndHandler ~= wndControl then
+		return
+	end
+	
+	local tAnimationData = wndHandler:GetData()
+	tAnimationData.nCount = tAnimationData.nCount + 1
+
+	if tAnimationData.nCount % 2 == 0 then
+		wndHandler:TransitionMove(tAnimationData.locStart, knInAnimationTime, Window.MoveMethod.EaseOutQuad)
+	else
+		wndHandler:TransitionMove(tAnimationData.locEnd, knOutAnimationTime, Window.MoveMethod.EaseInQuart)
+	end
+	
+	wndHandler:SetData(tAnimationData)
 end
 
 -----------------------------------------------------------------------------------------------

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Sprites>
+    <Sprite Name="sprLoginIncentives_Framing" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_BK3_LoginIncentives.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="479" y0="0" y1="0" y2="0" y3="0" y4="0" y5="234" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprLoginIncentives_ItemGlow" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_BK3_LoginIncentives.tex" x0="564" x1="564" x2="1023" x3="1023" x4="1023" x5="1023" y0="0" y1="0" y2="0" y3="0" y4="418" y5="418" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprLoginIncentives_DoubleXP1" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\LoginIncentives_DoubleXP1.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="256" y0="0" y1="0" y2="0" y3="0" y4="0" y5="256" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprLoginIncentives_DoubleXP2" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\LoginIncentives_DoubleXP2.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="256" y0="0" y1="0" y2="0" y3="0" y4="0" y5="256" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprLoginIncentives_Crown" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_LoginIncentivesIcons.tex" x0="512" x1="512" x2="512" x3="512" x4="768" x5="768" y0="0" y1="0" y2="0" y3="0" y4="256" y5="256" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprLoginIncentives_Enemy" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_LoginIncentivesIcons.tex" x0="512" x1="512" x2="512" x3="512" x4="768" x5="768" y0="256" y1="256" y2="256" y3="256" y4="512" y5="512" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprLoginIncentives_HoverboardAppreciation" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_LoginIncentivesIcons.tex" x0="768" x1="768" x2="768" x3="768" x4="1024" x5="1024" y0="256" y1="256" y2="256" y3="256" y4="512" y5="512" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprLoginIncentives_SelectedReward" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_BK3_LoginIncentives.tex" x0="258" x1="258" x2="258" x3="258" x4="258" x5="337" y0="293" y1="322" y2="351" y3="351" y4="351" y5="377" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprLoginIncentives_SelectedRewardPulse" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_BK3_LoginIncentives.tex" x0="407" x1="407" x2="407" x3="407" x4="407" x5="486" y0="293" y1="321" y2="350" y3="350" y4="350" y5="377" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.500" StartColor="white" EndColor="UI_AlphaPercent0"/>
+        <Frame Texture="UI\Assets\Textures\UI_BK3_LoginIncentives.tex" x0="407" x1="407" x2="407" x3="407" x4="407" x5="486" y0="293" y1="321" y2="350" y3="350" y4="350" y5="377" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.200" StartColor="UI_AlphaPercent0" EndColor="AddonLoaded"/>
+    </Sprite>
+    <Sprite Name="sprLoginIncentives_Burst" Cycle="0">
+        <Frame Texture="UI\Assets\Textures\UI_BK3_LoginIncentives_2.tex" x0="53" x1="53" x2="53" x3="53" x4="512" x5="512" y0="352" y1="352" y2="352" y3="352" y4="491" y5="491" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.100" StartColor="UI_AlphaPercent0" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_BK3_LoginIncentives_2.tex" x0="53" x1="53" x2="53" x3="53" x4="512" x5="512" y0="352" y1="352" y2="352" y3="352" y4="491" y5="491" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.500" StartColor="white" EndColor="UI_AlphaPercent0"/>
+    </Sprite>
+    <Sprite Name=" sprLoginIncentives_Backdrop" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_BK3_LoginIncentives_2.tex" x0="80" x1="80" x2="80" x3="80" x4="512" x5="512" y0="492" y1="492" y2="492" y3="492" y4="690" y5="690" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.900" StartColor="white" EndColor="AddonLoaded"/>
+    </Sprite>
+    <Sprite Name=" sprLoginIncentives_Sparkles" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_BK3_LoginIncentives_2.tex" x0="80" x1="80" x2="80" x3="80" x4="512" x5="512" y0="691" y1="692" y2="692" y3="692" y4="840" y5="840" Stretchy="1" HotspotX="0" HotspotY="0" Duration="0.101" StartColor="AddonLoaded" EndColor="AddonLoaded"/>
+    </Sprite>
+    <Sprite Name="sprLoginIncentives_JackShade" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_LoginIncentivesIcons.tex" x0="768" x1="768" x2="768" x3="768" x4="1024" x5="1024" y0="0" y1="0" y2="0" y3="0" y4="256" y5="256" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprLoginIncentives_PVPIcon" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_LoginIncentivesIcons.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="256" y0="512" y1="512" y2="512" y3="512" y4="512" y5="768" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprLoginIncentives_Prestige" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_LoginIncentivesIcons.tex" x0="256" x1="256" x2="256" x3="256" x4="512" x5="512" y0="512" y1="512" y2="512" y3="512" y4="768" y5="768" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprLoginIncentives_FramingBlank" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_BK3_LoginIncentives.tex" x0="1" x1="1" x2="1" x3="1" x4="1" x5="480" y0="447" y1="447" y2="447" y3="447" y4="447" y5="681" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprLoginIncentives_Spinner" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_BK3_LoginIncentives_Spinner.tex" x0="0" x1="0" x2="0" x3="0" x4="204" x5="204" y0="0" y1="0" y2="0" y3="0" y4="204" y5="204" Stretchy="1" HotspotX="99" HotspotY="99" Duration="4.000" StartColor="white" EndColor="white" EndOrientation="359"/>
+    </Sprite>
+    <Sprite Name="sprLoginIncentives_SpinnerReverse" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_BK3_LoginIncentives_Spinner.tex" x0="0" x1="0" x2="0" x3="0" x4="204" x5="204" y0="0" y1="0" y2="0" y3="0" y4="204" y5="204" Stretchy="1" HotspotX="99" HotspotY="99" Duration="8.000" StartColor="UI_AlphaPercent80" EndColor="UI_AlphaPercent80" StartOrientation="359"/>
+    </Sprite>
+    <Sprite Name="sprLoginIncentives_SpaceChase" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_LoginIncentivesIcons.tex" x0="512" x1="512" x2="512" x3="512" x4="768" x5="768" y0="516" y1="516" y2="516" y3="516" y4="772" y5="772" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprLoginIncentives_Winterfest" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_LoginIncentivesIcons.tex" x0="768" x1="768" x2="768" x3="768" x4="1024" x5="1024" y0="516" y1="516" y2="516" y3="516" y4="772" y5="772" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprLoginIncentives_AdventureChase" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_LoginIncentivesIcons.tex" x0="0" x1="0" x2="0" x3="0" x4="256" x5="256" y0="767" y1="767" y2="767" y3="767" y4="1023" y5="1023" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Composite Name="sprLoginIncentives_SpinnerComposite" Cycle="1">
+        <Layer Name="sprLoginIncentives_Spinner"/>
+        <Layer Name="sprLoginIncentives_Spinner1"/>
+        <Layer Name="sprLoginIncentives_SpinnerFaded"/>
+        <Layer Name="sprLoginIncentives_SpinnerReverse"/>
+    </Composite>
+    <AutoButton Name="btnLoginIncentivesClaimReward" Texture="UI\Assets\Textures\UI_BK3_LoginIncentives.tex" x0="1" x1="1" x2="1" x3="1" x4="1" x5="171" y0="240" y1="240" y2="240" y3="240" y4="240" y5="278" StateBits="31" Direction="Down"/>
+    <AutoButton Name="btnLoginIncentivesHUDIndicator" Texture="UI\Assets\Textures\UI_BK3_LoginIncentives_2.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="256" y0="0" y1="0" y2="0" y3="0" y4="0" y5="120" Stretchy="1" StateBits="7" Direction="Down"/>
+    <Sprite Name="sprLoginIncentives_PlayerSignagture" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_LoginIncentivesIcons.tex" x0="257" x1="257" x2="257" x3="257" x4="513" x5="513" y0="767" y1="767" y2="767" y3="767" y4="1023" y5="1023" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprLoginIncentives_DungeonChase" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_LoginIncentivesIcons.tex" x0="511" x1="511" x2="511" x3="511" x4="767" x5="767" y0="768" y1="768" y2="768" y3="768" y4="1024" y5="1024" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+</Sprites>

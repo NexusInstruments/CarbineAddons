@@ -9,19 +9,19 @@ local UnitFrames = {}
 local TargetFrame = {}
 local ClusterFrame = {}
 
-local knMaxLevel						= 50
-local knFrameWidthMax			= 358
+local knMaxLevel					= 50
+local knFrameWidthMax				= 358
 local knFrameWidthShield			= 331
 local knFrameWidthMin				= 297
-local knCastBarPolyOffsetX1		= 50
-local knCastBarPolyOffsetX2		= 80
-local knCastBarPolyAngleDeltaX	= 142
-local knClusterFrameWidth		= 60 -- MUST MATCH XML
-local knClusterFrameHeight		= 62 -- MUST MATCH XML
+local knCastBarPolyOffsetX1			= 50
+local knCastBarPolyOffsetX2			= 80
+local knCastBarPolyAngleDeltaX		= 142
+local knClusterFrameWidth			= 60 -- MUST MATCH XML
+local knClusterFrameHeight			= 62 -- MUST MATCH XML
 local knHealthRed					= 0.3
 local knHealthYellow				= 0.5
 
-local kstrScalingHex					= "ffffbf80"
+local kstrScalingHex				= "ffffbf80"
 local kcrScalingCColor				= CColor.new(1.0, 191/255, 128/255, 0.7)
 
 local karDispositionColors =
@@ -53,22 +53,21 @@ local kstrRaidMarkerToSprite =
 local karFactionToString = --Used for the Attachment Frame Sprites
 {
 	[Unit.CodeEnumFaction.ExilesPlayer]		= "Exile",
-	[171]													= "Exile", --Exile NPC's
+	[171]									= "Exile", --Exile NPC's
 	
 	[Unit.CodeEnumFaction.DominionPlayer]	= "Dominion",
-	[170]													= "Dominion", --Dominion NPC's
+	[170]									= "Dominion", --Dominion NPC's
 }
 
 -- Todo: break these out onto options
-local kcrGroupTextColor					= ApolloColor.new("crayBlizzardBlue")
+local kcrGroupTextColor					= ApolloColor.new("BubbleTextShout")
 local kcrFlaggedFriendlyTextColor 		= karDispositionColors[Unit.CodeEnumDisposition.Friendly]
 local kcrDefaultGuildmemberTextColor 	= karDispositionColors[Unit.CodeEnumDisposition.Friendly]
 local kcrHostileEnemyTextColor 			= karDispositionColors[Unit.CodeEnumDisposition.Hostile]
-local kcrAggressiveEnemyTextColor 	= karDispositionColors[Unit.CodeEnumDisposition.Neutral]
-local kcrNeutralEnemyTextColor 			= ApolloColor.new("crayDenim")
-local kcrDefaultUnflaggedAllyTextColor = karDispositionColors[Unit.CodeEnumDisposition.Friendly]
+local kcrAggressiveEnemyTextColor 		= karDispositionColors[Unit.CodeEnumDisposition.Neutral]
+local kcrNeutralEnemyTextColor 			= ApolloColor.new("UI_TextHoloBody")
+local kcrDefaultUnflaggedAllyTextColor 	= karDispositionColors[Unit.CodeEnumDisposition.Friendly]
 
--- TODO:Localize all of these
 -- differential value, color, title, description, title color (for tooltip)
 local karConInfo =
 {
@@ -77,13 +76,12 @@ local karConInfo =
 	{-2, ApolloColor.new("ConMinor"), 		Apollo.GetString("TargetFrame_Minor"), 		Apollo.GetString("TargetFrame_ReducedXP"), 			"ff01fcff"},
 	{-1, ApolloColor.new("ConEasy"), 		Apollo.GetString("TargetFrame_Easy"), 		Apollo.GetString("TargetFrame_SlightlyReducedXP"), 	"ff597cff"},
 	{ 0, ApolloColor.new("ConAverage"), 	Apollo.GetString("TargetFrame_Average"), 	Apollo.GetString("TargetFrame_StandardXP"), 		"ffffffff"},
-	{ 1, ApolloColor.new("ConModerate"), 	Apollo.GetString("TargetFrame_Moderate"), 	Apollo.GetString("TargetFrame_SlightlyMoreXP"), 	"ffffff00"},
+	{ 1, ApolloColor.new("ConModerate"), 	Apollo.GetString("TargetFrame_Moderate"), 	Apollo.GetString("TargetFrame_SlightlyMoreXP"), 		"ffffff00"},
 	{ 2, ApolloColor.new("ConTough"), 		Apollo.GetString("TargetFrame_Tough"), 		Apollo.GetString("TargetFrame_IncreasedXP"), 		"ffff8000"},
 	{ 3, ApolloColor.new("ConHard"), 		Apollo.GetString("TargetFrame_Hard"), 		Apollo.GetString("TargetFrame_HighlyIncreasedXP"), 	"ffff0000"},
 	{ 4, ApolloColor.new("ConImpossible"), 	Apollo.GetString("TargetFrame_Impossible"), Apollo.GetString("TargetFrame_GreatlyIncreasedXP"),	"ffff00ff"}
 }
 
--- Todo: Localize
 local ktRankDescriptions =
 {
 	[Unit.CodeEnumRank.Fodder] 		= 	{Apollo.GetString("TargetFrame_Fodder"), 		Apollo.GetString("TargetFrame_VeryWeak")},
@@ -104,7 +102,7 @@ local karClassToIcon =
 	[GameLib.CodeEnumClass.Spellslinger] 	= "IconSprites:Icon_Windows_UI_CRB_Spellslinger",
 }
 
-local kstrTooltipBodyColor = "ffc0c0c0"
+local kstrTooltipBodyColor 	= "ffc0c0c0"
 local kstrTooltipTitleColor = "ffdadada"
 
 local kstrFriendSprite 			= "ClientSprites:Icon_Windows_UI_CRB_Friend"
@@ -148,25 +146,23 @@ function UnitFrames:OnDocumentReady()
 	
 	Apollo.RegisterSlashCommand("focus", "OnFocusSlashCommand", self)
 	
-	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
 	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", "OnTutorial_RequestUIAnchor", self)
 	Apollo.RegisterEventHandler("CharacterCreated", "OnCharacterLoaded", self)
 	Apollo.RegisterEventHandler("TargetUnitChanged", "OnTargetUnitChanged", self)
 	Apollo.RegisterEventHandler("AlternateTargetUnitChanged", "OnAlternateTargetUnitChanged", self)
-	Apollo.RegisterEventHandler("VarChange_FrameCount", "OnFrame", self)
+	Apollo.RegisterEventHandler("NextFrame", "OnFrame", self)
 	Apollo.RegisterEventHandler("OptionsUpdated_UnitFramesUpdated", "OnUnitFrameOptionsUpdated", self)
 	
 	self.timerFade = ApolloTimer.Create(0.5, true, "OnSlowUpdate", self)
 	
 	self:OnUnitFrameOptionsUpdated()
 	
-	if GameLib.GetPlayerUnit() ~= nil then
-		--self:OnCharacterLoaded()	
-	end
-	
 	for i, str in pairs(arRewardUpdateEvents) do
 		Apollo.RegisterEventHandler(str, "RequestUpdateAllNameplateRewards", self)
 	end
+
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 end
 
 function UnitFrames:OnUnitFrameOptionsUpdated()
@@ -279,25 +275,41 @@ function UnitFrames:OnFocusSlashCommand()
 end
 
 function UnitFrames:OnWindowManagementReady()
-	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.luaUnitFrame.wndMainClusterFrame,		strName = Apollo.GetString("OptionsHUD_MyUnitFrameLabel"), nSaveVersion=2})
-	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.luaTargetFrame.wndMainClusterFrame,	strName = Apollo.GetString("OptionsHUD_TargetFrameLabel"), nSaveVersion=2})
-	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.luaFocusFrame.wndMainClusterFrame,		strName = Apollo.GetString("OptionsHUD_FocusTargetLabel"), nSaveVersion=2})
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("OptionsHUD_MyUnitFrameLabel"), nSaveVersion=2})
+	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.luaUnitFrame.wndMainClusterFrame,	strName = Apollo.GetString("OptionsHUD_MyUnitFrameLabel"), nSaveVersion=2})
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("OptionsHUD_TargetFrameLabel"), nSaveVersion=2})
+	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.luaTargetFrame.wndMainClusterFrame, strName = Apollo.GetString("OptionsHUD_TargetFrameLabel"), nSaveVersion=2})
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("OptionsHUD_FocusTargetLabel"), nSaveVersion=2})
+	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.luaFocusFrame.wndMainClusterFrame, strName = Apollo.GetString("OptionsHUD_FocusTargetLabel"), nSaveVersion=2})
 end
 
 ---------------------------------------------------------------------------------------------------
 -- Tutorial anchor request
 ---------------------------------------------------------------------------------------------------
 function UnitFrames:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
-	if eAnchor == GameLib.CodeEnumTutorialAnchor.InterruptArmor then
 
-	local tRect = {}
-	tRect.l, tRect.t, tRect.r, tRect.b = self.luaTargetFrame.wndMainClusterFrame:GetRect()
+	local tAnchors = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.HealthBar] 		= true,
+	    [GameLib.CodeEnumTutorialAnchor.InterruptArmor] = true,
+		[GameLib.CodeEnumTutorialAnchor.BuffFrame] 		= true,
+		[GameLib.CodeEnumTutorialAnchor.ShieldBar]		= true,
+	}
 	
-	--creating a rectangle near the current location of the interupt armor window based on whether or not the frame is flipped.
-	tRect.r = self.luaTargetFrame.tParams.bFlipped and tRect.r - knFrameWidthMin or tRect.l + knFrameWidthMin + 25
-	tRect.l = self.luaTargetFrame.tParams.bFlipped and tRect.r - 25 or tRect.l + knFrameWidthMin
+	if not tAnchors[eAnchor] then
+		return
+	end
 	
-	Event_FireGenericEvent("Tutorial_RequestUIAnchorResponse", eAnchor, idTutorial, strPopupText, tRect)
+	local tAnchorMapping = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.HealthBar] 		= self.luaUnitFrame.wndLargeFrame:FindChild("LargeBarContainer:MaxHealth"),
+		[GameLib.CodeEnumTutorialAnchor.InterruptArmor] = self.luaTargetFrame.wndCCArmor,
+		[GameLib.CodeEnumTutorialAnchor.BuffFrame] 		= self.luaUnitFrame.wndLargeFrame:FindChild("BuffTutorialAnchor"),
+		[GameLib.CodeEnumTutorialAnchor.ShieldBar]		= self.luaUnitFrame.wndMaxShield
+	}
+
+	if tAnchorMapping[eAnchor] then
+		Event_FireGenericEvent("Tutorial_ShowCallout", eAnchor, idTutorial, strPopupText, tAnchorMapping[eAnchor])
 	end
 end
 
@@ -309,16 +321,15 @@ function TargetFrame:new(o)
 end
 
 function TargetFrame:Init(xmlDoc, tParams)		
-	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 		"OnTutorial_RequestUIAnchor", self)
 	Apollo.RegisterEventHandler("KeyBindingKeyChanged", 			"OnKeyBindingUpdated", self)
 	
 	self.tParams = {
-		fScale 				= tParams.fScale or 1,
+		fScale 			= tParams.fScale or 1,
 		nConsoleVar		= tParams.nConsoleVar,
 		bDrawClusters 	= tParams.bDrawClusters == nil and true or tParams.bDrawClusters,
-		bDrawToT 			= tParams.bDrawToT == nil and true or tParams.bDrawToT,
-		bFlipped				= tParams.bFlipped == nil and false or tParams.bFlipped,
-		bFlipClusters 		= tParams.bFlipClusters == nil and false or tParams.bFlipClusters,
+		bDrawToT 		= tParams.bDrawToT == nil and true or tParams.bDrawToT,
+		bFlipped		= tParams.bFlipped == nil and false or tParams.bFlipped,
+		bFlipClusters 	= tParams.bFlipClusters == nil and false or tParams.bFlipClusters,
 	}
 	
 	local strFlipped = self.tParams.bFlipped and "Flipped" or ""
@@ -354,6 +365,7 @@ function TargetFrame:Init(xmlDoc, tParams)
 	self.wndTargetModel = self.wndLargeFrame:FindChild("TargetModel")
 	self.wndTargetLevel = self.wndLargeFrame:FindChild("TargetLevel")
 	self.wndTargetScalingMark = self.wndLargeFrame:FindChild("TargetScalingMark")
+	self.wndGroupSizeIcon = self.wndLargeFrame:FindChild("GroupSizeIcon")
 	self.wndGroupSizeMark = self.wndLargeFrame:FindChild("GroupSizeMark")
 	self.wndTargetGoalPanel = self.wndLargeFrame:FindChild("TargetGoalPanel")
 	self.wndRaidMarker = self.wndLargeFrame:FindChild("RaidMarker")
@@ -363,13 +375,18 @@ function TargetFrame:Init(xmlDoc, tParams)
 	self.wndCCArmor = self.wndLargeFrame:FindChild("CCArmor")
 	self.wndBeneBuffBar = self.wndLargeFrame:FindChild("BeneBuffBar")
 	self.wndHarmBuffBar = self.wndLargeFrame:FindChild("HarmBuffBar")
-	self.wndTargetIconShadow = self.wndLargeFrame:FindChild("TargetIconShadow")
+	self.wndPlayerIconShadow = self.wndLargeFrame:FindChild("PlayerIconShadow")
 	self.wndPlayerClassIcon = self.wndLargeFrame:FindChild("PlayerClassIcon")
-	self.wndTargetClassIcon = self.wndLargeFrame:FindChild("TargetClassIcon")
+	self.wndCertainDeathIcon = self.wndLargeFrame:FindChild("CertainDeathIcon")
 	self.wndAttachment = self.wndLargeFrame:FindChild("Attachment")
 	self.wndBacker = self.wndLargeFrame:FindChild("Backer")
 	self.wndClusters = self.wndLargeFrame:FindChild("Clusters")
 	self.wndCastingBar = self.wndLargeFrame:FindChild("CastingBar")
+	self.wndCastingFrame = self.wndLargeFrame:FindChild("CastingFrame")
+	self.wndCastingName = self.wndLargeFrame:FindChild("CastingName")
+	self.wndCastingIcon = self.wndLargeFrame:FindChild("CastingIcon")
+	self.wndCastingBase = self.wndLargeFrame:FindChild("CastingBase")
+	self.wndPVPIcon = self.wndLargeFrame:FindChild("PVPIcon")
 	
 	-- Get target of target references
 	self.wndToTFrame = self.wndMainClusterFrame:FindChild("TotFrame")
@@ -378,7 +395,7 @@ function TargetFrame:Init(xmlDoc, tParams)
 	self.wndToTFrame:Show(false)
 	
 	self:ArrangeClusterMembers()
-	self.wndMainClusterFrame:ArrangeChildrenHorz(1)
+	self.wndMainClusterFrame:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.Middle)
 
 	self.wndSimpleFrame = Apollo.LoadForm(xmlDoc, "SimpleTargetFrame", "FixedHudStratum", self)
 	self.wndSimpleFrame:Show(false)
@@ -439,39 +456,43 @@ function TargetFrame:OnUpdate()
 	end
 	
 	if unitTarget ~= nil then
-		-- Cluster info
-		tCluster = unitTarget:GetClusterUnits()
-		
-		if unitTarget == unitPlayer then
-			--Treat Mount as a Cluster Target
-			if unitPlayer:IsMounted() then
-				table.insert(tCluster, unitPlayer:GetUnitMount())
+		if self.tParams.bDrawClusters ~= true then
+			-- Cluster info
+			tCluster = unitTarget:GetClusterUnits()
+			
+			if unitTarget == unitPlayer then
+				--Treat Mount as a Cluster Target
+				if unitPlayer:IsMounted() then
+					table.insert(tCluster, unitPlayer:GetUnitMount())
+				end
+				
+				--Treat Scanbot as a Cluster Target
+				if PlayerPathLib.ScientistHasScanBot() then
+					table.insert(tCluster, PlayerPathLib.ScientistGetScanBotUnit())
+				end
 			end
 			
-			--Treat Scanbot as a Cluster Target
-			if PlayerPathLib.ScientistHasScanBot() then
-				table.insert(tCluster, PlayerPathLib.ScientistGetScanBotUnit())
+			--Make the unit a cluster of a vehicle if they're in one.
+			if unitTarget:IsInVehicle() then
+				local uPlayer = unitTarget
+				unitTarget = uPlayer:GetVehicle()
+				
+				table.insert(tCluster, uPlayer)
 			end
-		end
-		
-		--Make the unit a cluster of a vehicle if they're in one.
-		if unitTarget:IsInVehicle() then
-			local uPlayer = unitTarget
-			unitTarget = uPlayer:GetVehicle()
 			
-			table.insert(tCluster, uPlayer)
-		end
-		
-		-- Treat Pets as Cluster Targets
-		local tPlayerPets = GameLib.GetPlayerPets()	
-		for k,v in ipairs(tPlayerPets) do
-			if k < 3 and unitTarget == unitPlayer and v:GetHealth() and v:GetHealth() > 0 then
-				table.insert(tCluster, v)
+			-- Treat Pets as Cluster Targets
+			if unitTarget == unitPlayer then
+				local tPlayerPets = GameLib.GetPlayerPets()	
+				for k,v in ipairs(tPlayerPets) do
+					if k < 3 and v:GetHealth() == 0 then
+						table.insert(tCluster, v)
+					end
+				end
 			end
-		end
-		
-		if self.tParams.bDrawClusters ~= true or tCluster == nil or #tCluster < 1 then
-			tCluster = nil
+			
+			if tCluster == nil or #tCluster < 1 then
+				tCluster = nil
+			end
 		end
 
 		-- Primary frame
@@ -536,7 +557,17 @@ function TargetFrame:OnSlowUpdate()
 	local unitTarget = self.unitTarget
 	
 	local strFlipped = self.tParams.bFlipped and "Flipped" or ""
-		
+	
+	
+	local strTooltipRank = ""
+	if unitTarget:GetType() == "Player" then
+		strTooltipRank = Apollo.GetString("TargetFrame_IsPC")
+	elseif ktRankDescriptions[unitTarget:GetRank()] ~= nil then
+		strTooltipRank = String_GetWeaselString(Apollo.GetString("TargetFrame_CreatureRank"), ktRankDescriptions[unitTarget:GetRank()][1])
+	end
+
+	self.wndTargetModel:SetTooltip(unitTarget == kunitPlayer and "" or strTooltipRank)
+	
 	--Disposition/flags
 	local eDisposition = unitTarget:GetDispositionTo(kunitPlayer) or Unit.CodeEnumDisposition.Hostile
 	local strDisposition = tDispositionSpriteLabel[eDisposition]
@@ -577,6 +608,31 @@ function TargetFrame:OnSlowUpdate()
 	else
 		self.wndBacker:SetSprite("spr_TargetFrame_Frame"..strDisposition..strFlipped)
 	end
+	
+	-- Name
+	local strName = unitTarget:GetName()
+	if unitTarget:IsPvpFlagged() then -- PvP
+		strName = String_GetWeaselString(Apollo.GetString("BaseBar_PvPAppend"), strName)
+	end
+	self.wndTargetName:SetText(strName)
+
+	if unitTarget:IsPvpFlagged() then
+		local strSprite = "IconSprites:Icon_Windows16_UI_Enemy_PvPIndicator"
+		if self.unitTarget == GameLib.GetPlayerUnit() then
+			strSprite = "IconSprites:Icon_Windows16_UI_Player_PvPIndicator"
+		end
+		self.wndPVPIcon:SetSprite(strSprite)
+
+		local nOpacity = 1.0
+		local tPvPInfo = GameLib.GetPvpFlagInfo()
+		if tPvPInfo.nCooldown > 0 then
+			nOpacity = 0.5
+		end
+		self.wndPVPIcon:SetOpacity(nOpacity)
+		self.wndPVPIcon:Show(true)
+	else
+		self.wndPVPIcon:Show(false)
+	end
 
 	-- Level / Diff
 	local nLevel = unitTarget:GetLevel()
@@ -599,7 +655,7 @@ function TargetFrame:OnSlowUpdate()
 			
 			if unitTarget ~= kunitPlayer then
 				if nLevel ~= self.nLevel then
-					strRewardFormatted = String_GetWeaselString(Apollo.GetString("TargetFrame_CreatureScales"), nLevel)
+					local strRewardFormatted = String_GetWeaselString(Apollo.GetString("TargetFrame_CreatureScales"), nLevel)
 					local strLevelTooltip = self:HelperBuildTooltip(strRewardFormatted, Apollo.GetString("Adaptive"), kcrScalingHex)
 					self.wndTargetLevel:SetTooltip(strLevelTooltip)
 				end
@@ -612,7 +668,7 @@ function TargetFrame:OnSlowUpdate()
 			self.wndTargetLevel:SetTextColor(karConInfo[nCon][2])
 			
 			if unitTarget ~= kunitPlayer then
-				strRewardFormatted = String_GetWeaselString(Apollo.GetString("TargetFrame_TargetXPReward"), karConInfo[nCon][4])
+				local strRewardFormatted = String_GetWeaselString(Apollo.GetString("TargetFrame_TargetXPReward"), karConInfo[nCon][4])
 				local strLevelTooltip = self:HelperBuildTooltip(strRewardFormatted, karConInfo[nCon][3], karConInfo[nCon][5])
 				self.wndTargetLevel:SetTooltip(strLevelTooltip)
 			end
@@ -643,22 +699,52 @@ function TargetFrame:OnSlowUpdate()
 				crColorToUse = kcrAggressiveEnemyTextColor
 			end
 		end
+		self.wndGroupSizeIcon:Show(false)
 		self.wndGroupSizeMark:Show(false)
+		self.nGroupValue = 0
+		
 		self.wndTargetName:SetTextColor(crColorToUse)
 	else -- NPC
 		local nGroupValue = unitTarget:GetGroupValue()
 		if nGroupValue ~= self.nGroupValue then
 			if (nGroupValue > 0) ~= self.wndGroupSizeMark:IsShown() then
+				self.wndGroupSizeIcon:Show(nGroupValue > 0)
 				self.wndGroupSizeMark:Show(nGroupValue > 0)
+			else	
+				self.wndGroupSizeIcon:Show(false)
+				self.wndGroupSizeMark:Show(false)
 			end
 			self.wndGroupSizeMark:SetText(nGroupValue)
 
 			local strGroupTooltip = self:HelperBuildTooltip(String_GetWeaselString(Apollo.GetString("TargetFrame_GroupSize"), nGroupValue), String_GetWeaselString(Apollo.GetString("TargetFrame_Man"), nGroupValue))
 			self.wndGroupSizeMark:SetTooltip(strGroupTooltip)
+			self.wndGroupSizeIcon:SetTooltip(strGroupTooltip)
 			
 			self.nGroupValue = nGroupValue
 		end
 	end
+end
+
+function TargetFrame:OnPVPIconGenerateTooltip(wndHandler, wndControl)
+	if self.unitTarget == nil or not self.unitTarget:IsValid() or not self.unitTarget:IsPvpFlagged() then
+		return
+	end
+
+	local strTooltip = ""
+	if self.unitTarget == GameLib.GetPlayerUnit() then
+		local tPvPInfo = GameLib.GetPvpFlagInfo()
+		strTooltip = string.format("<T TextColor=\"UI_WindowTextDefault\">%s</T>", Apollo.GetString("TargetFrame_PvPBonus"))
+		if tPvPInfo.nCooldown > 0 then
+			strTooltip = strTooltip .. "<P></P>" .. string.format("<T TextColor=\"UI_WindowTextDefault\">%s</T>", String_GetWeaselString(Apollo.GetString("TargetFrame_PvPCooldown"), ConvertSecondsToTimer(tPvPInfo.nCooldown, 0)))
+		elseif not tPvPInfo.bIsForced then
+			strTooltip = strTooltip .. "<P></P>" .. string.format("<T TextColor=\"Disabled\">%s</T>", Apollo.GetString("TargetFrame_PvPOff"))
+		else
+			strTooltip = strTooltip .. "<P></P>" .. string.format("<T TextColor=\"Disabled\">%s</T>", Apollo.GetString("TargetFrame_PvPForced"))
+		end
+	else
+		strTooltip = Apollo.GetString("TargetFrame_PvPMarked")
+	end
+	wndControl:SetTooltip(strTooltip)
 end
 
 function TargetFrame:GetPosition()
@@ -692,30 +778,24 @@ function TargetFrame:SetTarget(unitTarget)
 	
 	-- Rank & class
 	local eRank = unitTarget:GetRank()
-	local strClassIconSprite = ""
 	local strPlayerIconSprite = ""
+	
+	-- Display Certain Death Icon
+	local bShowCertainDeath = unitTarget:IsCertainDeath() 
+		and not unitTarget:IsDead() 
+		and unitTarget:GetHealth() 
+		and unitTarget:GetDispositionTo(kunitPlayer) ~= Unit.CodeEnumDisposition.Friendly
+	self.wndCertainDeathIcon:Show(bShowCertainDeath)
 	
 	-- Class Icon is based on player class or NPC rank
 	if self.strUnitType == "Player" then
-		strPlayerIconSprite = karClassToIcon[unitTarget:GetClassId()]
-	elseif eRank == Unit.CodeEnumRank.Elite then
-		strClassIconSprite = "spr_TargetFrame_ClassIcon_Elite"
-	elseif eRank == Unit.CodeEnumRank.Superior then
-		strClassIconSprite = "spr_TargetFrame_ClassIcon_Superior"
-	elseif eRank == Unit.CodeEnumRank.Champion then
-		strClassIconSprite = "spr_TargetFrame_ClassIcon_Champion"
-	elseif eRank == Unit.CodeEnumRank.Standard then
-		strClassIconSprite = "spr_TargetFrame_ClassIcon_Standard"
-	elseif eRank == Unit.CodeEnumRank.Minion then
-		strClassIconSprite = "spr_TargetFrame_ClassIcon_Minion"
-	elseif eRank == Unit.CodeEnumRank.Fodder then
-		strClassIconSprite = "spr_TargetFrame_ClassIcon_Fodder"
+		self.wndPlayerIconShadow:Show(true)
+		self.wndPlayerClassIcon:Show(true)
+		self.wndPlayerClassIcon:SetSprite(karClassToIcon[unitTarget:GetClassId()])
+	else
+		self.wndPlayerIconShadow:Show(false)
+		self.wndPlayerClassIcon:Show(false)
 	end
-	
-	self.wndTargetIconShadow:Show(strPlayerIconSprite ~= "" or strClassIconSprite ~= "")
-	self.wndPlayerClassIcon:SetSprite(strPlayerIconSprite)
-	self.wndTargetClassIcon:SetSprite(strClassIconSprite)
-	self.wndTargetClassIcon:SetBGColor(unitTarget:GetDispositionTo(kunitPlayer) == Unit.CodeEnumDisposition.Friendly and "66FFFFFF" or "FFFFFFFF")
 	
 	-- Rare and Elite NPCs
 	local bRare = unitTarget:IsRare()
@@ -726,6 +806,10 @@ function TargetFrame:SetTarget(unitTarget)
 	if bElite ~= self.wndElite:IsShown() then
 		self.wndElite:Show(bElite)
 	end
+	
+	self.wndTargetModel:SetCostume(unitTarget)
+	self.wndTargetModel:SetData(unitTarget)
+	self.wndLargeFrame:SetData(unitTarget)
 end
 
 -- todo: remove this, move functionality to draw or previous function, look about unhooking for movement
@@ -735,19 +819,11 @@ function TargetFrame:UpdatePrimaryFrame(unitTarget, bTargetChanged) --called fro
 		return
 	end
 
-	local strTooltipRank = ""
-	if unitTarget:GetType() == "Player" then
-		strTooltipRank = Apollo.GetString("TargetFrame_IsPC")
-	elseif ktRankDescriptions[unitTarget:GetRank()] ~= nil then
-		strTooltipRank = String_GetWeaselString(Apollo.GetString("TargetFrame_CreatureRank"), ktRankDescriptions[unitTarget:GetRank()][1])
-	end
-
-	self.wndTargetModel:SetTooltip(unitTarget == kunitPlayer and "" or strTooltipRank)
-	self.wndTargetModel:SetData(unitTarget)
-	self.wndLargeFrame:SetData(unitTarget)
-
 	self:SetTargetForFrame(self.wndLargeFrame, bTargetChanged)
 
+	self:UpdateCastingBar(self.wndLargeFrame)
+	self:UpdateInterruptArmor()
+	
 	-- ToT
 	local unitToT = unitTarget:GetTarget()
 	local bValidToT = unitToT ~= nil and unitToT:GetHealth() ~= nil and unitToT:GetMaxHealth() > 0
@@ -770,8 +846,6 @@ function TargetFrame:UpdatePrimaryFrame(unitTarget, bTargetChanged) --called fro
 			wndRaidMarker:SetSprite(kstrRaidMarkerToSprite[nMarkerId])
 		end
 	end
-
-	self.wndTargetModel:SetCostume(unitTarget)
 end
 
 function TargetFrame:UpdateToTFrame(unitToT) -- called on frame
@@ -836,25 +910,14 @@ function TargetFrame:SetTargetForFrame(wndFrame, bTargetChanged)
 	self:SetTargetHealthAndShields(wndFrame, unitTarget)
 	
 	if unitTarget then
-		local strName = unitTarget:GetName()
-		
-		if unitTarget:IsPvpFlagged() then -- PvP
-			strName = String_GetWeaselString(Apollo.GetString("BaseBar_PvPAppend"), strName)
-		end
-		
-		if strName ~= self.strName then
-			self.wndTargetName:SetText(strName)
-			self.strName = strName
-		end
-		
 		self:UpdateToT()
-		self:UpdateInterruptArmor()
+		
 		
 		-- Must be last as several sections above use eDisposition
 		self.eDisposition = unitTarget:GetDispositionTo(kunitPlayer)
 	end
 
-	self:UpdateCastingBar(wndFrame, unitTarget)
+	
 end
 
 function TargetFrame:UpdateToT()
@@ -928,7 +991,12 @@ function TargetFrame:UpdateInterruptArmor()
 	self.nCCArmorValue = nCCArmorValue
 end
 
-function TargetFrame:UpdateCastingBar(wndFrame, unitCaster)
+function TargetFrame:UpdateCastingBar(wndFrame)
+	local unitCaster = self.unitTarget
+	if unitCaster:IsInVehicle() then
+		unitCaster = unitCaster:GetVehicle()
+	end
+
 	-- Casting Bar Update
 
 	local bShowCasting = false
@@ -946,12 +1014,12 @@ function TargetFrame:UpdateCastingBar(wndFrame, unitCaster)
 	local strGlowSprite = ""
 	local strColor = ""
 	local strFlipped = self.tParams.bFlipped and "Flipped" or ""
-
-	local wndCastFrame = wndFrame:FindChild("CastingFrame")
-	local wndCastProgress = wndFrame:FindChild("CastingBar")
-	local wndCastName = wndFrame:FindChild("CastingName")
-	local wndCastIcon = wndFrame:FindChild("CastingIcon")
-	local wndCastBase = wndFrame:FindChild("CastingBase")
+	
+	local wndCastFrame = self.wndCastingFrame
+	local wndCastProgress = self.wndCastingBar
+	local wndCastName = self.wndCastingName
+	local wndCastIcon = self.wndCastingIcon
+	local wndCastBase = self.wndCastingBase
 	
 	local nVulnerable = unitCaster:GetCCStateTimeRemaining(Unit.CodeEnumCCState.Vulnerability) or 0
 	if nVulnerable > 0 then
@@ -997,7 +1065,7 @@ function TargetFrame:UpdateCastingBar(wndFrame, unitCaster)
 
 		if eType ~= Unit.CodeEnumCastBarType.None then
 			local bInfiniteInteruptArmor =  unitCaster:GetInterruptArmorMax() == -1
-			strColor = bInfiniteInteruptArmor and "xkcdCoolGrey" or "xkcdPastelOrange"
+			strColor = bInfiniteInteruptArmor and "CoolGrey" or "PastelOrange"
 			strFillSprite = bInfiniteInteruptArmor and "spr_TargetFrame_FrameCastBarFillLocked"..strFlipped or "spr_TargetFrame_FrameCastBarFill"..strFlipped
 			strBaseSprite = bInfiniteInteruptArmor and "spr_TargetFrame_FrameCastBarLocked"..strFlipped or "spr_TargetFrame_FrameCastBar"..strFlipped
 			
@@ -1059,7 +1127,7 @@ end
 
 -------------------------------------------------------------------------------
 function TargetFrame:ArrangeClusterMembers()
-	self.wndClusters:ArrangeChildrenHorz(self.tParams.bFlipClusters and 2 or 0)
+	self.wndClusters:ArrangeChildrenHorz(self.tParams.bFlipClusters and Window.CodeEnumArrangeOrigin.RightOrBottom or Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function TargetFrame:HelperBuildTooltip(strBody, strTitle, crTitleColor)
@@ -1074,8 +1142,15 @@ function TargetFrame:HelperBuildTooltip(strBody, strTitle, crTitleColor)
 end
 
 function TargetFrame:HelperCalculateConValue(unitTarget)
-	local nUnitCon = kunitPlayer:GetLevelDifferential(unitTarget)
 	local nCon = 1 --default setting
+	if not kunitPlayer:IsValid() then
+		return nCon
+	end
+	
+	local nUnitCon = kunitPlayer:GetLevelDifferential(unitTarget)
+	if nUnitCon == nil then
+		return nCon
+	end
 
 	if nUnitCon <= karConInfo[1][1] then -- lower bound
 		nCon = 1
@@ -1096,19 +1171,21 @@ function TargetFrame:HelperResetTooltips()
 	self.wndTargetModel:SetTooltip("")
 	self.wndTargetLevel:SetTooltip("")
 	self.wndGroupSizeMark:SetTooltip("")
+	self.wndGroupSizeIcon:SetTooltip("")
 end
 
 function TargetFrame:SetTargetHealthAndShields(wndTargetFrame, unitTarget)
 	if not unitTarget or unitTarget:GetHealth() == nil then
 		return
 	end
-
+	
 	if unitTarget:GetType() == "Simple" then -- String Comparison, should replace with an enum
 		self.wndHealthText:SetText("")
 		self.wndMaxShield:Show(false)
 		self.wndMaxAbsorb:Show(false)
 		return
 	end
+	
 
 	local nHealthCurr = unitTarget:GetHealth()
 	local nHealthMax = unitTarget:GetMaxHealth()
@@ -1143,13 +1220,6 @@ function TargetFrame:SetTargetHealthAndShields(wndTargetFrame, unitTarget)
 	end
 	
 	self.wndHealthCapacityTint:SetStyleEx("EdgeGlow", nHealthCurr > 0 and nHealthCurr / nHealthMax < 0.96)
-	
-	if nShieldCurr ~= self.nShieldCurr or nShieldMax ~= self.nShieldMax then
-		self:SetBarValue(self.wndShieldCapacityTint, 0, nShieldCurr, nShieldMax) -- Only the Curr Shield really progress fills
-	end
-	if nAbsorbCurr ~= self.nAbsorbCurr or nAbsorbMax ~= self.nAbsorbMax then
-		self:SetBarValue(self.wndAbsorbCapacityTint, 0, nAbsorbCurr, nAbsorbMax)
-	end
 
 	-- Bars
 	self.wndHealthCapacityTint:SetMax(nHealthMax)
@@ -1247,11 +1317,37 @@ function TargetFrame:SetTargetHealthAndShields(wndTargetFrame, unitTarget)
 		strHealthMax = nHealthMax > 0 and self:HelperFormatBigNumber(nHealthMax) or "0"
 		self.strHealthMax = strHealthMax
 	end
-	local strHealthCurr = nHealthCurr > 0 and self:HelperFormatBigNumber(nHealthCurr) or "0"
-	local strShieldCurr = nShieldCurr > 0 and self:HelperFormatBigNumber(nShieldCurr) or "0"
-	local strShieldMax = nShieldMax > 0 and self:HelperFormatBigNumber(nShieldMax) or "0"
-	local strAbsorbCurr = nAbsorbCurr > 0 and self:HelperFormatBigNumber(nAbsorbCurr) or "0"
-	local strAbsorbMax = nAbsorbMax > 0 and self:HelperFormatBigNumber(nAbsorbMax) or "0"
+	
+	local strHealthCurr = self.strHealthCurr
+	if nHealthCurr ~= self.nHealthCurr then
+		strHealthCurr = nHealthCurr > 0 and self:HelperFormatBigNumber(nHealthCurr) or "0"
+		self.strHealthCurr = strHealthCurr
+	end
+	
+	local strShieldCurr = self.strShieldCurr
+	if nShieldCurr ~= self.nShieldCurr then
+		strShieldCurr = nShieldCurr > 0 and self:HelperFormatBigNumber(nShieldCurr) or "0"
+		self.strShieldCurr = strShieldCurr
+	end
+	
+	local strShieldMax = self.strShieldMax
+	if nShieldMax ~= self.nShieldMax then
+		strShieldMax = nShieldMax > 0 and self:HelperFormatBigNumber(nShieldMax) or "0"
+		self.strShieldMax = strShieldMax
+	end
+	
+	local strAbsorbCurr = self.strAbsorbCurr
+	if nAbsorbCurr ~= self.nAbsorbCurr then
+		strAbsorbCurr = nAbsorbCurr > 0 and self:HelperFormatBigNumber(nAbsorbCurr) or "0"
+		self.strAbsorbCurr = strAbsorbCurr
+	end
+	
+	local strAbsorbMax = self.strAbsorbMax
+	if nAbsorbMax ~= self.nAbsorbMax then
+		strAbsorbMax = nAbsorbMax > 0 and self:HelperFormatBigNumber(nAbsorbMax) or "0"
+		self.strAbsorbMax = strAbsorbMax
+	end
+	
 	
 	local nVisibility = Apollo.GetConsoleVariable("hud.healthTextDisplay")
 	
@@ -1316,6 +1412,7 @@ end
 
 
 function TargetFrame:HelperFormatBigNumber(nArg)
+	local strResult
 	if nArg < 1000 then
 		strResult = tostring(nArg)
 	elseif nArg < 1000000 then
@@ -1348,8 +1445,8 @@ function TargetFrame:SetBarValue(wndBar, fMin, fValue, fMax)
 	wndBar:SetProgress(fValue)
 end
 
-function TargetFrame:OnGenerateBuffTooltip(wndHandler, wndControl, tType, splBuff)
-	if wndHandler == wndControl then
+function TargetFrame:OnGenerateBuffTooltip(wndHandler, wndControl, eType, splBuff)
+	if wndHandler == wndControl or eType ~= Tooltip.TooltipGenerateType_Spell then
 		return
 	end
 	Tooltip.GetBuffTooltipForm(self, wndControl, splBuff, {bFutureSpell = false})
@@ -1357,6 +1454,28 @@ end
 
 function TargetFrame:OnMouseButtonDown(wndHandler, wndControl, eMouseButton, x, y)
 	local unitToT = wndHandler:GetData()
+	if eMouseButton == GameLib.CodeEnumInputMouse.Left and unitToT ~= nil then
+		GameLib.SetTargetUnit(unitToT)
+		return false
+	end
+	if eMouseButton == GameLib.CodeEnumInputMouse.Right and unitToT ~= nil then
+		Event_FireGenericEvent("GenericEvent_NewContextMenuPlayerDetailed", nil, unitToT:GetName(), unitToT)
+		return true
+	end
+
+	if IsDemo() then
+		return true
+	end
+
+	return false
+end
+
+function TargetFrame:OnPVPIconMouseBtnDown(wndHandler, wndControl, eMouseButton, x, y)
+	if wndHandler ~= wndControl then
+		return
+	end
+
+	local unitToT = wndHandler:GetParent():FindChild("TargetModel"):GetData()
 	if eMouseButton == GameLib.CodeEnumInputMouse.Left and unitToT ~= nil then
 		GameLib.SetTargetUnit(unitToT)
 		return false
@@ -1421,14 +1540,6 @@ function TargetFrame:OnKeyBindingUpdated(strKeybind)
 	end
 end
 
-function TargetFrame:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
-	if eAnchor == GameLib.CodeEnumTutorialAnchor.BuffFrame then
-		local tRect = {}
-		tRect.l, tRect.t, tRect.r, tRect.b = self.wndLargeFrame:FindChild("BeneBuffBar"):GetRect()
-		Event_FireGenericEvent("Tutorial_RequestUIAnchorResponse", eAnchor, idTutorial, strPopupText, tRect)
-	end
-end
-
 function ClusterFrame:new(o)
 	o = o or {}
 	setmetatable(o, self)
@@ -1442,7 +1553,7 @@ function ClusterFrame:Init(xmlDoc, wndParent)
 	self.wndTargetGoalPanel = self.wndCluster:FindChild("TargetGoalPanel")
 	self.wndTargetLevel = self.wndCluster:FindChild("TargetLevel")
 	self.wndTargetScalingMark = self.wndCluster:FindChild("TargetScalingMark")
-	self.wndTargetClassIcon = self.wndCluster:FindChild("TargetClassIcon")
+	self.wndCertainDeathIcon = self.wndCluster:FindChild("CertainDeathIcon")
 	self.wndCover = self.wndCluster:FindChild("Cover")
 	self.wndHealthTint = self.wndCluster:FindChild("HealthTint")
 	self.wndHealthShieldTint = self.wndCluster:FindChild("HealthShieldTint")
@@ -1468,13 +1579,6 @@ function ClusterFrame:SetTarget(unitTarget)
 		end
 	
 		return
-	end
-	
-	if unitTarget ~= GameLib.GetPlayerMountUnit() then
-		local tArchetype = unitTarget:GetArchetype()
-		if tArchetype ~= nil then
-			self.wndTargetClassIcon:SetSprite(tArchetype.strIcon)
-		end
 	end
 end
 
@@ -1592,7 +1696,7 @@ function ClusterFrame:OnFrame()
 			
 			if nLevel ~= self.nLevel then
 				if unitTarget ~= kunitPlayer then
-					strRewardFormatted = String_GetWeaselString(Apollo.GetString("TargetFrame_CreatureScales"), nLevel)
+					local strRewardFormatted = String_GetWeaselString(Apollo.GetString("TargetFrame_CreatureScales"), nLevel)
 					local strLevelTooltip = TargetFrame.HelperBuildTooltip(self, strRewardFormatted, Apollo.GetString("Adaptive"), kstrScalingHex)
 					self.wndTargetLevel:SetTooltip(strLevelTooltip)
 				end

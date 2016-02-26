@@ -24,7 +24,8 @@ function ClassResources:OnLoad()
 	self.xmlDoc = XmlDoc.CreateFromFile("ClassResources.xml")
 	self.xmlDoc:RegisterCallback("OnDocumentReady", self)
 
-	Apollo.RegisterEventHandler("ActionBarLoaded", "OnRequiredFlagsChanged", self)
+	Apollo.RegisterEventHandler("ActionBarLoaded", 			"OnRequiredFlagsChanged", self)
+	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", "OnTutorial_RequestUIAnchor", self)
 end
 
 function ClassResources:OnSave(eType)
@@ -95,7 +96,7 @@ end
 -----------------------------------------------------------------------------------------------
 
 function ClassResources:OnCreateEsper()
-	Apollo.RegisterEventHandler("VarChange_FrameCount", 		"OnEsperUpdateTimer", self)
+	Apollo.RegisterEventHandler("NextFrame", 		"OnEsperUpdateTimer", self)
 	Apollo.RegisterEventHandler("UnitEnteredCombat", 			"OnEsperEnteredCombat", self)
 	Apollo.RegisterTimerHandler("EsperOutOfCombatFade", 		"OnEsperOutOfCombatFade", self)
 	self.timerEsperOutOfCombatFade = ApolloTimer.Create(0.5, false, "OnEsperOutOfCombatFade", self)
@@ -119,9 +120,9 @@ function ClassResources:OnCreateEsper()
 		["InnateActiveGlowTop"]			=	self.wndMain:FindChild("InnateActiveGlowTop"),
 		["InnateActiveGlowFrame"]		=	self.wndMain:FindChild("InnateActiveGlowFrame"),
 		["InnateActiveGlowBottom"]		=	self.wndMain:FindChild("InnateActiveGlowBottom"),
-		["ManaProgressBar"]				=	self.wndMain:FindChild("ManaProgressBar"),
-		["ManaProgressText"]			=	self.wndMain:FindChild("ManaProgressText"),
-		["ManaProgressCover"]			=	self.wndMain:FindChild("ManaProgressCover"),
+		["FocusProgressBar"]			=	self.wndMain:FindChild("FocusProgressBar"),
+		["FocusProgressText"]			=	self.wndMain:FindChild("FocusProgressText"),
+		["FocusProgressCover"]			=	self.wndMain:FindChild("FocusProgressCover"),
 		["EsperBaseFrame_InCombat"]		=	self.wndMain:FindChild("EsperBaseFrame_InCombat"),
 		["EsperOutOfCombatFade"]		=	self.wndMain:FindChild("EsperOutOfCombatFade"),
 	}
@@ -131,7 +132,7 @@ function ClassResources:OnCreateEsper()
 	self.bLastInCombat = nil
 	self.nComboCurrent = nil
 	self.bInnate = nil
-	self.nLastMana = nil
+	self.nLastFocus = nil
 	self.nFadeLevel = 0
 	self.xmlDoc = nil
 end
@@ -139,22 +140,22 @@ end
 function ClassResources:OnEsperUpdateTimer()
 	local unitPlayer = GameLib.GetPlayerUnit()
 	local nComboCurrent = unitPlayer:GetResource(1)
-	local nManaMax = math.floor(unitPlayer:GetMaxMana())
-	local nManaCurrent = math.floor(unitPlayer:GetMana())
+	local nFocusMax = math.floor(unitPlayer:GetMaxFocus())
+	local nFocusCurrent = math.floor(unitPlayer:GetFocus())
 	local bInnate = GameLib.IsCurrentInnateAbilityActive()
-	if self.bLastInCombat == bInCombat and self.nComboCurrent == nComboCurrent and self.bInnate == bInnate and self.nLastMana == nManaCurrent then
+	if self.bLastInCombat == bInCombat and self.nComboCurrent == nComboCurrent and self.bInnate == bInnate and self.nLastFocus == nFocusCurrent then
 		return
 	end
 	self.bLastInCombat = bInCombat
 	self.nComboCurrent = nComboCurrent
 	self.bInnate = bInnate
-	self.nLastMana = nManaCurrent
+	self.nLastFocus = nFocusCurrent
 
-	-- Mana
-	self.tWindowMap["ManaProgressBar"]:SetMax(nManaMax)
-	self.tWindowMap["ManaProgressBar"]:SetProgress(nManaCurrent)
-	self.tWindowMap["ManaProgressBar"]:SetTooltip(String_GetWeaselString(Apollo.GetString("EsperResource_FocusTooltip"), nManaCurrent, nManaMax))
-	self.tWindowMap["ManaProgressText"]:SetText(nManaCurrent == nManaMax and "" or (math.floor(nManaCurrent / nManaMax * 100).."%"))
+	-- Focus
+	self.tWindowMap["FocusProgressBar"]:SetMax(nFocusMax)
+	self.tWindowMap["FocusProgressBar"]:SetProgress(nFocusCurrent)
+	self.tWindowMap["FocusProgressBar"]:SetTooltip(String_GetWeaselString(Apollo.GetString("EsperResource_FocusTooltip"), nFocusCurrent, nFocusMax))
+	self.tWindowMap["FocusProgressText"]:SetText(nFocusCurrent == nFocusMax and "" or (math.floor(nFocusCurrent / nFocusMax * 100).."%"))
 
 	-- Combo Points
 	local strInCombat = unitPlayer:IsInCombat() and "CM_EsperSprites:sprEsper_ComboNumPurple_" or "CM_EsperSprites:sprEsper_ComboNumDull_"
@@ -182,7 +183,7 @@ function ClassResources:OnEsperEnteredCombat(unitPlayer, bInCombat)
 	end
 
 	if bInCombat then
-		self.tWindowMap["ManaProgressCover"]:Show(true)
+		self.tWindowMap["FocusProgressCover"]:Show(true)
 		self.tWindowMap["EsperBaseFrame_InCombat"]:Show(true)
 
 		self.nFadeLevel = 0
@@ -194,7 +195,7 @@ function ClassResources:OnEsperEnteredCombat(unitPlayer, bInCombat)
 		for idx, wndCurr in pairs(self.tWindowMap["ComboBits"]:GetChildren()) do
 			wndCurr:SetBGColor(ApolloColor.new(1, 1, 1, 0.5))
 		end
-		self.tWindowMap["ManaProgressCover"]:Show(false)
+		self.tWindowMap["FocusProgressCover"]:Show(false)
 		self.tWindowMap["EsperBaseFrame_InCombat"]:Show(false)
 		self.timerEsperOutOfCombatFade:Start()
 	end
@@ -220,7 +221,7 @@ end
 -----------------------------------------------------------------------------------------------
 
 function ClassResources:OnCreateSlinger()
-	Apollo.RegisterEventHandler("VarChange_FrameCount", 		"OnSlingerUpdateTimer", self)
+	Apollo.RegisterEventHandler("NextFrame", 		"OnSlingerUpdateTimer", self)
 	Apollo.RegisterEventHandler("UnitEnteredCombat", 			"OnSlingerEnteredCombat", self)
 
     self.wndMain = Apollo.LoadForm(self.xmlDoc, "SlingerResourceForm", g_wndActionBarResources, self)
@@ -254,9 +255,9 @@ function ClassResources:OnCreateSlinger()
 		["SlingerNode4:NodeFlash"]		=	self.wndMain:FindChild("SlingerNode4:NodeFlash"),
 		["SlingerNode4:NodeFilled"]		=	self.wndMain:FindChild("SlingerNode4:NodeFilled"),
 		["SlingerNode4:NodeProgress"]	=	self.wndMain:FindChild("SlingerNode4:NodeProgress"),
-		["ManaProgressBar"]				=	self.wndMain:FindChild("ManaProgressBar"),
-		["ManaProgressText"]			=	self.wndMain:FindChild("ManaProgressText"),
-		["ManaProgressBacker"]			=	self.wndMain:FindChild("ManaProgressBacker"),
+		["FocusProgressBar"]			=	self.wndMain:FindChild("FocusProgressBar"),
+		["FocusProgressText"]			=	self.wndMain:FindChild("FocusProgressText"),
+		["FocusProgressBacker"]			=	self.wndMain:FindChild("FocusProgressBacker"),
 	}
 
 	self.tWindowMap["LargeSurgeGlow"]:Show(false, true)
@@ -271,7 +272,7 @@ function ClassResources:OnCreateSlinger()
 	self.nLastCurrent = nil
 	self.nLastMax = nil
 	self.bInnate = nil
-	self.nLastMana = nil
+	self.nLastFocus = nil
 	self.nFadeLevel = 0
 	self.xmlDoc = nil
 
@@ -284,29 +285,29 @@ end
 function ClassResources:OnSlingerUpdateTimer()
 	local unitPlayer = GameLib.GetPlayerUnit()
 	local bInCombat = unitPlayer:IsInCombat()
-	local nManaCurrent = math.floor(unitPlayer:GetMana())
+	local nFocusCurrent = math.floor(unitPlayer:GetFocus())
 	local nResourceMax = unitPlayer:GetMaxResource(4)
 	local nResourceCurrent = unitPlayer:GetResource(4)
 	local bInnate = GameLib.IsSpellSurgeActive()
-	if self.bLastInCombat == bInCombat and self.nLastCurrent == nResourceCurrent and self.nLastMax == nResourceMax and self.bInnate == bInnate and self.nLastMana == nManaCurrent then
+	if self.bLastInCombat == bInCombat and self.nLastCurrent == nResourceCurrent and self.nLastMax == nResourceMax and self.bInnate == bInnate and self.nLastFocus == nFocusCurrent then
 		return
 	end
 	self.bLastInCombat = bInCombat
 	self.nLastCurrent = nResourceCurrent
 	self.nLastMax = nResourceMax
 	self.bInnate = bInnate
-	self.nLastMana = nManaCurrent
+	self.nLastFocus = nFocusCurrent
 
-	-- Mana
+	-- Focus
 	local nResourceMaxDiv4 = nResourceMax / 4
-	local nManaMax = math.floor(unitPlayer:GetMaxMana())
-	self.tWindowMap["ManaProgressBar"]:SetMax(nManaMax)
-	self.tWindowMap["ManaProgressBar"]:SetProgress(nManaCurrent)
-	self.tWindowMap["ManaProgressBar"]:SetTooltip(String_GetWeaselString(Apollo.GetString("SpellslingerResource_FocusTooltip"), nManaCurrent, nManaMax))
-	self.tWindowMap["ManaProgressBar"]:SetStyleEx("EdgeGlow", bInCombat and (nManaCurrent / nManaMax < 0.97))
-	self.tWindowMap["ManaProgressText"]:SetText(nManaCurrent == nManaMax and "" or (math.floor(nManaCurrent / nManaMax * 100).."%"))
-	self.tWindowMap["ManaProgressText"]:SetTextColor(bInCombat and ApolloColor.new("ffffc757") or ApolloColor.new("UI_TextHoloTitle"))
-	self.tWindowMap["ManaProgressBacker"]:Show(nManaCurrent ~= nManaMax)
+	local nFocusMax = math.floor(unitPlayer:GetMaxFocus())
+	self.tWindowMap["FocusProgressBar"]:SetMax(nFocusMax)
+	self.tWindowMap["FocusProgressBar"]:SetProgress(nFocusCurrent)
+	self.tWindowMap["FocusProgressBar"]:SetTooltip(String_GetWeaselString(Apollo.GetString("SpellslingerResource_FocusTooltip"), nFocusCurrent, nFocusMax))
+	self.tWindowMap["FocusProgressBar"]:SetStyleEx("EdgeGlow", bInCombat and (nFocusCurrent / nFocusMax < 0.97))
+	self.tWindowMap["FocusProgressText"]:SetText(nFocusCurrent == nFocusMax and "" or (math.floor(nFocusCurrent / nFocusMax * 100).."%"))
+	self.tWindowMap["FocusProgressText"]:SetTextColor(bInCombat and ApolloColor.new("ffffc757") or ApolloColor.new("UI_TextHoloTitle"))
+	self.tWindowMap["FocusProgressBacker"]:Show(nFocusCurrent ~= nFocusMax)
 
 	-- Nodes
 	local strNodeTooltip = String_GetWeaselString(Apollo.GetString("Spellslinger_SpellSurge"), nResourceCurrent, nResourceMax)
@@ -352,11 +353,11 @@ function ClassResources:OnSlingerEnteredCombat(unitPlayer, bInCombat)
 	if bInCombat then
 		self.tWindowMap["SlingerBaseFrame_InCombat"]:Show(true, false, 3)
 		self.tWindowMap["LargeSurgeSigil"]:SetSprite("CM_SpellslingerSprites:sprSlinger_LargeSigil_InCombat")
-		self.tWindowMap["ManaProgressBar"]:SetFullSprite("CM_SpellslingerSprites:sprSlinger_ManaBar_InCombat")
+		self.tWindowMap["FocusProgressBar"]:SetFullSprite("CM_SpellslingerSprites:sprSlinger_ManaBar_InCombat")
 	else
 		self.tWindowMap["SlingerBaseFrame_InCombat"]:Show(false, false, 3)
 		self.tWindowMap["LargeSurgeSigil"]:SetSprite("CM_SpellslingerSprites:sprSlinger_LargeSigil_OutOfCombat")
-		self.tWindowMap["ManaProgressBar"]:SetFullSprite("CM_SpellslingerSprites:sprSlinger_ManaBar_OutOfCombat")
+		self.tWindowMap["FocusProgressBar"]:SetFullSprite("CM_SpellslingerSprites:sprSlinger_ManaBar_OutOfCombat")
 	end
 end
 
@@ -365,7 +366,7 @@ end
 -----------------------------------------------------------------------------------------------
 
 function ClassResources:OnCreateMedic()
-	Apollo.RegisterEventHandler("VarChange_FrameCount", 		"OnMedicUpdateTimer", self)
+	Apollo.RegisterEventHandler("NextFrame", 		"OnMedicUpdateTimer", self)
 	Apollo.RegisterEventHandler("UnitEnteredCombat", 			"OnMedicEnteredCombat", self)
 
     self.wndMain = Apollo.LoadForm(self.xmlDoc, "MedicResourceForm", g_wndActionBarResources, self)
@@ -377,9 +378,9 @@ function ClassResources:OnCreateMedic()
 	self.tWindowMap =
 	{
 		["MedicBaseFrame_InCombat"]	=	self.wndMain:FindChild("MedicBaseFrame_InCombat"),
-		["ManaProgressBacker"]		=	self.wndMain:FindChild("ManaProgressBacker"),
-		["ManaProgressBar"]			=	self.wndMain:FindChild("ManaProgressBar"),
-		["ManaProgressText"]		=	self.wndMain:FindChild("ManaProgressText"),
+		["FocusProgressBacker"]		=	self.wndMain:FindChild("FocusProgressBacker"),
+		["FocusProgressBar"]		=	self.wndMain:FindChild("FocusProgressBar"),
+		["FocusProgressText"]		=	self.wndMain:FindChild("FocusProgressText"),
 		["BG_7Squares"]				=	self.wndMain:FindChild("BG_7Squares"),
 		["BG_12Squares"]			=	self.wndMain:FindChild("BG_12Squares"),
 		["Bit_1"]					=	self.wndMain:FindChild("Bit_1"),
@@ -409,7 +410,7 @@ function ClassResources:OnCreateMedic()
 	self.bInnate = nil
 	self.nLastPartialCount = nil
 	self.bCombat = nil
-	self.nLastMana = nil
+	self.nLastFocus = nil
 	self.xmlDoc = nil
 
 	local unitPlayer = GameLib.GetPlayerUnit()
@@ -425,7 +426,7 @@ function ClassResources:OnMedicUpdateTimer()
 	local nResourceMax = unitPlayer:GetMaxResource(1)
 	local nResourceCurrent = unitPlayer:GetResource(1)
 	local bInnate = GameLib.IsCurrentInnateAbilityActive()
-	local nManaCurrent = math.floor(unitPlayer:GetMana())
+	local nFocusCurrent = math.floor(unitPlayer:GetFocus())
 
 	-- Partial Node Count
 	local nPartialCount = 0
@@ -438,7 +439,7 @@ function ClassResources:OnMedicUpdateTimer()
 	end
 
 	if self.bLastInCombat == bInCombat and self.nLastCurrent == nResourceCurrent and self.nLastMax == nResourceMax
-		and self.bInnate == bInnate and self.nLastPartialCount == nPartialCount and self.nLastMana == nManaCurrent then
+		and self.bInnate == bInnate and self.nLastPartialCount == nPartialCount and self.nLastFocus == nFocusCurrent then
 		return
 	end
 	self.bLastInCombat = bInCombat
@@ -446,18 +447,18 @@ function ClassResources:OnMedicUpdateTimer()
 	self.nLastMax = nResourceMax
 	self.bInnate = bInnate
 	self.nLastPartialCount = nPartialCount
-	self.nLastMana = nManaCurrent
+	self.nLastFocus = nFocusCurrent
 
-	-- Mana
-	local nManaMax = math.floor(unitPlayer:GetMaxMana())
-	self.tWindowMap["ManaProgressBar"]:SetMax(nManaMax)
-	self.tWindowMap["ManaProgressBar"]:SetProgress(nManaCurrent)
-	self.tWindowMap["ManaProgressBar"]:SetStyleEx("EdgeGlow", self.bCombat and (nManaCurrent / nManaMax < 0.97))
-	self.tWindowMap["ManaProgressBar"]:SetTooltip(String_GetWeaselString(Apollo.GetString("MedicResource_FocusTooltip"), nManaCurrent, nManaMax))
+	-- Focus
+	local nFocusMax = math.floor(unitPlayer:GetMaxFocus())
+	self.tWindowMap["FocusProgressBar"]:SetMax(nFocusMax)
+	self.tWindowMap["FocusProgressBar"]:SetProgress(nFocusCurrent)
+	self.tWindowMap["FocusProgressBar"]:SetStyleEx("EdgeGlow", self.bCombat and (nFocusCurrent / nFocusMax < 0.97))
+	self.tWindowMap["FocusProgressBar"]:SetTooltip(String_GetWeaselString(Apollo.GetString("MedicResource_FocusTooltip"), nFocusCurrent, nFocusMax))
 
-	self.tWindowMap["ManaProgressText"]:SetText(nManaCurrent == nManaMax and "" or (math.floor(nManaCurrent / nManaMax * 100).."%"))
-	self.tWindowMap["ManaProgressText"]:SetTextColor(self.bCombat and ApolloColor.new("UI_TextHoloTitle") or ApolloColor.new("ff56b381"))
-	self.tWindowMap["ManaProgressBacker"]:Show(nManaCurrent ~= nManaMax)
+	self.tWindowMap["FocusProgressText"]:SetText(nFocusCurrent == nFocusMax and "" or (math.floor(nFocusCurrent / nFocusMax * 100).."%"))
+	self.tWindowMap["FocusProgressText"]:SetTextColor(self.bCombat and ApolloColor.new("UI_TextHoloTitle") or ApolloColor.new("ff56b381"))
+	self.tWindowMap["FocusProgressBacker"]:Show(nFocusCurrent ~= nFocusMax)
 
 	-- Nodes
 	local bFirstPartial = true
@@ -519,11 +520,11 @@ function ClassResources:OnMedicEnteredCombat(unitPlayer, bInCombat)
 	if bInCombat then
 		self.tWindowMap["BG_12Squares"]:Show(true, false, 3)
 		self.tWindowMap["MedicBaseFrame_InCombat"]:Show(true, false, 3)
-		self.tWindowMap["ManaProgressBar"]:SetFullSprite("sprMedic_ProgBar_InCombat")
+		self.tWindowMap["FocusProgressBar"]:SetFullSprite("sprMedic_ProgBar_InCombat")
 	else
 		self.tWindowMap["BG_12Squares"]:Show(false, false, 3)
 		self.tWindowMap["MedicBaseFrame_InCombat"]:Show(false, false, 3)
-		self.tWindowMap["ManaProgressBar"]:SetFullSprite("sprMedic_ProgBar_OutOfCombat")
+		self.tWindowMap["FocusProgressBar"]:SetFullSprite("sprMedic_ProgBar_OutOfCombat")
 	end
 end
 
@@ -532,7 +533,7 @@ end
 -----------------------------------------------------------------------------------------------
 
 function ClassResources:OnCreateStalker()
-	Apollo.RegisterEventHandler("VarChange_FrameCount", "OnStalkerUpdateTimer", self)
+	Apollo.RegisterEventHandler("NextFrame", "OnStalkerUpdateTimer", self)
 
 	self.wndMain = Apollo.LoadForm(self.xmlDoc, "StalkerResourceForm", g_wndActionBarResources, self)
 	self.wndMain:ToFront()
@@ -623,7 +624,7 @@ function ClassResources:OnStalkerUpdateTimer()
 		self.tWindowMap["Base:OutOfCombat"]:Show(false)
 		self.tWindowMap["Base:"..strActiveWindow]:Show(true, false, 0.3)
 
-		self.tWindowMap["CenterMeterText"]:SetTextColor(bInCombat and ApolloColor.new("xkcdLightblue") or ApolloColor.new("UI_TextHoloTitle"))
+		self.tWindowMap["CenterMeterText"]:SetTextColor(bInCombat and ApolloColor.new("Lightblue") or ApolloColor.new("UI_TextHoloTitle"))
 		self.tWindowMap["CenterMeter1"]:Show(not bInCombat)
 		self.tWindowMap["CenterMeter2"]:Show(bInCombat)
 	end
@@ -639,7 +640,7 @@ function ClassResources:OnCreateWarrior()
 	self.timerOverdriveDone = ApolloTimer.Create(10.0, false, "OnWarriorResource_ChargeBarOverdriveDone", self)
 	self.timerOverdriveDone:Stop()
 
-	Apollo.RegisterEventHandler("VarChange_FrameCount", 					"OnWarriorUpdateTimer", self)
+	Apollo.RegisterEventHandler("NextFrame", 					"OnWarriorUpdateTimer", self)
 
 	self.wndMain = Apollo.LoadForm(self.xmlDoc, "WarriorResourceForm", g_wndActionBarResources, self)
 	self.wndMain:ToFront()
@@ -713,14 +714,14 @@ function ClassResources:OnWarriorUpdateTimer()
 	if bOverdrive then
 		self.tWindowMap["BarBG"]:Show(true)
 		self.tWindowMap["ResourceCount"]:SetText(Apollo.GetString("WarriorResource_OverdriveCaps"))
-		self.tWindowMap["ResourceCount"]:SetTextColor(ApolloColor.new("xkcdAmber"))
+		self.tWindowMap["ResourceCount"]:SetTextColor(ApolloColor.new("Amber"))
 
 		strSkullSprite = "Skull4"
 		strBaseSprite = "spr_CM_Warrior_Base_Innate"
 	else
 		self.tWindowMap["BarBG"]:Show(nResourceCurr > 0 or bInCombat)
 		self.tWindowMap["ResourceCount"]:SetText(nResourceCurr == 0 and "" or nResourceCurr)
-		self.tWindowMap["ResourceCount"]:SetTextColor(ApolloColor.new("xkcdOrangeish"))
+		self.tWindowMap["ResourceCount"]:SetTextColor(ApolloColor.new("Orangeish"))
 		self.tWindowMap["InsetFrameDivider"]:Show(nResourceCurr > 0 or bInCombat)
 
 		strSkullSprite = bInCombat and "Skull"..math.min(3, math.floor(nResourceCurr / 250)) or ""
@@ -768,7 +769,7 @@ end
 -----------------------------------------------------------------------------------------------
 
 function ClassResources:OnCreateEngineer()
-	Apollo.RegisterEventHandler("VarChange_FrameCount", 		"OnEngineerUpdateTimer", self)
+	Apollo.RegisterEventHandler("NextFrame", 		"OnEngineerUpdateTimer", self)
 	Apollo.RegisterEventHandler("ShowActionBarShortcut", 		"OnShowActionBarShortcut", self)
 	Apollo.RegisterTimerHandler("EngineerOutOfCombatFade", 		"OnEngineerOutOfCombatFade", self)
 
@@ -965,6 +966,30 @@ function ClassResources:OnGeneratePetCommandTooltip(wndControl, wndHandler, eTyp
 			xml:AddLine(arg1:GetFlavor())
 		end
 		wndControl:SetTooltipDoc(xml)
+	end
+end
+
+---------------------------------------------------------------------------------------------------
+-- Tutorial anchor request
+---------------------------------------------------------------------------------------------------
+function ClassResources:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
+
+	local tAnchors = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.ClassResource] = true,
+	}
+	
+	if not tAnchors[eAnchor] then
+		return
+	end
+	
+	local tAnchorMapping = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.ClassResource] = self.wndMain
+	}
+	
+	if tAnchorMapping[eAnchor] then
+		Event_FireGenericEvent("Tutorial_ShowCallout", eAnchor, idTutorial, strPopupText, tAnchorMapping[eAnchor])
 	end
 end
 

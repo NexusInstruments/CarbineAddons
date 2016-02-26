@@ -87,6 +87,7 @@ function LootConfirm:OnDocumentReady()
 end
 
 function LootConfirm:OnWindowManagementReady()
+	--Event_FireGenericEvent("WindowManagementRegister", {wnd = self.wndMain, strName = Apollo.GetString("CRB_Loot_Distribution")})
 	--Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("CRB_Loot_Distribution")})
 end
 
@@ -183,7 +184,7 @@ function LootConfirm:RedrawAll()
 			wndCurr:FindChild("Title"):SetText(tItem:GetName())
 			
 			local bTextColorRed = self:HelperPrereqFailed(tItem)
-			wndCurr:FindChild("Type"):SetTextColor(bTextColorRed and "xkcdReddish" or "UI_TextHoloBodyCyan")
+			wndCurr:FindChild("Type"):SetTextColor(bTextColorRed and "Reddish" or "UI_TextHoloBodyCyan")
 			wndCurr:FindChild("Type"):SetText(tItem:GetItemTypeName())
 			
 			wndCurr:FindChild("CantUse"):Show(bTextColorRed)
@@ -199,7 +200,7 @@ function LootConfirm:RedrawAll()
 		self.wndMain:SetAnchorOffsets(nLeft, nTop-self.nParentBuffer, nRight, nBottom)
 	end
 	
-	self.wndParent:ArrangeChildrenVert(0)
+	self.wndParent:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	self.wndParent:SetVScrollPos(nScrollPos)
 	if nTotalItems > 0 and GameLib.CanVacuum() then	
 		if itemCurr ~= nil then

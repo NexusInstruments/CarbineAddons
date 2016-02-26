@@ -16,6 +16,7 @@ function Abilities:new(o)
     setmetatable(o, self)
     self.__index = self
 
+	o.knMaxAbilitySlots = 8
 	o.tWndRefs = {}
 
     return o
@@ -38,11 +39,13 @@ function Abilities:OnDocumentReady()
 		return
 	end
 
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
+
 	Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded", 					"OnInterfaceMenuListHasLoaded", self)
 
 	Apollo.RegisterEventHandler("PlayerCurrencyChanged", 						"DrawSpellBook", self)
 	Apollo.RegisterEventHandler("AbilityBookChange", 							"DrawSpellBook", self)
-	Apollo.RegisterEventHandler("PlayerLevelChange", 							"DrawSpellBook", self)
 	Apollo.RegisterEventHandler("SpecChanged", 									"OnSpecChanged", self)
 	Apollo.RegisterEventHandler("ActionSetError", 								"OnActionSetError", self)
 	Apollo.RegisterEventHandler("AbilityAMPs_ToggleDirtyBit", 					"OnToggleDirtyBit", self)
@@ -77,9 +80,14 @@ function Abilities:OnDocumentReady()
 	Apollo.RegisterEventHandler("LevelUpUnlock_Class_Ability",					"OnLevelUpUnlock_Class_Ability", self)
 	Apollo.RegisterEventHandler("DragDropSysEnd",								"OnDragDropEnd", self)
 	Apollo.RegisterEventHandler("UnitEnteredCombat",							"OnUnitEnteredCombat", self)
+	Apollo.RegisterEventHandler("KeyBindingKeyChanged",							"OnKeyBindingUpdated", self)
 
 	self.timerHideErrorContainer = ApolloTimer.Create(3.0, false, "OnErrorContainerHideBtn", self)
 	self.timerHideErrorContainer:Stop()
+end
+
+function Abilities:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("InterfaceMenu_AbilityBuilder")})
 end
 
 function Abilities:OnPathAbilityUpdated(nPathId)
@@ -89,14 +97,16 @@ end
 function Abilities:OnInterfaceMenuListHasLoaded()
 	local tData = {"ToggleAbilitiesWindow", "LimitedActionSetBuilder", "Icon_Windows32_UI_CRB_InterfaceMenu_Abilities"}
 	Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("InterfaceMenu_AbilityBuilder"), tData)
+	self.bLoadedToInterfaceMenuList = true
 
 	self:UpdateInterfaceMenuAlerts()
 end
 
 function Abilities:UpdateInterfaceMenuAlerts()
-	local nPoints = GameLib.GetAbilityPoints() + AbilityBook.GetAvailablePower()
-
-	Event_FireGenericEvent("InterfaceMenuList_AlertAddOn", Apollo.GetString("InterfaceMenu_AbilityBuilder"), {nPoints > 0, nil, nPoints})
+	if self.bLoadedToInterfaceMenuList then
+		local nPoints = GameLib.GetAbilityPoints() + AbilityBook.GetAvailablePower()
+		Event_FireGenericEvent("InterfaceMenuList_AlertAddOn", Apollo.GetString("InterfaceMenu_AbilityBuilder"), {nPoints > 0, nil, nPoints})
+	end
 end
 
 function Abilities:OnToggleAbilitiesWindow(bAtTrainer)
@@ -197,8 +207,6 @@ function Abilities:OnClose()
 end
 
 function Abilities:OnCloseFinal() -- Window Escape Key also routes here
-	self:UpdateInterfaceMenuAlerts()
-
 	if self.tWndRefs.wndMain then
 		local wndMain = self.tWndRefs.wndMain
 
@@ -249,16 +257,10 @@ function Abilities:OnSetActivateClick(wndHandler, wndControl)
 		return
 	elseif tResultInfo.eResult ~= ActionSetLib.CodeEnumLimitedActionSetResult.Ok then
 		self:HelperShowError(Apollo.GetString("AbilityBuilder_InvalidSetWarning"))
-
-		if tResultInfo.eResult == ActionSetLib.CodeEnumLimitedActionSetResult.MissingTag then
-			for idx, strTag in pairs(tResultInfo.tTags) do
-				self:HelperShowError(Apollo.GetString("AbilityBuilder_InvalidSetWarning"))
-			end
-		end
 		return
 	end
 
-	self:OnCloseFinal() -- TODO: Optional, way want to take this out
+	self:OnCloseFinal() -- TODO: Optional, may want to take this out
 end
 
 -----------------------------------------------------------------------------------------------
@@ -269,10 +271,12 @@ function Abilities:RedrawFromScratch() -- Draw Slots destroys everything (Level 
 	if not self.tWndRefs.wndMain or not self.tWndRefs.wndMain:IsValid() then
 		return
 	end
+	
+	self:UpdateKeyBindings()
 
 	local wndSlotItemContainer = self.tWndRefs.wndMain:FindChild("BGFrame:AbilityBuilderMain:BottomContainer:CurrentSetSlots:SlotItemContainer")
 	wndSlotItemContainer:DestroyChildren()
-	for idx = 1, 8 do
+	for idx = 1, self.knMaxAbilitySlots do
 		local wndCurrSlot = Apollo.LoadForm(self.xmlDoc, "SlotItem", wndSlotItemContainer, self)
 		local wndSlotBlocker = wndCurrSlot:FindChild("SlotLockedBlocker")
 		wndCurrSlot:SetData(idx)
@@ -281,9 +285,10 @@ function Abilities:RedrawFromScratch() -- Draw Slots destroys everything (Level 
 		wndCurrSlot:FindChild("SlotCloseBtn"):SetData(wndCurrSlot:FindChild("SlotDisplay"))
 		wndSlotBlocker:SetTooltip(Apollo.GetString("AbilityBuilder_SlotLockedTooltip"))
 		wndSlotBlocker:Show(ActionSetLib.IsSlotUnlocked(idx - 1) ~= ActionSetLib.CodeEnumLimitedActionSetResult.Ok) -- GOTCHA Lua indexs at 1, Code indexs at 0
-		wndCurrSlot:FindChild("SlotText"):SetText(GameLib.GetKeyBinding("LimitedActionSet"..idx) or idx) -- Reliance on exact string names
+		
+		self:DrawKeyBinding(wndCurrSlot, idx)
 	end
-	wndSlotItemContainer:ArrangeChildrenHorz(0)
+	wndSlotItemContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 	-- drawing from scratch, we should grab the current saved action bar set
 	local tActionSetIds = ActionSetLib.GetCurrentActionSet()
@@ -310,6 +315,39 @@ function Abilities:RedrawFromScratch() -- Draw Slots destroys everything (Level 
 	self:DrawSpellBook()
 end
 
+function Abilities:DrawKeyBinding(wndCurrSlot, nIndex)
+	local strIcon = nil
+	local strKeybinding = GameLib.GetKeyBinding("LimitedActionSet"..nIndex)
+	if strKeybinding and self.tKeyBindToIcon[strKeybinding] and self.tKeyBindToIcon[strKeybinding] then
+		strIcon = self.tKeyBindToIcon[strKeybinding].strIcon
+	end
+	
+	local wndCurrSlotContainer = wndCurrSlot:FindChild("Container")
+	local wndCurrSlotTextOnly = wndCurrSlot:FindChild("SlotTextOnly")
+	local wndCurrSlotIconOnly = wndCurrSlot:FindChild("IconOnly")
+	if strIcon == nil then
+		wndCurrSlotTextOnly:SetText(strKeybinding or nIndex)
+		wndCurrSlotTextOnly:Show(true)
+		wndCurrSlotIconOnly:Show(false)
+		wndCurrSlotContainer:Show(false)
+	else
+		local bHasModifier = self.tKeyBindToIcon[strKeybinding].strInputModifier ~= nil
+		if bHasModifier then
+			local wndCurrSlotText = wndCurrSlotContainer:FindChild("SlotText")
+			local wndCurrSlotIcon = wndCurrSlotContainer:FindChild("Icon")
+			
+			wndCurrSlotText:SetText(self.tKeyBindToIcon[strKeybinding].strInputModifier)
+			wndCurrSlotIcon:SetSprite(strIcon)
+		else
+			wndCurrSlotIconOnly:SetSprite(strIcon)
+		end
+		
+		wndCurrSlotContainer:Show(bHasModifier)
+		wndCurrSlotIconOnly:Show(not bHasModifier)
+		wndCurrSlotTextOnly:Show(false)
+	end
+end
+
 function Abilities:OnAbilitiesTabCheck(wndHandler, wndControl)
 	Event_FireGenericEvent("GenericEvent_CloseEldanAugmentation")
 	self.tWndRefs.wndMain:FindChild("BGPointsContainer:AbilityHighlight"):Show(true)
@@ -320,6 +358,7 @@ function Abilities:OnAmpTabCheck(wndHandler, wndControl)
 	Event_FireGenericEvent("GenericEvent_OpenEldanAugmentation", self.tWndRefs.wndMain:FindChild("BGFrame:AMPBuilderMain"))
 	self.tWndRefs.wndMain:FindChild("BGPointsContainer:AbilityHighlight"):Show(false)
 	self.tWndRefs.wndMain:FindChild("BGPointsContainer:AMPHighlight"):Show(true)
+	Event_ShowTutorial(GameLib.CodeEnumTutorial.AMPs)
 end
 
 function Abilities:DrawSpellBook()
@@ -425,7 +464,7 @@ function Abilities:DrawSpellBook()
 		self:DrawALockedSpell(tHighestTier, nPlayerLevel)
 	end
 
-	wndSpellbook:ArrangeChildrenVert(0)
+	wndSpellbook:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	wndSpellbook:SetVScrollPos(nVScrollPos)
 
 	-- Set Title
@@ -441,7 +480,6 @@ function Abilities:DrawALockedSpell(tHighestTier, nPlayerLevel)
 
 	-- Can assume not Active
 	local strSubText = ""
-	local bPurchaseThis = false
 	local nAbilityLevelReq = tHighestTier.nLevelReq or 0
 	if tHighestTier.bAMPUnlocked then
 		strSubText = Apollo.GetString("AbilityBuilder_AMPUnlock")
@@ -449,22 +487,8 @@ function Abilities:DrawALockedSpell(tHighestTier, nPlayerLevel)
 		strSubText = String_GetWeaselString(Apollo.GetString("AbilityBuilder_LevelUnlock"), nAbilityLevelReq)
 	else
 		strSubText = Apollo.GetString("AbilityBuilder_PurchaseUnlock")
-		bPurchaseThis = true
 	end
 	wndSpellbookItem:FindChild("SpellbookItemBG:SpellbookItemSubtext"):SetText(strSubText)
-
-	-- Buy
-	if bPurchaseThis then
-		local bCanAfford = tHighestTier.nTrainingCost <= GameLib.GetPlayerCurrency():GetAmount()
-		local unitPlayer = GameLib.GetPlayerUnit()
-
-		wndSpellbookItem:FindChild("BuyAbilityCost"):Show(true)
-		wndSpellbookItem:FindChild("BuyAbilityCost"):SetAmount(tHighestTier.nTrainingCost, true)
-		wndSpellbookItem:FindChild("BuyAbilityCost"):SetTextColor(bCanAfford and ApolloColor.new("white") or ApolloColor.new("xkcdReddish"))
-		wndSpellbookItem:FindChild("BuyAbilityBtn"):Show(true)
-		wndSpellbookItem:FindChild("BuyAbilityBtn"):Enable(bCanAfford and unitPlayer and not unitPlayer:IsInCombat())
-		wndSpellbookItem:FindChild("BuyAbilityBtn"):SetData(tHighestTier.nId) -- For OnBuyAbilityBtn
-	end
 end
 
 function Abilities:OnUnitEnteredCombat(unit, bIsInCombat)
@@ -473,12 +497,6 @@ function Abilities:OnUnitEnteredCombat(unit, bIsInCombat)
 	end
 
 	self:DrawSpellBook()
-end
-
-function Abilities:OnBuyAbilityBtn(wndHandler, wndControl)
-	AbilityBook.ActivateSpell(wndHandler:GetData(), true)
-	Sound.Play(Sound.PlayUIUnlockAbility)
-	--self:RedrawFromScratch()
 end
 
 function Abilities:DrawAnAddSpell(tBaseAbility, tHighestTier)
@@ -562,6 +580,7 @@ function Abilities:OnSpellbookProgPieceToggle(wndHandler, wndControl) -- Spellbo
 	self.bDirtyBit = true
 	AbilityBook.UpdateSpellTier(wndHandler:GetData().nId, wndHandler:GetData().nTier)
 	self:DrawSpellBook()
+	Event_ShowTutorial(GameLib.CodeEnumTutorial.LASSave)
 end
 
 function Abilities:OnSpellbookAbilityPointsReset(wndHandler, wndControl) -- SpellbookAbilityPointsReset
@@ -648,8 +667,10 @@ function Abilities:OnStartDragSkillFromSlots(wndHandler, wndControl)
 	self:DrawSpellBook()
 end
 
-function Abilities:OnQueryDragSkillOverSlotItem(wndHandler, wndControl)
-	return Apollo.DragDropQueryResult.Accept -- This event is on the Slot (not the Spellbook) so always accept
+function Abilities:OnQueryDragSkillOverSlotItem(wndHandler, wndControl, nPointX, nPointY, wndSource, strType, nValue)
+	if strType == "DDSpellbookItem" then
+		return Apollo.DragDropQueryResult.Accept -- This event is on the Slot (not the Spellbook) so always accept
+	end
 end
 
 function Abilities:OnEndDragSkillOntoSlotItem(wndHandler, wndControl)
@@ -707,6 +728,7 @@ end
 function Abilities:OnLeaveConfirmationYes()
 	self.tWndRefs.wndMain:FindChild("LeaveConfirmationContainer"):Show(false)
 	self:OnCloseFinal()
+	self:UpdateInterfaceMenuAlerts()
 end
 
 -----------------------------------------------------------------------------------------------
@@ -763,7 +785,7 @@ end
 -- Level Up Unlock System
 -----------------------------------------------------------------------------------------------
 
-function Abilities:OnLevelUpUnlock_TierPointSystem(splAbility)
+function Abilities:OnLevelUpUnlock_TierPointSystem(eUnlockType, nUnlockId, splAbility)
 	self:BuildWindow()
 
 	local wndAbilityBuilderTabBtn = self.tWndRefs.wndMain:FindChild("BGFrame:BGTopContainer:AbilityBuilderTabBtn")
@@ -802,8 +824,69 @@ function Abilities:OnLevelUpUnlock_AMPSystem()
 	self.tWndRefs.wndMain:FindChild("BGFrame:BGTopContainer:AbilityBuilderTabBtn"):SetCheck(false)
 end
 
-function Abilities:OnLevelUpUnlock_Class_Ability(splAbility)
-	self:OnLevelUpUnlock_TierPointSystem(splAbility)
+function Abilities:OnLevelUpUnlock_Class_Ability(eUnlockType, nUnlockId, splAbility)
+	self:OnLevelUpUnlock_TierPointSystem(eUnlockType, nUnlockId, splAbility)
+end
+
+---------------------------------------------------------------------------------------------------
+-- Events
+---------------------------------------------------------------------------------------------------
+
+function Abilities:OnKeyBindingUpdated(strKeybind)
+	if not self.tWndRefs.wndMain or not self.tWndRefs.wndMain:IsValid() then
+		return
+	end
+
+	self:UpdateKeyBindings()
+	
+	local wndSlotItemContainer = self.tWndRefs.wndMain:FindChild("BGFrame:AbilityBuilderMain:BottomContainer:CurrentSetSlots:SlotItemContainer")
+	local tChildren = wndSlotItemContainer:GetChildren()
+	for idx, wndCurrSlot in ipairs(tChildren) do
+		self:DrawKeyBinding(wndCurrSlot, idx)
+	end
+end
+
+function Abilities:UpdateKeyBindings()
+	local tKeyBindings = GameLib.GetKeyBindings()
+	
+	self.tKeyBindToIcon = { }
+	for idx, tKeybindInfo in ipairs(tKeyBindings) do
+		local tInput = tKeybindInfo.arInputs[1] -- Only need primary column because MouseLook is never active when window is open
+		if tInput.eDevice == GameLib.CodeEnumInputDevice.Mouse then
+			local strInputModifier = nil
+			if tInput.eModifier == GameLib.CodeEnumInputModifier.Shift then
+				strInputModifier = Apollo.GetString("Keybinding_ShiftMod_OneLetter").."-"
+			elseif tInput.eModifier == GameLib.CodeEnumInputModifier.Control then
+				strInputModifier = Apollo.GetString("Keybinding_CtrlMod_OneLetter").."-"
+			elseif tInput.eModifier == GameLib.CodeEnumInputModifier.Alt then
+				strInputModifier = Apollo.GetString("Keybinding_AltMod_OneLetter").."-"
+			end
+			
+			local strKeybinding = GameLib.GetKeyBinding(tKeybindInfo.strAction)
+			if tInput.nCode == GameLib.CodeEnumInputMouse.Left then
+				self.tKeyBindToIcon[strKeybinding] = { }
+				self.tKeyBindToIcon[strKeybinding].strIcon = "BK3:UI_BK3_MouseKey_BottomBar_Izq"
+				self.tKeyBindToIcon[strKeybinding].strInputModifier = strInputModifier
+			elseif tInput.nCode == GameLib.CodeEnumInputMouse.Right then
+				self.tKeyBindToIcon[strKeybinding] = { }
+
+				self.tKeyBindToIcon[strKeybinding].strIcon = "BK3:UI_BK3_MouseKey_BottomBar_Rght"
+				self.tKeyBindToIcon[strKeybinding].strInputModifier = strInputModifier
+			elseif tInput.nCode == GameLib.CodeEnumInputMouse.Middle then
+				self.tKeyBindToIcon[strKeybinding] = { }
+				self.tKeyBindToIcon[strKeybinding].strIcon = "BK3:UI_BK3_MouseKey_BottomBar_Scrll"
+				self.tKeyBindToIcon[strKeybinding].strInputModifier = strInputModifier
+			elseif tInput.nCode == GameLib.CodeEnumInputMouse.WheelUp then
+				self.tKeyBindToIcon[strKeybinding] = { }
+				self.tKeyBindToIcon[strKeybinding].strIcon = "BK3:UI_BK3_MouseKey_BottomBar_ScrUp"
+				self.tKeyBindToIcon[strKeybinding].strInputModifier = strInputModifier
+			elseif tInput.nCode == GameLib.CodeEnumInputMouse.WheelDown then
+				self.tKeyBindToIcon[strKeybinding] = { }
+				self.tKeyBindToIcon[strKeybinding].strIcon = "BK3:UI_BK3_MouseKey_BottomBar_ScrDwn"
+				self.tKeyBindToIcon[strKeybinding].strInputModifier = strInputModifier
+			end
+		end
+	end
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -811,12 +894,25 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function Abilities:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
-	if eAnchor ~= GameLib.CodeEnumTutorialAnchor.Abilities then return end
-	if not self.tWndRefs.wndMain or not self.tWndRefs.wndMain:IsValid() then return end
-	local tRect = {}
-	tRect.l, tRect.t, tRect.r, tRect.b = self.tWndRefs.wndMain:GetRect()
-
-	Event_FireGenericEvent("Tutorial_RequestUIAnchorResponse", eAnchor, idTutorial, strPopupText, tRect)
+	local tAnchors =
+	{
+		[GameLib.CodeEnumTutorialAnchor.Abilities] 				= true,
+		[GameLib.CodeEnumTutorialAnchor.LASAmpTabButton] 		= true,
+	}
+	
+	if not tAnchors[eAnchor] or not self.tWndRefs.wndMain then 
+		return 
+	end
+	
+	local tAnchorMapping =
+	{
+		[GameLib.CodeEnumTutorialAnchor.Abilities] 				= self.tWndRefs.wndMain:FindChild("BGFrame:BGTopContainer:AbilityBuilderTabBtn"),
+		[GameLib.CodeEnumTutorialAnchor.LASAmpTabButton] 		= self.tWndRefs.wndMain:FindChild("BGFrame:BGTopContainer:AMPTabBtn"),
+	}
+	
+	if tAnchorMapping[eAnchor] then
+		Event_FireGenericEvent("Tutorial_ShowCallout", eAnchor, idTutorial, strPopupText, tAnchorMapping[eAnchor])
+	end
 end
 
 -----------------------------------------------------------------------------------------------
@@ -824,6 +920,8 @@ end
 -----------------------------------------------------------------------------------------------
 
 function Abilities:HelperRedrawPoints()
+	self:UpdateInterfaceMenuAlerts()
+
 	if not self.tWndRefs.wndMain or not self.tWndRefs.wndMain:IsValid() then
 		return
 	end
@@ -834,8 +932,6 @@ function Abilities:HelperRedrawPoints()
 	wndBGPointsContainer:FindChild("AMPPoints:AMPPointsTextSmall"):SetText(String_GetWeaselString(Apollo.GetString("AbilitiesBuilder_AvailablePoints"), nTotalAMP))
 	wndBGPointsContainer:FindChild("AMPPoints:AMPPointsTextBig"):SetText(nAvailableAMP)
 	wndBGPointsContainer:FindChild("AMPPoints:AMPPointsTextBig"):SetTextColor(nAvailableAMP == 0 and ApolloColor.new("ff56b381") or ApolloColor.new("UI_WindowTitleYellow")) -- TODO HEX
-
-	self:UpdateInterfaceMenuAlerts()
 end
 
 function Abilities:HelperAddSlot(nAbilityId)
@@ -871,6 +967,8 @@ function Abilities:HelperAddSlot(nAbilityId)
 			wndMaxDisplay:SetAbilityId(nAbilityId)
 		end
 	end
+	Event_ShowTutorial(GameLib.CodeEnumTutorial.LASSave)
+	Event_ShowTutorial(GameLib.CodeEnumTutorial.AMPTab)
 end
 
 function Abilities:HelperDeleteSlot(wndSlotDisplay, bSkipRedrawing)
@@ -880,6 +978,7 @@ function Abilities:HelperDeleteSlot(wndSlotDisplay, bSkipRedrawing)
 	if not bSkipRedrawing then
 		self:DrawSpellBook()
 	end
+	Event_ShowTutorial(GameLib.CodeEnumTutorial.LASSave)
 end
 
 function Abilities:HelperFindNextTier(tCurrAbility)

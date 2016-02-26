@@ -65,13 +65,19 @@ function ClueTracker:OnLoad()
 end
 
 function ClueTracker:OnDocumentReady()
-    Apollo.RegisterSlashCommand("cluetracker", "Initialize", self)
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
+
     Apollo.RegisterEventHandler("ShowClueUI", "Initialize", self) -- Disabled for now, wait for PopulateClueUI to show
 	Apollo.RegisterEventHandler("HideClueUI", "OnHide", self)
 	Apollo.RegisterEventHandler("PopulateClueUI", "OnPopulate", self)
 	
 	self.bIsShown = false
 	self.tClues = {}
+end
+
+function ClueTracker:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("ClueTracker_Clues")})
 end
 
 function ClueTracker:Initialize()
@@ -107,7 +113,7 @@ function ClueTracker:OnPopulate(nWhich, strText)
 	nTextHeight = math.max(27, nTextHeight) -- Minimum height for the text
 	wndCurr:SetAnchorOffsets(l,t,r,t + nTextHeight + 29) -- +2 is for lower g height and padding
 
-	self.wndMain:FindChild("ClueFrameScroll"):ArrangeChildrenVert(0)
+	self.wndMain:FindChild("ClueFrameScroll"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 -----------------------------------------------------------------------------------------------

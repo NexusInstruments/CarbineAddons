@@ -103,7 +103,7 @@ function Protogames:OnProtogames_EventTally(nMsgId, nPoints)
 	table.insert(self.tTallyTimers, timerTallyCleanup)
 	table.insert(self.tTallyMessages, wndMessage)
 	
-	self.wndTallyContainer:ArrangeChildrenVert(0)
+	self.wndTallyContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function Protogames:OnTallyCleanUpTimer()
@@ -115,7 +115,7 @@ function Protogames:OnTallyCleanUpTimer()
 	table.remove(self.tTallyTimers, 1)
 	table.remove(self.tTallyMessages, 1)
 	
-	self.wndTallyContainer:ArrangeChildrenVert(0)
+	self.wndTallyContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function Protogames:OnProtogames_PersonalPoint(nPoints)

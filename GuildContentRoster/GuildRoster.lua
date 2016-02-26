@@ -90,6 +90,8 @@ function GuildRoster:OnDocumentReady()
 	Apollo.RegisterEventHandler("GuildRoster",                      "OnGuildRoster", self)
 	Apollo.RegisterEventHandler("GuildMemberChange",                "OnGuildMemberChange", self)  -- General purpose update method
 	Apollo.RegisterEventHandler("GuildRankChange",					"OnGuildRankChange", self)
+	Apollo.RegisterEventHandler("CharacterEntitlementUpdate",		"OnEntitlementUpdate", self)
+	Apollo.RegisterEventHandler("AccountEntitlementUpdate",			"OnEntitlementUpdate", self)
 end
 
 function GuildRoster:Initialize(wndParent)
@@ -134,8 +136,14 @@ function GuildRoster:Initialize(wndParent)
 	end
 	wndPermissionContainer:ArrangeChildrenVert()
 	
+	local wndSettings = self.tWndRefs.wndEditRankPopout:FindChild("RankSettingsEntry")
+	wndSettings:FindChild("OptionString"):SetMaxTextLength(GameLib.GetTextTypeMaxLength(GameLib.CodeEnumUserText.GuildRankName))
+	
 	wndMain:SetData(guildOwner)
 	wndMain:FindChild("EditNotesEditbox"):SetMaxTextLength(GameLib.GetTextTypeMaxLength(GameLib.CodeEnumUserText.GuildMemberNote))
+	self.bHasFullGuildAccess = (AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0 or AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.FullGuildsAccess) > 0)
+	local tEntitlementInfo = { nEntitlementId = AccountItemLib.CodeEnumEntitlement.Free }
+	self:OnEntitlementUpdate(tEntitlementInfo)
 end
 
 function GuildRoster:OnToggleRoster(wndParent)
@@ -347,15 +355,16 @@ function GuildRoster:OnRosterGridItemClick(wndControl, wndHandler, iRow, iCol, e
 	if wndGrid:GetData() == tRowData then
 		tRowData = nil
 	end
-	
+
 	self.strSelectedName = tRowData and tRowData.strName or nil
 	self.nSelectedIndex = tRowData and tRowData.nRowIndex or 0
 	wndGrid:SetData(tRowData)
-	if tRowData then
-		self:ResetRosterMemberButtons()
-	else
+
+	if not tRowData then
 		wndGrid:SetCurrentRow(self.nSelectedIndex)
 	end
+
+	self:ResetRosterMemberButtons()
 end
 
 function GuildRoster:HelperSelectRow(tRowData)
@@ -504,9 +513,9 @@ function GuildRoster:HelperValidateAndRefreshRankSettingsWindow()
 	if wndLimit ~= nil then
 		local nNameLength = GetUnicodeStringLength(strName or "")
 		
-		wndLimit:SetText(String_GetWeaselString(Apollo.GetString("CRB_Progress"), nNameLength, GameLib.GetTextTypeMaxLength(GameLib.CodeEnumUserText.GuildName)))
+		wndLimit:SetText(String_GetWeaselString(Apollo.GetString("CRB_Progress"), nNameLength, GameLib.GetTextTypeMaxLength(GameLib.CodeEnumUserText.GuildRankName)))
 		
-		if nNameLength < 1 or nNameLength > GameLib.GetTextTypeMaxLength(GameLib.CodeEnumUserText.GuildName) then
+		if nNameLength < 1 then
 			wndLimit:SetTextColor(crGuildNameLengthError)
 		else
 			wndLimit:SetTextColor(crGuildNameLengthGood)
@@ -597,21 +606,22 @@ function GuildRoster:ResetRosterMemberButtons()
 	local eMyRank = guildCurr:GetMyRank()
 	if guildCurr and eMyRank then
 		local wndRosterGrid = self.tWndRefs.wndMain:FindChild("RosterGrid")
-	
+		local tGridData = wndRosterGrid:GetData()
+
 		local tMyRankPermissions = guildCurr:GetRanks()[eMyRank]
-		local bSomeRowIsPicked = wndRosterGrid:GetCurrentRow()
-		local bTargetIsUnderMyRank = bSomeRowIsPicked and eMyRank < wndRosterGrid:GetData().nRank
+		local bSomeRowIsPicked = wndRosterGrid:GetCurrentRow() ~= nil
+		local bTargetIsUnderMyRank = bSomeRowIsPicked and eMyRank < tGridData.nRank
 
 		self.tWndRefs.wndRosterOptionBtnRemove:Enable(bSomeRowIsPicked and bTargetIsUnderMyRank)
 		self.tWndRefs.wndRosterOptionBtnPromote:Enable(bSomeRowIsPicked and bTargetIsUnderMyRank)
-		self.tWndRefs.wndRosterOptionBtnDemote:Enable(bSomeRowIsPicked and bTargetIsUnderMyRank and wndRosterGrid:GetData().nRank ~= 10) -- Can't go below 10
+		self.tWndRefs.wndRosterOptionBtnDemote:Enable(bSomeRowIsPicked and bTargetIsUnderMyRank and tGridData.nRank ~= 10) -- Can't go below 10
 
-		self.tWndRefs.wndRosterOptionBtnAdd:Show(tMyRankPermissions and tMyRankPermissions.bInvite)
+		self.tWndRefs.wndRosterOptionBtnAdd:Show(tMyRankPermissions and tMyRankPermissions.bInvite and self.bHasFullGuildAccess)
 		self.tWndRefs.wndRosterOptionBtnRemove:Show(tMyRankPermissions and tMyRankPermissions.bKick)
 		self.tWndRefs.wndRosterOptionBtnDemote:Show(tMyRankPermissions and tMyRankPermissions.bChangeMemberRank)
 		self.tWndRefs.wndRosterOptionBtnPromote:Show(tMyRankPermissions and tMyRankPermissions.bChangeMemberRank)
 
-		if tMyRankPermissions.bDisband then
+		if eMyRank == 1 then
 			self.tWndRefs.wndRosterOptionBtnLeaveFlyout:SetText(Apollo.GetString("GuildRoster_DisbandGuild"))
 		else
 			self.tWndRefs.wndRosterOptionBtnLeaveFlyout:SetText(Apollo.GetString("GuildRoster_LeaveGuild"))
@@ -641,13 +651,23 @@ function GuildRoster:OnRosterAddMemberClick(wndHandler, wndControl)
 end
 
 function GuildRoster:OnRosterRemoveMemberClick(wndHandler, wndControl)
-	self.tWndRefs.wndMain:FindChild("RemoveMemberName"):SetText(self.tWndRefs.wndMain:FindChild("RosterGrid"):GetData().strName)
+	local guildCurr = self.tWndRefs.wndMain:GetData()
+	local tMember = self.tWndRefs.wndMain:FindChild("RosterGrid"):GetData()
+	if not tMember then
+		return
+	end
+	
+	self.tWndRefs.wndMain:FindChild("RemoveMemberName"):SetText(tMember.strName)
 end
 
 function GuildRoster:OnRosterPromoteMemberClick(wndHandler, wndControl) -- wndHandler is "RosterOptionBtnPromote"
 	-- This one is different, it'll fire right away unless promoting to leader
 	local guildCurr = self.tWndRefs.wndMain:GetData()
 	local tMember = self.tWndRefs.wndMain:FindChild("RosterGrid"):GetData()
+	if not tMember then
+		return
+	end
+	
 	if tMember.nRank == 2 then
 		self.tWndRefs.wndMain:FindChild("PromoteMemberContainer"):Show(true)
 		self.tWndRefs.wndRosterOptionBtnPromote:SetCheck(true)
@@ -699,6 +719,10 @@ end
 function GuildRoster:OnRosterPromoteMemberYesClick(wndHandler, wndControl) -- wndHandler is 'PromoteMemberYesBtn'
 	local guildCurr = self.tWndRefs.wndMain:GetData()
 	local tMember = self.tWndRefs.wndMain:FindChild("RosterGrid"):GetData()
+	if not tMember then
+		return
+	end
+	
 	guildCurr:PromoteMaster(tMember.strName)
 	self:OnRosterPromoteMemberCloseBtn()
 end
@@ -706,6 +730,10 @@ end
 function GuildRoster:OnRosterDemoteMemberYesClick(wndHandler, wndControl) -- wndHandler is 'RosterOptionBtnDemote' data should be guildCurr
 	local guildCurr = self.tWndRefs.wndMain:GetData()
 	local tMember = self.tWndRefs.wndMain:FindChild("RosterGrid"):GetData()
+	if not tMember then
+		return
+	end
+	
 	guildCurr:Demote(tMember.strName)
 	-- Note: Demote has no pop out
 end
@@ -713,6 +741,10 @@ end
 function GuildRoster:OnRosterRemoveMemberYesClick(wndHandler, wndControl) -- wndHandler is 'RemoveMemberYesBtn'
 	local guildCurr = self.tWndRefs.wndMain:GetData()
 	local tMember = self.tWndRefs.wndMain:FindChild("RosterGrid"):GetData()
+	if not tMember then
+		return
+	end
+	
 	guildCurr:Kick(tMember.strName)
 	self:OnRosterRemoveMemberCloseBtn()
 end
@@ -720,7 +752,7 @@ end
 function GuildRoster:OnRosterLeaveYesClick(wndHandler, wndControl) -- wndHandler is "LeaveBtnYesBtn"
 	local guildCurr = self.tWndRefs.wndMain:GetData()
 	if guildCurr then
-		if guildCurr:GetRanks()[guildCurr:GetMyRank()].bDisband then
+		if guildCurr:GetMyRank() == 1 then
 			guildCurr:Disband()
 		else
 			guildCurr:Leave()
@@ -840,6 +872,16 @@ function GuildRoster:HelperConvertToTime(fDays)
 	end
 
 	return String_GetWeaselString(Apollo.GetString("CRB_TimeOffline"), tTimeInfo)
+end
+
+function GuildRoster:OnEntitlementUpdate(tEntitlementInfo)
+	if not self.tWndRefs.wndMain then
+		return
+	end
+	if tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.Signature or tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.Free or tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.FullGuildsAccess then
+		self.bHasFullGuildAccess = (AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0 or AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.FullGuildsAccess) > 0)
+		self.tWndRefs.wndRosterOptionBtnAdd:Show(self.bHasFullGuildAccess)
+	end
 end
 
 local GuildRosterInst = GuildRoster:new()

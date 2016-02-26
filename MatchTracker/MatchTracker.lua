@@ -28,6 +28,8 @@ local ktRavelIdToCTFWindowName =
 	[LuaEnumTeam.Stolen] 	= "CTFStolenFlag",
 }
 
+local nHoldLineObjective = 3
+
 local ktHoldLineObjectiveCountToName =
 {
 	[0] = Apollo.GetString("MatchTracker_CrucibleOfBlood"),
@@ -35,28 +37,12 @@ local ktHoldLineObjectiveCountToName =
 	[2] = Apollo.GetString("MatchTracker_CourtOfJudges"),
 }
 
-local ktHoldLinePoint1 =
-{
-	[0] = {"ClientSprites:Icon_ItemMisc_UI_Item_Crafting_Special_1", Apollo.GetString("MatchTracker_CrucibleOfBlood"), 	ApolloColor.new("fffff97f")},
-	[1] = {"ClientSprites:Icon_ItemMisc_UI_Item_Crafting_Special_3", Apollo.GetString("MatchTracker_Catpured"), 		ApolloColor.new("xkcdReddish")},
-	[2] = {"ClientSprites:Icon_ItemMisc_UI_Item_Crafting_Special_3", Apollo.GetString("MatchTracker_Catpured"), 		ApolloColor.new("xkcdReddish")},
-	[3] = {"ClientSprites:Icon_ItemMisc_UI_Item_Crafting_Special_3", Apollo.GetString("MatchTracker_Catpured"), 		ApolloColor.new("xkcdReddish")},
-}
 
-local ktHoldLinePoint2 =
+local ktHoldLineCaptureStatus =
 {
-	[0] = {"ClientSprites:Icon_ItemMisc_UI_Item_Crafting_Special_2", Apollo.GetString("MatchTracker_ChamberOfGreatDark"), 	ApolloColor.new("UI_TextHoloTitle")},
-	[1] = {"ClientSprites:Icon_ItemMisc_UI_Item_Crafting_Special_1", Apollo.GetString("MatchTracker_ChamberOfGreatDark"), 	ApolloColor.new("fffff97f")},
-	[2] = {"ClientSprites:Icon_ItemMisc_UI_Item_Crafting_Special_3", Apollo.GetString("MatchTracker_Catpured"), 			ApolloColor.new("xkcdReddish")},
-	[3] = {"ClientSprites:Icon_ItemMisc_UI_Item_Crafting_Special_3", Apollo.GetString("MatchTracker_Catpured"), 			ApolloColor.new("xkcdReddish")},
-}
-
-local ktHoldLinePoint3 =
-{
-	[0] = {"ClientSprites:Icon_ItemMisc_UI_Item_Crafting_Special_2", Apollo.GetString("MatchTracker_CourtOfJudges"), ApolloColor.new("UI_TextHoloTitle")},
-	[1] = {"ClientSprites:Icon_ItemMisc_UI_Item_Crafting_Special_2", Apollo.GetString("MatchTracker_CourtOfJudges"), ApolloColor.new("UI_TextHoloTitle")},
-	[2] = {"ClientSprites:Icon_ItemMisc_UI_Item_Crafting_Special_1", Apollo.GetString("MatchTracker_CourtOfJudges"), ApolloColor.new("fffff97f")},
-	[3] = {"ClientSprites:Icon_ItemMisc_UI_Item_Crafting_Special_3", Apollo.GetString("MatchTracker_Catpured"), 	 ApolloColor.new("xkcdReddish")},
+	[0] = { htlStatus = Apollo.GetString("CRB_Captured"), spriteName = "ClientSprites:Icon_ItemMisc_UI_Item_Crafting_Special_3" },
+	[1] = { htlStatus = Apollo.GetString("ZoneStateContested"), spriteName = "ClientSprites:Icon_ItemMisc_UI_Item_Crafting_Special_1"},
+	[2] = { htlStatus = Apollo.GetString("MatchTracker_Gated"), spriteName = "ClientSprites:Icon_ItemMisc_UI_Item_Crafting_Special_1b"}
 }
 
 local ktPvPEventTypes =
@@ -213,26 +199,15 @@ function MatchTracker:ResetTracker()
 	Apollo.RemoveEventHandler("OneSecMatchTimer", self)
 	Apollo.RegisterTimerHandler("OneSecMatchTimer", 					"OnOneSecMatchTimer", self)
 	
-	Apollo.RemoveEventHandler("PVPMatchFinished",			self)
-	Apollo.RemoveEventHandler("PVPMatchStateUpdated",		self)
-	Apollo.RemoveEventHandler("PVPDeathmatchPoolUpdated",	self)
 	Apollo.RegisterEventHandler("PVPMatchFinished", 					"OnPVPMatchFinished", self)
 	Apollo.RegisterEventHandler("PVPMatchStateUpdated", 				"OnOneSecMatchTimer", self) -- For Immediate updating
 	Apollo.RegisterEventHandler("PVPDeathmatchPoolUpdated", 			"OnOneSecMatchTimer", self) -- For Immediate updating
 	
 	Apollo.RegisterEventHandler("PublicEventEnd",						"OnPublicEventEnd", self)
 
-	-- CTF Events
-	Apollo.RemoveEventHandler("PvP_CTF_FlagSpawned",				self)
-	Apollo.RemoveEventHandler("PvP_CTF_NeutralDespawned",				self)
-	Apollo.RemoveEventHandler("PvP_CTF_FlagDropped",				self)
-	Apollo.RemoveEventHandler("PvP_CTF_FlagRecovered",				self)
-	Apollo.RemoveEventHandler("PvP_CTF_FlagCollected",				self)
-	Apollo.RemoveEventHandler("PvP_CTF_FlagStolenDroppedCollected",	self)
-	Apollo.RemoveEventHandler("PvP_CTF_FlagStolen",					self)
-	Apollo.RemoveEventHandler("PvP_CTF_FlagSocketed",				self)
+	-- CTF Events	
 	Apollo.RegisterEventHandler("PvP_CTF_FlagSpawned", 					"OnCTFFlagSpawned", self)
-	Apollo.RegisterEventHandler("PvP_CTF_NeutralDespawned", 				"OnCTFFlagDespawned", self)
+	Apollo.RegisterEventHandler("PvP_CTF_NeutralDespawned", 			"OnCTFFlagDespawned", self)
 	Apollo.RegisterEventHandler("PvP_CTF_FlagDropped", 					"OnCTFFlagDropped", self)
 	Apollo.RegisterEventHandler("PvP_CTF_FlagRecovered", 				"OnCTFFlagRecovered", self)
 	Apollo.RegisterEventHandler("PvP_CTF_FlagCollected", 				"OnCTFFlagCollected", self)
@@ -241,10 +216,6 @@ function MatchTracker:ResetTracker()
 	Apollo.RegisterEventHandler("PvP_CTF_FlagSocketed", 				"OnCTFFlagSocketed", self)
 
 	-- Hold the Line
-	Apollo.RemoveEventHandler("PvP_HTL_TimeToBeat", 		self)
-	Apollo.RemoveEventHandler("PvP_HTL_Respawn", 			self)
-	Apollo.RemoveEventHandler("PvP_HTL_CaptureModifier", 	self)
-	Apollo.RemoveEventHandler("PvP_HTL_PrepPhase",			self)
 	Apollo.RegisterEventHandler("PvP_HTL_TimeToBeat", 					"OnHTLTimeToBeat", self)
 	Apollo.RegisterEventHandler("PvP_HTL_Respawn", 						"OnHTLRespawn", self)
 	Apollo.RegisterEventHandler("PvP_HTL_CaptureModifier", 				"OnHTLCaptureMod", self)
@@ -305,6 +276,22 @@ function MatchTracker:OnMatchExited()
 	
 	self.peMatch = nil
 	self.tZombieEvent = nil
+	
+	Apollo.RemoveEventHandler("PVPMatchFinished",					self)
+	Apollo.RemoveEventHandler("PVPMatchStateUpdated",				self)
+	Apollo.RemoveEventHandler("PVPDeathmatchPoolUpdated",			self)
+	Apollo.RemoveEventHandler("PvP_CTF_FlagSpawned",				self)
+	Apollo.RemoveEventHandler("PvP_CTF_NeutralDespawned",			self)
+	Apollo.RemoveEventHandler("PvP_CTF_FlagDropped",				self)
+	Apollo.RemoveEventHandler("PvP_CTF_FlagRecovered",				self)
+	Apollo.RemoveEventHandler("PvP_CTF_FlagCollected",				self)
+	Apollo.RemoveEventHandler("PvP_CTF_FlagStolenDroppedCollected",	self)
+	Apollo.RemoveEventHandler("PvP_CTF_FlagStolen",					self)
+	Apollo.RemoveEventHandler("PvP_CTF_FlagSocketed",				self)
+	Apollo.RemoveEventHandler("PvP_HTL_TimeToBeat", 				self)
+	Apollo.RemoveEventHandler("PvP_HTL_Respawn", 					self)
+	Apollo.RemoveEventHandler("PvP_HTL_CaptureModifier", 			self)
+	Apollo.RemoveEventHandler("PvP_HTL_PrepPhase",					self)
 end
 
 function MatchTracker:OnMatchPvpInactivityAlert(nRemainingTimeMs)
@@ -344,7 +331,6 @@ function MatchTracker:OnOneSecMatchTimer()
 	
 	self.tWndRefs.wndMatchTracker:Show(true)
 	self.tWndRefs.wndMatchTracker:FindChild("TimerLabel"):SetText(self:HelperTimeString(tMatchState.fTimeRemaining))
-	self.tWndRefs.wndMatchTracker:FindChild("MessageBlockerFrame"):Show(tMatchState.eState == MatchingGame.PVPGameState.Finished or tMatchState.eState == MatchingGame.PVPGameState.Preparation)
 	
 	if not self.peMatch then
 		for key, peCurrent in pairs(PublicEvent.GetActiveEvents()) do
@@ -372,7 +358,6 @@ function MatchTracker:OnOneSecMatchTimer()
 		return
 	elseif tMatchState.eState == MatchingGame.PVPGameState.Finished then
 		self.tWndRefs.wndMatchTracker:FindChild("BGArt"):Show(true)
-		return
 	end
 
 	-- Look through events. ASSUME: Only one PvP event at a time
@@ -426,7 +411,7 @@ function MatchTracker:OnPVPMatchFinished(eWinner, eReason)
 		strMessage = Apollo.GetString("MatchTracker_Defeat")
 	end
 
-	self.tWndRefs.wndMatchTracker:FindChild("MessageBlockerFrame"):Show(true)
+	self.tWndRefs.wndMatchTracker:FindChild("MessageBlockerFrame"):Invoke()
 	self.tWndRefs.wndMatchTracker:FindChild("BGArt"):Show(true)
 	self.tWndRefs.wndMatchTracker:FindChild("TimerLabel"):SetText("")
 end
@@ -506,7 +491,7 @@ end
 
 function MatchTracker:HelperCTFPlusOneFlag(nArg)
 	local strWindowName = ktRavelIdToCTFWindowName[nArg]
-	if strWindowName then
+	if strWindowName and self.tWndRefs.wndMatchTracker then
 		local nAmount = self.tWndRefs.wndMatchTracker:FindChild(strWindowName):GetData() + 1
 		self.tWndRefs.wndMatchTracker:FindChild(strWindowName):SetData(nAmount)
 	end
@@ -515,7 +500,7 @@ end
 
 function MatchTracker:HelperCTFMinusOneFlag(nArg)
 	local strWindowName = ktRavelIdToCTFWindowName[nArg]
-	if strWindowName then
+	if strWindowName and self.tWndRefs.wndMatchTracker then
 		local nAmount = math.max(0, self.tWndRefs.wndMatchTracker:FindChild(strWindowName):GetData() - 1)
 		self.tWndRefs.wndMatchTracker:FindChild(strWindowName):SetData(nAmount)
 	end
@@ -585,6 +570,17 @@ function MatchTracker:DrawCTFScreen(peMatch)
 
 	local eTeam = MatchingGame.GetPVPMatchState().eMyTeam
 	local bIsBlue = eTeam == LuaEnumTeam.Blue
+	local wndCTFYourTeam = self.tWndRefs.wndMatchTracker:FindChild("CTFYourTeam")
+	local wndCTFEnemyTeam = self.tWndRefs.wndMatchTracker:FindChild("CTFEnemyTeam")
+	
+	if bIsBlue then
+		wndCTFYourTeam:SetTextColor("BrightSkyBlue")
+		wndCTFEnemyTeam:SetTextColor("Orangered")
+	else
+		wndCTFYourTeam:SetTextColor("Orangered")
+		wndCTFEnemyTeam:SetTextColor("BrightSkyBlue")
+	end
+
 	for idObjective, peoCurrent in pairs(peMatch:GetObjectives()) do
 		local wndToUse = wndInfo:FindChild("CTFLeftFrame")
 		
@@ -641,7 +637,7 @@ function MatchTracker:DrawHoldLineScreen(peMatch)
 	peoWestCapturePoint = peMatch:GetObjective(1003)	
 	
 	--1300 - PvP Hold The Line Volume Capture Point 2 
-	if peoCurrent:GetRequiredCount() == 0 then
+	if peoCurrent:GetStatus() ~= PublicEventObjective.PublicEventStatus_Active then
 		peoCurrent = peMatch:GetObjective(1300)
 		
 		--1312 - PvP Hold The Line Capture Point 2a
@@ -651,7 +647,7 @@ function MatchTracker:DrawHoldLineScreen(peMatch)
 	end
 	
 	--1421 - PvP Hold The Line Volume Capture Point 3 
-	if peoCurrent:GetRequiredCount() == 0 then
+	if peoCurrent:GetStatus() ~= PublicEventObjective.PublicEventStatus_Active then
 		peoCurrent = peMatch:GetObjective(1421)
 		
 		--1401 - PvP Hold The Line Capture Point 3a
@@ -662,8 +658,8 @@ function MatchTracker:DrawHoldLineScreen(peMatch)
 	
 	if peoCurrent ~= nil then
 		local nLastValue = wndFloat:FindChild("MainProgBar"):GetData() or 0
-		local nCurrValue = peoCurrent:GetCount()
 		local nMaxValue = peoCurrent:GetRequiredCount()
+		local nCurrValue = math.min(peoCurrent:GetCount(), nMaxValue)
 		
 		wndFloat:FindChild("TitleText"):SetData(nCurrValue)
 		wndFloat:FindChild("MainProgBar"):SetData(nCurrValue)
@@ -757,14 +753,35 @@ function MatchTracker:DrawHoldLineScreen(peMatch)
 
 	local bAttacking = peoScriptCurrent:GetTeam() == peMatch:GetJoinedTeam()
 	local wndHoldLineTitle = wndDatachron:FindChild("HoldLineTitle")
-	wndHoldLineTitle:SetText(bAttacking and Apollo.GetString("MatchTracker_YouAreAttacking") or Apollo.GetString("MatchTracker_YouAreDefending"))
-	wndHoldLineTitle:SetTextColor(bAttacking and kcrAttack or kcrDefend)
-	
+	local wndHoldLineObjective = wndDatachron:FindChild("HoldLineObjective")
+	wndHoldLineObjective:SetText(ktHoldLineObjectiveCountToName[nCount])
+		
+	if bAttacking then 
+		wndHoldLineTitle:SetText(Apollo.GetString("MatchTracker_YouAreAttacking"))
+		wndHoldLineTitle:SetTextColor(kcrAttack)
+		wndHoldLineObjective:SetTextColor(kcrAttack)		
+	else
+		wndHoldLineTitle:SetText(Apollo.GetString("MatchTracker_YouAreDefending"))
+		wndHoldLineTitle:SetTextColor(kcrDefend)
+		wndHoldLineObjective:SetTextColor(kcrDefend)		
+	end
 
-	for idx, tData in pairs({ktHoldLinePoint1, ktHoldLinePoint2, ktHoldLinePoint3}) do
-		wndDatachron:FindChild("HoldLineIcon" .. idx):SetSprite(tData[nCount][1])
-		wndDatachron:FindChild("HoldLineText" .. idx):SetText(tData[nCount][2])
-		wndDatachron:FindChild("HoldLineText" .. idx):SetTextColor(tData[nCount][3])
+	for idx = 0, nHoldLineObjective-1 do
+		local wndObjectiveIcon = wndDatachron:FindChild("HoldLineIcon" .. idx)
+	
+		if idx < nCount then
+			local strTooltip = ktHoldLineObjectiveCountToName[idx].. " " .. String_GetWeaselString(Apollo.GetString("CRB_Parenthese"), ktHoldLineCaptureStatus[0].htlStatus)
+			wndObjectiveIcon:SetSprite(ktHoldLineCaptureStatus[0].spriteName)
+			wndObjectiveIcon:SetTooltip(strTooltip)
+		elseif idx == nCount then
+			local strTooltip = ktHoldLineObjectiveCountToName[idx].. " " .. String_GetWeaselString(Apollo.GetString("CRB_Parenthese"), ktHoldLineCaptureStatus[1].htlStatus)
+			wndObjectiveIcon:SetSprite(ktHoldLineCaptureStatus[1].spriteName)
+			wndObjectiveIcon:SetTooltip(strTooltip)
+		else 
+			local strTooltip = ktHoldLineObjectiveCountToName[idx].. " " .. String_GetWeaselString(Apollo.GetString("CRB_Parenthese"), ktHoldLineCaptureStatus[2].htlStatus)		
+			wndObjectiveIcon:SetSprite(ktHoldLineCaptureStatus[2].spriteName)
+			wndObjectiveIcon:SetTooltip(strTooltip)
+		end
 	end
 	
 	nTotalTime = peoScriptCurrent:GetTotalTime() / 1000;

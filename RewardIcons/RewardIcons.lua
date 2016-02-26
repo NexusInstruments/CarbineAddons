@@ -70,9 +70,14 @@ function RewardIcons:OnDocumentReady()
 		self:OnKeyBindingUpdated("Cast Objective Ability")
 		
 		Apollo.RegisterEventHandler("KeyBindingKeyChanged", "OnKeyBindingUpdated", self)
+		Apollo.RegisterEventHandler("PublicEventObjectiveUpdate", "OnObjectiveUpdate", self)
 		return Apollo.AddonLoadStatus.Loaded
 	end
 	return Apollo.AddonLoadStatus.Loading 
+end
+
+function RewardIcons:OnObjectiveUpdate(peoUpdated)
+	self.peoLastUpdated = peoUpdated
 end
 
 function RewardIcons:OnKeyBindingUpdated(strKeybind)
@@ -269,30 +274,38 @@ function RewardIcons:GenerateUnitRewardIconsForm(wndRewardPanel, unitTarget, tFl
 
 	local tRewardString = {} -- temp table to store quest descriptions (builds multi-objective tooltips)
 
+	local tWndRewardPanelData = wndRewardPanel:GetData()
 	local nActiveRewardCount = 0
 	local nRewardCount = (tRewardInfo ~= nil and #tRewardInfo or 0)
 	local tExistingRewardInfo = nil
 	local nExistingRewardCount = 0
 	local unitExistingTarget = nil
 	local tExistingFlags = nil
-	if wndRewardPanel:GetData() ~= nil then
-		nExistingRewardCount = wndRewardPanel:GetData().nIcons
-		tExistingRewardInfo = wndRewardPanel:GetData().tRewardInfo
-		unitExistingTarget = wndRewardPanel:GetData().unitTarget
-		tExistingFlags = wndRewardPanel:GetData().tFlags
+	local tLastCompleted = { }
+	if tWndRewardPanelData ~= nil then
+		nExistingRewardCount = tWndRewardPanelData.nIcons
+		tExistingRewardInfo = tWndRewardPanelData.tRewardInfo or {}
+		unitExistingTarget = tWndRewardPanelData.unitTarget
+		tExistingFlags = tWndRewardPanelData.tFlags or {}
+		tLastCompleted = tWndRewardPanelData.tLastCompleted or {}
 	end
 	
 	wndRewardPanel:SetData({ 
 		["unitTarget"] = unitTarget,
 		["nIcons"] = nRewardCount + nFriendshipCount,
-		["tFlags"]=tFlags,
-		["tRewardInfo"]=tRewardInfo
+		["tFlags"] = tFlags,
+		["tRewardInfo"] = tRewardInfo,
+		["tLastCompleted"] = tLastCompleted,
 	})
-	
-	if unitTarget == unitExistingTarget
-		and nRewardCount + nFriendshipCount == nExistingRewardCount
-		and self:TableEquals(tRewardInfo, tExistingRewardInfo)
-		and self:TableEquals(tFlags, tExistingFlags) then
+
+	local nCount = nil
+	if self.peoLastUpdated ~= nil then
+		nCount = self.peoLastUpdated:GetCount()
+	end
+	local nUnitId = unitTarget:GetId()
+	if unitTarget == unitExistingTarget and nRewardCount + nFriendshipCount == nExistingRewardCount
+			and self:TableEquals(tRewardInfo, tExistingRewardInfo) and self:TableEquals(tFlags, tExistingFlags) 
+			and tLastCompleted[nUnitId] == nCount then
 		return
 	end
 	
@@ -339,7 +352,7 @@ function RewardIcons:GenerateUnitRewardIconsForm(wndRewardPanel, unitTarget, tFl
 
 				local tAllChallenges = ChallengesLib.GetActiveChallengeList()
 				for index, clgCurr in pairs(tAllChallenges) do
-					if tRewardInfo[idx].idChallenge == clgCurr:GetId() and clgCurr:IsActivated() and not clgCurr:IsInCooldown() and not clgCurr:ShouldCollectReward() then
+					if tRewardInfo[idx].idChallenge == clgCurr:GetId() and clgCurr:IsActivated() and not clgCurr:IsInCooldown() then
 						clgActive = clgCurr
 						break
 					end
@@ -423,19 +436,20 @@ function RewardIcons:GenerateUnitRewardIconsForm(wndRewardPanel, unitTarget, tFl
 			elseif eType == Unit.CodeEnumRewardInfoType.PublicEvent and not self:HelperFlagOrDefault(tFlags, "bHidePublicEvents", false) then
 				local wndCurr = self:HelperLoadRewardIcon(wndRewardPanel, eType)
 
-				local peEvent = tRewardInfo[idx].peoObjective
-				local strTitle = peEvent:GetEvent():GetName()
-				local nCompleted = peEvent:GetCount()
-				local nNeeded = peEvent:GetRequiredCount()
+				local peoEvent = tRewardInfo[idx].peoObjective
+				local strTitle = peoEvent:GetEvent():GetName()
+				local nCompleted = peoEvent:GetCount()
+				local nNeeded = peoEvent:GetRequiredCount()
 
 				nActiveRewardCount = nActiveRewardCount + self:HelperDrawRewardIcon(wndCurr)
 
+				tLastCompleted[nUnitId] = nCompleted
 				local strTempTitle = strTitle
-				if peEvent:GetObjectiveType() == PublicEventObjective.PublicEventObjectiveType_Exterminate then
+				if peoEvent:GetObjectiveType() == PublicEventObjective.PublicEventObjectiveType_Exterminate then
 					strTempTitle = String_GetWeaselString(Apollo.GetString("Nameplates_NumRemaining"), strTitle, nCompleted)
-				elseif peEvent:ShowPercent() then
+				elseif peoEvent:ShowPercent() then
 					strTempTitle = String_GetWeaselString(Apollo.GetString("Nameplates_PercentCompleted"), strTitle, nCompleted / nNeeded * 100)
-				elseif peEvent:GetObjectiveType() == PublicEventObjective.PublicEventObjectiveType_TimedWin then -- Very intentionally placed after the ShowPercent() check
+				elseif peoEvent:GetObjectiveType() == PublicEventObjective.PublicEventObjectiveType_TimedWin then -- Very intentionally placed after the ShowPercent() check
 					strTempTitle = String_GetWeaselString(Apollo.GetString("RewardInfo_PublicEventTimedWin"), strTitle, nCompleted * 1000, nNeeded * 1000)
 				elseif nNeeded > 0 then 
 					strTempTitle = String_GetWeaselString(Apollo.GetString("BuildMap_CategoryProgress"), strTitle, nCompleted, nNeeded)
@@ -468,11 +482,11 @@ function RewardIcons:GenerateUnitRewardIconsForm(wndRewardPanel, unitTarget, tFl
 		if self:HelperFlagOrDefault(tFlags, "bVert", false) then
 			local nHeight = math.ceil(nActiveRewardCount*knDefaultIconWidth/2)
 			wndRewardPanel:SetAnchorOffsets(nLeft, -nHeight, nRight, nHeight)
-			wndRewardPanel:ArrangeChildrenHorz(1)
+			wndRewardPanel:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.Middle)
 		else
 			local nWidth = math.ceil(nActiveRewardCount*knDefaultIconWidth/2)
 			wndRewardPanel:SetAnchorOffsets(-nWidth, nTop, nWidth, nBottom)
-			wndRewardPanel:ArrangeChildrenHorz(1)
+			wndRewardPanel:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.Middle)
 		end
 	end
 

@@ -4,6 +4,7 @@
 -----------------------------------------------------------------------------------------------
  
 require "Window"
+require "HousingPlot"
 require "HousingLib"
 require "GuildLib"
  
@@ -47,7 +48,7 @@ local knDefaultEntryHieght 	= 30
 local knExpandedEntryHieght = 160
 
 local kcrEnabledColor 	= ApolloColor.new("UI_TextHoloTitle")
-local kcrDisabledColor 	= ApolloColor.new("xkcdReddish")
+local kcrDisabledColor 	= ApolloColor.new("Reddish")
 local kcrPrunedColor 	= CColor.new(0.3,0.3,0.3,1.0)
 
 ---------------------------------------------------------------------------------------------------
@@ -69,44 +70,30 @@ end
 function LandscapeCurrentControl:OnLoad(wndParent)
 	self.luaPlotGrid:OnLoad(wndParent)
 	self.luaPlotDetail:OnLoad(wndParent)
-	--self.plotBGArt = parent:FindChild("CurrentPlugViewFrame")
-	--self.plotBGArt:Show(false)
 end
 
 function LandscapeCurrentControl:OnPlotsUpdated()
 	self.luaPlotGrid:OnPlotsUpdated()
 	
 	local iPlot = GetSelectedPlotIndex()
-	--Print("PlotsUpdated(): " .. curPlotInfoId .. ", " .. self.plotSelectionType)
 	if iPlot > 0 then
 		self:OnSelectPlot(iPlot, self.ePlotSelectionType)
 	end
 end
 
 function LandscapeCurrentControl:OnSelectPlot(iPlot, eSelectionType)
-	--Print("onSelectPlot")
-	local idPlugItem = 0
-	
 	if eSelectionType ~= nil then
-		--Print("onSelectPlot(): " .. selectionType )
 		self.ePlotSelectionType = eSelectionType
 	end
 	
-	local tPlotInfo = HousingLib.GetPlot(iPlot)
-	local idPlugItem = tPlotInfo ~= nil and tPlotInfo.nPlugItemId or 0
-	
-	if tPlotInfo ~= nil and tPlotInfo.ePlotType ~= nil and tPlotInfo.ePlotType ~= 0 then
-		self.ePlotSelectionType = tPlotInfo.ePlotType
-	end
-
-	--Print("plugItemId: " .. plugItemId)
 	self.luaPlotDetail:clear(true)
-	if(idPlugItem ~= 0) then
-		self.luaPlotDetail:set(tPlotInfo, iPlot)
-	else	
-		self.luaPlotDetail:set(nil)
+	local pltPlot = HousingLib.GetPlot(iPlot)
+	if pltPlot ~= nil then
+	    self.ePlotSelectionType = pltPlot:GetPlotType()
+	    self.luaPlotDetail:set(pltPlot, iPlot)
+	else
+	    self.luaPlotDetail:set(nil)
 	end
-
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -139,11 +126,11 @@ end
 
 function LandscapeProposedControl:clear()
 	local iPlot = GetSelectedPlotIndex()
-	local tPlotInfo = HousingLib.GetPlot(iPlot)
-	if tPlotInfo ~= nil then
+	local pltPlot = HousingLib.GetPlot(iPlot)
+	if pltPlot ~= nil then
 	    self.wndBuyBtn:Enable(false)
-		self.wndBuyBtn:Show(tPlotInfo.nPlugItemId ~= 0)
-        self.wndPlaceBtn:Show(not tPlotInfo.nPlugItemId ~= 0)
+		self.wndBuyBtn:Show(pltPlot:GetPlugItemId() ~= 0)
+        self.wndPlaceBtn:Show(not pltPlot:GetPlugItemId() ~= 0)
         self.wndPlaceBtn:Enable(false)
 	end
 
@@ -161,21 +148,19 @@ function LandscapeProposedControl:IsNotUnique(tItemData, iPlot)
 	local bNotUnique = true
 	local tFlags = tItemData.tFlags
 	if tFlags.bIsUnique then
-		local nPlotCount = HousingLib.GetPlotCount()
+		local nPlotCount = HousingLib.GetResidence():GetPlotCount()
 		for idx = 1, nPlotCount do
-			local tPlotInfo = HousingLib.GetPlot(idx)
-			if tPlotInfo.nPlugItemId == tItemData.nId then
+			local pltPlot = HousingLib.GetPlot(idx)
+			if pltPlot:GetPlugItemId() == tItemData.nId then
 				bNotUnique = false
 			end
 		end
 	elseif tFlags.bIsUniqueHarvest then
-		local nPlotCount = HousingLib.GetPlotCount()
+		local nPlotCount = HousingLib.GetResidence():GetPlotCount()
 		for idx = 1, nPlotCount do
 			if idx ~= iPlot then
-				local tPlotInfo = HousingLib.GetPlot(idx)
-				local idPlugItem = tPlotInfo.nPlugItemId
-				local tPlugItems = HousingLib.GetPlugItem(idPlugItem)
-				local tPlugItemData = self.luaHousingLandscapeInst:GetItem(idPlugItem, tPlugItems)
+				local pltPlot = HousingLib.GetPlot(idx)
+				local tPlugItemData = HousingLib.GetPlugItem(pltPlot:GetPlugItemId())
 				if tPlugItemData ~= nil then
 					local tPlugFlags = tPlugItemData.tFlags
 					
@@ -187,13 +172,11 @@ function LandscapeProposedControl:IsNotUnique(tItemData, iPlot)
 			end
 		end
 	elseif tFlags.bIsUniqueGarden then
-		local nPlotCount = HousingLib.GetPlotCount()
+		local nPlotCount = HousingLib.GetResidence():GetPlotCount()
 		for idx = 1, nPlotCount do
 			if idx ~= iPlot then
-				local tPlotInfo = HousingLib.GetPlot(idx)
-				local idPlugItem = tPlotInfo.nPlugItemId
-				local tPlugItems = HousingLib.GetPlugItem(idPlugItem)
-				local tPlugItemData = self.luaHousingLandscapeInst:GetItem(idPlugItem, tPlugItems)
+				local pltPlot = HousingLib.GetPlot(idx)
+				local tPlugItemData = HousingLib.GetPlugItem(pltPlot:GetPlugItemId())
 				if tPlugItemData ~= nil then
 					local tPlugFlags = tPlugItemData.tFlags
 					
@@ -218,28 +201,24 @@ function LandscapeProposedControl:set(tItemData, iPlot, strVendorOrCrate)
 	-- Disable the place button if this plugItem is unique and we already have one placed
 	local bNotUnique = self:IsNotUnique(tItemData, iPlot)
 	
-	local tPlotInfo = HousingLib.GetPlot(iPlot)
-	local bIsBuilding = tPlotInfo.bIsBuilding
-	local bHaveEnoughCash = tItemData.bAreCostRequirementsMet
-	local bEnableButton = not bIsBuilding and bNotUnique and (bHaveEnoughCash or strVendorOrCrate == "crate")
-	self:HandlePlaceButton(iPlot, bEnableButton)
-	self.wndBuyBtn:Enable(bEnableButton)
-	self.wndBuyBtn:Show(not self.wndPlaceBtn:IsShown())
-	--self.destroyFromCrateBtn:Enable(vendorOrCrate == "crate")
+	local pltPlot = HousingLib.GetPlot(iPlot)
+    local bIsBuilding = pltPlot ~= nil and pltPlot:IsBuilding() or false
+    local bHaveEnoughCash = tItemData.bAreCostRequirementsMet
+    local bEnableButton = not bIsBuilding and bNotUnique and (bHaveEnoughCash or strVendorOrCrate == "crate")
+    self:HandlePlaceButton(iPlot, bEnableButton)
+    self.wndBuyBtn:Enable(bEnableButton)
+    self.wndBuyBtn:Show(not self.wndPlaceBtn:IsShown())
 end
 
 -- if you have the cash, and there's an appropriate plot selected , enable the place or replace button
 function LandscapeProposedControl:HandlePlaceButton(iPlot, bEnableButton )
-	local tPlotInfo = HousingLib.GetPlot(iPlot)
+	local pltPlot = HousingLib.GetPlot(iPlot)
 	
-    if tPlotInfo == nil or tPlotInfo.nPlugItemId ~= 0 then
+    if pltPlot == nil or pltPlot:GetPlugItemId() ~= 0 then
         self.wndPlaceBtn:Show(false)
-        --self.rePlaceBtn:Show(true)
-        --self.rePlaceBtn:Enable(enableButton)
     else
     	self.wndPlaceBtn:Show(true)
 	    self.wndPlaceBtn:Enable(bEnableButton)
-	    --self.rePlaceBtn:Show(false)
     end
 end
 
@@ -283,7 +262,7 @@ function PlotGrid:OnLoad(wndParent)
 	self.wndParent 			= wndParent
 	
 	-- force a refresh
-	self.bIsWarplot = not HousingLib.IsWarplotResidence()
+	self.bIsWarplot = HousingLib.GetResidence() ~= nil and not HousingLib.GetResidence():IsWarplotResidence() or false
 
 	self:OnPlotRefreshTimer()
 end
@@ -291,7 +270,7 @@ end
 ---------------------------------------------------------------------------------------------------
 function PlotGrid:OnPlotRefreshTimer()	
 	self:OnPlotsUpdated()
-	if HousingLib.IsWarplotResidence() then	
+	if HousingLib.GetResidence() ~= nil and HousingLib.GetResidence():IsWarplotResidence() then	
 		self.wndCashLandscape:SetMoneySystem(Money.CodeEnumCurrencyType.GroupCurrency, Money.CodeEnumGroupCurrencyType.WarCoins)
 		self.wndCashLandscape:SetAmount(GetWarCoins())
 		self.wndMaintenanceCost:SetText(String_GetWeaselString(Apollo.GetString("Warparty_TotalBattleMaintenance"), HousingLib.GetWarplotMaintenanceCost()))
@@ -302,8 +281,12 @@ function PlotGrid:OnPlotRefreshTimer()
 end
 
 function PlotGrid:OnPlotsUpdated()
-	if self.bIsWarplot ~= HousingLib.IsWarplotResidence() or self.nTotalPlots == nil then
-		self.bIsWarplot = HousingLib.IsWarplotResidence()	
+    if HousingLib.GetResidence() == nil then
+        return
+    end
+    
+	if self.bIsWarplot ~= HousingLib.GetResidence():IsWarplotResidence() or self.nTotalPlots == nil then
+		self.bIsWarplot = HousingLib.GetResidence():IsWarplotResidence()	
 
 		if self.bIsWarplot then
 			self.nTotalPlots = knTotalWarplots
@@ -351,7 +334,7 @@ function PlotGrid:OnPlotsUpdated()
 
 	self.tPlugItemIds = {}
 
-	local nCount = HousingLib.GetPlotCount()
+	local nCount = HousingLib.GetResidence():GetPlotCount()
 		
 	if not nCount or nCount > self.nTotalPlots then
 		nCount = self.nTotalPlots
@@ -362,16 +345,16 @@ function PlotGrid:OnPlotsUpdated()
 	end
 
 	for idx = nFirstIndex, nCount do
-		local tPlotInfo = HousingLib.GetPlot(idx)
-		if tPlotInfo ~= nil then
-            self.tOccupiedMark[idx]:Show(tPlotInfo.nPlugItemId > 0 and tPlotInfo.bActive)
-            self.tDisabledMark[idx]:Show(not tPlotInfo.bActive)
-            self.tPlugItemIds[idx] = tPlotInfo.nPlugItemId
+		local pltPlot = HousingLib.GetPlot(idx)
+		if pltPlot ~= nil then
+            self.tOccupiedMark[idx]:Show(pltPlot:GetPlugItemId() > 0 and pltPlot:IsActive())
+            self.tDisabledMark[idx]:Show(not pltPlot:IsActive())
+            self.tPlugItemIds[idx] = pltPlot:GetPlugItemId()
 
 			if not self.bIsWarplot then
 				for iFacing = 1, #self.wndPlugFacingMarks[idx] do
 					local bVisible = false
-					if tPlotInfo.nPlugItemId > 0 and iFacing == tPlotInfo.ePlugFacing and tPlotInfo.bCanBeRotated then
+					if pltPlot:GetPlugItemId() > 0 and iFacing == pltPlot:GetPlugFacing() and pltPlot:CanBeRotated() then
 						bVisible = true;
 					end
 					self.wndPlugFacingMarks[idx][iFacing]:Show(bVisible)
@@ -453,72 +436,88 @@ end
 
 
 -----------------------------------------------------------------------------------------------
-function PlotDetail:set(tPlotInfo, iPlot)
+function PlotDetail:set(pltPlot, iPlot)
 	-- plug name
 	if iPlot ~= nil then
 		self.nChosenPlot = iPlot
-		tPlotInfo = HousingLib.GetPlot(iPlot)
+		pltPlot = HousingLib.GetPlot(iPlot)
 	else
-		if tPlotInfo == nil then
+		if pltPlot == nil then
 			self.nChosenPlot = nil
+			self.wndRemove:Enable(false)
+			self.wndView:Enable(false)
 		    return
 		end
 	end
 	
-	self.wndPlugName:SetText(tPlotInfo.strName)
-	self.wndRemove:Enable(tPlotInfo.nPlugItemId ~= knStarterTentPlugItemId)  
+	self.wndPlugName:SetText(pltPlot:GetPlugName())
+	self.wndRemove:Enable(pltPlot:GetPlugItemId() ~= knStarterTentPlugItemId)  
 	
 	self.wndView:Show(true)
-	if tPlotInfo.bIsBuilding then
+	if pltPlot:IsBuilding() then
 	    self.wndPlugInfoFrameBuilt:Show(false)
 	    self.wndPlugInfoFrameBuilding:Show(true)
-	    self:HelperFormatTimeRemainingString(tPlotInfo.fBuildTimeRemainingHours, true)
+	    self:HelperFormatTimeRemainingString(pltPlot:GetBuildTimeRemaining(), true)
 	else
 		self.wndPlugInfoFrameBuilt:Show(true)
 	    self.wndPlugInfoFrameBuilding:Show(false)
 	    
-        if tPlotInfo.bHasUpgrade then
+        if pltPlot:HasUpgrade() then
             self.wndUpgrade:Enable(true)
 			self.wndUpgrade:SetText(Apollo.GetString("HousingLandscape_UpgradeEnhancement"))
         else
             self.wndUpgrade:Enable(false)
 			self.wndUpgrade:SetText(Apollo.GetString("HousingLandscape_NoUpgrade"))
         end
-        
-        if tPlotInfo.bActive then
-            if tPlotInfo.eUpkeepType == HousingLib.HousingUpkeepType.Permanent or tPlotInfo.eUpkeepType == HousingLib.HousingUpkeepType.Decay then
-                self.wndView:Enable(false)
+		
+		if pltPlot:GetPlugItemId() == 0 then
+			self.wndView:Enable(false)
+			self.wndView:SetText(Apollo.GetString("HousingLandscape_ViewInfo"))
+			self.wndPlugUpkeepTimeLabel:Show(false)
+			self.wndPlugUpkeepTimeText:Show(false)
+			self.wndPlugUpkeepChargesLabel:Show(false)
+			self.wndPlugUpkeepChargesText:Show(false)
+			self.wndRotate:Enable(false)
+			self.wndRemove:Enable(false)
+        elseif pltPlot:IsActive() then
+            if pltPlot:GetUpkeepType() == HousingLib.HousingUpkeepType.Permanent or pltPlot:GetUpkeepType() == HousingLib.HousingUpkeepType.Decay then
+                self.wndView:Enable(true)
+				self.wndView:SetText(Apollo.GetString("HousingLandscape_ViewInfo"))
 				self.wndPlugUpkeepTimeLabel:Show(false)
                 self.wndPlugUpkeepTimeText:Show(false)
                 self.wndPlugUpkeepChargesLabel:Show(false)
                 self.wndPlugUpkeepChargesText:Show(false)
-            elseif tPlotInfo.eUpkeepType == HousingLib.HousingUpkeepType.StructurePoints then
+				self.wndPlugInfoFrame:FindChild("InfoRepairBtn"):Enable(false)
+            elseif pltPlot:GetUpkeepType() == HousingLib.HousingUpkeepType.StructurePoints then
 				self.wndView:Enable(true)
 				self.wndView:SetText(Apollo.GetString("HousingLandscape_ViewInfo"))
 				self.wndPlugUpkeepTimeLabel:Show(false)
                 self.wndPlugUpkeepTimeText:Show(false)
 				self.wndPlugUpkeepChargesLabel:Show(false)
 				self.wndPlugUpkeepChargesText:Show(false)
-            elseif tPlotInfo.eUpkeepType == HousingLib.HousingUpkeepType.Timed or tPlotInfo.eUpkeepType == HousingLib.HousingUpkeepType.TimedCharged then
+				self.wndPlugInfoFrame:FindChild("InfoRepairBtn"):Enable(false)
+            elseif pltPlot:GetUpkeepType() == HousingLib.HousingUpkeepType.Timed or pltPlot:GetUpkeepType() == HousingLib.HousingUpkeepType.TimedCharged then
                 self.wndPlugUpkeepTimeLabel:Show(true)
                 self.wndPlugUpkeepTimeText:Show(true)
-				self:HelperFormatTimeRemainingString(tPlotInfo.fRemainingHours)
+				self:HelperFormatTimeRemainingString(pltPlot:GetTimeRemaining())
 				self.wndView:Enable(true)
 				self.wndView:SetText(Apollo.GetString("HousingLandscape_ViewInfo"))
 				self.wndPlugUpkeepChargesLabel:Show(false)
                 self.wndPlugUpkeepChargesText:Show(false)
-            elseif tPlotInfo.eUpkeepType == HousingLib.HousingUpkeepType.Charged or tPlotInfo.eUpkeepType == HousingLib.HousingUpkeepType.TimedCharged then
+				self.wndPlugInfoFrame:FindChild("InfoRepairBtn"):Enable(false)
+            elseif pltPlot:GetUpkeepType() == HousingLib.HousingUpkeepType.Charged or pltPlot:GetUpkeepType() == HousingLib.HousingUpkeepType.TimedCharged then
 				self.wndView:Enable(true)
 				self.wndView:SetText(Apollo.GetString("HousingLandscape_ViewInfo"))
 				self.wndPlugUpkeepTimeLabel:Show(false)
                 self.wndPlugUpkeepTimeText:Show(false)
                 self.wndPlugUpkeepChargesLabel:Show(true)
                 self.wndPlugUpkeepChargesText:Show(true)
-                self.wndPlugUpkeepChargesText:SetText(tPlotInfo.nChargesRemaining)
+                self.wndPlugUpkeepChargesText:SetText(pltPlot:GetChargesRemaining())
+				self.wndPlugInfoFrame:FindChild("InfoRepairBtn"):Enable(false)
             end
 			
-			if not HousingLib.IsWarplotResidence() then	
-				self.wndRotate:Enable(tPlotInfo.bCanBeRotated)
+			if not HousingLib.GetResidence():IsWarplotResidence() then	
+				self.wndRotate:Enable(pltPlot:CanBeRotated())
 			end
         else
             self.wndView:Enable(true)
@@ -572,31 +571,30 @@ function HousingLandscape:DrawInfo(iPlot, eSelectionType)
 		return
 	end
 	
-	local tPlotInfo = HousingLib.GetPlot(iPlot)
-	local idPlugItem = tPlotInfo ~= nil and tPlotInfo.nPlugItemId or 0
+	local pltPlot = HousingLib.GetPlot(iPlot)
+	local idPlugItem = pltPlot ~= nil and pltPlot:GetPlugItemId() or 0
 	
-	if tPlotInfo.ePlotType and tPlotInfo.ePlotType ~= 0 then
-		self.ePlotSectionType = tPlotInfo.ePlotType
+	if pltPlot ~= nil then
+		self.ePlotSectionType = pltPlot:GetPlotType()
 	end
 
-	if idPlugItem == 0 then
+	if pltPlot ~= nil and pltPlot:GetPlugItemId() == 0 then
 		return
 	end
 	
 	local wndPlugInfoPanel = self.wndPlugInfoFrame:FindChild("ViewPlugInfoFrame")
- 	local iPlot = GetSelectedPlotIndex()
-	local tPlotInfo2 = HousingLib.GetPlot(iPlot)
-	local idPlugItem2 = tPlotInfo2.nPlugItemId
-    local tItemList = HousingLib.GetPlugItem(idPlugItem2)
-    local tItemInfo = self:GetItem(idPlugItem2, tItemList)
+ 	local iPlotSelected = GetSelectedPlotIndex()
+	local pltPlotSelected = HousingLib.GetPlot(iPlotSelected)
+	local idPlugItem2 = pltPlotSelected:GetPlugItemId()
+    local tItemInfo = HousingLib.GetPlugItem(idPlugItem2)
 	
 	if tItemInfo == nil then 
 		return 
 	end
 	
 	local nPadding = 8 -- how much vert padding between entries
-	wndPlugInfoPanel:FindChild("Title"):SetText(tItemInfo.strName)
-	wndPlugInfoPanel:FindChild("PlugDescriptionFrame:PlugDescription"):SetText(tItemInfo.strTooltip)
+	wndPlugInfoPanel:FindChild("Title"):SetText(pltPlotSelected:GetPlugName())
+	wndPlugInfoPanel:FindChild("PlugDescriptionFrame:PlugDescription"):SetText(pltPlotSelected:GetPlugTooltip())
 	wndPlugInfoPanel:FindChild("PlugDescriptionFrame:PlugDescription"):SetHeightToContentHeight(20) -- will be 0 if no text
 	wndPlugInfoPanel:FindChild("PlugDescriptionFrame"):RecalculateContentExtents()
 
@@ -606,8 +604,8 @@ function HousingLandscape:DrawInfo(iPlot, eSelectionType)
 	local bCanRepair = true
 	local tRepairRequirements = tItemInfo.tRepairRequirements
 	
-	if tPlotInfo.bNeedsRepair then
-		tRepairRequirements = tPlotInfo.tRepairCosts
+	if pltPlotSelected:NeedsRepair() then
+		tRepairRequirements = pltPlotSelected:GetRepairCosts()
 	end
 	
 	wndRepair:FindChild("RepairEntryContainer"):DestroyChildren()
@@ -674,7 +672,7 @@ function HousingLandscape:DrawInfo(iPlot, eSelectionType)
 	    end
 	end
 	
-	wndRepair:FindChild("RepairEntryContainer"):ArrangeChildrenVert(0)
+	wndRepair:FindChild("RepairEntryContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	local nRepairLeft, nRepairTop, nRepairRight, nRepairBottom = wndRepair:GetAnchorOffsets()
 	local nLeftDif, nTopDif, nRightDif, nBottomDif = wndRepair:FindChild("RepairEntryContainer"):GetAnchorOffsets()
 	
@@ -685,7 +683,7 @@ function HousingLandscape:DrawInfo(iPlot, eSelectionType)
 		local nLeftBtn, nTopBtn, nRightBtn, nBottomBtn = self.wndPlugInfoFrame:FindChild("InfoRepairBtn"):GetAnchorOffsets()
 		nRepairLeft, nRepairTop, nRepairRight, nRepairBottom = self.wndPlugInfoFrame:FindChild("InfoRepairBtn"):GetAnchorOffsets()
 		
-		local bEnable = (not tPlotInfo.bIsBuilding and not tPlotInfo.bActive and bCanRepair == true) or tPlotInfo.bNeedsRepair
+		local bEnable = (not pltPlotSelected:IsBuilding() and not pltPlotSelected:IsActive() and bCanRepair == true) or pltPlotSelected:NeedsRepair()
 	
 		self.wndPlugInfoFrame:FindChild("InfoRepairBtn"):Enable(bEnable)
 	else
@@ -814,7 +812,7 @@ function HousingLandscape:DrawTierUpgradeInfo(tItemData, tOldItemData)
 	    end
 	end
 	
-	wndRepair:FindChild("RepairEntryContainer"):ArrangeChildrenVert(0)
+	wndRepair:FindChild("RepairEntryContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	local nLeft4, nTop4, nRight4, nBottom4 = wndRepair:GetAnchorOffsets()
 	local nLeftDif, nTopDif, nRightDif, nRightDif = wndRepair:FindChild("RepairEntryContainer"):GetAnchorOffsets()
 	
@@ -838,11 +836,10 @@ function HousingLandscape:DrawTierUpgradeInfo(tItemData, tOldItemData)
 end
 
 -----------------------------------------------------------------------------------------------
-function PlotDetail:HelperFormatTimeRemainingString(fHours, bBuilding)
-	local nDays =  math.floor(fHours / 24)
-	local nHours = math.floor(fHours -(nDays * 24))	
-	--local nHours = math.floor(((fHours/24) - nDays)*10)
-	local nMinutes = math.floor((fHours-(nDays * 24) - nHours) * 60) 
+function PlotDetail:HelperFormatTimeRemainingString(fSeconds, bBuilding)
+	local nDays =  math.floor(fSeconds / 86400)
+	local nHours = math.floor((fSeconds / 3600) - (nDays * 24))	
+	local nMinutes = math.floor(((fSeconds / 3600)-(nDays * 24) - nHours) * 60) 
 	
 	local strRemainingTime = ""
 	if bBuilding then
@@ -920,8 +917,6 @@ end
 -- HousingLandscape OnLoad
 -----------------------------------------------------------------------------------------------
 function HousingLandscape:OnLoad()
-	Apollo.RegisterEventHandler("WindowManagementReady", 	"OnWindowManagementReady", self)
-	
 	Apollo.RegisterEventHandler("HousingButtonLandscape", 		"OnHousingButtonLandscape", self)
 	Apollo.RegisterEventHandler("HousingButtonCrate", 			"OnHousingButtonCrate", self)
 	Apollo.RegisterEventHandler("HousingButtonVendor", 			"OnHousingButtonCrate", self)
@@ -934,9 +929,15 @@ function HousingLandscape:OnLoad()
 	Apollo.RegisterEventHandler("HousingConfirmReplace", 		"OnConfirmReplaceRequest", self)
 	Apollo.RegisterEventHandler("HousingPlotsRecieved", 		"OnPlotsUpdated", self)
 	Apollo.RegisterEventHandler("ChangeWorld", 					"OnCloseHousingLandscapeWindow", self)	
+	Apollo.RegisterEventHandler("UpdateInventory", 				"OnUpdateInventory", self)
+	Apollo.RegisterEventHandler("StoreLinksRefresh",			"OnHousingPlugItemsUpdated", self)
 
 	Apollo.CreateTimer("PlotDetailRefreshTimer", 1.0, true)
 	Apollo.StopTimer("PlotDetailRefreshTimer")
+	
+	Apollo.RegisterTimerHandler("HousingLandscapeOptionsTimer", "OnRefreshLandscapeOptions", self)
+	Apollo.CreateTimer("HousingLandscapeOptionsTimer", 0.200, false)
+	Apollo.StopTimer("HousingLandscapeOptionsTimer")
     
     -- load our forms
     self.xmlDoc = XmlDoc.CreateFromFile("HousingLandscape.xml")
@@ -972,7 +973,7 @@ function HousingLandscape:OnLoad()
 	-- landscape item lists
 	HousingLib.RequestVendorList()
 
-	if HousingLib.IsWarplotResidence() then	
+	if HousingLib.GetResidence() ~= nil and HousingLib.GetResidence():IsWarplotResidence() then	
         self.wndCashLandscape:SetMoneySystem(Money.CodeEnumCurrencyType.GroupCurrency, Money.CodeEnumGroupCurrencyType.WarCoins)
 		self.wndCashLandscape:SetAmount(GetWarCoins(), true)
 		self.wndMaintenanceCost:SetText(String_GetWeaselString(Apollo.GetString("Warparty_TotalBattleMaintenance"), HousingLib.GetWarplotMaintenanceCost()))
@@ -992,11 +993,15 @@ function HousingLandscape:OnLoad()
 	self:HelperTogglePreview(false)
 	
 	-- TODO: Re-Enable once category selection is set up
-	self.wndLandscape:FindChild("SortByBtn"):Enable(false)	
+	self.wndLandscape:FindChild("SortByBtn"):Enable(false)
+	
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 end
 
 function HousingLandscape:OnWindowManagementReady()
-	local strName = string.format("%s: %s", Apollo.GetString("CRB_Housing"), Apollo.GetString("CRB_Landscape"))
+	local strName = String_GetWeaselString(Apollo.GetString("Tooltips_ItemSpellEffect"), Apollo.GetString("CRB_Housing"), Apollo.GetString("CRB_Landscape"))
+	Event_FireGenericEvent("WindowManagementRegister", {strName = strName})
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndLandscape, strName = strName})
 end
 
@@ -1033,6 +1038,15 @@ function HousingLandscape:OnPlotsUpdated()
 end
 
 
+function HousingLandscape:OnUpdateInventory()
+	Apollo.StartTimer("HousingLandscapeOptionsTimer")
+end
+
+function HousingLandscape:OnRefreshLandscapeOptions()
+	self:OnHousingPlugItemsUpdated()
+	Apollo.StopTimer("HousingLandscapeOptionsTimer")
+end
+
 ---------------------------------------------------------------------------------------------------
 function HousingLandscape:OnOpenPanelControl(idPropertyInfo, idZone, bPlayerIsInside)
 	if self.bPlayerIsInside ~= bPlayerIsInside then
@@ -1054,23 +1068,27 @@ end
 
 ---------------------------------------------------------------------------------------------------
 function HousingLandscape:OnConfirmReplaceRequest(idPlotInfo, idPlugItem, bFromCrate)
-    self:ResetPopups()
+    self.wndLandscape:Close()
     self.wndDestroyUnderPopup = Apollo.LoadForm(self.xmlDoc, "PopupDestroyUnder", nil, self)
-	self.wndDestroyUnderPopup:Show(true)
+	self.wndDestroyUnderPopup:Invoke()
 	local wndWarningText = self.wndDestroyUnderPopup:FindChild("Disclaimer")
 	local wndWarningText2 = self.wndDestroyUnderPopup:FindChild("Disclaimer2")
 
-	
 	local iPlot = GetSelectedPlotIndex()
-	local tPlotInfo2 = HousingLib.GetPlot(iPlot)
-	local idPlugItem2 = tPlotInfo2.nPlugItemId
-    local tItemList = HousingLib.GetPlugItem(idPlugItem2)
-    local tItemInfo = self:GetItem(idPlugItem2, tItemList)
+	local pltPlot2 = HousingLib.GetPlot(iPlot)
+	if pltPlot2 == nil then
+	    return
+	end
+	
+    local tItemInfo = HousingLib.GetPlugItem(pltPlot2:GetPlugItemId())
+    local tItemInfo2 = HousingLib.GetPlugItem(self.idUniqueItem)
+	
+	local strPlugName1 = ""
+	if tItemInfo ~= nil then
+		strPlugName1 = tItemInfo.strName
+	end
     
-    local tItemList2 = HousingLib.GetPlugItem(self.idUniqueItem)
-    local tItemInfo2 = self:GetItem(self.idUniqueItem, tItemList2)
-    
-	wndWarningText:SetAML(string.format("<P Font=\"CRB_InterfaceMedium\" Align=\"Center\" TextColor=\"UI_TextHoloBodyHighlight\">"..String_GetWeaselString(Apollo.GetString("HousingLandscape_DestroyWarning"), tItemInfo.strName, tItemInfo2.strName).."</P>"))
+	wndWarningText:SetAML(string.format("<P Font=\"CRB_InterfaceMedium\" Align=\"Center\" TextColor=\"UI_TextHoloBodyHighlight\">"..String_GetWeaselString(Apollo.GetString("HousingLandscape_DestroyWarning"), strPlugName1, tItemInfo2.strName).."</P>"))
 	wndWarningText2:SetAML(string.format("<P Font=\"CRB_InterfaceMedium\" Align=\"Center\" TextColor=\"UI_TextHoloBody\">"..Apollo.GetString("HousingLandscape_CrateWarning").."</P>"))
 	
 	--Resize this window based on content
@@ -1081,21 +1099,17 @@ function HousingLandscape:OnConfirmReplaceRequest(idPlotInfo, idPlugItem, bFromC
 	local nLeft3, nTop3, nRight3, nBottom3 = self.wndDestroyUnderPopup:GetAnchorOffsets()
 	wndWarningText2:SetAnchorOffsets(nLeft2, nBottom + 10, nRight2, wndWarningText2:GetHeight() + nBottom + 10)
 	self.wndDestroyUnderPopup:SetAnchorOffsets(nLeft3, nTop3, nRight3, nTop3 + wndWarningText:GetHeight() + wndWarningText2:GetHeight() + 190)
-
 	
 	self.wndDestroyUnderPopup:ToFront()
-	self.wndLandscape:Show(false)
 end
 
 ---------------------------------------------------------------------------------------------------
 function HousingLandscape:RemoveCurrentPlug()
-	local iCurrPlot = GetSelectedPlotIndex()
-	if iCurrPlot == 0 then
-		return
-	end
+	local pltPlot = HousingLib.GetPlot(GetSelectedPlotIndex())
+	if pltPlot ~= nil then
+	    pltPlot:RemovePlug()
+	end    
 
-	HousingLib.ClearPlot(iCurrPlot)
-	
 	self.luaLandscapeCurrentControl.luaPlotDetail:clear(true)
 end
 
@@ -1105,18 +1119,21 @@ function HousingLandscape:PlaceNewPlug(bConfirmed)
 		return
 	end
 
-	local idPlotInfo = GetSelectedPlotIndex()
-	HousingLib.PlaceFromVendor(idPlotInfo, self.idUniqueItem, bConfirmed)
+	local pltPlot = HousingLib.GetPlot(GetSelectedPlotIndex())
+	if pltPlot == nil then
+	    return
+	end
+	pltPlot:PlacePlug(self.idUniqueItem, bConfirmed)
 	
     if bConfirmed then
         self.luaLandscapeProposedControl:clear()
-		if HousingLib.IsWarplotResidence() then
+		if HousingLib.GetResidence():IsWarplotResidence() then
 			self.wndCashLandscape:SetMoneySystem(Money.CodeEnumCurrencyType.GroupCurrency, Money.CodeEnumGroupCurrencyType.WarCoins)
-			self.wndCashLandscape:SetAmount(GetWarCoins(), idPlotInfo)
+			self.wndCashLandscape:SetAmount(GetWarCoins(), true)
 			self.wndMaintenanceCost:SetText(String_GetWeaselString(Apollo.GetString("Warparty_TotalBattleMaintenance"), HousingLib.GetWarplotMaintenanceCost()))
 		else
 			self.wndCashLandscape:SetMoneySystem(Money.CodeEnumCurrencyType.Credits)
-			self.wndCashLandscape:SetAmount(GameLib.GetPlayerCurrency(), idPlotInfo)
+			self.wndCashLandscape:SetAmount(GameLib.GetPlayerCurrency(), true)
 		end
     end   
 end
@@ -1137,7 +1154,7 @@ function HousingLandscape:ResetAll()
 	self.wndTogglePreview:Enable(false)
 	self.tVendorItemsLandscape = nil
 
-	if HousingLib.IsWarplotResidence() then
+	if HousingLib.GetResidence() ~= nil and HousingLib.GetResidence():IsWarplotResidence() then
 		-- reset left side panel, too
 		self.luaLandscapeCurrentControl.luaPlotDetail:clear(true)		
 		local wndButtons = self.wndLandscape:FindChild("WarplotLandscapeFrame")
@@ -1198,12 +1215,10 @@ end
 function HousingLandscape:OnHousingButtonLandscape()
     if not self.wndLandscape:IsVisible() then
 		self:ResetAll()
-		self.wndLandscape:Show(true)
+		self.wndLandscape:Invoke()
         HousingLib.RequestVendorList()
         HousingLib.RefreshUI()
-        self.wndLandscape:ToFront()
 		Apollo.StartTimer("PlotDetailRefreshTimer")
-		Event_ShowTutorial(GameLib.CodeEnumTutorial.Housing_Landscape)
 	else
 	    self:OnCloseHousingLandscapeWindow()
 	end
@@ -1234,7 +1249,7 @@ end
 function HousingLandscape:OnCancelReplace(wndHandler, wndControl)
     self:PlaceNewPlug(false)
 	self:ResetPopups()
-	self.wndLandscape:Show(true)	
+	self.wndLandscape:Invoke()	
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -1288,23 +1303,21 @@ function HousingLandscape:OnDeleteBtn(wndControl, wndHandler)
 		return
 	end
 
-	self:ResetPopups()
+	self.wndLandscape:Close()
 	self.wndRemovePopup = Apollo.LoadForm(self.xmlDoc, "PopupRemove", nil, self)
-	self.wndRemovePopup:Show(true)	
-	self.wndRemovePopup:ToFront()
-	self.wndLandscape:Show(false)
+	self.wndRemovePopup:Invoke()
 end
 
 function HousingLandscape:OnRemoveDestroy()
 	self:RemoveCurrentPlug()
 	self:ResetPopups()
-	self.wndLandscape:Show(true)
+	self.wndLandscape:Invoke()
 	self.bHasChanged = true
 end
 
 function HousingLandscape:OnRemoveCancel()
 	self:ResetPopups()
-	self.wndLandscape:Show(true)
+	self.wndLandscape:Invoke()
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -1323,39 +1336,30 @@ function HousingLandscape:OnUpgradeBtn(wndControl, wndHandler)
 	end
 	
 	local iPlot = GetSelectedPlotIndex()
-    local tUpgrade = HousingLib.GetPlugUpgradeList(iPlot)
-	
-	local tPlug = HousingLib.GetPlot(iPlot)
-	local idPlugItem = tPlug.nPlugItemId
-    local tItemList = HousingLib.GetPlugItem(idPlugItem)
-    local tOldItemData = self:GetItem(idPlugItem, tItemList)
+	local pltPlot = HousingLib.GetPlot(iPlot)
+	local tUpgrade = pltPlot:GetPlugItemUpgrade()
+    local tOldPlugData = HousingLib.GetPlugItem(pltPlot:GetPlugItemId())
 	
 	local bHasUpgrade = false
 	self.wndPlugInfoFrame:FindChild("ViewPlugInfoFrame"):Show(false)
-	for idx = 1, #tUpgrade do --will show incorrectly if there's ever more than one in the table
-		local tItemData = tUpgrade[idx]
-		if self:SelectionMatches(tItemData.eType) then
-			bHasUpgrade = true
-			self:DrawTierUpgradeInfo(tItemData, tOldItemData)
-		end
-	end
+    if self:SelectionMatches(tUpgrade.eType) then
+        bHasUpgrade = true
+        self:DrawTierUpgradeInfo(tUpgrade, tOldPlugData)
+    end
 	
 	self.wndPlugInfoFrame:Show(bHasUpgrade)
 end
 
 ---------------------------------------------------------------------------------------------------
 function HousingLandscape:OnRotateBtn(wndHandler, wndControl)
-	self:ResetPopups()
-	
 	local iPlot = GetSelectedPlotIndex()
-	local tPlotInfo = HousingLib.GetPlot(iPlot)
-	self.eCurrPlotFacing = tPlotInfo.ePlugFacing
+	local pltPlot = HousingLib.GetPlot(iPlot)
+	self.eCurrPlotFacing = pltPlot:GetPlugFacing()
 	self:RotateWndUpdateFacing()
 	
+	self.wndLandscape:Close()
 	self.wndRotatePopup = Apollo.LoadForm(self.xmlDoc, "PopupRotate", nil, self)
-	self.wndRotatePopup:Show(true)
-	self.wndRotatePopup:ToFront()
-	self.wndLandscape:Show(false)
+	self.wndRotatePopup:Invoke()
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -1411,18 +1415,16 @@ function HousingLandscape:OnRotatePlace(wndHandler, wndControl, eMouseButton)
 	self:ResetPopups()
 	
 	local iPlot = GetSelectedPlotIndex()
-	local tPlotInfo = HousingLib.GetPlot(iPlot)
-	if tPlotInfo ~= nil then
-		local idPlugItem = tPlotInfo.nPlugItemId
-
-		HousingLib.SetPlugRotation(iPlot, idPlugItem, self.eCurrPlotFacing)
+	local pltPlot = HousingLib.GetPlot(iPlot)
+	if pltPlot ~= nil then
+		HousingLib.SetPlugRotation(iPlot, self.eCurrPlotFacing)
 	end
 end
 
 ---------------------------------------------------------------------------------------------------
 function HousingLandscape:OnRotateCancel(wndHandler, wndControl, eMouseButton)
 	self:ResetPopups()
-	self.wndLandscape:Show(true)
+	self.wndLandscape:Invoke()
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -1490,16 +1492,19 @@ function HousingLandscape:OnCancelRepairBtn(wndControl, wndHandler)
 		return
 	end
 
-    self.wndLandscape:Show(true)
+    self.wndLandscape:Invoke()
 end
 
 ---------------------------------------------------------------------------------------------------
 function HousingLandscape:OnRepairConfirmBtn(wndControl, wndHandler)
     local iPlot = GetSelectedPlotIndex()
-    HousingLib.RepairPlot(iPlot)
-    
-    self.wndLandscape:Show(true)
-	self.wndPlugInfoFrame:FindChild("InfoRepairBtn"):Enable(false)
+    local pltPlot = HousingLib.GetPlot(iPlot)
+    if pltPlot ~= nil then
+        pltPlot:RepairPlug()
+        self.wndPlugInfoFrame:FindChild("InfoRepairBtn"):Enable(false)
+    end    
+
+    self.wndLandscape:Invoke()
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -1613,7 +1618,7 @@ function HousingLandscape:OnReplaceOldDestroy(wndHandler, wndControl)
 	local bUserConfirmed = true
 	self:PlaceNewPlug(bUserConfirmed)
 	self:ResetPopups()
-	self.wndLandscape:Show(true)	
+	self.wndLandscape:Invoke()	
 	self.bHasChanged = true
 end
 
@@ -1624,7 +1629,7 @@ function HousingLandscape:OnReplaceOldPack(wndHandler, wndControl)
 	self:PlaceNewPlug(bUserConfirmed) -- place new
 	--self.wndCrateUnderPopup:Show(false)
 	self:ResetPopups()
-	self.wndLandscape:Show(true)
+	self.wndLandscape:Invoke()
 	self.bHasChanged = true	
 end
 
@@ -1729,7 +1734,7 @@ function HousingLandscape:OnLandscapeListItemCheck(wndHandler, wndControl, nX, n
 		local strColor = "UI_TextHoloTitle"	
 		if tItemData ~= nil then
 			if not tItemData.bAreCostRequirementsMet then
-				strColor = "xkcdReddish"	
+				strColor = "Reddish"	
 			end	
 		end	
 			
@@ -1761,10 +1766,10 @@ function HousingLandscape:OnLandscapeListItemCheck(wndHandler, wndControl, nX, n
 	if tItemData.tFlags.bIsUnique then
 		wndFlags:SetFont("CRB_InterfaceSmall")
 		wndFlags:SetTextColor(kcrEnabledColor)
-		local nPlots = HousingLib.GetPlotCount()
+		local nPlots = HousingLib.GetResidence():GetPlotCount()
 		for idx = 1, nPlots do
-			local tPlotInfo = HousingLib.GetPlot(idx)
-			if tPlotInfo.nPlugItemId == tItemData.nId then
+			local pltPlot = HousingLib.GetPlot(idx)
+			if pltPlot:GetPlugItemId() == tItemData.nId then
 				wndFlags:SetTextColor(kcrDisabledColor)
 			end
 		end
@@ -1772,12 +1777,10 @@ function HousingLandscape:OnLandscapeListItemCheck(wndHandler, wndControl, nX, n
 	elseif tItemData.tFlags.bIsUniqueHarvest then
 		wndFlags:SetFont("CRB_InterfaceSmall")
 		wndFlags:SetTextColor(kcrEnabledColor)
-		local nPlots = HousingLib.GetPlotCount()
+		local nPlots = HousingLib.GetResidence():GetPlotCount()
 		for idx = 1, nPlots do
-			local tPlotInfo = HousingLib.GetPlot(idx)
-			local idPlugItem = tPlotInfo.nPlugItemId
-			local tPlugItems = HousingLib.GetPlugItem(idPlugItem)
-			local tPlugItemData = self:GetItem(idPlugItem, tPlugItems)
+			local pltPlot = HousingLib.GetPlot(idx)
+			local tPlugItemData = HousingLib.GetPlugItem(pltPlot:GetPlugItemId())
 			if tPlugItemData ~= nil then
 				local tPlugFlags = tPlugItemData.tFlags
 				if tPlugFlags.bIsUniqueHarvest then
@@ -1789,12 +1792,10 @@ function HousingLandscape:OnLandscapeListItemCheck(wndHandler, wndControl, nX, n
 	elseif tItemData.tFlags.bIsUniqueGarden then
 		wndFlags:SetFont("CRB_InterfaceSmall")
 		wndFlags:SetTextColor(kcrEnabledColor)
-		local nPlots = HousingLib.GetPlotCount()
+		local nPlots = HousingLib.GetResidence():GetPlotCount()
 		for idx = 1, nPlots do
-			local tPlotInfo = HousingLib.GetPlot(idx)
-			local idPlugItem = tPlotInfo.nPlugItemId
-			local tPlugItems = HousingLib.GetPlugItem(idPlugItem)
-			local tPlugItemData = self:GetItem(idPlugItem, tPlugItems)
+			local pltPlot = HousingLib.GetPlot(idx)
+			local tPlugItemData = HousingLib.GetPlugItem(pltPlot:GetPlugItemId())
 			if tPlugItemData ~= nil then
 				local tPlugFlags = tPlugItemData.tFlags
 				if tPlugFlags.bIsUniqueGarden then
@@ -1820,65 +1821,67 @@ function HousingLandscape:OnLandscapeListItemCheck(wndHandler, wndControl, nX, n
 	local nCostEntryHeight = 0
 	local wndCost = wndCurrent:FindChild("CostComplex")
 
-	for idx, tCost in ipairs(tItemData.tCostRequirements) do
-	    local wndMoney = Apollo.LoadForm(self.xmlDoc, "CostEntry", wndCost:FindChild("CostEntryContainer"), self)
-		nCostCount = nCostCount + 1
-		nCostEntryHeight = wndMoney:GetHeight()
+	if tItemData.kUpsellLink == 0 then
+		for idx, tCost in ipairs(tItemData.tCostRequirements) do
+			local wndMoney = Apollo.LoadForm(self.xmlDoc, "CostEntry", wndCost:FindChild("CostEntryContainer"), self)
+			nCostCount = nCostCount + 1
+			nCostEntryHeight = wndMoney:GetHeight()
 
-	    if tCost.eType == 1 then -- cash
-	        wndMoney:FindChild("ItemLabel"):Show(false)
-	        wndMoney:FindChild("SourceIcon"):Show(true)
-	        wndMoney:FindChild("CashWindow"):Show(true)
-	        wndMoney:FindChild("SourceIcon"):SetMoneyInfo(Money.CodeEnumCurrencyType.Credits, tCost.nRequiredCost)
-	        wndMoney:FindChild("CashWindow"):SetMoneySystem(Money.CodeEnumCurrencyType.Credits)
-	        wndMoney:FindChild("CashWindow"):SetAmount(tCost.nRequiredCost)
-			wndMoney:FindChild("CashWindow"):SetTextColor(kcrEnabledColor)
+			if tCost.eType == 1 then -- cash
+				wndMoney:FindChild("ItemLabel"):Show(false)
+				wndMoney:FindChild("SourceIcon"):Show(true)
+				wndMoney:FindChild("CashWindow"):Show(true)
+				wndMoney:FindChild("SourceIcon"):SetMoneyInfo(Money.CodeEnumCurrencyType.Credits, tCost.nRequiredCost)
+				wndMoney:FindChild("CashWindow"):SetMoneySystem(Money.CodeEnumCurrencyType.Credits)
+				wndMoney:FindChild("CashWindow"):SetAmount(tCost.nRequiredCost)
+				wndMoney:FindChild("CashWindow"):SetTextColor(kcrEnabledColor)
 
-			if tCost.nRequiredCost > GameLib.GetPlayerCurrency():GetAmount() then
-				wndMoney:FindChild("CashWindow"):SetTextColor(kcrDisabledColor)
+				if tCost.nRequiredCost > GameLib.GetPlayerCurrency():GetAmount() then
+					wndMoney:FindChild("CashWindow"):SetTextColor(kcrDisabledColor)
+				end
+				
+			elseif tCost.eType == 2 and tCost.itemCostReq ~= nil then -- item
+				wndMoney:FindChild("CashWindow"):Show(false)
+				wndMoney:FindChild("SourceIcon"):Show(true)
+				wndMoney:FindChild("ItemLabel"):Show(true)
+				wndMoney:FindChild("ItemLabel"):SetText(String_GetWeaselString(Apollo.GetString("HousingLandscape_ItemCostLabel"), tCost.nRequiredCost, tCost.itemCostReq:GetName()))
+				wndMoney:FindChild("SourceIcon"):SetSprite(tCost.itemCostReq:GetIcon())
+				wndMoney:FindChild("SourceIcon"):SetItemInfo(tCost.itemCostReq, tCost.nRequiredCost)
+				wndMoney:FindChild("ItemLabel"):SetTextColor(kcrEnabledColor)
+				
+				if tCost.nAvailableCount ~= nil and tCost.nAvailableCount < tCost.nRequiredCost then
+					wndMoney:FindChild("ItemLabel"):SetTextColor(kcrDisabledColor)
+					wndMoney:FindChild("ItemLabel"):SetText(String_GetWeaselString(Apollo.GetString("HousingLandscape_ItemCostBackpack"), tCost.nAvailableCount, tCost.nRequiredCost, tCost.itemCostReq:GetName()))
+				end
+				
+			elseif tCost.eType == 3 then -- other currency			
+				wndMoney:FindChild("ItemLabel"):Show(false)
+				wndMoney:FindChild("SourceIcon"):Show(true)
+				wndMoney:FindChild("CashWindow"):Show(true)
+				wndMoney:FindChild("SourceIcon"):SetMoneyInfo(Money.CodeEnumCurrencyType.Renown, tCost.nRequiredCost)
+				wndMoney:FindChild("CashWindow"):SetMoneySystem(Money.CodeEnumCurrencyType.Renown)
+				wndMoney:FindChild("CashWindow"):SetAmount(tCost.nRequiredCost)
+				wndMoney:FindChild("CashWindow"):SetTextColor(kcrEnabledColor)
+				
+				if tCost.nRequiredCost > GameLib.GetPlayerCurrency(Money.CodeEnumCurrencyType.Renown):GetAmount() then
+					wndMoney:FindChild("CashWindow"):SetTextColor(kcrDisabledColor)
+				end			
+				
+			elseif tCost.eType == 4 then -- War Coins			
+				wndMoney:FindChild("ItemLabel"):Show(false)
+				wndMoney:FindChild("SourceIcon"):Show(true)
+				wndMoney:FindChild("CashWindow"):Show(true)
+				wndMoney:FindChild("SourceIcon"):SetMoneyInfo(Money.CodeEnumCurrencyType.GroupCurrency, tCost.nRequiredCost, Money.CodeEnumGroupCurrencyType.WarCoins)
+				wndMoney:FindChild("CashWindow"):SetMoneySystem(Money.CodeEnumCurrencyType.GroupCurrency, Money.CodeEnumGroupCurrencyType.WarCoins)
+				wndMoney:FindChild("CashWindow"):SetAmount(tCost.nRequiredCost)
+				wndMoney:FindChild("CashWindow"):SetTextColor(kcrEnabledColor)
+				
+				if tCost.nRequiredCost > GetWarCoins() then
+					wndMoney:FindChild("CashWindow"):SetTextColor(kcrDisabledColor)
+				end			
 			end
-			
-	    elseif tCost.eType == 2 and tCost.itemCostReq ~= nil then -- item
-	        wndMoney:FindChild("CashWindow"):Show(false)
-	        wndMoney:FindChild("SourceIcon"):Show(true)
-	        wndMoney:FindChild("ItemLabel"):Show(true)
-	        wndMoney:FindChild("ItemLabel"):SetText(String_GetWeaselString(Apollo.GetString("HousingLandscape_ItemCostLabel"), tCost.nRequiredCost, tCost.itemCostReq:GetName()))
-            wndMoney:FindChild("SourceIcon"):SetSprite(tCost.itemCostReq:GetIcon())
-            wndMoney:FindChild("SourceIcon"):SetItemInfo(tCost.itemCostReq, tCost.nRequiredCost)
-			wndMoney:FindChild("ItemLabel"):SetTextColor(kcrEnabledColor)
-			
-			if tCost.nAvailableCount ~= nil and tCost.nAvailableCount < tCost.nRequiredCost then
-				wndMoney:FindChild("ItemLabel"):SetTextColor(kcrDisabledColor)
-				wndMoney:FindChild("ItemLabel"):SetText(String_GetWeaselString(Apollo.GetString("HousingLandscape_ItemCostBackpack"), tCost.nAvailableCount, tCost.nRequiredCost, tCost.itemCostReq:GetName()))
-			end
-			
-        elseif tCost.eType == 3 then -- other currency			
-	        wndMoney:FindChild("ItemLabel"):Show(false)
-	        wndMoney:FindChild("SourceIcon"):Show(true)
-	        wndMoney:FindChild("CashWindow"):Show(true)
-	        wndMoney:FindChild("SourceIcon"):SetMoneyInfo(Money.CodeEnumCurrencyType.Renown, tCost.nRequiredCost)
-	        wndMoney:FindChild("CashWindow"):SetMoneySystem(Money.CodeEnumCurrencyType.Renown)
-	        wndMoney:FindChild("CashWindow"):SetAmount(tCost.nRequiredCost)
-			wndMoney:FindChild("CashWindow"):SetTextColor(kcrEnabledColor)
-			
-			if tCost.nRequiredCost > GameLib.GetPlayerCurrency(Money.CodeEnumCurrencyType.Renown):GetAmount() then
-				wndMoney:FindChild("CashWindow"):SetTextColor(kcrDisabledColor)
-			end			
-			
-        elseif tCost.eType == 4 then -- War Coins			
-	        wndMoney:FindChild("ItemLabel"):Show(false)
-	        wndMoney:FindChild("SourceIcon"):Show(true)
-	        wndMoney:FindChild("CashWindow"):Show(true)
-	        wndMoney:FindChild("SourceIcon"):SetMoneyInfo(Money.CodeEnumCurrencyType.GroupCurrency, tCost.nRequiredCost, Money.CodeEnumGroupCurrencyType.WarCoins)
-	        wndMoney:FindChild("CashWindow"):SetMoneySystem(Money.CodeEnumCurrencyType.GroupCurrency, Money.CodeEnumGroupCurrencyType.WarCoins)
-	        wndMoney:FindChild("CashWindow"):SetAmount(tCost.nRequiredCost)
-			wndMoney:FindChild("CashWindow"):SetTextColor(kcrEnabledColor)
-			
-			if tCost.nRequiredCost > GetWarCoins() then
-				wndMoney:FindChild("CashWindow"):SetTextColor(kcrDisabledColor)
-			end			
-	    end
-	end	
+		end
+	end
 	
 	wndCost:FindChild("CostEntryContainer"):ArrangeChildrenVert()
 	
@@ -1889,6 +1892,8 @@ function HousingLandscape:OnLandscapeListItemCheck(wndHandler, wndControl, nX, n
 		wndCost:Show(true)
 		wndCost:SetAnchorOffsets(nLeft4, nBottom3 + nPadding, nRight4, nBottom3 + nPadding + nTopDif + (nCostEntryHeight * nCostCount) - nBottomDif) -- last one is negative
 		nLeft4, nTop4, nRight4, nBottom4 = wndCost:GetAnchorOffsets()
+	elseif nCostCount <= 0 and tItemData.kUpsellLink ~= 0 then
+		wndCost:Show(false)
 	else
 		wndCost:Show(false)
 		nBottom4 = nBottom3
@@ -1910,34 +1915,33 @@ function HousingLandscape:OnLandscapeListItemCheck(wndHandler, wndControl, nX, n
 end
 
 function HousingLandscape:OnHousingPlugItemsUpdated()
-	
-	local iCurrPlot = GetSelectedPlotIndex()
-
-  -- if self.upgradeListDisplayed then
-   --     self.vendorItemsLandscape = HousingLib.GetPlugUpgradeList(curPlotIndex)
-  --  else
-	self.tVendorItemsLandscape = HousingLib.GetVendorList()
-	--end
-	
-	self.tStorageItemsLandscape = HousingLib.GetStorageList()
-	
 	self.wndSearch:SetText("")
 	self.wndClearSearchBtn:Show(false)
 	
 	self.idUniqueItem = nil
 
     self.wndTogglePreview:Enable(false)
+    
+    self.tVendorItemsLandscape = HousingLib.GetVendorList()
 	self:ShowItemList(self.wndStructureList, self.tVendorItemsLandscape)
 	
 	self:HelperTogglePreview(false)
 
-	if HousingLib.IsWarplotResidence() then	
+	if HousingLib.GetResidence() ~= nil and HousingLib.GetResidence():IsWarplotResidence() then	
         self.wndCashLandscape:SetMoneySystem(Money.CodeEnumCurrencyType.GroupCurrency, Money.CodeEnumGroupCurrencyType.WarCoins)
 		self.wndCashLandscape:SetAmount(GetWarCoins())
 		self.wndMaintenanceCost:SetText(String_GetWeaselString(Apollo.GetString("Warparty_TotalBattleMaintenance"), HousingLib.GetWarplotMaintenanceCost()))
 	else
         self.wndCashLandscape:SetMoneySystem(Money.CodeEnumCurrencyType.Credits)
 		self.wndCashLandscape:SetAmount(GameLib.GetPlayerCurrency())
+	end
+end
+
+---------------------------------------------------------------------------------------------------
+function HousingLandscape:OnMTXUpsellBtn(wndControl, wndHandler)
+	local tItemInfo = HousingLib.GetPlugItem(self.idUniqueItem)
+	if tItemInfo.kUpsellLink ~= 0 then
+		StorefrontLib.OpenLink(tItemInfo.kUpsellLink)
 	end
 end
 
@@ -2022,20 +2026,24 @@ function HousingLandscape:ShowItemList(wndList, tItemList)
 
 		-- populate the buttons with the tItemData data
 	for idx, tItemData in pairs(tItemList) do
+		local bHasUpsell = tItemData.kUpsellLink ~= 0
 		if tItemData and self:SelectionMatches(tItemData.eType) then
 			-- this pruneId means we've want to disallow this tItemData 
 			local bPruned = false
-			local tPrunedPlug = HousingLib.GetPlot(iCurrPlot)
-			local idPrunedPlug = tPrunedPlug.nPlugItemId
-			local tPrunedItems = HousingLib.GetPlugItem(idPrunedPlug)
-			local tPrunedItemData = self:GetItem(idPrunedPlug, tPrunedItems)
+			local pltPlot = HousingLib.GetPlot(iCurrPlot)
+			local tPrunedItemData = HousingLib.GetPlugItem(pltPlot:GetPlugItemId())
 			if tPrunedItemData == nil or tPrunedItemData ~= nil and tPrunedItemData.nId ~= tItemData.nId then				
 				local wndEntry = Apollo.LoadForm(self.xmlDoc, "HousingLandscapeEntry", wndList, self)
 				local nLeft, nTop, nRight, nBottom = wndEntry:GetAnchorOffsets()
 				wndEntry:SetAnchorOffsets(nLeft, nTop, nRight, knDefaultEntryHieght)
 				wndEntry:FindChild("Title"):SetText(tItemData.strName)
+				
+				if bHasUpsell then
+					wndEntry:FindChild("UpsellBtn"):Show(true)
+					wndEntry:FindChild("MTXIcon"):Show(true)
+				end
 
-				if not tItemData.bAreCostRequirementsMet or not self.luaLandscapeProposedControl:IsNotUnique(tItemData, iCurrPlot)then
+				if not tItemData.bAreCostRequirementsMet or not self.luaLandscapeProposedControl:IsNotUnique(tItemData, iCurrPlot) or bHasUpsell then
 					wndEntry:FindChild("Title"):SetTextColor(kcrDisabledColor) 
 				else
 					wndEntry:FindChild("Title"):SetTextColor(kcrEnabledColor)
@@ -2210,8 +2218,12 @@ function HousingLandscape:HelperSetPlotlines(iPlot)
 	local wndButtons = nil
 	local nFirstIndex = nil
 	local nTotalPlots = nil
+	
+	if HousingLib.GetResidence() == nil then
+	    return
+	end
 
-	if HousingLib.IsWarplotResidence() then
+	if HousingLib.GetResidence():IsWarplotResidence() then
 		nFirstIndex = 2
 		nTotalPlots = knTotalWarplots
 		wndContainer = self.wndLandscape:FindChild("WarplotGuidelines")
@@ -2345,7 +2357,7 @@ local HousingLandscapeInst = HousingLandscape:new()
 HousingLandscapeInst:Init()
 
 function GetSelectedPlotIndex()
-	if HousingLib.IsWarplotResidence() then	
+	if HousingLib.GetResidence() ~= nil and HousingLib.GetResidence():IsWarplotResidence() then	
 		return tonumber(HousingLandscapeInst.wndLandscape:FindChild("WarplotLandscapeFrame"):GetRadioSel("WarplotGroup"))
 	else
 		return tonumber(HousingLandscapeInst.wndLandscape:FindChild("LandscapeFrame"):GetRadioSel("PlotGroup"))

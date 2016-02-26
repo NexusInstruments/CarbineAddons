@@ -113,7 +113,7 @@ function HousingAlerts:OnHousingResult( strName, eResult )
 		Event_FireGenericEvent("HousingResultInterceptResponse", eResult, wndIntercept, strAlertMessage )
 	else
 		local strWrapperId = "HousingList_Error"
-		if HousingLib.IsWarplotResidence() then
+		if HousingLib.GetResidence() ~= nil and HousingLib.GetResidence():IsWarplotResidence() then
 			strWrapperId = "Warplot_Error"
 		end
 		ChatSystemLib.PostOnChannel(ChatSystemLib.ChatChannel_System, String_GetWeaselString(Apollo.GetString(strWrapperId), strAlertMessage), "")

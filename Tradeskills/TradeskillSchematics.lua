@@ -290,14 +290,14 @@ function TradeskillSchematics:ResizeTree()
 				else
 					wndMiddle:FindChild("MiddleLevelItems"):DestroyChildren()
 				end
-				local nMiddleHeight = wndMiddle:FindChild("MiddleLevelItems"):ArrangeChildrenVert(0)
+				local nMiddleHeight = wndMiddle:FindChild("MiddleLevelItems"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 				if nMiddleHeight > 0 then
 					nMiddleHeight = nMiddleHeight + 6
 				end
 
 				local nLeft, nTop, nRight, nBottom = wndMiddle:GetAnchorOffsets()
 				wndMiddle:SetAnchorOffsets(nLeft, nTop, nRight, nTop + self.knMiddleLevelHeight + nMiddleHeight)
-				wndMiddle:FindChild("MiddleLevelItems"):ArrangeChildrenVert(0)
+				wndMiddle:FindChild("MiddleLevelItems"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 				nTopHeight = nTopHeight + nMiddleHeight + 1
 			end
 			bFoundSelected = true
@@ -309,13 +309,13 @@ function TradeskillSchematics:ResizeTree()
 		local nMiddleHeight = #wndTop:FindChild("TopLevelItems"):GetChildren() * self.knMiddleLevelHeight
 		local nLeft, nTop, nRight, nBottom = wndTop:GetAnchorOffsets()
 		wndTop:SetAnchorOffsets(nLeft, nTop, nRight, nTop + self.knTopLevelHeight + nMiddleHeight + nTopHeight)
-		wndTop:FindChild("TopLevelItems"):ArrangeChildrenVert(0)
+		wndTop:FindChild("TopLevelItems"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 		if not bFoundSelected then
 			nScrollPos = nScrollPos + wndTop:GetHeight()
 		end
 	end
 
-	wndLeftSideScroll:ArrangeChildrenVert(0)
+	wndLeftSideScroll:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	wndLeftSideScroll:RecalculateContentExtents()
 	wndLeftSideScroll:SetVScrollPos(bFoundSelected and nScrollPos or 0)
 end
@@ -431,18 +431,17 @@ function TradeskillSchematics:DrawSchematic(tSchematic)
 	local bHaveEnoughMats = true
 	local nNumCraftable = 9000
 	wndSchem:FindChild("MaterialsScroll"):DestroyChildren()
-	for key, tMaterial in pairs(tSchematicInfo.tMaterials) do
-		if tMaterial.nAmount > 0 then
+	for key, tMaterial in pairs(tSchematicInfo.arMaterials) do
+		if tMaterial.nNeeded > 0 then
 			local wndMaterial = Apollo.LoadForm(self.xmlDoc, "MaterialsItem", wndSchem:FindChild("MaterialsScroll"), self)
-			local nOwnedCount = tMaterial.itemMaterial:GetBackpackCount() + tMaterial.itemMaterial:GetBankCount()
 			wndMaterial:FindChild("MaterialsIcon"):SetSprite(tMaterial.itemMaterial:GetIcon())
 			wndMaterial:FindChild("MaterialsName"):SetText(tMaterial.itemMaterial:GetName())
-			wndMaterial:FindChild("MaterialsIcon"):SetText(String_GetWeaselString(Apollo.GetString("CRB_NOutOfN"), nOwnedCount, tMaterial.nAmount))
-			wndMaterial:FindChild("MaterialsIconNotEnough"):Show(nOwnedCount < tMaterial.nAmount)
+			wndMaterial:FindChild("MaterialsIcon"):SetText(String_GetWeaselString(Apollo.GetString("CRB_NOutOfN"), tMaterial.nOwned, tMaterial.nNeeded))
+			wndMaterial:FindChild("MaterialsIconNotEnough"):Show(tMaterial.nOwned < tMaterial.nNeeded)
 			self:HelperBuildItemTooltip(wndMaterial, tMaterial.itemMaterial)
 
-			nNumCraftable = math.min(nNumCraftable, math.floor(nOwnedCount / tMaterial.nAmount))
-			bHaveEnoughMats = bHaveEnoughMats and nOwnedCount >= tMaterial.nAmount
+			nNumCraftable = math.min(nNumCraftable, math.floor(tMaterial.nOwned / tMaterial.nNeeded))
+			bHaveEnoughMats = bHaveEnoughMats and tMaterial.nOwned >= tMaterial.nNeeded
 		end
 	end
 
@@ -456,14 +455,9 @@ function TradeskillSchematics:DrawSchematic(tSchematic)
 				nBackpackCount = nBackpackCount + itemMaterial:GetStackCount() -- Makes sense to not include Power Cores in bank
 			end
 
-			local strPowerCore = Apollo.GetString("CBCrafting_PowerCore")
-			if karPowerCoreTierToString[tSchematicInfo.eTier] then
-				strPowerCore = String_GetWeaselString(Apollo.GetString("Tradeskills_AnyPowerCore"), karPowerCoreTierToString[tSchematicInfo.eTier])
-			end
-
-			wndMaterial:FindChild("MaterialsIcon"):SetSprite("Icon_CraftingUI_Item_Crafting_PowerCore_Green")
+			wndMaterial:FindChild("MaterialsIcon"):SetSprite("Icon_CraftingIcon_powerCore_IconSprites_White_Icon")
 			wndMaterial:FindChild("MaterialsIcon"):SetText(String_GetWeaselString(Apollo.GetString("CRB_NOutOfN"), nBackpackCount, "1"))
-			wndMaterial:FindChild("MaterialsName"):SetText(strPowerCore)
+			wndMaterial:FindChild("MaterialsName"):SetText(Apollo.GetString("CBCrafting_PowerCore"))
 			wndMaterial:FindChild("MaterialsIconNotEnough"):Show(nBackpackCount < 1)
 			wndMaterial:SetTooltip(Apollo.GetString("CBCrafting_PowerCoreHelperTooltip"))
 			nNumCraftable = math.min(nNumCraftable, nBackpackCount)
@@ -493,41 +487,45 @@ function TradeskillSchematics:DrawSchematic(tSchematic)
 	wndSchem:FindChild("SchematicItemType"):SetText(tSchematic.strItemTypeName.." \n"..strRequiredLevelAppend..strNumCraftable)
 
 	-- TODO: Resize depending if there are Subrecipes
-	local nLeft, nTop, nRight, nBottom = wndSchem:FindChild("RightTopBG"):GetAnchorOffsets()
-	wndSchem:FindChild("RightTopBG"):SetAnchorOffsets(nLeft, nTop, nRight, #tSchematicInfo.tSubRecipes > 0 and 310 or 480) -- TODO: SUPER HARDCODED FORMATTING
+	if tSchematicInfo.tSubRecipes ~= nil then
+		local nLeft, nTop, nRight, nBottom = wndSchem:FindChild("RightTopBG"):GetAnchorOffsets()
+		wndSchem:FindChild("RightTopBG"):SetAnchorOffsets(nLeft, nTop, nRight, #tSchematicInfo.tSubRecipes > 0 and 310 or 480) -- TODO: SUPER HARDCODED FORMATTING
+		
+		-- Subrecipes
+		wndSchem:FindChild("RightSubrecipes"):Show(#tSchematicInfo.tSubRecipes > 0)
+		wndSchem:FindChild("SubrecipesListScroll"):DestroyChildren()
 
-	-- Subrecipes
-	wndSchem:FindChild("RightSubrecipes"):Show(#tSchematicInfo.tSubRecipes > 0)
-	wndSchem:FindChild("SubrecipesListScroll"):DestroyChildren()
-
-	for key, tSubrecipe in pairs(tSchematicInfo.tSubRecipes) do
-		local tSubrecipeInfo = CraftingLib.GetSchematicInfo(tSubrecipe.nSchematicId)
-		local wndSubrecipe = Apollo.LoadForm(self.xmlDoc, "SubrecipesItem", wndSchem:FindChild("SubrecipesListScroll"), self)
-		local wndSubrecipesLeftName = wndSubrecipe:FindChild("SubrecipesLeftName")
-		wndSubrecipe:FindChild("SubrecipesLeftDiscoverableBG"):Show(not tSubrecipe.bIsKnown and tSubrecipe.bIsUndiscovered)
-		wndSubrecipe:FindChild("SubrecipesLeftLockedBG"):Show(not tSubrecipe.bIsKnown and not tSubrecipe.bIsUndiscovered)
-		wndSubrecipe:FindChild("SubrecipesLeftIcon"):SetSprite(tSubrecipe.itemOutput:GetIcon())
-		wndSubrecipe:FindChild("SubrecipesLeftIcon"):SetText(tSubrecipeInfo.nCreateCount <= 1 and "" or tSubrecipeInfo.nCreateCount)
-		wndSubrecipe:FindChild("SubrecipesLeftName"):SetText(tSubrecipe.itemOutput:GetName())
-		wndSubrecipesLeftName:SetAML(string.format("<P Font=\"CRB_InterfaceMedium\" TextColor=\"UI_TextHoloBody\">%s</P>", tSubrecipe.itemOutput:GetName()))
-		local nLeftRecipe, nTopRecipe, nRightRecipe, nBottomRecipe = wndSubrecipesLeftName:GetAnchorOffsets()
-		wndSubrecipesLeftName:SetHeightToContentHeight()
-
-		if wndSubrecipesLeftName:GetHeight() >= 47 then -- 47 is height of ~2 lines
-			wndSubrecipesLeftName:SetAML(string.format("<P Font=\"CRB_InterfaceSmall\" TextColor=\"UI_TextHoloBody\">%s</P>", tSubrecipe.itemOutput:GetName()))
-			wndSubrecipesLeftName:SetAnchorOffsets(nLeftRecipe, nTopRecipe, nRightRecipe, 47)
-		else
+		for key, tSubrecipe in pairs(tSchematicInfo.tSubRecipes) do
+			local tSubrecipeInfo = CraftingLib.GetSchematicInfo(tSubrecipe.nSchematicId)
+			local wndSubrecipe = Apollo.LoadForm(self.xmlDoc, "SubrecipesItem", wndSchem:FindChild("SubrecipesListScroll"), self)
+			local wndSubrecipesLeftName = wndSubrecipe:FindChild("SubrecipesLeftName")
+			wndSubrecipe:FindChild("SubrecipesLeftDiscoverableBG"):Show(not tSubrecipe.bIsKnown and tSubrecipe.bIsUndiscovered)
+			wndSubrecipe:FindChild("SubrecipesLeftLockedBG"):Show(not tSubrecipe.bIsKnown and not tSubrecipe.bIsUndiscovered)
+			wndSubrecipe:FindChild("SubrecipesLeftIcon"):SetSprite(tSubrecipe.itemOutput:GetIcon())
+			wndSubrecipe:FindChild("SubrecipesLeftIcon"):SetText(tSubrecipeInfo.nCreateCount <= 1 and "" or tSubrecipeInfo.nCreateCount)
+			wndSubrecipe:FindChild("SubrecipesLeftName"):SetText(tSubrecipe.itemOutput:GetName())
 			wndSubrecipesLeftName:SetAML(string.format("<P Font=\"CRB_InterfaceMedium\" TextColor=\"UI_TextHoloBody\">%s</P>", tSubrecipe.itemOutput:GetName()))
+			local nLeftRecipe, nTopRecipe, nRightRecipe, nBottomRecipe = wndSubrecipesLeftName:GetAnchorOffsets()
+			wndSubrecipesLeftName:SetHeightToContentHeight()
+
+			if wndSubrecipesLeftName:GetHeight() >= 47 then -- 47 is height of ~2 lines
+				wndSubrecipesLeftName:SetAML(string.format("<P Font=\"CRB_InterfaceSmall\" TextColor=\"UI_TextHoloBody\">%s</P>", tSubrecipe.itemOutput:GetName()))
+				wndSubrecipesLeftName:SetAnchorOffsets(nLeftRecipe, nTopRecipe, nRightRecipe, 47)
+			else
+				wndSubrecipesLeftName:SetAML(string.format("<P Font=\"CRB_InterfaceMedium\" TextColor=\"UI_TextHoloBody\">%s</P>", tSubrecipe.itemOutput:GetName()))
+			end
+
+			wndSubrecipe:FindChild("SubrecipesLeftNameVertContainer"):ArrangeChildrenVert(1)
+
+			self:HelperBuildItemTooltip(wndSubrecipe, tSubrecipe.itemOutput)
+			-- TODO SubrecipesRight for Critical Successes
 		end
-
-		wndSubrecipe:FindChild("SubrecipesLeftNameVertContainer"):ArrangeChildrenVert(1)
-
-		self:HelperBuildItemTooltip(wndSubrecipe, tSubrecipe.itemOutput)
-		-- TODO SubrecipesRight for Critical Successes
+	else
+		wndSchem:FindChild("RightSubrecipes"):Show(false)
 	end
 
-	wndSchem:FindChild("MaterialsScroll"):ArrangeChildrenTiles(0)
-	wndSchem:FindChild("SubrecipesListScroll"):ArrangeChildrenTiles(0)
+	wndSchem:FindChild("MaterialsScroll"):ArrangeChildrenTiles(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	wndSchem:FindChild("SubrecipesListScroll"):ArrangeChildrenTiles(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function TradeskillSchematics:OnLockedLinkBtn(wndHandler, wndControl) -- LockedLinkBtn, data is achSource
@@ -551,7 +549,7 @@ function TradeskillSchematics:OnRightBottomSimpleCraftBtn(wndHandler, wndControl
 		-- Count materials
 		local tSchematicInfo = CraftingLib.GetSchematicInfo(nSimpleCraftId)
 		local strSummaryMsg = Apollo.GetString("CoordCrafting_LastCraftTooltip")
-		for idx, tData in pairs(tSchematicInfo.tMaterials) do
+		for idx, tData in pairs(tSchematicInfo.arMaterials) do
 			local itemCurr = tData.itemMaterial
 			local tPluralName =
 			{
@@ -617,7 +615,7 @@ function TradeskillSchematics:OnSearchTopLeftInputBoxChanged() -- Also called in
 		strEmptyMessage = Apollo.GetString("Tradeskills_NoResults")
 	end
 	self.wndMain:FindChild("LeftSideSearchResultsList"):SetText(strEmptyMessage)
-	self.wndMain:FindChild("LeftSideSearchResultsList"):ArrangeChildrenVert(0)
+	self.wndMain:FindChild("LeftSideSearchResultsList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 -----------------------------------------------------------------------------------------------
@@ -636,9 +634,8 @@ function TradeskillSchematics:HelperHaveEnoughMaterials(tSchematic)
 
 	-- Materials
 	local tSchematicInfo = CraftingLib.GetSchematicInfo(tSchematic.nSchematicId)
-	for key, tMaterial in pairs(tSchematicInfo.tMaterials) do
-		local nOwnedCount = tMaterial.itemMaterial:GetBackpackCount() + tMaterial.itemMaterial:GetBankCount()
-		if nOwnedCount < tMaterial.nAmount then
+	for key, tMaterial in pairs(tSchematicInfo.arMaterials) do
+		if tMaterial.nOwned < tMaterial.nNeeded then
 			bHasEnoughMaterials = false
 		end
 	end
@@ -648,8 +645,8 @@ function TradeskillSchematics:HelperHaveEnoughMaterials(tSchematic)
 		local tAvailableCores = CraftingLib.GetAvailablePowerCores(tSchematic.nSchematicId)
 		if tAvailableCores then -- Some crafts won't have power cores
 			local nBackpackCount = 0
-			for idx, tMaterial in pairs(tAvailableCores) do
-				nBackpackCount = nBackpackCount + tMaterial:GetBackpackCount() -- Makes sense to not include Power Cores in bank
+			for idx, itemCore in pairs(tAvailableCores) do
+				nBackpackCount = nBackpackCount + itemCore:GetBackpackCount() -- Makes sense to not include Power Cores in bank
 			end
 			if nBackpackCount < 1 then
 				bHasEnoughMaterials = false
@@ -659,8 +656,8 @@ function TradeskillSchematics:HelperHaveEnoughMaterials(tSchematic)
 
 	-- One Use
 	if tSchematic.bIsOneUse then
-		local tFirstMat = tSchematicInfo.tMaterials[1] -- GOTCHA: Design has assured the recipe is always the first
-		bValidOneUse = (tFirstMat.itemMaterial:GetBackpackCount() + tFirstMat.itemMaterial:GetBankCount()) >= tFirstMat.nAmount
+		local tFirstMat = tSchematicInfo.arMaterials[1] -- GOTCHA: Design has assured the recipe is always the first
+		bValidOneUse = tFirstMat.nOwned >= tFirstMat.nNeeded
 	end
 
 	return bHasEnoughMaterials, bValidOneUse

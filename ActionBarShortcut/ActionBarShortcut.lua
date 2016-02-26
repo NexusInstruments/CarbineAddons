@@ -5,7 +5,6 @@
 require "Window"
 require "Unit"
 require "ActionSetLib"
-require "AttributeMilestonesLib"
 
 local ActionBarShortcut = {}
 local knVersion			= 1
@@ -72,6 +71,7 @@ function ActionBarShortcut:OnDocumentReady()
 	self.timerShorcutArt = ApolloTimer.Create(0.5, false, "OnActionBarShortcutArtTimer", self)
 	self.timerShorcutArt:Stop()
 	Apollo.RegisterEventHandler("ShowActionBarShortcut", "ShowWindow", self)
+	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", "OnTutorial_RequestUIAnchor", self)
 
 	local tShortcutCount = {}
 	
@@ -80,18 +80,18 @@ function ActionBarShortcut:OnDocumentReady()
 	--Floating Bar - Docked
 	self.tActionBars = {}
 	for idx = knStartingBar, knMaxBars do
-		local wndCurrBar = Apollo.LoadForm(self.xmlDoc, "ActionBarShortcut", "FixedHudStratum", self)
+		local wndCurrBar = Apollo.LoadForm(self.xmlDoc, "ActionBarShortcut", "FixedHudStratumHigh5", self)
 		wndCurrBar:FindChild("ActionBarContainer"):DestroyChildren() -- TODO can remove
 		wndCurrBar:Show(false)
 
-		for iBar = 0, 7 do
+		for nButton = 0, 7 do
 			local wndBarItem = Apollo.LoadForm(self.xmlDoc, "ActionBarShortcutItem", wndCurrBar:FindChild("ActionBarContainer"), self)
-			wndBarItem:FindChild("ActionBarShortcutBtn"):SetContentId(idx * 12 + iBar)
+			wndBarItem:FindChild("ActionBarShortcutBtn"):SetContentId(idx * 12 + nButton)
 			if wndBarItem:FindChild("ActionBarShortcutBtn"):GetContent()["strIcon"] ~= "" then
-				tShortcutCount[idx] = iBar + 1
+				tShortcutCount[idx] = nButton + 1
 			end
 			
-			wndCurrBar:FindChild("ActionBarContainer"):ArrangeChildrenHorz(0)
+			wndCurrBar:FindChild("ActionBarContainer"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 		end
 
 		wndCurrBar:FindChild("DockBtn"):SetCheck(not self.bDocked)
@@ -106,14 +106,14 @@ function ActionBarShortcut:OnDocumentReady()
 		wndCurrBar:FindChild("ActionBarContainer"):DestroyChildren() -- TODO can remove
 		wndCurrBar:Show(false)
 
-		for iBar = 0, 7 do
+		for nButton = 0, 7 do
 			local wndBarItem = Apollo.LoadForm(self.xmlDoc, "ActionBarShortcutItem", wndCurrBar:FindChild("ActionBarContainer"), self)
-			wndBarItem:FindChild("ActionBarShortcutBtn"):SetContentId(idx * 12 + iBar)
+			wndBarItem:FindChild("ActionBarShortcutBtn"):SetContentId(idx * 12 + nButton)
 			if wndBarItem:FindChild("ActionBarShortcutBtn"):GetContent()["strIcon"] ~= "" then
-				tShortcutCount[idx] = iBar + 1
+				tShortcutCount[idx] = nButton + 1
 			end
 			
-			wndCurrBar:FindChild("ActionBarContainer"):ArrangeChildrenHorz(0)
+			wndCurrBar:FindChild("ActionBarContainer"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 		end
 
 		wndCurrBar:FindChild("DockBtn"):SetCheck(not self.bDocked)
@@ -128,14 +128,14 @@ function ActionBarShortcut:OnDocumentReady()
 		wndCurrBar:FindChild("ActionBarContainer"):DestroyChildren() -- TODO can remove
 		wndCurrBar:Show(false)
 
-		for iBar = 0, 7 do
+		for nButton = 0, 7 do
 			local wndBarItem = Apollo.LoadForm(self.xmlDoc, "ActionBarShortcutItem", wndCurrBar:FindChild("ActionBarContainer"), self)
-			wndBarItem:FindChild("ActionBarShortcutBtn"):SetContentId(idx * 12 + iBar)
+			wndBarItem:FindChild("ActionBarShortcutBtn"):SetContentId(idx * 12 + nButton)
 			if wndBarItem:FindChild("ActionBarShortcutBtn"):GetContent()["strIcon"] ~= "" then
-				tShortcutCount[idx] = iBar + 1
+				tShortcutCount[idx] = nButton + 1
 			end
 			
-			wndCurrBar:FindChild("ActionBarContainer"):ArrangeChildrenVert(0)
+			wndCurrBar:FindChild("ActionBarContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 		end
 
 		wndCurrBar:FindChild("DockBtn"):SetCheck(not self.bDocked)
@@ -366,6 +366,9 @@ function ActionBarShortcut:OnActionBarShortcutArtTimer()
 	end
 	
 	Event_FireGenericEvent("ShowActionBarShortcutDocked", bBarVisible)
+	for idx = knStartingBar, knMaxBars do
+		self.tActionBars[idx]:ToFront()
+	end
 end
 
 function ActionBarShortcut:OnDockBtn(wndControl, wndHandler)
@@ -442,6 +445,61 @@ function ActionBarShortcut:OnGenerateTooltip(wndControl, wndHandler, eType, oArg
 		xml = XmlDoc.new()
 		xml:AddLine(oArg2)
 		wndControl:SetTooltipDoc(xml)
+	end
+end
+
+function ActionBarShortcut:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
+	local tAnchors = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.FloatingActionBar]				= true,
+		[GameLib.CodeEnumTutorialAnchor.FloatingActionBarSecondButton]	= true,
+		[GameLib.CodeEnumTutorialAnchor.FloatingActionBarFifthButton]	= true,
+	}
+
+	if not tAnchors[eAnchor] or not self.tActionBarSettings[ActionSetLib.CodeEnumShortcutSet.FloatingSpellBar].bIsVisible then
+		return
+	end
+	local tAnchorToButton = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.FloatingActionBar]				= 1,
+		[GameLib.CodeEnumTutorialAnchor.FloatingActionBarSecondButton]	= 2,
+		[GameLib.CodeEnumTutorialAnchor.FloatingActionBarFifthButton]	= 5,
+	}
+	local nButton = tAnchorToButton[eAnchor]
+
+	local wndActionBar = nil
+	local eOrientationOverride = nil
+	if self.bDocked then
+		eOrientationOverride = GameLib.CodeEnumTutorialAnchorOrientation.South
+		for nBar, wndBar in pairs(self.tActionBars) do
+			if wndBar:IsVisible() then
+				wndActionBar = wndBar
+				break
+			end
+		end
+	elseif self.bHorz then
+		eOrientationOverride = GameLib.CodeEnumTutorialAnchorOrientation.North
+		for nBar, wndBar in pairs(self.tActionBarsHorz) do
+			if wndBar:IsVisible() then
+				wndActionBar = wndBar
+				break
+			end
+		end
+	else
+		eOrientationOverride = GameLib.CodeEnumTutorialAnchorOrientation.Northwest
+		for nBar, wndBar in pairs(self.tActionBarsVert) do
+			if wndBar:IsVisible() then
+				wndActionBar = wndBar
+				break
+			end
+		end
+	end
+
+	if wndActionBar then 
+		local wndChild = wndActionBar:FindChild("ActionBarContainer"):GetChildren()[nButton]
+		if wndChild then
+			Event_FireGenericEvent("Tutorial_ShowCallout", eAnchor, idTutorial, strPopupText, wndChild, eOrientationOverride)
+		end
 	end
 end
 

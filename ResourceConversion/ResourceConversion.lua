@@ -32,6 +32,10 @@ function ResourceConversion:OnDocumentReady()
 	if  self.xmlDoc == nil then
 		return
 	end
+
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
+
     Apollo.RegisterEventHandler("ResourceConversionOpen", 	"OnResourceConversionOpen", self)
 	Apollo.RegisterEventHandler("UpdateInventory", 			"OnUpdateInventory", self)
 	Apollo.RegisterEventHandler("ResourceConversionClose", 	"OnCloseBtn", self)
@@ -41,7 +45,17 @@ function ResourceConversion:OnDocumentReady()
 	self.arConversionWindows = {}
 end
 
+function ResourceConversion:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("ResourceConversion_Title")})
+end
+
 function ResourceConversion:OnCloseBtn() -- Also WindowClosed and "ResourceConversionClose"
+	if self.wndMain and self.wndMain:IsValid() then
+		self.wndMain:Close()
+	end
+end
+
+function ResourceConversion:OnWindowClosed(wndHandler, wndControl)
 	Event_CancelConverting()
 	if self.wndMain and self.wndMain:IsValid() then
 		self.wndMain:Destroy()
@@ -65,6 +79,7 @@ function ResourceConversion:OnResourceConversionOpen(unitVendor)
 	end
 
 	self.wndMain = Apollo.LoadForm(self.xmlDoc, "ResourceConversionForm", nil, self)
+	self.wndMain:Invoke()
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("ResourceConversion_Title")})
 	
 	self.wndMain:FindChild("VendorName"):SetText(unitVendor:GetName())
@@ -130,7 +145,7 @@ function ResourceConversion:OnResourceConversionOpen(unitVendor)
 				wndCurr:FindChild("ConversionItemResult"):SetText("")
 			end
 		end
-		self.wndMain:FindChild("ConversionContainer"):ArrangeChildrenVert(0)
+		self.wndMain:FindChild("ConversionContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	end
 end
 

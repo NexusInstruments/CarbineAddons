@@ -122,7 +122,7 @@ function PathScientistExperimentation:OnInvokeScientistExperimentation(pmExperim
 		wndAttemptRow:SetData("ReadyForAnything")
 		wndAttemptRow:FindChild("CountText"):SetText(idx)
 	end
-	self.wndMain:FindChild("ResultContainer"):ArrangeChildrenVert(0)
+	self.wndMain:FindChild("ResultContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 	local nAttemptsHeight = math.min((tInfo.nAttempts * self.nAttemptRowHeight), (knAttemptsToDisplayBeforeVScroll * self.nAttemptRowHeight))
 	if not self.locSavedWindowLoc then
@@ -279,9 +279,9 @@ function PathScientistExperimentation:OnScientistExperimentationResult(arResults
 	wndResultToUse:FindChild("PartialCorrectText"):SetText(String_GetWeaselString(Apollo.GetString("CRB_Multiple"), tMatchInfo))
 	
 
-	wndResultToUse:FindChild("ExactIconContainer"):ArrangeChildrenHorz(2)
-	wndResultToUse:FindChild("PartialIconContainer"):ArrangeChildrenHorz(2)
-	self.wndMain:FindChild("ResultContainer"):ArrangeChildrenVert(0)
+	wndResultToUse:FindChild("ExactIconContainer"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.RightOrBottom)
+	wndResultToUse:FindChild("PartialIconContainer"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.RightOrBottom)
+	self.wndMain:FindChild("ResultContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 	-- Check for win
 	if nExact == 4 then

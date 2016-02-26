@@ -6,9 +6,10 @@
 require "Apollo"
 require "Window"
 require "Money"
+require "AccountItemLib"
+require "StorefrontLib"
 
 local BankViewer = {}
-local knMaxBankBagSlots = 5
 local knBagBoxSize = 50
 local knSaveVersion = 1
 
@@ -34,18 +35,26 @@ function BankViewer:OnDocumentReady()
 		return
 	end
 	
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
+
 	Apollo.RegisterEventHandler("HideBank", "HideBank", self)
 	Apollo.RegisterEventHandler("ShowBank", "Initialize", self)
     Apollo.RegisterEventHandler("ToggleBank", "Initialize", self)
 	Apollo.RegisterEventHandler("CloseVendorWindow", "OnCloseVendorWindow", self)
-	Apollo.RegisterEventHandler("PlayerCurrencyChanged", "ComputeCashLimits", self)
-	Apollo.RegisterEventHandler("BankSlotPurchased", "OnBankSlotPurchased", self)
+	Apollo.RegisterEventHandler("CharacterEntitlementUpdate", "OnEntitlementUpdate", self)
+	Apollo.RegisterEventHandler("AccountEntitlementUpdate", "OnEntitlementUpdate", self)
+	Apollo.RegisterEventHandler("StoreLinksRefresh",						"RefreshStoreLink", self)
 	Apollo.RegisterEventHandler("PersonaUpdateCharacterStats", "RefreshBagCount", self)
 
 	self.timerNewBagPurchasedAlert = ApolloTimer.Create(12.0, false, "OnBankViewer_NewBagPurchasedAlert", self)
 	self.timerNewBagPurchasedAlert:Stop()
 
-	self.wndMain = nil -- TODO RESIZE CODE
+
+end
+
+function BankViewer:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("Bank_Header")})
 end
 
 function BankViewer:Initialize()
@@ -56,10 +65,13 @@ function BankViewer:Initialize()
 	end
 
 	self.wndMain = Apollo.LoadForm("BankViewer.xml", "BankViewerForm", nil, self)
-	self.wndMain:FindChild("BankBuySlotBtn"):AttachWindow(self.wndMain:FindChild("BankBuySlotConfirm"))
-	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("Bank_Header")})
+	local nLeft, nTop, nRight, nBottom = self.wndMain:GetOriginalLocation():GetOffsets()
+	self.nFirstEverWidth = nRight - nLeft
+	self.wndMain:SetSizingMinimum(self.nFirstEverWidth, 280)
 	
-	self:Build()
+	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("Bank_Header"), nSaveVersion = 2})
+	
+	self:RefreshStoreLink() -- Check store link and build the display accordingly
 end
 
 function BankViewer:Build()
@@ -68,7 +80,10 @@ function BankViewer:Build()
 	self.wndMain:FindChild("ConfigureBagsContainer"):DestroyChildren()
 
 	-- Configure Screen
-	for idx = 1, knMaxBankBagSlots do
+	for idx = 1, GameLib.knMaxBankBagSlots do
+		if not self.bStoreLinkValid and idx > nNumBagSlots then
+			break
+		end
 		local idBag = idx + 20
 		local wndCurr = Apollo.LoadForm(self.xmlDoc, "BankSlot", self.wndMain:FindChild("ConfigureBagsContainer"), self)
 		local wndBagBtn = Apollo.LoadForm(self.xmlDoc, "BagBtn"..idBag, wndCurr:FindChild("BankSlotFrame"), self)
@@ -79,26 +94,17 @@ function BankViewer:Build()
 		wndCurr:FindChild("NewBagPurchasedAlert"):Show(false, true)
 		wndBagBtn:Enable(idx <= nNumBagSlots)
 		
-		if idx > nNumBagSlots then
+		if idx > nNumBagSlots + 1 then
 			wndCurr:FindChild("BagLocked"):Show(true)
+			wndCurr:SetTooltip(Apollo.GetString("Bank_LockedTooltip"))
+		elseif idx > nNumBagSlots then
+			wndCurr:FindChild("MTXUnlock"):Show(true)
 			wndCurr:SetTooltip(Apollo.GetString("Bank_LockedTooltip"))
 		else
 			wndCurr:SetTooltip(Apollo.GetString("Bank_SlotTooltip"))
 		end
 	end
-	self.wndMain:FindChild("ConfigureBagsContainer"):ArrangeChildrenHorz(1)
-
-	-- Hide the bottom bar if at max
-	if nNumBagSlots >= knMaxBankBagSlots then
-		local nLeft, nTop, nRight, nBottom = self.wndMain:FindChild("BankGridArt"):GetAnchorOffsets()
-		self.wndMain:FindChild("BankGridArt"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom + 65) -- todo hardcoded formatting
-
-		nLeft, nTop, nRight, nBottom = self.wndMain:FindChild("BankBagArt"):GetAnchorOffsets()
-		self.wndMain:FindChild("BankBagArt"):SetAnchorOffsets(nLeft, nTop + 65, nRight, nBottom + 65)
-		self.wndMain:FindChild("BankBottomArt"):Show(false)
-	else
-		self:ComputeCashLimits()
-	end
+	self.wndMain:FindChild("ConfigureBagsContainer"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.Middle)
 
 	-- Resize
 	self:ResizeBankSlots()
@@ -138,25 +144,6 @@ function BankViewer:HideBank()
 	end
 end
 
-function BankViewer:ComputeCashLimits()
-	if not self.wndMain or not self.wndMain:IsValid() or not self.wndMain:IsShown() then
-		return
-	end
-
-	local nNextBankBagCost = GameLib.GetNextBankBagCost():GetAmount()
-	local nPlayerCash = GameLib.GetPlayerCurrency():GetAmount()
-	if nNextBankBagCost > nPlayerCash then
-		self.wndMain:FindChild("BankBuyPrice"):SetTextColor(ApolloColor.new("xkcdReddish"))
-		self.wndMain:FindChild("BankBuyPrice"):SetTooltip(Apollo.GetString("Bank_CanNotAfford"))
-		self.wndMain:FindChild("BankBuySlotBtn"):Enable(false)
-	else
-		self.wndMain:FindChild("BankBuyPrice"):SetTextColor(ApolloColor.new("UI_TextMetalBodyHighlight"))
-		self.wndMain:FindChild("BankBuyPrice"):SetTooltip(Apollo.GetString("Bank_SlotPriceTooltip"))
-		self.wndMain:FindChild("BankBuySlotBtn"):Enable(true)
-	end
-	self.wndMain:FindChild("BankBuyPrice"):SetAmount(nNextBankBagCost, true)
-end
-
 function BankViewer:ResizeBankSlots()
 	if not self.wndMain or not self.wndMain:IsValid() or not self.wndMain:IsShown() then
 		return
@@ -167,28 +154,13 @@ function BankViewer:ResizeBankSlots()
 
 	-- Labels
 	self:RefreshBagCount()
-
-	-- Money
-	local nNextBankBagCost = GameLib.GetNextBankBagCost():GetAmount()
-	local nPlayerCash = GameLib.GetPlayerCurrency():GetAmount()
-	self.wndMain:FindChild("BankBuySlotBtn"):Enable(nNextBankBagCost <= nPlayerCash)
 end
 
 function BankViewer:OnBankViewerCloseBtn()
 	self:HideBank()
 end
 
-function BankViewer:OnBankBuyConfirmClose()
-	self.wndMain:FindChild("BankBuySlotBtn"):SetCheck(false)
-end
-
-function BankViewer:OnBankBuySlotConfirmYes()
-	GameLib.BuyBankBagSlot()
-	self.wndMain:FindChild("BankBuySlotBtn"):SetCheck(false)
-	self:ResizeBankSlots()
-end
-
-function BankViewer:OnBankViewer_NewBagPurchasedAlert()
+function BankViewer:OnBankViewer_NewBagPurchasedAlert() -- handler for timerNewBagPurchasedAlert -- hide new bag purchased alert when it triggers
 	if self.wndMain and self.wndMain:IsValid() then
 		for idx, wndCurr in pairs(self.wndMain:FindChild("ConfigureBagsContainer"):GetChildren()) do
 			wndCurr:FindChild("NewBagPurchasedAlert"):Show(false)
@@ -197,10 +169,23 @@ function BankViewer:OnBankViewer_NewBagPurchasedAlert()
 	end
 end
 
-function BankViewer:OnBankSlotPurchased()
-	self.wndMain:FindChild("BankTitleText"):SetText(Apollo.GetString("Bank_BuySuccess"))
-	self.timerNewBagPurchasedAlert:Start()
-	self:Build()
+function BankViewer:OnEntitlementUpdate(tEntitlement)
+	if self.wndMain and tEntitlement.nEntitlementId == AccountItemLib.CodeEnumEntitlement.ExtraBankSlots then
+		self.wndMain:FindChild("BankTitleText"):SetText(Apollo.GetString("Bank_BuySuccess"))
+		self.timerNewBagPurchasedAlert:Start()
+		self:Build()
+	end
+end
+
+function BankViewer:RefreshStoreLink()
+	self.bStoreLinkValid = StorefrontLib.IsLinkValid(StorefrontLib.CodeEnumStoreLink.BankSlots)
+	if self.wndMain and self.wndMain:IsValid() then
+		self:Build()
+	end
+end
+
+function BankViewer:UnlockMoreBankSlots()
+	StorefrontLib.OpenLink(StorefrontLib.CodeEnumStoreLink.BankSlots)
 end
 
 function BankViewer:OnGenerateTooltip(wndControl, wndHandler, tType, item)

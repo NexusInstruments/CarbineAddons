@@ -190,9 +190,9 @@ function Reputation:PopulateFactionList()
 
 	-- Sort list
 	for key, wndCurr in pairs(self.tStrToWndMapping) do
-		wndCurr:FindChild("ItemsContainer"):ArrangeChildrenVert(0, function(a,b) return (a:GetData() < b:GetData()) end)
+		wndCurr:FindChild("ItemsContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function(a,b) return (a:GetData() < b:GetData()) end)
 	end
-	self.wndMain:FindChild("FactionList"):ArrangeChildrenVert(0, function(a,b) return (a:GetData() < b:GetData()) end)
+	self.wndMain:FindChild("FactionList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function(a,b) return (a:GetData() < b:GetData()) end)
 
 	self:ResizeItemContainer()
 end
@@ -305,7 +305,7 @@ function Reputation:ResizeItemContainer()
 								bEnableMid = true
 							end
 							
-							wndMiddleContainer:ArrangeChildrenVert(0)
+							wndMiddleContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 						end
 						-- End special formatting
 
@@ -333,11 +333,11 @@ function Reputation:ResizeItemContainer()
 
 			local nLeft, nTop, nRight, nBottom = wndTopGroup:GetAnchorOffsets()
 			wndTopGroup:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nMiddleHeight + nTopHeight)
-			wndTopGroup:FindChild("ItemsContainer"):ArrangeChildrenVert(0)
+			wndTopGroup:FindChild("ItemsContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 		end
 	end
 
-	self.wndMain:FindChild("FactionList"):ArrangeChildrenVert(0)
+	self.wndMain:FindChild("FactionList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 local ReputationInst = Reputation:new()

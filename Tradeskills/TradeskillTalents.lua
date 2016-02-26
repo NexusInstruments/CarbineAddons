@@ -134,9 +134,9 @@ function TradeskillTalents:BuildColumn(wndParent, tData)
 				wndTalent:FindChild("TalentItemBtn"):Enable(false)
 			end
 		end
-		wndTier:FindChild("TalentItemContainer"):ArrangeChildrenHorz(0)
+		wndTier:FindChild("TalentItemContainer"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	end
-	wndParent:FindChild("TierItemContainer"):ArrangeChildrenVert(0)
+	wndParent:FindChild("TierItemContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 	-- Points available
 	local strHeaderText = tCurrInfo.strName

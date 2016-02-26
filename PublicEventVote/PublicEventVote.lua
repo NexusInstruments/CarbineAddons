@@ -69,6 +69,9 @@ function PublicEventVote:OnDocumentReady()
 		return
 	end
 	
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
+
 	Apollo.RegisterEventHandler("PublicEventInitiateVote", 	"OnPublicEventInitiateVote", self)
 	Apollo.RegisterEventHandler("PublicEventVoteTallied", 	"OnPublicEventVoteTallied", self)
 	Apollo.RegisterEventHandler("PublicEventVoteEnded", 	"OnPublicEventVoteEnded", self)
@@ -84,6 +87,10 @@ function PublicEventVote:OnDocumentReady()
 	self.bWindowShown = false
 end
 
+function PublicEventVote:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("Guild_ChatFlagVote")})
+end
+
 function PublicEventVote:Initialize()
 	if self.wndMain then
 		Apollo.StopTimer("VoteUpdateTimer")
@@ -97,7 +104,7 @@ function PublicEventVote:Initialize()
 		Apollo.StartTimer("VoteUpdateTimer")
 	end
 	
-	self.wndMain:Show(true)
+	self.wndMain:Invoke()
 	self.bWindowShown = true
 end
 
@@ -107,6 +114,7 @@ function PublicEventVote:OnPublicEventInitiateVote() -- The close checking also 
 	local tVoteData = PublicEvent.GetActiveVote()
 	if not tVoteData then
 		if self.wndMain then
+			self.wndMain:Close()
 			self.wndMain:Destroy()
 			self.wndMain = nil
 			self.bWindowShown = false
@@ -136,9 +144,9 @@ function PublicEventVote:OnPublicEventInitiateVote() -- The close checking also 
 		local nWidth, nHeight = wndCurr:FindChild("VoteOptionText"):SetHeightToContentHeight()
 		local nLeft, nTop, nRight, nBottom = wndCurr:GetAnchorOffsets()
 		wndCurr:SetAnchorOffsets(nLeft, nTop, nRight, nTop + math.max(nHeight, nBottom) + 38) -- b is the minimum height for one line descriptions
-		wndCurr:FindChild("VoteOptionArrangeVert"):ArrangeChildrenVert(1) -- If at minimum height this will vertical center align
+		wndCurr:FindChild("VoteOptionArrangeVert"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.Middle) -- If at minimum height this will vertical center align
 	end
-	self.wndMain:FindChild("VoteFrameScroll"):ArrangeChildrenVert(0)
+	self.wndMain:FindChild("VoteFrameScroll"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	Sound.Play(Sound.PlayUIWindowPublicEventVoteOpen)
 end
 
@@ -169,6 +177,7 @@ function PublicEventVote:OnVoteOptionBtn(wndHandler, wndControl) -- VoteOptionBt
 	end
 
 	PublicEvent.CastVote(wndHandler:GetData())
+	self.wndMain:ClearInterrupt()
 	wndHandler:FindChild("VoteOptionBtnCheck"):Show(true)
 	-- OnPublicEventVoteTallied should get fired and update this
 
@@ -210,7 +219,7 @@ function PublicEventVote:OnPublicEventVoteEnded(nWinner)
 
 	self.wndMain:Show(true)
 	self.wndMain:FindChild("VoteTitle"):SetText(Apollo.GetString("PublicEventVote_VotingComplete"))
-	self.wndMain:FindChild("VoteFrameScroll"):ArrangeChildrenVert(0)
+	self.wndMain:FindChild("VoteFrameScroll"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	self.wndMain:FindChild("VoteFrameScroll"):RecalculateContentExtents()
 	self.wndMain:FindChild("VoteFrameScroll"):SetVScrollPos(0)
 

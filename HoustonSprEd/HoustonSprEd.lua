@@ -20,7 +20,7 @@ end
 
 function HoustonSprEd:OnLoad()
 	--Apollo.DPF("In Spred:OnLoad")
-	Apollo.RegisterEventHandler("VarChange_FrameCount", "OnFrame", self)
+	Apollo.RegisterEventHandler("NextFrame", "OnFrame", self)
 
 	self.wndButtonViewGroup = Apollo.LoadForm("SprEdForms.xml", "ButtonView", nil, self)
 	self.wndButtonViewGroup:Show(false)

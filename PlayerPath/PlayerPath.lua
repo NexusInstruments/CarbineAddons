@@ -119,7 +119,7 @@ function PlayerPath:OnDocumentReady()
 		return
 	end
 	
-	Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded", "OnInterfaceMenuListHasLoaded", self)
+	Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded", 			"OnInterfaceMenuListHasLoaded", self)
 	
 	Apollo.RegisterEventHandler("PL_TogglePlayerPath", 					"OnPathShowFromPL", self)
 	Apollo.RegisterEventHandler("SetPlayerPath", 						"SetPlayerPath", self)
@@ -197,7 +197,7 @@ function PlayerPath:OnBigZoneBtnPress(wndHandler, wndControl)
 	self.wndMissionLog:FindChild("ZoneDropdownBtn"):SetCheck(false)
 	self.wndMissionLog:FindChild("ZoneDropdownContainer"):Show(false)
 	self.wndMissionLog:FindChild("MissionList"):SetVScrollPos(0)
-	self.wndMissionLog:FindChild("MissionList"):ArrangeChildrenVert(0)
+	self.wndMissionLog:FindChild("MissionList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	
 end
 
@@ -245,7 +245,7 @@ function PlayerPath:OnCollapseCategories(wndHandler, wndControl)
 	local nLeft, nTop, nRight, nBottom = wndParent:GetAnchorOffsets()
 	wndParent:SetAnchorOffsets(nLeft, nTop, nRight, nBottom - nHeight)
 	wndContainer:DestroyChildren()
-	self.wndMissionLog:FindChild("MissionList"):ArrangeChildrenVert(0)
+	self.wndMissionLog:FindChild("MissionList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function PlayerPath:OnLootEpisodeRewards(wndHandler, wndControl)
@@ -290,7 +290,7 @@ function PlayerPath:PathRefresh(pepEpisode, bFullRedraw) -- A lot of events rout
 	if not pepSelectedEpisode then
 		pepSelectedEpisode = PlayerPathLib.GetCurrentEpisode()
 	end
-
+	
 	-- Populate Dropdown
 	local tEpisodeList = PlayerPathLib.GetEpisodes()
 	if not tEpisodeList then
@@ -315,7 +315,7 @@ function PlayerPath:PathRefresh(pepEpisode, bFullRedraw) -- A lot of events rout
 			wndBigZone:FindChild("BigZoneBtn"):SetCheck(true)
 		end
 	end
-	self.wndMissionLog:FindChild("ZoneDropdownList"):ArrangeChildrenVert(0)
+	self.wndMissionLog:FindChild("ZoneDropdownList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 	-- Zone Description
 	if pepSelectedEpisode and pepSelectedEpisode:GetSummary() then
@@ -440,8 +440,8 @@ function PlayerPath:OnRedrawLevels(nArgPreviewLevel)
 		end
 	end
 
-	self.wndMissionLog:FindChild("TopLeftRewardsContainer"):ArrangeChildrenVert(0)
-	self.wndMissionLog:FindChild("TopRightRewardsContainer"):ArrangeChildrenVert(0)
+	self.wndMissionLog:FindChild("TopLeftRewardsContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	self.wndMissionLog:FindChild("TopRightRewardsContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 ----------------------------------------------------------------------------------------------------------
@@ -547,7 +547,7 @@ function PlayerPath:ResizeItems()
 		end
 		local nLeft, nTop, nRight, nBottom = self.wndAvailable:GetAnchorOffsets()
 		self.wndAvailable:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nHeight + 65)
-		self.wndAvailable:FindChild("HeaderContainer"):ArrangeChildrenVert(0)
+		self.wndAvailable:FindChild("HeaderContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 		self.wndAvailable:FindChild("HeaderContainer"):Show(true)
 	else
 		self.wndAvailable:FindChild("HeaderContainer"):Show(false)
@@ -561,13 +561,13 @@ function PlayerPath:ResizeItems()
 		end
 		nLeft, nTop, nRight, nBottom = self.wndCompleted:GetAnchorOffsets()
 		self.wndCompleted:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nHeight + 65)
-		self.wndCompleted:FindChild("HeaderContainer"):ArrangeChildrenVert(0)
+		self.wndCompleted:FindChild("HeaderContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 		self.wndCompleted:FindChild("HeaderContainer"):Show(true)
 	else
 		self.wndCompleted:FindChild("HeaderContainer"):Show(false)
 	end
 
-	self.wndMissionLog:FindChild("MissionList"):ArrangeChildrenVert(0)
+	self.wndMissionLog:FindChild("MissionList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	
 	if self.nSetScrollPos then
 		self.wndMissionLog:FindChild("MissionList"):SetVScrollPos(self.nSetScrollPos)

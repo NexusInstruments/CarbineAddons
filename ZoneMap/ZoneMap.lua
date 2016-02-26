@@ -34,7 +34,8 @@ local ktHexColor =
 	tQuest 			= { crBorder = CColor.new(1, 1, 0, 1),			crInterior = CColor.new(1, 1, 0, 0.4) },
 	tChallenge 		= { crBorder = CColor.new(153/255, 0, 1, 1),	crInterior = CColor.new(153/255, 0, 1, 0.4) },
 	tPublicEvent 	= { crBorder = CColor.new(0, 1, 0, 1),			crInterior = CColor.new(0, 1, 0, 0.4) },
-	tNemesisRgn		= { crBorder = CColor.new(1, 1, 1, 1),			crInterior = CColor.new(1, 1, 1, 0.4) }
+	tNemesisRgn		= { crBorder = CColor.new(1, 1, 1, 1),			crInterior = CColor.new(1, 1, 1, 0.4) },
+	tLevelBandRgn	= { crBorder = CColor.new(0.35, 1, 1, 1),			crInterior = CColor.new(1, 1, 1, 0.0) }
 }
 
 local ktMarkerCategories =
@@ -57,12 +58,14 @@ local ktMarkerCategories =
 	NemesisRegions 		= 16,
 	Taxis 				= 17,
 	CityDirections 		= 18,
+	LevelBands			= 19,
+	Navpoint			= 20,
 }
 
 local karCityDirectionsTypeToIcon =
 {
-	[GameLib.CityDirectionType.Mailbox] 		= "ClientSprites:Icon_Windows_UI_ReadMail",
-	[GameLib.CityDirectionType.Bank] 			= "ClientSprites:Icon_BuffDebuff_Money_Loot_Drop_Increase_Buff",
+	[GameLib.CityDirectionType.Mailbox] 		= "ClientSprites:Icon_Windows_UI_CRB_LevelUp_Mailbox",
+	[GameLib.CityDirectionType.Bank] 			= "ClientSprites:Icon_Windows_UI_CRB_LevelUp_Bank",
 	[GameLib.CityDirectionType.AuctionHouse] 	= "ClientSprites:Icon_Windows_UI_CRB_LevelUp_NewCapitalCity",
 	[GameLib.CityDirectionType.CommodityMarket] = "ClientSprites:Icon_Windows_UI_CRB_LevelUp_NewCapitalCity",
 	[GameLib.CityDirectionType.AbilityVendor] 	= "ClientSprites:Icon_Windows_UI_CRB_LevelUp_NewAbility",
@@ -70,6 +73,7 @@ local karCityDirectionsTypeToIcon =
 	[GameLib.CityDirectionType.General] 		= "ClientSprites:Icon_Windows_UI_CRB_LevelUp_NewGeneralFeature",
 	[GameLib.CityDirectionType.HousingNpc] 		= "ClientSprites:Icon_Windows_UI_CRB_LevelUp_NewCapitalCity",
 	[GameLib.CityDirectionType.Transport] 		= "ClientSprites:Icon_Windows_UI_CRB_LevelUp_NewZone",
+	[GameLib.CityDirectionType.Fortune] 		= "IconSprites:Icon_MapNode_Map_Vendor_Lopp",
 }
 
 local ktGlobalPortalInfo =
@@ -123,6 +127,7 @@ function ZoneMap:CreateOverlayObjectTypes()
 	-- path mission icons will be set in ToggleWindow
 	self.eObjectTypeMission				= self.wndZoneMap:CreateOverlayType(ktHexColor.tPath.crBorder, ktHexColor.tPath.crInterior, "", "")
 	self.eObjectTypeNemesisRegion		= self.wndZoneMap:CreateOverlayType(ktHexColor.tNemesisRgn.crBorder, ktHexColor.tNemesisRgn.crInterior, "", "")
+	self.eObjectTypeLevelBandRegion		= self.wndZoneMap:CreateOverlayType(ktHexColor.tLevelBandRgn.crBorder, ktHexColor.tLevelBandRgn.crInterior, "", "")
 	self.eObjectTypeLocation			= self.wndZoneMap:CreateOverlayType()
 	self.eObjectTypeHexGroup			= self.wndZoneMap:CreateOverlayType()
 	self.eObjectTypeMapTrackedUnit		= self.wndZoneMap:CreateOverlayType()
@@ -167,6 +172,7 @@ function ZoneMap:CreateOverlayObjectTypes()
 	self.eObjectTypeGuildRegistrar		= self.wndZoneMap:CreateOverlayType()
 	self.eObjectTypeMail				= self.wndZoneMap:CreateOverlayType()
 	self.eObjectTypeConvert				= self.wndZoneMap:CreateOverlayType()
+	self.eObjectTypeNavPoint			= self.wndZoneMap:CreateOverlayType()
 end
 
 function ZoneMap:CreatePOIIcons()
@@ -179,6 +185,7 @@ function ZoneMap:CreatePOIIcons()
 		-- Mission sprites will be set up in ToggleWindow	
 		[self.eObjectTypeMission] 				= {strSprite = "",												eCategory = ktMarkerCategories.Missions,			strType = ""},
 		[self.eObjectTypeNemesisRegion]			= {strSprite = "",												eCategory = ktMarkerCategories.NemesisRegions,		strType = Apollo.GetString("ZoneMap_NemesisRegions")},
+		[self.eObjectTypeLevelBandRegion]		= {strSprite = "",												eCategory = ktMarkerCategories.LevelBands,			strType = ""},
 		[self.eObjectTypeLocation]				= {strSprite = "",												eCategory = nil,									strType = ""},
 		[self.eObjectTypeHexGroup]				= {strSprite = "",												eCategory = nil,									strType = ""},
 		[self.eObjectTypeMapTrackedUnit]		= {strSprite = "",												eCategory = nil,									strType = ""},
@@ -221,6 +228,7 @@ function ZoneMap:CreatePOIIcons()
 		[self.eObjectTypeGuildRegistrar]		= {strSprite = "",												eCategory = ktMarkerCategories.Services,			strType = Apollo.GetString("DialogResponse_GuildRegistrar")},
 		[self.eObjectTypeMail]					= {strSprite = "",												eCategory = ktMarkerCategories.Services,			strType = Apollo.GetString("InterfaceMenu_Mail")},
 		[self.eObjectTypeConvert]				= {strSprite = "",												eCategory = ktMarkerCategories.Services,			strType = Apollo.GetString("ResourceConversion_Title")},
+		[self.eObjectTypeNavPoint]				= {strSprite = "",												eCategory = ktMarkerCategories.Navpoint,							strType = Apollo.GetString("Navpoint")},
 	}
 end
 
@@ -425,7 +433,9 @@ function ZoneMap:BuildShownTypesArrays()
 		self.eObjectTypeQuest,
 		self.eObjectTypeMapTrackedUnit,
 		self.eObjectTypeCityDirectionPing,
-		self.eObjectTypeNemesisRegion
+		self.eObjectTypeNemesisRegion,
+		self.eObjectTypeNavPoint,
+		self.eObjectTypeLevelBandRegion
 	}
 
 	self.arAllowedTypesPanning =
@@ -438,7 +448,9 @@ function ZoneMap:BuildShownTypesArrays()
 		self.eObjectTypeQuest,
 		self.eObjectTypeMapTrackedUnit,
 		self.eObjectTypeCityDirectionPing,
-		self.eObjectTypeNemesisRegion
+		self.eObjectTypeNemesisRegion,
+		self.eObjectTypeNavPoint,
+		self.eObjectTypeLevelBandRegion
 	}
 
 	self.arAllowedTypesScaled =
@@ -451,7 +463,9 @@ function ZoneMap:BuildShownTypesArrays()
 		self.eObjectTypeQuest,
 		self.eObjectTypeMapTrackedUnit,
 		self.eObjectTypeCityDirectionPing,
-		self.eObjectTypeNemesisRegion
+		self.eObjectTypeNemesisRegion,
+		self.eObjectTypeNavPoint,
+		self.eObjectTypeLevelBandRegion
 	}
 
 	for i, type in pairs(tUnitTypes) do
@@ -463,7 +477,8 @@ function ZoneMap:BuildShownTypesArrays()
 	self.arAllowedTypesContinent =
 	{
 		self.eObjectTypePublicEvent,
-		self.eObjectTypeInstancePortal
+		self.eObjectTypeInstancePortal,
+		self.eObjectTypeNavPoint,
 	}
 
 	self.arAllowedTypesWorld = { } -- use an empty table to hide everything
@@ -560,6 +575,9 @@ function ZoneMap:OnDocumentReady()
 		return
 	end
 
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
+
 	Apollo.RegisterEventHandler("ToggleZoneMap", 						"ToggleWindow", self)
 	Apollo.RegisterEventHandler("ToggleGhostModeMap",					"OnToggleGhostModeMap", self)
 	Apollo.RegisterEventHandler("MapPulseTimer", 						"OnMapPulseTimer", self)
@@ -641,6 +659,8 @@ function ZoneMap:OnDocumentReady()
 	Apollo.RegisterEventHandler("LevelUpUnlock_WorldMapNewZone_Algoroc", 					"OnLevelUpUnlock_WorldMapNewZone_Algoroc", self)
 	Apollo.RegisterEventHandler("LevelUpUnlock_WorldMapCapital_Illium", 					"OnLevelUpUnlock_WorldMapCapital_Illium", self)
 	Apollo.RegisterEventHandler("LevelUpUnlock_WorldMapCapital_Thayd", 						"OnLevelUpUnlock_WorldMapCapital_Thayd", self)
+	
+	Apollo.RegisterEventHandler("ContentFinder_OpenMapToNavPoint",							"HelperGoToMap", self)
 
 	--Group Events
 	Apollo.RegisterEventHandler("Group_UpdatePosition", 				"OnGroupUpdatePosition", self)			-- ( arMembers )
@@ -655,6 +675,11 @@ function ZoneMap:OnDocumentReady()
 	Apollo.RegisterEventHandler("MapTrackedUnitUpdate", 				"OnMapTrackedUnitUpdate", self)
 	Apollo.RegisterEventHandler("MapTrackedUnitDisable", 				"OnMapTrackedUnitDisable", self)
 
+	-- Nav points
+	Apollo.RegisterEventHandler("NavPointCleared",						"OnNavPointCleared", self)
+	Apollo.RegisterEventHandler("NavPointSet",							"OnNavPointSet", self)
+	Apollo.RegisterEventHandler("SetNavPointFailed",					"OnSetNavPointFailed", self)
+	
 	-- City Directions
 	Apollo.RegisterTimerHandler("ZoneMap_TimeOutCityDirectionMarker",	"OnZoneMap_TimeOutCityDirectionMarker", self)
 	Apollo.CreateTimer("ZoneMap_TimeOutCityDirectionMarker", 300, false)
@@ -736,7 +761,7 @@ function ZoneMap:OnDocumentReady()
 	self.wndMapControlPanel:FindChild("ChallengePaneToggle"):AttachWindow(self.wndMapControlPanel:FindChild("ChallengePaneContent"))
 	self.wndMapControlPanel:FindChild("PublicEventPaneToggle"):AttachWindow(self.wndMapControlPanel:FindChild("PublicEventPaneContent"))
 
-	self.wndMapControlPanel:FindChild("ControlPanelInnerFrame"):ArrangeChildrenVert(0)
+	self.wndMapControlPanel:FindChild("ControlPanelInnerFrame"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 	self.wndMain:FindChild("ZoneComplexToggle"):AttachWindow(self.wndMain:FindChild("ZoneComplexList"))
 
@@ -770,7 +795,7 @@ function ZoneMap:OnDocumentReady()
 	self.strZoneName 				= ""
 	self.idCurrentZone 				= 0
 	self.idChallengeFlashingIcon	= nil
-	self.bQuestTrackerByDistance 	= g_InterfaceOptions and g_InterfaceOptions.Carbine.bQuestTrackerByDistance or false
+	self.bQuestTrackerByDistance 	= true
 
 
 	if not self.tButtonChecks then
@@ -794,6 +819,8 @@ function ZoneMap:OnDocumentReady()
 	end
 
 	self:BuildShownTypesArrays()
+	
+	self.wndZoneMap:ShowLevelBandLabels(true)
 
 	-- Top two options
 	self.wndMain:FindChild("MarkerPaneButtonList"):FindChild("OptionsBtnLabels"):SetCheck(true)
@@ -827,6 +854,7 @@ function ZoneMap:OnDocumentReady()
 		[ktMarkerCategories.NemesisRegions] 	= {strLabel = Apollo.GetString("ZoneMap_NemesisRegions"), 		bShown = false, strIcon = "Icon_MapNode_Map_Rival"},
 		[ktMarkerCategories.Taxis] 				= {strLabel = Apollo.GetString("ZoneMap_Taxis"), 				bShown = true,	strIcon = "Icon_MapNode_Map_Taxi"},
 		[ktMarkerCategories.CityDirections] 	= {strLabel = Apollo.GetString("ZoneMap_CityDirections"), 		bShown = true,	strIcon = "Icon_MapNode_Map_CityDirections"},
+		[ktMarkerCategories.LevelBands]		 	= {strLabel = Apollo.GetString("ZoneMap_LevelBands"),			bShown = false,	strIcon = ""},
 	}
 
 	for eCategory, tBtnData in ipairs(tButtonList) do
@@ -839,13 +867,14 @@ function ZoneMap:OnDocumentReady()
 		wndCurr:FindChild("MarkerBtnImage"):SetSprite(tBtnData.strIcon)
 		wndCurr:FindChild("MarkerBtnLabel"):SetTextColor(ApolloColor.new("UI_BtnTextGoldListNormal"))
 	end
-	self.wndMain:FindChild("MarkerPaneButtonList"):ArrangeChildrenVert(0)
+	self.wndMain:FindChild("MarkerPaneButtonList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 	self.wndMapControlPanel:Show(false)
 
 	self:BuildCustomMarkerInfo()
 
 	self:OnLevelChanged(GameLib.GetPlayerLevel())
+	self:OnOptionsUpdated()
 
 	self.objActiveRegionUserData = nil
 	self.arHoverRegionUserDataList = {}
@@ -875,6 +904,10 @@ function ZoneMap:OnDocumentReady()
 	self:RehideAllToggledIcons()
 end
 
+function ZoneMap:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("ZoneMap_CityDirections")})
+end
+
 function ZoneMap:OnInterfaceMenuListHasLoaded()
 	Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("InterfaceMenu_Map"), {"ToggleZoneMap", "WorldMap", "Icon_Windows32_UI_CRB_InterfaceMenu_Map"})
 end
@@ -882,8 +915,6 @@ end
 function ZoneMap:OnOptionsUpdated()
 	if g_InterfaceOptions and g_InterfaceOptions.Carbine.bQuestTrackerByDistance ~= nil then
 		self.bQuestTrackerByDistance = g_InterfaceOptions.Carbine.bQuestTrackerByDistance
-	else
-		self.bQuestTrackerByDistance = true
 	end
 
 	self:OnQuestStateChanged()
@@ -907,14 +938,14 @@ end
 function ZoneMap:ToggleWindow()
 	if self.wndMain:IsVisible() then
 		Event_FireGenericEvent("GenericEvent_CloseZoneCompletion")
-		self.wndMain:Show(false)
+		self.wndMain:Close()
 		self.eDisplayMode = self.wndZoneMap:GetDisplayMode()
 		Apollo.StopTimer("MapPulseTimer")
 	else
 		Event_FireGenericEvent("GenericEvent_OpenZoneCompletion", self.wndMain:FindChild("ZoneMapCompletionParent"))
 		self.wndZoneMap:SetGhostWindow(false)
+		self:UpdateRapidTransportBtn()
 		self.wndMain:Invoke()
-		self.wndMain:ToFront()
 		self.wndMain:FindChild("ZoneComplexList"):Show(false)
 		self.wndMain:FindChild("MarkersList"):Show(false)
 		self:UpdateCurrentZone()
@@ -923,6 +954,13 @@ function ZoneMap:ToggleWindow()
 		self:UpdateChallengeList()
 		self:UpdatePublicEventList()
 		self:ReloadNemesisRegions()
+		self:ReloadLevelBands()
+
+		if GameLib.IsNavPointSet() then
+			local tPoint = GameLib.GetNavPoint()
+			self:OnNavPointSet(tPoint and tPoint.tPosition or nil)
+		end
+		
 
 		if self.bControlPanelShown then
 			self:OnToggleControlsOn()
@@ -984,6 +1022,17 @@ function ZoneMap:ToggleWindow()
 		self.wndZoneMap:RemoveObject(self.oShownLocObject)
 		self.oShownLocObject = nil
 	end
+end
+
+function ZoneMap:UpdateRapidTransportBtn()
+	local wndRapidTransportBtn = self.wndMain:FindChild("RapidTransportBtn")
+	local tZone = GameLib.GetCurrentZoneMap()
+	local nZoneId = 0
+	if tZone ~= nil then
+		nZoneId = tZone.id
+	end
+	local bOnArkship = tZone == nil or GameLib.IsTutorialZone(nZoneId)
+	wndRapidTransportBtn:Show(not bOnArkship)
 end
 
 function ZoneMap:OnToggleGhostModeMap() -- for keyboard input turning ghost mode map on/off
@@ -1125,7 +1174,7 @@ end
 --------------------//-----------------------------
 
 function ZoneMap:OnCloseBtn()
-	self.wndMain:Show(false)
+	self.wndMain:Close()
 	self.wndMapControlPanel:Show(false)
 	self.wndMain:FindChild("ZoneComplexList"):Show(false)
 	self.eDisplayMode = self.wndZoneMap:GetDisplayMode()
@@ -1221,7 +1270,7 @@ function ZoneMap:OnResizeOptionsPane()
 	nLeft, nTop, nRight, nBottom = wndParent:GetAnchorOffsets()
 	nBottom = nTop + wndParent:FindChild("QuestPaneContainer"):GetHeight() + wndParent:FindChild("MissionPaneContainer"):GetHeight() + wndParent:FindChild("ChallengePaneContainer"):GetHeight() + wndParent:FindChild("PublicEventPaneContainer"):GetHeight()
 	wndParent:SetAnchorOffsets(nLeft, nTop, nRight, nBottom + 35)
-	wndParent:FindChild("ControlPanelInnerFrame"):ArrangeChildrenVert(0)
+	wndParent:FindChild("ControlPanelInnerFrame"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 -- TODO: a lot of this doesn't need to happen so frequently and can be broken out
@@ -1324,8 +1373,21 @@ function ZoneMap:SetControls() -- runs off timer, sets the controls to reflect t
 	end
 
 	if eZoomLevel == tZoneMapEnums.World and tHomeContinent then
+		local tNavPoint = GameLib.GetNavPoint()
+		local tNavPointZoneInfo = nil
+		if tNavPoint then
+			tNavPointZoneInfo = self.wndZoneMap:GetZoneInfo(tNavPoint.nMapZoneId)
+		end
 		for idx = 1, #self.tContButtons do
 			self.tContButtons[idx]:FindChild("CurrentRunner"):Show(tHomeContinent and self.tContButtons[idx]:GetData() == tHomeContinent.id)
+			local wndCurrentNavpoint = self.tContButtons[idx]:FindChild("CurrentNavPoint")
+			if wndCurrentNavpoint then
+				local bShowNav = false
+				if tNavPointZoneInfo then
+					bShowNav = self.tContButtons[idx]:GetData() == tNavPointZoneInfo.continentId
+				end
+				wndCurrentNavpoint:Show(bShowNav)
+			end
 		end
 		self.wndZoneMap:SetZone(tHomeZone.id)
 		self.wndMain:FindChild("ZoneComplexToggle"):SetData(tHomeZone.id)
@@ -1355,6 +1417,10 @@ end
 function ZoneMap:OnZoneChanged()
 	Event_FireGenericEvent("GenericEvent_ZoneMap_ZoneChanged", self.idCurrentZone)
 	self:ReloadNemesisRegions()
+	
+	if self.tNavPointLoc then
+		self:OnNavPointSet(self.tNavPointLoc)
+	end
 end
 
 function ZoneMap:HelperCheckAndBuildSubzones(tZoneInfo, eZoomLevel) -- This repeatedly calls on a timer
@@ -1374,7 +1440,7 @@ function ZoneMap:HelperCheckAndBuildSubzones(tZoneInfo, eZoomLevel) -- This repe
 		nHeightOfEntry = wndCurr:GetHeight() 
 	end
 
-	self.wndMain:FindChild("SubzoneListContent"):ArrangeChildrenVert(0)
+	self.wndMain:FindChild("SubzoneListContent"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	self.wndMain:FindChild("SubzoneToggle"):Show(tSubZoneInfo and #tSubZoneInfo > 0)
 	if tSubZoneInfo and #tSubZoneInfo > 0 then
 		local nSubZoneTotalCount = #tSubZoneInfo 
@@ -1400,7 +1466,7 @@ function ZoneMap:HelperBuildZoneDropdown(idContinent) -- This only calls on butt
 			nZoneTotalCount = nZoneTotalCount + 1
 		end
 	end
-	self.wndMain:FindChild("ZoneSelectItems"):ArrangeChildrenVert(0)
+	self.wndMain:FindChild("ZoneSelectItems"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	
 	if nZoneTotalCount > 0 then
 		local nLeft, nTop, nRight, nBottom = self.wndMain:FindChild("ZoneComplexList"):GetAnchorOffsets()
@@ -1410,13 +1476,17 @@ end
 
 
 function ZoneMap:OnZoomChange()
+	local bShowNavHint = false
 	local eZoomLevel = self.wndZoneMap:GetDisplayMode()
 	if eZoomLevel == ZoneMapWindow.CodeEnumDisplayMode.SuperPanning then -- Super Panning
 		self.wndZoneMap:SetObjectsVisibility(self.arShownTypesSuperPanning)
+		bShowNavHint = true
 	elseif eZoomLevel == ZoneMapWindow.CodeEnumDisplayMode.Panning then -- Panning
 		self.wndZoneMap:SetObjectsVisibility(self.arShownTypesPanning)
+		bShowNavHint = true
 	elseif eZoomLevel == ZoneMapWindow.CodeEnumDisplayMode.Scaled then -- Scaled
 		self.wndZoneMap:SetObjectsVisibility(self.arShownTypesScaled)
+		bShowNavHint = true
 	elseif eZoomLevel == ZoneMapWindow.CodeEnumDisplayMode.Continent then -- Continent
 		self.wndZoneMap:SetObjectsVisibility(self.arShownTypesContinent)
 	elseif eZoomLevel == ZoneMapWindow.CodeEnumDisplayMode.World then -- world
@@ -1424,9 +1494,17 @@ function ZoneMap:OnZoomChange()
 	end
 	local tMouse = self.wndZoneMap:GetMouse()
 	self:OnZoneMapMouseMove(self.wndZoneMap, self.wndZoneMap, tMouse.x, tMouse.y)
+	local bCanSetNav = GameLib.CanSetNavPoint()
+	self.wndMain:FindChild("NavpointHint"):Show(bShowNavHint and bCanSetNav)
+	self.wndMain:FindChild("NavpointBlocked"):Show(bShowNavHint and not bCanSetNav)
+	self.wndMain:FindChild("ErrorPulse"):Show(bShowNavHint and not bCanSetNav)
 end
 
 function ZoneMap:OnMouseScroll(eDisplayMode)
+	if not self.wndMain or not self.wndMain:IsShown() then
+		return
+	end
+
 	self:SetControls()
 	self:OnZoomChange()
 end
@@ -1651,8 +1729,6 @@ function ZoneMap:OnGenerateTooltip(wndHandler, wndControl, eType, nX, nY)
 				local bShowRegion = true
 				local strType = self.tPOITypes[tHexes.eType].strType
 				
-				
-
 				if tHexes.eType == self.eObjectTypeMission then
 					self.tTooltipCache[tHexes.userData] = true
 					strName = tHexes.userData:GetName()
@@ -1688,6 +1764,7 @@ function ZoneMap:OnGenerateTooltip(wndHandler, wndControl, eType, nX, nY)
 					strName = string.format("<T Font=\"%s\" TextColor=\"%s\">%s %s</T>", "CRB_InterfaceMedium", "ffffffff", tHexes.userData:GetTitle(), strLevel)
 				end
 				
+				if strName ~= "" then
 				if not tTooltips[tHexes.eType] then
 					tTooltips[tHexes.eType] = 
 					{
@@ -1716,10 +1793,12 @@ function ZoneMap:OnGenerateTooltip(wndHandler, wndControl, eType, nX, nY)
 				end
 			end
 		end
+		end
 
 		local tMapObjects = self.wndZoneMap:GetObjectsAt(tPoint.x, tPoint.y) -- all others
+		local tZoneInfo = self.wndZoneMap:GetZoneInfo()
 		for key, tHexes in pairs(tMapObjects) do
-			if self.tButtonChecks[self.tPOITypes[tHexes.eType].eCategory] then
+			if self.tButtonChecks[self.tPOITypes[tHexes.eType].eCategory] or tHexes.eType  == self.eObjectTypeNavPoint or tHexes.eType  == self.eObjectTypeMapTrackedUnit then
 				local strName = ""
 				local strType = self.tPOITypes[tHexes.eType] and self.tPOITypes[tHexes.eType].strType or eType					
 				
@@ -1744,6 +1823,14 @@ function ZoneMap:OnGenerateTooltip(wndHandler, wndControl, eType, nX, nY)
 					if tRegion ~= nil then
 						strFaction = string.format("<P><T Font=\"%s\" TextColor=\"%s\">%s</T></P>", "CRB_InterfaceMedium", "UI_TextHoloTitle", String_GetWeaselString(Apollo.GetString("ZoneMap_NemesisTooltipLabel"), tRegion.strFactionName))
 						strName = strFaction .. tRegion.strDescription
+					end
+				elseif tHexes.eType  == self.eObjectTypeNavPoint then
+					local tNavPoint = GameLib.GetNavPoint()
+
+					strName = Apollo.GetString("Navpoint_Set")
+					
+					if tZoneInfo.id ~= tNavPoint.nMapZoneId and eZoomLevel == ZoneMapWindow.CodeEnumDisplayMode.Scaled then
+						strName = Apollo.GetString("Navpoint_SetDirection")
 					end
 				elseif tHexes.eType == self.eObjectTypeLocation then
 					return
@@ -1812,6 +1899,8 @@ function ZoneMap:OnGenerateTooltip(wndHandler, wndControl, eType, nX, nY)
 				self.tTooltipCompareTable[idx] = nil
 			elseif self.tTooltipCompareTable[idx] == self.eObjectTypeQuest then
 				self.tTooltipCompareTable[idx] = nil
+			elseif self.tTooltipCompareTable[idx] == self.eObjectTypeLevelBandRegion then
+				self.tTooltipCompareTable[idx] = nil
 			end
 		end
 	end
@@ -1871,6 +1960,8 @@ function ZoneMap:OnPlayerIndicatorUpdated()
 end
 
 function ZoneMap:OnSubZoneChanged()
+	self:OnZoomChange()
+
   	if self.tUnitsShown then
 		for idx, tCurr in pairs(self.tUnitsShown) do
 			self.wndZoneMap:RemoveUnit(tCurr.unitValue)
@@ -1896,6 +1987,7 @@ function ZoneMap:OnSubZoneChanged()
 	end
 
 	self:SetControls()
+	self:UpdateRapidTransportBtn()
 end
 
 -----------------------------------------------------------------------------------------------
@@ -1925,6 +2017,9 @@ function ZoneMap:OnTerrainHexUncheck(wndHandler, wndControl)
 end
 
 function ZoneMap:SetTypeVisibility(eToggledType, bVisible)
+	if eToggledType == self.eObjectTypeLevelBandRegion then
+		self.wndZoneMap:ShowLevelBandLabels(bVisible)
+	end
 	local eZoomLevel = self.wndZoneMap:GetDisplayMode()
 	if bVisible then
 		for idx, eType in pairs(self.arAllowedTypesSuperPanning) do
@@ -2086,6 +2181,8 @@ function ZoneMap:OnMarkerBtnCheck(wndHandler, wndControl)
 		self:SetTypeVisibility(self.eObjectTypeVendorFlight, true)
 	elseif eType == ktMarkerCategories.CityDirections then
 		self:SetTypeVisibility(self.eObjectCityDirections, true)
+	elseif eType == ktMarkerCategories.LevelBands then
+		self:SetTypeVisibility(self.eObjectTypeLevelBandRegion, true)
 	end
 
 	self.tButtonChecks[eType] = true
@@ -2147,6 +2244,8 @@ function ZoneMap:OnMarkerBtnUncheck(wndHandler, wndControl)
 		self:SetTypeVisibility(self.eObjectTypeVendorFlight, false)
 	elseif eType == ktMarkerCategories.CityDirections then
 		self:SetTypeVisibility(self.eObjectCityDirections, false)
+	elseif eType == ktMarkerCategories.LevelBands then
+		self:SetTypeVisibility(self.eObjectTypeLevelBandRegion, false)
 	end
 
 	self.tButtonChecks[eType] = false
@@ -2198,11 +2297,25 @@ function ZoneMap:ReloadNemesisRegions()
 	local tRegions = self.wndZoneMap:GetAllNemesisRegionInfo()
 	if tRegions ~= nil then
 		for idx, tRegion in pairs(tRegions) do
-			local tHexes = self.wndZoneMap:GetHexGroupHexes(self.idCurrentZone, tRegion.hexGroupId);
+			local tHexes = self.wndZoneMap:GetHexGroupHexes(self.idCurrentZone, tRegion.hexGroupId)
 			self.wndZoneMap:AddRegion(self.eObjectTypeNemesisRegion, 0, tHexes, tRegion.id)
 		end
-
+		
 		self.wndZoneMap:HighlightRegionsByType(self.eObjectTypeNemesisRegion)
+	end
+end
+
+function ZoneMap:ReloadLevelBands()
+	self.wndZoneMap:RemoveRegionByType(self.eObjectTypeLevelBandRegion)	
+
+	local tLevelBands = self.wndZoneMap:GetLevelBandRegionInfo(self.idCurrentZone)
+	if tLevelBands ~= nil then
+		for idx, tLevelBand in pairs(tLevelBands) do
+			local tHexes = self.wndZoneMap:GetHexGroupHexes(self.idCurrentZone, tLevelBand.hexGroupId)
+			self.wndZoneMap:AddRegion(self.eObjectTypeLevelBandRegion, 0, tHexes, tLevelBand.id)
+		end	
+			
+		self.wndZoneMap:HighlightRegionsByType(self.eObjectTypeLevelBandRegion)
 	end
 end
 
@@ -2232,15 +2345,6 @@ function ZoneMap:OnPublicEventsUncheck(wndHandler, wndControl)
 
 	self.wndZoneMap:HideObjectsByType(self.eObjectTypePublicEvent)
 	self.wndZoneMap:RemoveRegionByType(self.eObjectTypePublicEvent)
-end
-
-function ZoneMap:OnNemesisRegionsUncheck(wndHandler, wndControl)
-	if wndControl ~= nil then  -- nil if coming from map change
-		self.tToggledIcons.bNemesisRegions = false
-	end
-
-	self.wndZoneMap:HideObjectsByType(self.eObjectTypeNemesisRegion)
-	self.wndZoneMap:RemoveRegionByType(self.eObjectTypeNemesisRegion)
 end
 
 function ZoneMap:RehideAllToggledIcons()
@@ -2300,6 +2404,8 @@ function ZoneMap:RehideAllToggledIcons()
 					self:SetTypeVisibility(self.eObjectTypeVendorFlight, false)
 				elseif eType == ktMarkerCategories.CityDirections then
 					self:SetTypeVisibility(self.eObjectCityDirections, false)
+				elseif eType == ktMarkerCategories.LevelBands then
+					self:SetTypeVisibility(self.eObjectTypeLevelBandRegion, false)
 				end
 			end
 		end
@@ -2477,6 +2583,7 @@ function ZoneMap:OnUnitDelayedCreated(unitMade)
 
 		if not tInteract.Busy and (not tMarkerInfo.bHideIfHostile
 			or (tMarkerInfo.bHideIfHostile and unitMade:GetDispositionTo(GameLib.GetPlayerUnit()) ~= Unit.CodeEnumDisposition.Hostile)) then
+			
 			local mapIconReference = self.wndZoneMap:AddUnit(unitMade, objectType, tInfo, tMarkerOptions, self:IsTypeCurrentlyHidden(objectType))
 			self.tUnitsShown[unitMade:GetId()] = { unitValue = unitMade }
 
@@ -2496,7 +2603,6 @@ function ZoneMap:OnUnitDelayedCreated(unitMade)
 				end
 			end
 		end
-
 	end
 end
 
@@ -2596,7 +2702,7 @@ function ZoneMap:UpdateChallengeList()
 		end
 	end
 
-	self.wndMapControlPanel:FindChild("ChallengePaneContentList"):ArrangeChildrenVert(0)
+	self.wndMapControlPanel:FindChild("ChallengePaneContentList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function ZoneMap:ChallengeEntryMouseEnter( wndHandler, wndControl, x, y )
@@ -2688,7 +2794,7 @@ function ZoneMap:UpdateMissionList()
 		end
 	end
 
-	self.wndMapControlPanel:FindChild("MissionPaneContentList"):ArrangeChildrenVert(0)
+	self.wndMapControlPanel:FindChild("MissionPaneContentList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function ZoneMap:MissionEntryMouseEnter( wndHandler, wndControl, x, y )
@@ -2837,7 +2943,7 @@ function ZoneMap:UpdatePublicEventList()
 		end
 	end
 
-	self.wndMapControlPanel:FindChild("PublicEventPaneContentList"):ArrangeChildrenVert(0)
+	self.wndMapControlPanel:FindChild("PublicEventPaneContentList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function ZoneMap:PublicEventEntryMouseEnter( wndHandler, wndControl, x, y )
@@ -3011,21 +3117,27 @@ end
 -----------------------------------------------------------------------------------------
 
 function ZoneMap:OnZoneMapButtonDown(wndHandler, wndControl, eButton, nX, nY, bDoubleClick) -- TODO: Bulletproof this
-	local newActiveRegionUserData = nil
-	if self.objActiveRegionUserData ~= nil then
-		for hoverIdx, hoverData in pairs(self.arHoverRegionUserDataList) do
-			if self.objActiveRegionUserData == hoverData then
-				self.objActiveRegionUserData = nil
-			else
-				newActiveRegionUserData = hoverData
+	if eButton == GameLib.CodeEnumInputMouse.Left then
+		if Apollo.IsShiftKeyDown() then
+			self:SetNavPoint(nX, nY)
+		else
+			local newActiveRegionUserData = nil
+			if self.objActiveRegionUserData ~= nil then
+				for hoverIdx, hoverData in pairs(self.arHoverRegionUserDataList) do
+					if self.objActiveRegionUserData == hoverData then
+						self.objActiveRegionUserData = nil
+					else
+						newActiveRegionUserData = hoverData
+					end
+				end
+			elseif #self.arHoverRegionUserDataList > 0 then
+				newActiveRegionUserData = self.arHoverRegionUserDataList[1]
 			end
-		end
-	elseif #self.arHoverRegionUserDataList > 0 then
-		newActiveRegionUserData = self.arHoverRegionUserDataList[1]
-	end
 
-	self.wndZoneMap:UnhighlightRegionsByUserData(self.objActiveRegionUserData)
-	self.objActiveRegionUserData = newActiveRegionUserData
+			self.wndZoneMap:UnhighlightRegionsByUserData(self.objActiveRegionUserData)
+			self.objActiveRegionUserData = newActiveRegionUserData
+		end
+	end
 end
 
 function ZoneMap:OnZoneMapMouseMove(wndHandler, wndControl, nX, nY)
@@ -3070,7 +3182,7 @@ function ZoneMap:OnCityDirectionsList(tDirections)
 	end
 
 	self.wndCityDirections = Apollo.LoadForm(self.xmlDoc, "CityDirections", nil, self)
-	self.wndCityDirections:ToFront()
+	self.wndCityDirections:Invoke()
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndCityDirections, strName = Apollo.GetString("ZoneMap_CityDirections")})
 
 	local wndCityDirectionsList = self.wndCityDirections:FindChild("CityDirectionsList")
@@ -3083,17 +3195,33 @@ function ZoneMap:OnCityDirectionsList(tDirections)
 		wndCurr:SetData(tCurrDirection.idDestination)
 	end
 
-	self.wndCityDirections:FindChild("CityDirectionsList"):ArrangeChildrenVert(0)
+	self.wndCityDirections:FindChild("CityDirectionsList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function ZoneMap:OnCityDirectionsClosed(wndHandler, wndControl)
+	if self.wndCityDirections ~= nil and self.wndCityDirections:IsValid() then
+		self.wndCityDirections:Close()
+	end
+end
+
+function ZoneMap:OnCityDirectionsWindowClosed(wndHandler, wndControl)
 	Event_CancelCityDirections()
 	self.wndCityDirections:Destroy()
+	self.wndCityDirections = nil
+end
+
+function ZoneMap:OnCityDirectionsClosedBtnSignal(wndHandler, wndControl)
+	if self.wndCityDirections ~= nil and self.wndCityDirections:IsValid() then
+		self.wndCityDirections:Close()
+	end
 end
 
 function ZoneMap:OnCityDirectionBtn(wndHandler, wndControl)
 	GameLib.MarkCityDirection(wndHandler:GetData())
-	self.wndCityDirections:Destroy()
+	
+	if self.wndCityDirections ~= nil and self.wndCityDirections:IsValid() then
+		self.wndCityDirections:Close()
+	end
 end
 
 function ZoneMap:OnCityDirectionMarked(tLocInfo)
@@ -3198,7 +3326,7 @@ function ZoneMap:UpdateQuestList()
 		end
 	end
 
-	self.wndMapControlPanel:FindChild("QuestPaneContentList"):ArrangeChildrenVert(0)
+	self.wndMapControlPanel:FindChild("QuestPaneContentList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function ZoneMap:BuildQuestTitleString(queCurr)
@@ -3410,6 +3538,59 @@ function ZoneMap:OnMapTrackedUnitDisable(idTrackedUnit)
 end
 
 ---------------------------------------------------------------------------------------------------
+function ZoneMap:OnNavPointCleared()
+	if not self.wndZoneMap or not self.wndZoneMap:IsValid() then
+		return
+	end
+	self.wndZoneMap:RemoveObjectsByType(self.eObjectTypeNavPoint)
+	self.tNavPointLoc = nil
+end
+
+--Event handler for when a nav point was set.
+function ZoneMap:OnNavPointSet(tLoc)
+	if not self.wndZoneMap or not self.wndZoneMap:IsValid() or not tLoc then
+		return
+	end
+	
+	local tInfo =
+	{
+		objectType = self.eObjectTypeNavPoint,
+		strIcon = "IconSprites:Icon_MapNode_Map_NavPoint",
+		bFixedSizeLarge = true,
+		strIconEdge = "CRB_MinimapSprites:sprMM_PartyMemberArrow",
+		crEdge = CColor.new(1, 1, 1, 1),
+		bNeverShowOnEdge = false
+	}
+	
+	self.wndZoneMap:RemoveObjectsByType(self.eObjectTypeNavPoint)
+	self.wndZoneMap:AddObject(self.eObjectTypeNavPoint, tLoc, "Nav Pt", tInfo, {bFixedSizeSmall = false}, false)
+	self.tNavPointLoc = tLoc
+end
+
+function ZoneMap:OnSetNavPointFailed(tDetails)
+	ChatSystemLib.PostOnChannel(ChatSystemLib.ChatChannel_System, Apollo.GetString("Navpoint_Blocked"), "")
+	self.wndMain:FindChild("ErrorPulse"):SetSprite("UI_BK3_StoryPanelAlert_IcoAnim")
+end
+
+--Called from shift + left clicking.
+function ZoneMap:SetNavPoint(nX, nY)
+	local tMapObjects = self.wndZoneMap:GetObjectsAt(nX, nY)
+	for key, tObject in pairs(tMapObjects) do
+		if tObject.eType == self.eObjectTypeNavPoint then
+			GameLib.ClearNavPoint()
+			return
+		end
+	end
+
+	local eZoomLevel = self.wndZoneMap:GetDisplayMode()
+	local tZoneMapEnums = ZoneMapWindow.CodeEnumDisplayMode	
+	if eZoomLevel ~= tZoneMapEnums.Continent then
+		local tZoneInfo = self.wndZoneMap:GetZoneInfo()
+		GameLib.SetNavPoint(self.wndZoneMap:GetWorldLocAtPoint(nX, nY), tZoneInfo and tZoneInfo.id or nil)
+	end
+end
+
+---------------------------------------------------------------------------------------------------
 function ZoneMap:OnLevelChanged(level)
 	if level == nil then
 		return
@@ -3429,7 +3610,7 @@ function ZoneMap:OnLevelChanged(level)
 	end
 end
 
-function ZoneMap:HelperLevelupUnlockGotoMap(idWorldZone)
+function ZoneMap:HelperGoToMap(idWorldZone)
 	if not self.wndMain:IsVisible() then
 		self:ToggleWindow()
 	end
@@ -3443,50 +3624,54 @@ function ZoneMap:HelperLevelupUnlockGotoMap(idWorldZone)
 		self:HelperBuildZoneDropdown(tZoneInfo.continentId)
 		self.wndMain:FindChild("ZoneComplexToggle"):SetText(tZoneInfo.strName)
 	end
+	
+	if self.tNavPointLoc then
+		self:OnNavPointSet(self.tNavPointLoc)
+	end
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapAdventure_Astrovoid()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.Illium)
+	self:HelperGoToMap(GameLib.MapZone.Illium)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapAdventure_Galeras()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.Whitevale)
+	self:HelperGoToMap(GameLib.MapZone.Whitevale)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapAdventure_Hycrest()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.Thayd)
+	self:HelperGoToMap(GameLib.MapZone.Thayd)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapAdventure_Malgrave()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.Grimvault)
+	self:HelperGoToMap(GameLib.MapZone.Grimvault)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapAdventure_NorthernWilds()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.Whitevale)
+	self:HelperGoToMap(GameLib.MapZone.Whitevale)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapAdventure_Whitevale()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.Wilderrun)
+	self:HelperGoToMap(GameLib.MapZone.Wilderrun)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapDungeon_UltimateProtogames()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.Malgrave)
+	self:HelperGoToMap(GameLib.MapZone.Malgrave)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapDungeon_SwordMaiden()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.Wilderrun)
+	self:HelperGoToMap(GameLib.MapZone.Wilderrun)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapDungeon_Skullcano()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.Whitevale)
+	self:HelperGoToMap(GameLib.MapZone.Whitevale)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapDungeon_KelVoreth()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.Auroria)
+	self:HelperGoToMap(GameLib.MapZone.Auroria)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapDungeon_Stormtalon()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.Galeras)
+	self:HelperGoToMap(GameLib.MapZone.Galeras)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapDungeon_ProtogamesAcademyExile()
@@ -3499,13 +3684,13 @@ function ZoneMap:OnLevelUpUnlock_WorldMapDungeon_ProtogamesAcademyExile()
 	if tZones ~= nil then
 		for idx, idZone in pairs(tZones) do
 			if tCurrentZoneInto.id == idZone then
-				self:HelperLevelupUnlockGotoMap(idZone)
+				self:HelperGoToMap(idZone)
 				return
 			end
 		end
 	end
 	
-	self:HelperLevelupUnlockGotoMap(ktGlobalPortalInfo.ProtogamesAcademyExile.idZones[1])
+	self:HelperGoToMap(ktGlobalPortalInfo.ProtogamesAcademyExile.idZones[1])
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapDungeon_ProtogamesAcademyDominion()
@@ -3518,81 +3703,86 @@ function ZoneMap:OnLevelUpUnlock_WorldMapDungeon_ProtogamesAcademyDominion()
 	if tZones ~= nil then
 		for idx, idZone in pairs(tZones) do
 			if tCurrentZoneInto.id == idZone then
-				self:HelperLevelupUnlockGotoMap(idZone)
+				self:HelperGoToMap(idZone)
 				return
 			end
 		end
 	end
 	
-	self:HelperLevelupUnlockGotoMap(ktGlobalPortalInfo.ProtogamesAcademyDominion.idZones[1])
+	self:HelperGoToMap(ktGlobalPortalInfo.ProtogamesAcademyDominion.idZones[1])
+end
+
+function ZoneMap:OnRapidTransportOpen()
+	self:OnCloseBtn()
+	Event_FireGenericEvent("InvokeTaxiWindow")
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapCapital_Thayd()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.Thayd)
+	self:HelperGoToMap(GameLib.MapZone.Thayd)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapCapital_Illium()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.Illium)
+	self:HelperGoToMap(GameLib.MapZone.Illium)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapNewZone_Algoroc()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.Algoroc)
+	self:HelperGoToMap(GameLib.MapZone.Algoroc)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapNewZone_Auroria()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.Auroria)
+	self:HelperGoToMap(GameLib.MapZone.Auroria)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapNewZone_Celestion()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.Celestion)
+	self:HelperGoToMap(GameLib.MapZone.Celestion)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapNewZone_CrimsonIsle()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.CrimsonIsle)
+	self:HelperGoToMap(GameLib.MapZone.CrimsonIsle)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapNewZone_Deradune()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.Deradune)
+	self:HelperGoToMap(GameLib.MapZone.Deradune)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapNewZone_Ellevar()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.Ellevar)
+	self:HelperGoToMap(GameLib.MapZone.Ellevar)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapNewZone_EverstarGrove()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.EverstarGrove)
+	self:HelperGoToMap(GameLib.MapZone.EverstarGrove)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapNewZone_Farside()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.Farside)
+	self:HelperGoToMap(GameLib.MapZone.Farside)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapNewZone_Galeras()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.Galeras)
+	self:HelperGoToMap(GameLib.MapZone.Galeras)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapNewZone_Grimvault()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.Grimvault)
+	self:HelperGoToMap(GameLib.MapZone.Grimvault)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapNewZone_LevianBay()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.LevianBay)
+	self:HelperGoToMap(GameLib.MapZone.LevianBay)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapNewZone_Malgrave()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.Malgrave)
+	self:HelperGoToMap(GameLib.MapZone.Malgrave)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapNewZone_NorthernWilds()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.NorthernWilds)
+	self:HelperGoToMap(GameLib.MapZone.NorthernWilds)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapNewZone_Whitevale()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.Whitevale)
+	self:HelperGoToMap(GameLib.MapZone.Whitevale)
 end
 
 function ZoneMap:OnLevelUpUnlock_WorldMapNewZone_Wilderrun()
-	self:HelperLevelupUnlockGotoMap(GameLib.MapZone.Wilderrun)
+	self:HelperGoToMap(GameLib.MapZone.Wilderrun)
 end
 
 ---------------------------------------------------------------------------------------------------

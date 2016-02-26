@@ -36,8 +36,7 @@ local karBankTabs =  -- key is id, value is tab unlock.
 
 local kcrDisabledText 		= ApolloColor.new("UI_TextMetalBody")
 local kcrEnabledText 		= ApolloColor.new("white")
-local kcrDisabledTextRed 	= ApolloColor.new("xkcdReddish") -- used on cash
-local knMaxInfluence = 2000000 -- TODO: hardcoded limit that we'll have to track
+local kcrDisabledTextRed 	= ApolloColor.new("Reddish") -- used on cash
 
 function GuildPerks:new(o)
     o = o or {}
@@ -253,7 +252,7 @@ function GuildPerks:BuildTierDisplays(arTiersTemp)
 	self:FormatTierDisplays()
 
 	for key, tTierInfo in pairs(self.tTierContainers) do
-		tTierInfo.wndContainer:FindChild("PerkList"):ArrangeChildrenHorz(1)
+		tTierInfo.wndContainer:FindChild("PerkList"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.Middle)
 	end
 end
 
@@ -310,7 +309,7 @@ function GuildPerks:FormatTierDisplays()
 			end
 		end
 
-		tTierPerk.wndContainer:FindChild("LeftContainer"):ArrangeChildrenVert(1)
+		tTierPerk.wndContainer:FindChild("LeftContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.Middle)
 	end
 
 	self.tWndRefs.wndMain:FindChild("TierContainer"):ArrangeChildrenVert()
@@ -357,7 +356,7 @@ function GuildPerks:BuildPerkEntries(arPerksTemp)
 	end
 
 	for key, tiers in pairs(self.tTierContainers) do
-		tiers.wndContainer:FindChild("PerkList"):ArrangeChildrenHorz(1)
+		tiers.wndContainer:FindChild("PerkList"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.Middle)
 	end
 end
 
@@ -467,15 +466,16 @@ end
 
 
 function GuildPerks:UpdateInfluenceDisplay(nCurrent, nBonusRemaining)
-	local nMaxBonus = knMaxInfluence / 10
-	local nWarningAmount = knMaxInfluence * 0.8 --80% of max
+	local nMaxInfluence = GuildLib.GetGuildInfluenceLimit()
+	local nMaxBonus = nMaxInfluence / 10
+	local nWarningAmount = nMaxInfluence * 0.8 --80% of max
 	nWastedBonus = nCurrent + nBonusRemaining > nWarningAmount and math.abs(nWarningAmount - nBonusRemaining - nCurrent) or 0
 	
 	local strTooltip = String_GetWeaselString(
 		Apollo.GetString("GuildPerk_InfluenceListing"), 
 		Apollo.FormatNumber(nCurrent, 0, true),
-		Apollo.FormatNumber(knMaxInfluence, 0, true), 
-		Apollo.FormatNumber(nCurrent / knMaxInfluence * 100, 1, true), 
+		Apollo.FormatNumber(nMaxInfluence, 0, true), 
+		Apollo.FormatNumber(nCurrent / nMaxInfluence * 100, 1, true), 
 		
 		Apollo.FormatNumber(nBonusRemaining, 0, true),
 		Apollo.FormatNumber(nMaxBonus, 0, true), 
@@ -484,7 +484,7 @@ function GuildPerks:UpdateInfluenceDisplay(nCurrent, nBonusRemaining)
 
 	local strBonusEnd = String_GetWeaselString(
 		Apollo.GetString("GuildPerk_InfluenceBonus"), 
-		Apollo.FormatNumber((nCurrent + nBonusRemaining) / knMaxInfluence * 100, 1, true)
+		Apollo.FormatNumber((nCurrent + nBonusRemaining) / nMaxInfluence * 100, 1, true)
 	)
 	
 	if nBonusRemaining > 0 then		
@@ -496,15 +496,15 @@ function GuildPerks:UpdateInfluenceDisplay(nCurrent, nBonusRemaining)
 	end
 	
 	self.tWndRefs.wndMain:FindChild("InfBar_LabelBonus"):SetText(Apollo.GetString("GuildPerks_BonusLabel") .. " " ..tostring(Apollo.FormatNumber(nBonusRemaining / nMaxBonus * 100, 1, true)).."%")
-	self.tWndRefs.wndMain:FindChild("InfBar_Label"):SetText(Apollo.GetString("GuildPerks_InfluenceLabel") .. " " ..tostring(Apollo.FormatNumber(nCurrent / knMaxInfluence * 100, 1, true)).."%")
+	self.tWndRefs.wndMain:FindChild("InfBar_Label"):SetText(Apollo.GetString("GuildPerks_InfluenceLabel") .. " " ..tostring(Apollo.FormatNumber(nCurrent / nMaxInfluence * 100, 1, true)).."%")
 	self.tWndRefs.wndMain:FindChild("InfBar_InfluenceAmt"):SetText(tostring(Apollo.FormatNumber(nCurrent, 0, true)))
 	self.tWndRefs.wndMain:FindChild("InfBar_BounusAmt"):SetText(tostring(Apollo.FormatNumber(nBonusRemaining, 0, true)))
 	
-	self.tWndRefs.wndMain:FindChild("InfBar_Label"):SetTextColor(nWastedBonus > 0 and "xkcdAmber" or "UI_TextHoloBodyCyan")
-	self.tWndRefs.wndMain:FindChild("InfBar_InfluenceAmt"):SetTextColor(nWastedBonus > 0 and "xkcdAmber" or "UI_TextHoloBodyCyan")
+	self.tWndRefs.wndMain:FindChild("InfBar_Label"):SetTextColor(nWastedBonus > 0 and "Amber" or "UI_TextHoloBodyCyan")
+	self.tWndRefs.wndMain:FindChild("InfBar_InfluenceAmt"):SetTextColor(nWastedBonus > 0 and "Amber" or "UI_TextHoloBodyCyan")
 	
 	self.tWndRefs.wndMain:FindChild("InfluenceProgressBar"):SetFullSprite(nWastedBonus > 0 and "spr_HUD_BottomBar_XPFull" or "spr_HUD_BottomBar_XPFill")
-	self.tWndRefs.wndMain:FindChild("InfluenceProgressBar"):SetMax(knMaxInfluence)
+	self.tWndRefs.wndMain:FindChild("InfluenceProgressBar"):SetMax(nMaxInfluence)
 	self.tWndRefs.wndMain:FindChild("InfluenceProgressBar"):SetProgress(nCurrent)
 	self.tWndRefs.wndMain:FindChild("InfluenceProgressBar"):SetTooltip(strTooltip)
 	
@@ -512,7 +512,7 @@ function GuildPerks:UpdateInfluenceDisplay(nCurrent, nBonusRemaining)
 	self.tWndRefs.wndMain:FindChild("InfluenceBonusRemaining"):SetProgress(nBonusRemaining)
 	self.tWndRefs.wndMain:FindChild("InfluenceBonusRemaining"):SetTooltip(strTooltip)
 
-	self.tWndRefs.wndMain:FindChild("InfluenceBonusProgressBar"):SetMax(knMaxInfluence)
+	self.tWndRefs.wndMain:FindChild("InfluenceBonusProgressBar"):SetMax(nMaxInfluence)
 	self.tWndRefs.wndMain:FindChild("InfluenceBonusProgressBar"):SetProgress(nCurrent + nBonusRemaining)
 end
 

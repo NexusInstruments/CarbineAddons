@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Sprites>
+    <Sprite Name="sprCSI_ProgTimer" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CSI_01.tex" x0="793" x1="1024" x2="1024" x3="1024" x4="1024" x5="1024" y0="0" y1="231" y2="231" y3="231" y4="231" y5="231" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprCSI_IconTimer" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CSI_01.tex" x0="850" x1="850" x2="850" x3="850" x4="850" x5="915" y0="240" y1="240" y2="240" y3="240" y4="240" y5="304" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprCSI_IconIndicatorOn" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CSI_01.tex" x0="919" x1="919" x2="919" x3="919" x4="919" x5="977" y0="231" y1="231" y2="231" y3="231" y4="231" y5="288" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprCSI_IconIndicatorOff" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CSI_01.tex" x0="979" x1="979" x2="979" x3="979" x4="979" x5="1024" y0="237" y1="237" y2="237" y3="237" y4="237" y5="282" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprCSI_ProgBG" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CSI_01.tex" x0="328" x1="559" x2="559" x3="559" x4="559" x5="559" y0="0" y1="231" y2="231" y3="231" y4="231" y5="231" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprCSI_TapSpot" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CSI_01.tex" x0="732" x1="732" x2="732" x3="732" x4="732" x5="844" y0="233" y1="233" y2="233" y3="233" y4="233" y5="343" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprCSI_TapSpotActive" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CSI_01.tex" x0="621" x1="621" x2="621" x3="621" x4="621" x5="733" y0="232" y1="232" y2="232" y3="232" y4="232" y5="342" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprCSI_ProgHorizCap" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CSI_01.tex" x0="593" x1="593" x2="593" x3="593" x4="593" x5="618" y0="233" y1="233" y2="233" y3="233" y4="233" y5="315" HotspotX="12" HotspotY="42" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprCSI_ProgVertBG" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CSI_01.tex" x0="439" x1="467" x2="470" x3="504" x4="504" x5="504" y0="241" y1="241" y2="241" y3="241" y4="241" y5="311" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprCSI_ProgHorizBG" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CSI_01.tex" x0="521" x1="521" x2="521" x3="521" x4="521" x5="591" y0="260" y1="287" y2="290" y3="290" y4="290" y5="319" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprCSI_ProgVertCap" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CSI_01.tex" x0="512" x1="512" x2="512" x3="512" x4="512" x5="591" y0="234" y1="234" y2="234" y3="234" y4="234" y5="259" HotspotX="40" HotspotY="-11" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprCSI_ProgVertBar" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CSI_01.tex" x0="366" x1="366" x2="366" x3="366" x4="366" x5="412" y0="252" y1="267" y2="364" y3="364" y4="364" y5="377" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprCSI_ProgHorizBar" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CSI_01.tex" x0="203" x1="215" x2="316" x3="316" x4="316" x5="328" y0="252" y1="252" y2="252" y3="252" y4="252" y5="298" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprCSI_IconHandAlone" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CSI_01.tex" x0="74" x1="74" x2="74" x3="74" x4="74" x5="174" y0="251" y1="251" y2="251" y3="251" y4="251" y5="354" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprCSI_IconHandPressUp" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CSI_01.tex" x0="227" x1="227" x2="227" x3="227" x4="227" x5="321" y0="108" y1="108" y2="108" y3="108" y4="108" y5="234" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprCSI_IconHandPressDown" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CSI_01.tex" x0="131" x1="131" x2="131" x3="131" x4="131" x5="224" y0="108" y1="108" y2="108" y3="108" y4="108" y5="235" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="anim_CSI_IconHandPress" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_HandStartAlert.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="155" y0="10" y1="10" y2="10" y3="10" y4="10" y5="189" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_HandStartAlert.tex" x0="155" x1="155" x2="155" x3="155" x4="155" x5="310" y0="10" y1="10" y2="10" y3="10" y4="10" y5="189" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_HandStartAlert.tex" x0="310" x1="310" x2="310" x3="310" x4="310" x5="465" y0="10" y1="10" y2="10" y3="10" y4="10" y5="189" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_HandStartAlert.tex" x0="465" x1="465" x2="465" x3="465" x4="465" x5="620" y0="10" y1="10" y2="10" y3="10" y4="10" y5="189" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_HandStartAlert.tex" x0="620" x1="620" x2="620" x3="620" x4="620" x5="775" y0="10" y1="10" y2="10" y3="10" y4="10" y5="189" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_HandStartAlert.tex" x0="775" x1="775" x2="775" x3="775" x4="775" x5="930" y0="10" y1="10" y2="10" y3="10" y4="10" y5="189" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_HandStartAlert.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="155" y0="206" y1="206" y2="206" y3="206" y4="206" y5="385" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_HandStartAlert.tex" x0="155" x1="155" x2="155" x3="155" x4="155" x5="310" y0="206" y1="206" y2="206" y3="206" y4="206" y5="385" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_HandStartAlert.tex" x0="310" x1="310" x2="310" x3="310" x4="310" x5="465" y0="206" y1="206" y2="206" y3="206" y4="206" y5="385" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_HandStartAlert.tex" x0="465" x1="465" x2="465" x3="465" x4="465" x5="620" y0="206" y1="206" y2="206" y3="206" y4="206" y5="385" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_HandStartAlert.tex" x0="620" x1="620" x2="620" x3="620" x4="620" x5="775" y0="206" y1="206" y2="206" y3="206" y4="206" y5="385" HotspotX="0" HotspotY="0" Duration="0.050" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="anim_CSI_IconHandHold" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="173" y0="0" y1="0" y2="0" y3="0" y4="0" y5="116" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="168" x1="168" x2="168" x3="168" x4="168" x5="341" y0="0" y1="0" y2="0" y3="0" y4="0" y5="116" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="336" x1="336" x2="336" x3="336" x4="336" x5="509" y0="0" y1="0" y2="0" y3="0" y4="0" y5="116" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="504" x1="504" x2="504" x3="504" x4="504" x5="677" y0="0" y1="0" y2="0" y3="0" y4="0" y5="116" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="672" x1="672" x2="672" x3="672" x4="672" x5="845" y0="0" y1="0" y2="0" y3="0" y4="0" y5="116" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="840" x1="840" x2="840" x3="840" x4="840" x5="1013" y0="0" y1="0" y2="0" y3="0" y4="0" y5="116" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="173" y0="120" y1="120" y2="120" y3="120" y4="120" y5="236" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="168" x1="168" x2="168" x3="168" x4="168" x5="341" y0="120" y1="120" y2="120" y3="120" y4="120" y5="236" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="336" x1="336" x2="336" x3="336" x4="336" x5="509" y0="120" y1="120" y2="120" y3="120" y4="120" y5="236" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="504" x1="504" x2="504" x3="504" x4="504" x5="677" y0="120" y1="120" y2="120" y3="120" y4="120" y5="236" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="672" x1="672" x2="672" x3="672" x4="672" x5="845" y0="120" y1="120" y2="120" y3="120" y4="120" y5="236" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="840" x1="840" x2="840" x3="840" x4="840" x5="1013" y0="120" y1="120" y2="120" y3="120" y4="120" y5="236" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="173" y0="240" y1="240" y2="240" y3="240" y4="240" y5="356" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="168" x1="168" x2="168" x3="168" x4="168" x5="341" y0="240" y1="240" y2="240" y3="240" y4="240" y5="356" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="336" x1="336" x2="336" x3="336" x4="336" x5="509" y0="240" y1="240" y2="240" y3="240" y4="240" y5="356" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="504" x1="504" x2="504" x3="504" x4="504" x5="677" y0="240" y1="240" y2="240" y3="240" y4="240" y5="356" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="672" x1="672" x2="672" x3="672" x4="672" x5="845" y0="240" y1="240" y2="240" y3="240" y4="240" y5="356" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="840" x1="840" x2="840" x3="840" x4="840" x5="1013" y0="240" y1="240" y2="240" y3="240" y4="240" y5="356" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="173" y0="360" y1="360" y2="360" y3="360" y4="360" y5="476" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="168" x1="168" x2="168" x3="168" x4="168" x5="341" y0="360" y1="360" y2="360" y3="360" y4="360" y5="476" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="336" x1="336" x2="336" x3="336" x4="336" x5="509" y0="360" y1="360" y2="360" y3="360" y4="360" y5="476" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="504" x1="504" x2="504" x3="504" x4="504" x5="677" y0="360" y1="360" y2="360" y3="360" y4="360" y5="476" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="672" x1="672" x2="672" x3="672" x4="672" x5="845" y0="360" y1="360" y2="360" y3="360" y4="360" y5="476" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="840" x1="840" x2="840" x3="840" x4="840" x5="1013" y0="360" y1="360" y2="360" y3="360" y4="360" y5="476" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="173" y0="480" y1="480" y2="480" y3="480" y4="480" y5="596" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="168" x1="168" x2="168" x3="168" x4="168" x5="341" y0="480" y1="480" y2="480" y3="480" y4="480" y5="596" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="336" x1="336" x2="336" x3="336" x4="336" x5="509" y0="480" y1="480" y2="480" y3="480" y4="480" y5="596" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="504" x1="504" x2="504" x3="504" x4="504" x5="677" y0="480" y1="480" y2="480" y3="480" y4="480" y5="596" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="672" x1="672" x2="672" x3="672" x4="672" x5="845" y0="480" y1="480" y2="480" y3="480" y4="480" y5="596" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="840" x1="840" x2="840" x3="840" x4="840" x5="1013" y0="480" y1="480" y2="480" y3="480" y4="480" y5="596" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="173" y0="600" y1="600" y2="600" y3="600" y4="600" y5="716" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="168" x1="168" x2="168" x3="168" x4="168" x5="341" y0="600" y1="600" y2="600" y3="600" y4="600" y5="716" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="336" x1="336" x2="336" x3="336" x4="336" x5="509" y0="600" y1="600" y2="600" y3="600" y4="600" y5="716" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="504" x1="504" x2="504" x3="504" x4="504" x5="677" y0="600" y1="600" y2="600" y3="600" y4="600" y5="716" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="672" x1="672" x2="672" x3="672" x4="672" x5="845" y0="600" y1="600" y2="600" y3="600" y4="600" y5="716" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="840" x1="840" x2="840" x3="840" x4="840" x5="1013" y0="600" y1="600" y2="600" y3="600" y4="600" y5="716" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="173" y0="720" y1="720" y2="720" y3="720" y4="720" y5="836" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="168" x1="168" x2="168" x3="168" x4="168" x5="341" y0="720" y1="720" y2="720" y3="720" y4="720" y5="836" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="336" x1="336" x2="336" x3="336" x4="336" x5="509" y0="720" y1="720" y2="720" y3="720" y4="720" y5="836" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="504" x1="504" x2="504" x3="504" x4="504" x5="677" y0="720" y1="720" y2="720" y3="720" y4="720" y5="836" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="672" x1="672" x2="672" x3="672" x4="672" x5="845" y0="720" y1="720" y2="720" y3="720" y4="720" y5="836" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_Anim_CSI_Hold.tex" x0="840" x1="840" x2="840" x3="840" x4="840" x5="1013" y0="720" y1="720" y2="720" y3="720" y4="720" y5="836" HotspotX="0" HotspotY="0" Duration="0.035" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprCSI_IconBaseplatePresser" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CSI_01.tex" x0="204" x1="204" x2="204" x3="204" x4="204" x5="344" y0="308" y1="308" y2="308" y3="308" y4="308" y5="385" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprCSI_IconBaseplateHandOff" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CSI_01.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="182" y0="401" y1="401" y2="401" y3="401" y4="401" y5="607" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprCSI_IconBaseplateHandPressed" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CSI_01.tex" x0="182" x1="182" x2="182" x3="182" x4="182" x5="364" y0="401" y1="401" y2="401" y3="401" y4="401" y5="607" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprCSI_ProgFill" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CSI_01.tex" x0="559" x1="790" x2="790" x3="790" x4="790" x5="790" y0="0" y1="231" y2="231" y3="231" y4="231" y5="231" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+</Sprites>

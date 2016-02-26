@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Sprites>
+    <Sprite Name="sprChallenges_barEmpty" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_Challenges.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="110" y0="0" y1="0" y2="0" y3="0" y4="0" y5="75" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprChallenges_barFill" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_Challenges.tex" x0="111" x1="111" x2="111" x3="111" x4="111" x5="221" y0="0" y1="0" y2="0" y3="0" y4="0" y5="75" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprChallenges_starBlack" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_Challenges.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="70" y0="78" y1="78" y2="78" y3="78" y4="78" y5="143" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprChallenges_starWhite" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_Challenges.tex" x0="71" x1="71" x2="71" x3="71" x4="71" x5="141" y0="78" y1="78" y2="78" y3="78" y4="78" y5="143" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprChallenges_starBronze" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_Challenges.tex" x0="142" x1="142" x2="142" x3="142" x4="142" x5="212" y0="78" y1="78" y2="78" y3="78" y4="78" y5="143" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprChallenges_starSilver" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_Challenges.tex" x0="213" x1="213" x2="213" x3="213" x4="213" x5="283" y0="78" y1="78" y2="78" y3="78" y4="78" y5="143" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprChallenges_starGold" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_Challenges.tex" x0="284" x1="284" x2="284" x3="284" x4="284" x5="354" y0="78" y1="78" y2="78" y3="78" y4="78" y5="143" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprChallenges_Timer" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_Challenges.tex" x0="355" x1="355" x2="355" x3="355" x4="355" x5="386" y0="76" y1="76" y2="76" y3="76" y4="76" y5="107" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprChallenges_RewardsProgressBG" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_Challenges.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="442" y0="186" y1="186" y2="186" y3="186" y4="186" y5="224" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprChallenges_RewardsProgressFG" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_Challenges.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="442" y0="147" y1="147" y2="147" y3="147" y4="147" y5="185" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprChallenges_RewardsProgressFGSig" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_Challenges.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="442" y0="350" y1="350" y2="350" y3="350" y4="350" y5="388" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <AutoButton Name="btnChallenged_RewardProgressCap" Texture="UI\Assets\Textures\UI_Challenges.tex" x0="1" x1="1" x2="1" x3="1" x4="1" x5="64" y0="229" y1="229" y2="229" y3="229" y4="229" y5="268" Stretchy="1" StateBits="5" Direction="Across"/>
+    <AutoButton Name="btnChallenged_RewardProgressUpcoming" Texture="UI\Assets\Textures\UI_Challenges.tex" x0="138" x1="138" x2="138" x3="138" x4="138" x5="193" y0="231" y1="231" y2="231" y3="231" y4="231" y5="285" Stretchy="1" StateBits="5" Direction="Across"/>
+    <AutoButton Name="btnChallenged_RewardProgressPassed" Texture="UI\Assets\Textures\UI_Challenges.tex" x0="138" x1="138" x2="138" x3="138" x4="138" x5="193" y0="298" y1="298" y2="298" y3="298" y4="298" y5="352" Stretchy="1" StateBits="5" Direction="Across"/>
+    <AutoButton Name="btnChallenged_RewardExpand" Texture="UI\Assets\Textures\UI_Challenges.tex" x0="250" x1="250" x2="250" x3="250" x4="250" x5="300" y0="224" y1="224" y2="224" y3="224" y4="224" y5="313" Stretchy="1" StateBits="15" Direction="Across"/>
+    <Sprite Name="sprChallenges_starRed" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_Challenges.tex" x0="387" x1="387" x2="387" x3="387" x4="387" x5="457" y0="78" y1="78" y2="78" y3="78" y4="78" y5="143" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+</Sprites>

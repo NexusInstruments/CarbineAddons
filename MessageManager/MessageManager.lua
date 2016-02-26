@@ -123,7 +123,7 @@ end
 function MessageManager:OnLoad()
 	Apollo.RegisterEventHandler("Float_RequestShowTextFloater", 	"RequestShowTextFloater", self )
 	Apollo.RegisterEventHandler("MessageFinished", 					"OnMessageFinished", self )
-	--Apollo.RegisterEventHandler("VarChange_FrameCount", 			"OnFrameUpdate", self)
+	--Apollo.RegisterEventHandler("NextFrame", 			"OnFrameUpdate", self)
 	Apollo.RegisterTimerHandler("MessageUpdateTimer", 				"OnFrameUpdate", self)
 	
 	Apollo.CreateTimer("MessageUpdateTimer", 0.05, true)

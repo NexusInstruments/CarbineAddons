@@ -12,12 +12,25 @@ require "PlayerPathLib"
 local XPBar = {}
 local knMaxLevel = 50 -- TODO: Replace with a variable from code
 local knMaxPathLevel = 30 -- TODO: Replace this with a non hardcoded value
+local knDefaultAltCurrency = 6 -- index into karCurrency for Credits
+
+local karCurrency =  	
+{						-- To add a new currency just add an entry to the table; the UI will do the rest. Idx == 1 will be the default one shown
+	{eType = Money.CodeEnumCurrencyType.Renown, 					strTitle = Apollo.GetString("CRB_Renown"), 						strDescription = Apollo.GetString("CRB_Renown_Desc")},
+	{eType = Money.CodeEnumCurrencyType.ElderGems, 					strTitle = Apollo.GetString("CRB_Elder_Gems"), 					strDescription = Apollo.GetString("CRB_Elder_Gems_Desc")},
+	{eType = Money.CodeEnumCurrencyType.Glory, 						strTitle = Apollo.GetString("CRB_Glory"), 						strDescription = Apollo.GetString("CRB_Glory_Desc")},
+	{eType = Money.CodeEnumCurrencyType.Prestige, 					strTitle = Apollo.GetString("CRB_Prestige"), 					strDescription = Apollo.GetString("CRB_Prestige_Desc")},
+	{eType = Money.CodeEnumCurrencyType.CraftingVouchers, 			strTitle = Apollo.GetString("CRB_Crafting_Vouchers"), 			strDescription = Apollo.GetString("CRB_Crafting_Voucher_Desc")},
+	{eType = AccountItemLib.CodeEnumAccountCurrency.Omnibits, 		strTitle = Apollo.GetString("CRB_OmniBits"), 					strDescription = Apollo.GetString("CRB_OmniBits_Desc"), bAccountItem = true},
+	{eType = AccountItemLib.CodeEnumAccountCurrency.ServiceToken, 	strTitle = Apollo.GetString("AccountInventory_ServiceToken"), 	strDescription = Apollo.GetString("AccountInventory_ServiceToken_Desc"), bAccountItem = true},
+	{eType = AccountItemLib.CodeEnumAccountCurrency.MysticShiny, 	strTitle = Apollo.GetString("CRB_FortuneCoin"), 				strDescription = Apollo.GetString("CRB_FortuneCoin_Desc"), bAccountItem = true},
+}
 
 local ktPathIcon = {
 	[PlayerPathLib.PlayerPathType_Soldier] 		= "HUD_ClassIcons:spr_Icon_HUD_Path_Soldier",
 	[PlayerPathLib.PlayerPathType_Settler] 		= "HUD_ClassIcons:spr_Icon_HUD_Path_Settler",
 	[PlayerPathLib.PlayerPathType_Scientist] 	= "HUD_ClassIcons:spr_Icon_HUD_Path_Scientist",
-	[PlayerPathLib.PlayerPathType_Explorer] 		= "HUD_ClassIcons:spr_Icon_HUD_Path_Explorer",
+	[PlayerPathLib.PlayerPathType_Explorer] 	= "HUD_ClassIcons:spr_Icon_HUD_Path_Explorer",
 }
 
 local c_arPathStrings = {
@@ -43,18 +56,41 @@ function XPBar:Init()
     Apollo.RegisterAddon(self)
 end
 
+function XPBar:OnSave(eType)
+	if eType == GameLib.CodeEnumAddonSaveLevel.Character then
+		return {
+			nAltCurrencySelected = self.nAltCurrencySelected
+		}
+	end
+	return nil
+end
+
+function XPBar:OnRestore(eType, tSavedData)
+	if eType == GameLib.CodeEnumAddonSaveLevel.Character  then
+		self.nAltCurrencySelected = knDefaultAltCurrency
+		if tSavedData.nAltCurrencySelected ~= nil then
+			self.nAltCurrencySelected = tSavedData.nAltCurrencySelected
+		end
+	end
+	if self.wndInvokeForm ~= nil then
+		self:UpdateAltCashDisplay()
+	end
+end
+
 function XPBar:OnLoad()
 	self.xmlDoc = XmlDoc.CreateFromFile("XPBar.xml")
 	self.xmlDoc:RegisterCallback("OnDocumentReady", self) 
+	self.nAltCurrencySelected = knDefaultAltCurrency
 end
 
 function XPBar:OnDocumentReady()
 	Apollo.RegisterEventHandler("ChangeWorld", 					"OnClearCombatFlag", self)
 	Apollo.RegisterEventHandler("ShowResurrectDialog", 			"OnClearCombatFlag", self)
 	Apollo.RegisterEventHandler("UnitEnteredCombat", 			"OnEnteredCombat", self)
-	
+	Apollo.RegisterEventHandler("AccountCurrencyChanged", 		"OnPlayerCurrencyChanged", self)
+	Apollo.RegisterEventHandler("PlayerCurrencyChanged",		"OnPlayerCurrencyChanged", self)
 	Apollo.RegisterEventHandler("Group_MentorRelationship", 	"RedrawAll", self)
-	Apollo.RegisterEventHandler("CharacterCreated", 			"RedrawAll", self)
+	Apollo.RegisterEventHandler("CharacterCreated", 			"OnCharacterCreated", self)
 	Apollo.RegisterEventHandler("UnitPvpFlagsChanged", 			"RedrawAll", self)
 	Apollo.RegisterEventHandler("UnitNameChanged", 				"RedrawAll", self)
 	Apollo.RegisterEventHandler("PersonaUpdateCharacterStats", 	"RedrawAll", self)
@@ -62,21 +98,27 @@ function XPBar:OnDocumentReady()
 	Apollo.RegisterEventHandler("UI_XPChanged", 				"OnXpChanged", self)
 	Apollo.RegisterEventHandler("UpdatePathXp", 				"OnXpChanged", self)
 	Apollo.RegisterEventHandler("ElderPointsGained", 			"OnXpChanged", self)
+	Apollo.RegisterEventHandler("UpdateRewardProperties", 		"RedrawAll", self)
 	Apollo.RegisterEventHandler("OptionsUpdated_HUDPreferences","RedrawAll", self)
-	
-	Apollo.RegisterEventHandler("PlayerCurrencyChanged", 		"OnUpdateInventory", self)
+	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 	"OnTutorial_RequestUIAnchor", self)
 	Apollo.RegisterEventHandler("UpdateInventory", 				"OnUpdateInventory", self)
 	Apollo.RegisterEventHandler("PersonaUpdateCharacterStats",	"OnUpdateInventory", self)
+	Apollo.RegisterEventHandler("KeyBindingKeyChanged",						"OnKeyBindingKeyChanged", self)
+
 
 	self.wndArt = Apollo.LoadForm(self.xmlDoc, "BaseBarCornerArt", "FixedHudStratum", self)
 	self.wndMain = Apollo.LoadForm(self.xmlDoc, "BaseBarCornerForm", "FixedHudStratum", self)
 	self.wndXPLevel = self.wndMain:FindChild("XPButton")
 	self.wndPathLevel = self.wndMain:FindChild("PathButton")
 	
+	self.nLeftCapOrigWidth = self.wndArt:FindChild("BottomBarBaseRightCap"):GetWidth()
+	
 	self.wndInvokeForm = Apollo.LoadForm(self.xmlDoc, "InventoryInvokeForm", "FixedHudStratum", self)
+	self.wndCurrencyDisplay = Apollo.LoadForm(self.xmlDoc, "OptionsConfigureCurrency", nil, self)
 	self.wndQuestItemNotice = self.wndInvokeForm:FindChild("QuestItemNotice")
 	self.wndInvokeButton = self.wndInvokeForm:FindChild("InvokeBtn")
-	
+	self.wndCurrencyDisplayList = self.wndCurrencyDisplay:FindChild("OptionsConfigureCurrencyList")
+	self.wndInvokeForm:FindChild("OptionsBtn"):AttachWindow(self.wndCurrencyDisplay)
 	self.bInCombat = false
 	self.bOnRedrawCooldown = false
 	
@@ -87,8 +129,120 @@ function XPBar:OnDocumentReady()
 	if GameLib.GetPlayerUnit() ~= nil then
 		self:RedrawAll()
 	end
-	
+
+	--Alt Curency Display
+	for idx = 1, #karCurrency do
+		local tData = karCurrency[idx]
+		local wnd
+		wnd = Apollo.LoadForm(self.xmlDoc, "PickerEntry", self.wndCurrencyDisplayList, self)
+		
+		if tData.bAccountItem then
+			wnd:FindChild("EntryCash"):SetMoneySystem(Money.CodeEnumCurrencyType.GroupCurrency, 0, 0, tData.eType)
+		else
+			wnd:FindChild("EntryCash"):SetMoneySystem(tData.eType)
+		end
+		wnd:FindChild("PickerEntryBtn"):SetData(idx)
+		wnd:FindChild("PickerEntryBtn"):SetCheck(idx == self.nAltCurrencySelected)
+		wnd:FindChild("PickerEntryBtn"):SetText(tData.strTitle)
+		
+		local strDescription = tData.strDescription
+		if tData.eType == AccountItemLib.CodeEnumAccountCurrency.Omnibits then
+			local tOmniBitInfo = GameLib.GetOmnibitsBonusInfo()
+			local nTotalWeeklyOmniBitBonus = tOmniBitInfo.nWeeklyBonusMax - tOmniBitInfo.nWeeklyBonusEarned;
+			if nTotalWeeklyOmniBitBonus < 0 then
+				nTotalWeeklyOmniBitBonus = 0
+			end
+		strDescription = strDescription.."\n"..String_GetWeaselString(Apollo.GetString("CRB_OmniBits_EarningsWeekly"), nTotalWeeklyOmniBitBonus)
+		end
+		wnd:FindChild("PickerEntryBtn"):SetTooltip(strDescription)
+		tData.wnd = wnd
+	end
+	self.wndCurrencyDisplayList:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	self:UpdateAltCashDisplay()
 	self.xmlDoc = nil
+	
+	local bSignature = AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0
+	local strKeyBinding = GameLib.GetKeyBindingByEnum(GameLib.CodeEnumInputAction.Store)
+	local strSignaturePlayerTooltip = nil
+	if bSignature then
+		self.wndMain:FindChild("SignatureIndicator"):SetSprite("HUD_BottomBar:spr_HUD_SignatureAlert_On")
+		self.wndMain:FindChild("SignatureTitle"):SetText(Apollo.GetString("Storefront_SignatureCaps"))
+		local strSigBody = String_GetWeaselString(Apollo.GetString("HUD_SignatureStatusActiveDesc"), strKeyBinding)
+		strSignaturePlayerTooltip = string.format("<P Font=\"CRB_HeaderTiny\"><T TextColor=\"UI_WindowTitleYellow\">%s</T><T TextColor=\"UI_BtnTextGreenNormal\"> %s</T></P><P Font=\"CRB_InterfaceSmall\" TextColor=\"UI_TextHoloBody\">%s</P>", Apollo.GetString("CRB_SignatureStatusColon"), Apollo.GetString("QuestLog_Active"), strSigBody)
+	else
+		self.wndMain:FindChild("SignatureIndicator"):SetSprite("HUD_BottomBar:spr_HUD_SignatureAlert_Off")
+		self.wndMain:FindChild("SignatureTitle"):SetText(Apollo.GetString("CRB_Basic"))
+		local strSigBody = String_GetWeaselString(Apollo.GetString("HUD_SignatureStatusInactiveDesc"), strKeyBinding)
+		strSignaturePlayerTooltip = string.format("<P Font=\"CRB_HeaderTiny\"><T TextColor=\"UI_WindowTitleYellow\">%s</T><T TextColor=\"Reddish\"> %s</T></P><P Font=\"CRB_InterfaceSmall\" TextColor=\"ff39b5d4\">%s</P>", Apollo.GetString("CRB_SignatureStatusColon"), Apollo.GetString("SettlerMission_Inactive"), strSigBody)
+	end
+
+	self.wndMain:FindChild("SignatureIndicator"):SetTooltip(strSignaturePlayerTooltip)
+end
+
+function XPBar:OnCurrencyPanelToggle(wndHandler, wndControl) -- OptionsBtn
+	for key, wndCurr in pairs(self.wndCurrencyDisplayList:GetChildren()) do
+		self:UpdateAltCash(wndCurr)
+	end
+end
+
+function XPBar:OnCharacterCreated()
+	self:RedrawAll()
+	self:UpdateAltCashDisplay()
+end
+
+function XPBar:OnPlayerCurrencyChanged()
+	self:UpdateAltCashDisplay()
+end
+
+-----------------------------------------------------------------------------------------------
+-- Alt Currency Window Functions
+-----------------------------------------------------------------------------------------------
+
+function XPBar:UpdateAltCash(wndHandler, wndControl) -- Also from PickerEntryBtn
+	local nSelected = wndHandler:FindChild("PickerEntryBtn"):GetData()
+	local tData = karCurrency[nSelected]
+
+	if wndHandler:FindChild("PickerEntryBtn"):IsChecked() then
+		self.nAltCurrencySelected = nSelected
+	end
+	
+	self:UpdateAltCashDisplay()
+
+	tData.wnd:FindChild("EntryCash"):SetAmount(self:HelperGetCurrencyAmmount(tData), true)
+	if self.wndCurrencyDisplay:IsShown() then
+		self.wndCurrencyDisplay:Show(false)
+	end
+end
+
+function XPBar:UpdateAltCashDisplay()
+	local tData = karCurrency[self.nAltCurrencySelected]
+	self.wndInvokeForm:FindChild("AltCashWindow"):SetAmount(self:HelperGetCurrencyAmmount(tData), true)
+	self.wndInvokeForm:FindChild("MainCashWindow"):SetAmount(GameLib.GetPlayerCurrency(), true)
+
+	local strDescription = tData.strDescription
+	if tData.eType == AccountItemLib.CodeEnumAccountCurrency.Omnibits then
+		local tOmniBitInfo = GameLib.GetOmnibitsBonusInfo()
+		local nTotalWeeklyOmniBitBonus = tOmniBitInfo.nWeeklyBonusMax - tOmniBitInfo.nWeeklyBonusEarned;
+		if nTotalWeeklyOmniBitBonus < 0 then
+			nTotalWeeklyOmniBitBonus = 0
+		end
+		strDescription = strDescription.."\n"..String_GetWeaselString(Apollo.GetString("CRB_OmniBits_EarningsWeekly"), nTotalWeeklyOmniBitBonus)
+	end
+	
+	-- Rescale Bottom Right Bar to Accomodate Alt Currency Width
+	local nLeftCap, nTopCap, nRightCap, nBottomCap = self.wndArt:FindChild("BottomBarBaseRightCap"):GetAnchorOffsets()
+	local nAltCurrencyWidth = self.wndInvokeForm:FindChild("AltCashWindow"):GetDisplayWidth()
+	self.wndArt:FindChild("BottomBarBaseRightCap"):SetAnchorOffsets(nRightCap - self.nLeftCapOrigWidth - nAltCurrencyWidth, nTopCap, nRightCap, nBottomCap)
+end
+
+function XPBar:HelperGetCurrencyAmmount(tData)
+	local monAmount = 0
+	if tData.bAccountItem then
+		monAmount = AccountItemLib.GetAccountCurrency(tData.eType)
+	else
+		monAmount = GameLib.GetPlayerCurrency(tData.eType)
+	end
+	return monAmount
 end
 
 function XPBar:RedrawCooldown()
@@ -142,7 +296,7 @@ function XPBar:RedrawAllPastCooldown()
 		for idx, nMentorGroupIdx in pairs(tMyGroupData.tMentoredBy) do
 			local tTargetGroupData = GroupLib.GetGroupMember(nMentorGroupIdx)
 			if tTargetGroupData then
-				strTooltip = "<P Font=\"CRB_InterfaceSmall_O\">"..String_GetWeaselString(Apollo.GetString("BaseBar_MenteeTooltip"), tTargetGroupData.strCharacterName).."</P>"..strTooltip
+				strTooltip = "<P Font=\"CRB_InterfaceSmall\">"..String_GetWeaselString(Apollo.GetString("BaseBar_MenteeTooltip"), tTargetGroupData.strCharacterName).."</P>"..strTooltip
 			end
 		end
 	end
@@ -152,14 +306,14 @@ function XPBar:RedrawAllPastCooldown()
 		strName = String_GetWeaselString(Apollo.GetString("BaseBar_MentorAppend"), strName, tStats.nEffectiveLevel)
 		local tTargetGroupData = GroupLib.GetGroupMember(tMyGroupData.nMenteeIdx)
 		if tTargetGroupData then
-			strTooltip = "<P Font=\"CRB_InterfaceSmall_O\">"..String_GetWeaselString(Apollo.GetString("BaseBar_MentorTooltip"), tTargetGroupData.strCharacterName).."</P>"..strTooltip
+			strTooltip = "<P Font=\"CRB_InterfaceSmall\">"..String_GetWeaselString(Apollo.GetString("BaseBar_MentorTooltip"), tTargetGroupData.strCharacterName).."</P>"..strTooltip
 		end
 	end
 
 	-- If in an instance (or etc.) and Rallied
 	if unitPlayer:IsRallied() and tStats.nEffectiveLevel ~= tStats.nLevel then
 		strName = String_GetWeaselString(Apollo.GetString("BaseBar_RallyAppend"), strName, tStats.nEffectiveLevel)
-		strTooltip = "<P Font=\"CRB_InterfaceSmall_O\">"..Apollo.GetString("BaseBar_YouAreRallyingTooltip").."</P>"..strTooltip
+		strTooltip = "<P Font=\"CRB_InterfaceSmall\">"..Apollo.GetString("BaseBar_YouAreRallyingTooltip").."</P>"..strTooltip
 	end
 
 	-- PvP
@@ -194,6 +348,8 @@ function XPBar:RedrawAllPastCooldown()
 		--else hide the bar until the player earns some XP, then trigger a tutorial prompt
 		self.wndMain:Show(false)
 	end
+	
+	self.wndMain:FindChild("MTX_BonusXP"):Show(self.wndMain:IsVisible() and GameLib.HasXPBonus())
 	
 	self.wndArt:Show(true)
 	self:OnUpdateInventory()
@@ -251,9 +407,9 @@ function XPBar:ConfigurePathXPTooltip(unitPlayer)
 	local nCurrentXP =  PlayerPathLib.GetPathXP() - nLastLevelXP
 	local nNeededXP = PlayerPathLib.GetPathXPAtLevel(nNextLevel) - nLastLevelXP
 	
-	local strTooltip = nNeededXP > 0 and string.format("<P Font=\"CRB_InterfaceSmall_O\">%s</P>", String_GetWeaselString(Apollo.GetString("Base_XPValue"), Apollo.FormatNumber(nCurrentXP, 0, true), Apollo.FormatNumber(nNeededXP, 0, true), nCurrentXP / nNeededXP * 100)) or ""
+	local strTooltip = nNeededXP > 0 and string.format("<P Font=\"CRB_InterfaceSmall\">%s</P>", String_GetWeaselString(Apollo.GetString("Base_XPValue"), Apollo.FormatNumber(nCurrentXP, 0, true), Apollo.FormatNumber(nNeededXP, 0, true), nCurrentXP / nNeededXP * 100)) or ""
 	
-	return string.format("<P Font=\"CRB_InterfaceSmall_O\">%s %s%s</P>%s", Apollo.GetString(strPathType), Apollo.GetString("CRB_Level_"), nCurrentLevel, strTooltip)
+	return string.format("<P Font=\"CRB_InterfaceSmall\">%s %s%s</P>%s", Apollo.GetString(strPathType), Apollo.GetString("CRB_Level_"), nCurrentLevel, strTooltip)
 end
 
 -----------------------------------------------------------------------------------------------
@@ -310,26 +466,26 @@ function XPBar:ConfigureEPTooltip(unitPlayer)
 	-- Top String
 	local strTooltip = String_GetWeaselString(Apollo.GetString("BaseBar_ElderPointsPercent"), Apollo.FormatNumber(nCurrentEP, 0, true), Apollo.FormatNumber(nEPToAGem, 0, true), nCurrentEP / nEPToAGem * 100)
 	if nCurrentEP == nEPDailyMax then
-		strTooltip = "<P Font=\"CRB_InterfaceSmall_O\">" .. strTooltip .. "</P><P Font=\"CRB_InterfaceSmall_O\">" .. Apollo.GetString("BaseBar_ElderPointsAtMax") .. "</P>"
+		strTooltip = "<P Font=\"CRB_InterfaceSmall\">" .. strTooltip .. "</P><P Font=\"CRB_InterfaceSmall\">" .. Apollo.GetString("BaseBar_ElderPointsAtMax") .. "</P>"
 	else
 		local strDailyMax = String_GetWeaselString(Apollo.GetString("BaseBar_ElderPointsWeeklyMax"), Apollo.FormatNumber(nCurrentToDailyMax, 0, true), Apollo.FormatNumber(nEPDailyMax, 0, true), nCurrentToDailyMax / nEPDailyMax * 100)
-		strTooltip = "<P Font=\"CRB_InterfaceSmall_O\">" .. strTooltip .. "</P><P Font=\"CRB_InterfaceSmall_O\">" .. strDailyMax .. "</P>"
+		strTooltip = "<P Font=\"CRB_InterfaceSmall\">" .. strTooltip .. "</P><P Font=\"CRB_InterfaceSmall\">" .. strDailyMax .. "</P>"
 	end
 
 	-- Rested
 	if nRestedEP > 0 then
 		local strRestLineOne = String_GetWeaselString(Apollo.GetString("Base_EPRested"), Apollo.FormatNumber(nRestedEP, 0, true), nRestedEP / nEPDailyMax * 100)
-		strTooltip = string.format("%s<P Font=\"CRB_InterfaceSmall_O\" TextColor=\"ffda69ff\">%s</P>", strTooltip, strRestLineOne)
+		strTooltip = string.format("%s<P Font=\"CRB_InterfaceSmall\" TextColor=\"ffda69ff\">%s</P>", strTooltip, strRestLineOne)
 
 		if nCurrentEP + nRestedEPPool > nEPDailyMax then
-			strTooltip = string.format("%s<P Font=\"CRB_InterfaceSmall_O\" TextColor=\"ffda69ff\">%s</P>", strTooltip, Apollo.GetString("Base_EPRestedEndsAfterLevelTooltip"))
+			strTooltip = string.format("%s<P Font=\"CRB_InterfaceSmall\" TextColor=\"ffda69ff\">%s</P>", strTooltip, Apollo.GetString("Base_EPRestedEndsAfterLevelTooltip"))
 		else
 			local strRestLineTwo = String_GetWeaselString(Apollo.GetString("Base_EPRestedPoolTooltip"), Apollo.FormatNumber(nRestedEPPool, 0, true), ((nRestedEPPool + nCurrentEP)  / nEPDailyMax) * 100)
-			strTooltip = string.format("%s<P Font=\"CRB_InterfaceSmall_O\" TextColor=\"ffda69ff\">%s</P>", strTooltip, strRestLineTwo)
+			strTooltip = string.format("%s<P Font=\"CRB_InterfaceSmall\" TextColor=\"ffda69ff\">%s</P>", strTooltip, strRestLineTwo)
 		end
 	end
 	
-	return string.format("<P Font=\"CRB_InterfaceSmall_O\">%s%s</P>%s", Apollo.GetString("CRB_Level_"), unitPlayer:GetLevel(), strTooltip)
+	return string.format("<P Font=\"CRB_InterfaceSmall\">%s%s</P>%s", Apollo.GetString("CRB_Level_"), unitPlayer:GetLevel(), strTooltip)
 end
 
 -----------------------------------------------------------------------------------------------
@@ -378,20 +534,20 @@ function XPBar:ConfigureXPTooltip(unitPlayer)
 		return
 	end
 
-	local strTooltip = string.format("<P Font=\"CRB_InterfaceSmall_O\">%s</P>", String_GetWeaselString(Apollo.GetString("Base_XPValue"), Apollo.FormatNumber(nCurrentXP, 0, true), Apollo.FormatNumber(nNeededXP, 0, true), nCurrentXP / nNeededXP * 100))
+	local strTooltip = string.format("<P Font=\"CRB_InterfaceSmall\">%s</P>", String_GetWeaselString(Apollo.GetString("Base_XPValue"), Apollo.FormatNumber(nCurrentXP, 0, true), Apollo.FormatNumber(nNeededXP, 0, true), nCurrentXP / nNeededXP * 100))
 	if nRestedXP > 0 then
 		local strRestLineOne = String_GetWeaselString(Apollo.GetString("Base_XPRested"), Apollo.FormatNumber(nRestedXP, 0, true), nRestedXP / nNeededXP * 100)
-		strTooltip = string.format("%s<P Font=\"CRB_InterfaceSmall_O\" TextColor=\"ffda69ff\">%s</P>", strTooltip, strRestLineOne)
+		strTooltip = string.format("%s<P Font=\"CRB_InterfaceSmall\" TextColor=\"ffda69ff\">%s</P>", strTooltip, strRestLineOne)
 
 		if nCurrentXP + nRestedXPPool > nNeededXP then
-			strTooltip = string.format("%s<P Font=\"CRB_InterfaceSmall_O\" TextColor=\"ffda69ff\">%s</P>", strTooltip, Apollo.GetString("Base_XPRestedEndsAfterLevelTooltip"))
+			strTooltip = string.format("%s<P Font=\"CRB_InterfaceSmall\" TextColor=\"ffda69ff\">%s</P>", strTooltip, Apollo.GetString("Base_XPRestedEndsAfterLevelTooltip"))
 		else
 			local strRestLineTwo = String_GetWeaselString(Apollo.GetString("Base_XPRestedPoolTooltip"), Apollo.FormatNumber(nRestedXPPool, 0, false), ((nRestedXPPool + nCurrentXP)  / nNeededXP) * 100)
-			strTooltip = string.format("%s<P Font=\"CRB_InterfaceSmall_O\" TextColor=\"ffda69ff\">%s</P>", strTooltip, strRestLineTwo)
+			strTooltip = string.format("%s<P Font=\"CRB_InterfaceSmall\" TextColor=\"ffda69ff\">%s</P>", strTooltip, strRestLineTwo)
 		end
 	end
 	
-	return string.format("<P Font=\"CRB_InterfaceSmall_O\">%s%s</P>%s", Apollo.GetString("CRB_Level_"), unitPlayer:GetLevel(), strTooltip)
+	return string.format("<P Font=\"CRB_InterfaceSmall\">%s%s</P>%s", Apollo.GetString("CRB_Level_"), unitPlayer:GetLevel(), strTooltip)
 end
 
 -----------------------------------------------------------------------------------------------
@@ -440,7 +596,6 @@ function XPBar:OnUpdateInventory()
 		return
 	end
 	
-	self.wndInvokeForm:FindChild("MainCashWindow"):SetAmount(GameLib.GetPlayerCurrency(), false)
 	self.wndMain:FindChild("ElderGems"):SetAmount(GameLib.GetPlayerCurrency(Money.CodeEnumCurrencyType.ElderGems), true)
 
 	local nOccupiedInventory = #unitPlayer:GetInventoryItems() or 0
@@ -477,12 +632,25 @@ end
 -- Tutorial anchor request
 ---------------------------------------------------------------------------------------------------
 function XPBar:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
-	if eAnchor ~= GameLib.CodeEnumTutorialAnchor.Inventory then return end
-
-	local tRect = {}
-	tRect.l, tRect.t, tRect.r, tRect.b = self.wndInvokeForm:GetRect()
-
-	Event_FireGenericEvent("Tutorial_RequestUIAnchorResponse", eAnchor, idTutorial, strPopupText, tRect)
+	local tAnchors =
+	{
+		[GameLib.CodeEnumTutorialAnchor.Inventory] 					= true,
+		[GameLib.CodeEnumTutorialAnchor.InterfaceMenuListInventory] = true,
+	}
+	
+	if not tAnchors[eAnchor] then 
+		return
+	end
+	
+	local tAnchorMapping = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.Inventory] 					= self.wndInvokeForm,
+		[GameLib.CodeEnumTutorialAnchor.InterfaceMenuListInventory] = self.wndInvokeButton,
+	}
+	
+	if tAnchorMapping[eAnchor] then
+		Event_FireGenericEvent("Tutorial_ShowCallout", eAnchor, idTutorial, strPopupText, tAnchorMapping[eAnchor])
+	end
 end
 
 local BaseBarCornerInst = XPBar:new()

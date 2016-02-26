@@ -5,6 +5,7 @@
 
 require "Window"
 require "FriendshipLib"
+require "StorefrontLib"
 
 local SocialPanel = {}
 local knMaxNumberOfCircles = 5
@@ -33,8 +34,11 @@ function SocialPanel:OnDocumentReady()
 		return
 	end
 
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
+
 	Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded", 			"OnInterfaceMenuListHasLoaded", self)
-	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 		"OnTutorial_RequestUIAnchor", self)
+	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 			"OnTutorial_RequestUIAnchor", self)
 
 	Apollo.RegisterEventHandler("EventGeneric_OpenSocialPanel", 		"OnToggleSocialWindow", self)
 	Apollo.RegisterEventHandler("ToggleSocialWindow", 					"OnToggleSocialWindow", self)
@@ -71,8 +75,16 @@ function SocialPanel:OnDocumentReady()
 	Apollo.RegisterEventHandler("FriendshipRemove", 					"OnFriendshipRemove", self)
 	Apollo.RegisterEventHandler("FriendshipAccountFriendRemoved",		"OnFriendshipRemove", self)
 	
+	Apollo.RegisterEventHandler("CharacterEntitlementUpdate",			"OnEntitlementUpdate", self)
+	Apollo.RegisterEventHandler("AccountEntitlementUpdate",				"OnEntitlementUpdate", self)
+	Apollo.RegisterEventHandler("StoreLinksRefresh",				"RefreshStoreLink", self)
+	
 	self.timerRemovedMemberDelay = ApolloTimer.Create(0.2, false, "CalcFriendInvites", self)
 	self.timerRemovedMemberDelay:Stop()
+end
+
+function SocialPanel:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("InterfaceMenu_Social")})
 end
 
 function SocialPanel:OnToggleSocialWindow(strArg) -- 1st Arg may be objects from code and such
@@ -167,6 +179,7 @@ function SocialPanel:Initialize()
 		end
 		
 		self:CalcFriendInvites()
+		self:RefreshStoreLink()
 	end
 end
 
@@ -180,6 +193,7 @@ function SocialPanel:FullyDrawSplashScreen(bHide)
 	table.sort(arGuilds, function(a,b) return (self:HelperSortCirclesChannelOrder(a,b)) end)
 	local guildSelected = self.tWndRefs.wndCirclesFrame:GetChildren()[1] and self.tWndRefs.wndCirclesFrame:GetChildren()[1]:GetData() or nil
 	
+	self.tWndRefs.wndMain:FindChild("SplashHousingItemContainerFrame:HousingTabBtn2"):Enable(false)
 	for key, guildCurr in pairs(arGuilds) do
 		if guildCurr:GetType() == GuildLib.GuildType_Circle then
 			nNumberOfCircles = nNumberOfCircles + 1
@@ -190,20 +204,28 @@ function SocialPanel:FullyDrawSplashScreen(bHide)
 			if guildSelected and guildSelected == guildCurr then
 				wndCurr:FindChild("SplashCirclesPickerBtn"):SetCheck(true)
 			end
+		elseif guildCurr:GetType() == GuildLib.GuildType_Community then
+		    self.tWndRefs.wndMain:FindChild("SplashHousingItemContainerFrame:HousingTabBtn2"):Enable(true)
+		    self.tWndRefs.wndMain:FindChild("SplashHousingItemContainerFrame:HousingTabBtn2"):SetData(guildCurr)
 		end
 	end
 
 	-- Circle Add Btn
 	if nNumberOfCircles < knMaxNumberOfCircles then
-		Apollo.LoadForm(self.xmlDoc, "SplashCirclesAddItem", self.tWndRefs.wndMain:FindChild("SplashCircleItemContainer"), self)
+		self.tWndRefs.wndSplashCirclesAddItem = Apollo.LoadForm(self.xmlDoc, "SplashCirclesAddItem", self.tWndRefs.wndMain:FindChild("SplashCircleItemContainer"), self)
 		nNumberOfCircles = nNumberOfCircles + 1
+		self.tWndRefs.wndSplashCirclesAddItem:FindChild("SplashCirclesAddBtn"):Enable(AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0 or AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.FullGuildsAccess) > 0)
+		self:RefreshStoreLink()
 	end
 
 	-- Circle Blank Btn
 	for idx = nNumberOfCircles + 1, knMaxNumberOfCircles do -- Fill in the rest with blanks
-		Apollo.LoadForm(self.xmlDoc, "SplashCirclesUnusedItem", self.tWndRefs.wndMain:FindChild("SplashCircleItemContainer"), self)
+		local wndSplashCirclesUnusedItem = Apollo.LoadForm(self.xmlDoc, "SplashCirclesUnusedItem", self.tWndRefs.wndMain:FindChild("SplashCircleItemContainer"), self)
+		if idx > 1 and not self.bHasFullCirclesAccess then --Free players get one circle membership that they can use to join a circle, the rest need to be unlocked
+			wndSplashCirclesUnusedItem:FindChild("SplashCirclesPickerText"):SetText(Apollo.GetString("SocialPanel_LockedCircle"))
+		end
 	end
-	self.tWndRefs.wndMain:FindChild("SplashCircleItemContainer"):ArrangeChildrenHorz(0)
+	self.tWndRefs.wndMain:FindChild("SplashCircleItemContainer"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 	-- Neighbours
 	local bIsResidenceOwner = HousingLib.IsResidenceOwner()
@@ -250,11 +272,27 @@ function SocialPanel:OnSplashContactsUncheck( wndHandler, wndControl)
 end
 
 function SocialPanel:OnSplashNeighborCheck( wndHandler, wndControl)
-	Event_FireGenericEvent("GenericEvent_InitializeNeighbors", self.tWndRefs.wndNeighborsFrame)
+	self.tWndRefs.wndMain:FindChild("SplashHousingItemContainerFrame"):Show(true)
 end
 
 function SocialPanel:OnSplashNeighborUncheck( wndHandler, wndControl)
+	self.tWndRefs.wndMain:FindChild("SplashHousingItemContainerFrame"):Show(false)
+end
+
+function SocialPanel:OnNeighborsCheck( wndHandler, wndControl)
+	Event_FireGenericEvent("GenericEvent_InitializeNeighbors", self.tWndRefs.wndNeighborsFrame)
+end
+
+function SocialPanel:OnNeighborsUncheck( wndHandler, wndControl)
 	Event_FireGenericEvent("GenericEvent_DestroyNeighbors")
+end
+
+function SocialPanel:OnCommunityCheck( wndHandler, wndControl)
+	Event_FireGenericEvent("GenericEvent_InitializeCommunities", self.tWndRefs.wndNeighborsFrame, wndHandler:GetData())
+end
+
+function SocialPanel:OnCommunityUncheck( wndHandler, wndControl)
+	Event_FireGenericEvent("GenericEvent_DestroyCommunities")
 end
 
 function SocialPanel:OnSplashGuildCheck( wndHandler, wndControl)
@@ -275,7 +313,11 @@ end
 
 -- Special Circle Handlers
 function SocialPanel:OnSplashCirclesAddBtn(wndHandler, wndControl)
-	Event_FireGenericEvent("EventGeneric_OpenCircleRegistrationPanel", self.tWndRefs.wndMain)
+	if (AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0 or AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.FullGuildsAccess) > 0) then
+		Event_FireGenericEvent("EventGeneric_OpenCircleRegistrationPanel", self.tWndRefs.wndMain)
+	else
+		StorefrontLib.OpenLink(StorefrontLib.CodeEnumStoreLink.Signature)
+	end
 end
 
 function SocialPanel:OnSplashCirclesCheck( wndHandler, wndControl)
@@ -291,14 +333,23 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function SocialPanel:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
-	if eAnchor ~= GameLib.CodeEnumTutorialAnchor.Social or not self.tWndRefs.wndMain or not self.tWndRefs.wndMain:IsValid() then
-		return 
-	end
-
-	local tRect = {}
-	tRect.l, tRect.t, tRect.r, tRect.b = self.tWndRefs.wndMain:GetRect()
+	local tAnchors = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.Social] = true,
+	}
 	
-	Event_FireGenericEvent("Tutorial_RequestUIAnchorResponse", eAnchor, idTutorial, strPopupText, tRect)
+	if not tAnchors[eAnchor] then
+		return
+	end
+	
+	local tAnchorMapping = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.Social] = self.tWndRefs.wndMain,
+	}
+	
+	if tAnchorMapping[eAnchor] then
+		Event_FireGenericEvent("Tutorial_ShowCallout", eAnchor, idTutorial, strPopupText, tAnchorMapping[eAnchor])
+	end
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -349,6 +400,36 @@ end
 
 function SocialPanel:OnFriendshipRemove()
 	self.timerRemovedMemberDelay:Start()
+end
+
+---------------------------------------------------------------------------------------------------
+-- Entitlement Updates
+---------------------------------------------------------------------------------------------------
+
+function SocialPanel:OnEntitlementUpdate(tEntitlementInfo)
+	if not self.tWndRefs.wndMain then
+		return
+	end
+	local wndSplashCirclesAddBtn = nil
+	if (tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.Signature or tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.Free or tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.FullGuildsAccess) and self.tWndRefs.wndSplashCirclesAddItem then
+		self.bHasFullCirclesAccess = AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0 or AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.FullGuildsAccess) > 0
+	end
+	if self.tWndRefs.wndSplashCirclesAddItem then
+		wndSplashCirclesAddBtn = self.tWndRefs.wndSplashCirclesAddItem:FindChild("SplashCirclesAddBtn")
+		wndSplashCirclesAddBtn:Enable(self.bHasFullCirclesAccess or self.bStoreLinkValid)
+		if self.bHasFullCirclesAccess then
+			wndSplashCirclesAddBtn:SetText(Apollo.GetString("SocialPanel_CreateCircle"))
+			self.tWndRefs.wndSplashCirclesAddItem:FindChild("MTX_Unlocked"):Show(true)
+		else
+			wndSplashCirclesAddBtn:SetText(Apollo.GetString("SocialPanel_UnlockCircles"))
+		end
+		self.tWndRefs.wndSplashCirclesAddItem:FindChild("MTX_Callout"):Show(not self.bHasFullCirclesAccess and self.bStoreLinkValid)
+	end
+end
+
+function SocialPanel:RefreshStoreLink()
+	self.bStoreLinkValid = StorefrontLib.IsLinkValid(StorefrontLib.CodeEnumStoreLink.Signature)
+	self:OnEntitlementUpdate( { nEntitlementId = AccountItemLib.CodeEnumEntitlement.FullGuildsAccess } )
 end
 
 local SocialPanelInst = SocialPanel:new()

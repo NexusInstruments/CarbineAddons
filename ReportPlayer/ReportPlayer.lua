@@ -23,7 +23,11 @@ function ReportPlayer:new(o)
 end
 
 function ReportPlayer:Init()
-    Apollo.RegisterAddon(self)
+    Apollo.RegisterAddon(self, true, Apollo.GetString("ReportPlayer_Title"))
+end
+
+function ReportPlayer:OnConfigure() -- From ESC -> Options
+	self:OnToggleFromOptionsMenu()
 end
 
 function ReportPlayer:OnLoad()
@@ -36,9 +40,7 @@ function ReportPlayer:OnDocumentReady()
 		return
 	end
 
-	Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded",				"OnInterfaceMenuListHasLoaded", self)
-	Apollo.RegisterEventHandler("InterfaceMenu_ToggleReportPlayer", 		"OnToggleFromInterfaceMenu", self)
-	Apollo.RegisterSlashCommand("report", 									"OnToggleFromInterfaceMenu", self)
+	Apollo.RegisterSlashCommand(Apollo.GetString("ReportPlayer_SlashCommandReport"),	"OnToggleFromOptionsMenu", self)
 
 	Apollo.RegisterEventHandler("GenericEvent_ReportPlayerPvP", 			"OnReportPlayerPvP", self) -- Special case, report object is already made
 	Apollo.RegisterEventHandler("GenericEvent_ReportPlayerUnit", 			"OnReportPlayerUnit", self) -- 1 arg
@@ -57,11 +59,6 @@ function ReportPlayer:OnDocumentReady()
 
 	self.wndMain = nil
 	self.wndNamePicker = nil
-end
-
-function ReportPlayer:OnInterfaceMenuListHasLoaded()
-	local tData = { "InterfaceMenu_ToggleReportPlayer", "", "IconSprites:Icon_Windows32_UI_CRB_InterfaceMenu_ReportPlayer" }
-	Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("ReportPlayer_Title"), tData)
 end
 
 -----------------------------------------------------------------------------------------------
@@ -132,7 +129,7 @@ end
 -- Name Input (This is an in between UI if opening from nothing)
 -----------------------------------------------------------------------------------------------
 
-function ReportPlayer:OnToggleFromInterfaceMenu()
+function ReportPlayer:OnToggleFromOptionsMenu()
 	if self.wndNamePicker and self.wndNamePicker:IsValid() then
 		self.wndNamePicker:Destroy()
 	end
@@ -149,6 +146,7 @@ function ReportPlayer:OnToggleFromInterfaceMenu()
 	end
 
 	self.wndNamePicker:FindChild("CustomInputEditBox"):SetMaxTextLength(GameLib.GetTextTypeMaxLength(GameLib.CodeEnumUserText.CharacterName))
+	self.wndNamePicker:Invoke()
 end
 
 function ReportPlayer:OnCustomInputEditBoxChanged(wndHandler, wndControl)
@@ -160,7 +158,7 @@ end
 function ReportPlayer:OnNameSelectedBtn(wndHandler, wndControl)
 	local oInput = wndHandler:GetData()
 	self:BuildReportConfirmation(GameLib.PrepareInfractionReport(oInput), Apollo.GetString("ReportPlayer_GenericReportUnavailable"))
-	self:OnNamePickerClose()
+	self.wndNamePicker:Close()
 end
 
 -----------------------------------------------------------------------------------------------
@@ -200,14 +198,14 @@ function ReportPlayer:BuildReportConfirmation(rptInfraction, strFail, unitTarget
 		wndOptionsPicker:FindChild("OptionsCheatingBtn"):SetData(IncidentReportLib.CodeEnumReportPlayerReason.Cheat)
 		wndOptionsPicker:FindChild("OptionsOpenSupportBtn"):SetData(rptInfraction and rptInfraction:GetName() or "")
 
-		local nHeight = wndOptionsPicker:ArrangeChildrenVert(1)
+		local nHeight = wndOptionsPicker:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.Middle)
 		local nLeft, nTop, nRight, nBottom = wndOptionsPicker:GetAnchorOffsets()
 		wndOptionsPicker:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nHeight + 10)
-		wndOptionsPicker:ArrangeChildrenVert(1)
+		wndOptionsPicker:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.Middle)
 	else
 		wndCurr:FindChild("BodyText"):SetTextRaw(rptInfraction and rptInfraction:GetDescription() or strFail)
 		wndCurr:FindChild("BodyText"):SetHeightToContentHeight()
-		wndCurr:FindChild("BodyTextScroll"):ArrangeChildrenVert(0)
+		wndCurr:FindChild("BodyTextScroll"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	end
 
 	-- Shared between them
@@ -228,9 +226,10 @@ function ReportPlayer:BuildReportConfirmation(rptInfraction, strFail, unitTarget
 	wndCurr:FindChild("NameInputEditBox"):SetText(rptInfraction and rptInfraction:GetName() or "")
 
 	-- Resize
-	local nHeight = wndCurr:FindChild("ContentContainerArrangeVert"):ArrangeChildrenVert(0)
+	local nHeight = wndCurr:FindChild("ContentContainerArrangeVert"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	local nLeft, nTop, nRight, nBottom = wndCurr:GetAnchorOffsets()
 	wndCurr:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nHeight + 235)
+	wndCurr:Invoke()
 end
 
 function ReportPlayer:OnIgnorePlayerCheckboxToggle(wndHandler, wndControl)

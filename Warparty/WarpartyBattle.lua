@@ -28,9 +28,10 @@ function WarpartyBattle:new(o)
     setmetatable(o, self)
     self.__index = self
 
-	self.bHasTokens = false
-	self.bIsOpening = false
-	self.nMaxIndex = 0
+	o.tWndRefs = {}
+	o.bHasTokens = false
+	o.bIsOpening = false
+	o.nMaxIndex = 0
 
 	return o
 end
@@ -46,7 +47,7 @@ function WarpartyBattle:OnSave(eType)
 	
 	local tSave =
 	{
-		tOffsets = self.wndMain and {self.wndMain:GetAnchorOffsets()} or self.tSavedOffsets,
+		tOffsets = self.tWndRefs.wndMain and {self.tWndRefs.wndMain:GetAnchorOffsets()} or self.tSavedOffsets,
 		nSaveVersion = knSaveVersion,
 	}
 	
@@ -81,54 +82,74 @@ function WarpartyBattle:OnDocumentReady()
 	Apollo.RegisterEventHandler("HousingEnterEditMode", 		"OnEnterEditMode", self)
 	Apollo.RegisterEventHandler("HousingExitEditMode", 			"OnExitEditMode", self)
     
-    -- load our forms
-    self.wndMain = Apollo.LoadForm(self.xmlDoc, "WarpartyBattleForm", nil, self)
-    self.wndMain:Show(false)
+	HousingLib.SetEditMode(false)
+end
 
-	local wndL, wndT, wndR, wndB = self.wndMain:GetAnchorOffsets()	
+function WarpartyBattle:Initialize()
+	if self.tWndRefs.wndMain ~= nil and self.tWndRefs.wndMain:IsValid() then
+		return
+	end
+
+    self.tWndRefs.wndMain = Apollo.LoadForm(self.xmlDoc, "WarpartyBattleForm", nil, self)
+    self.tWndRefs.btnHousingDecorate = self.tWndRefs.wndMain:FindChild("BGFooter"):FindChild("BtnHousingDecorate")
+
+	local wndL, wndT, wndR, wndB = self.tWndRefs.wndMain:GetAnchorOffsets()	
 	wndL = (wndL + wndR - kWidthOffset) / 2
 	wndT = (wndT + wndB - kHeightOffset) / 2
 	wndR = wndL + kWidthOffset
 	wndB = wndT + kHeightOffset
 	
-	HousingLib.SetEditMode(false)
-
-	
-	self.wndMain:SetAnchorOffsets(wndL, wndT, wndR, wndB)
+	self.tWndRefs.wndMain:SetAnchorOffsets(wndL, wndT, wndR, wndB)
 
 	if self.sOffsets then
-		self.wndMain:SetAnchorOffsets(unpack(self.sOffsets))
+		self.tWndRefs.wndMain:SetAnchorOffsets(unpack(self.sOffsets))
 	end
-	self.btnHousingDecorate = self.wndMain:FindChild("BGFooter"):FindChild("BtnHousingDecorate")
 end
 
 function WarpartyBattle:OnOpen(guildWarparty)
 	if self.bHasTokens or not guildWarparty then
+		self:Initialize()
 		self:UpdateTokenList(guildWarparty)
-    	self.wndMain:Show(true)
+    	self.tWndRefs.wndMain:Invoke()
 	else
 		self.bIsOpening = true
 		guildWarparty:ListBossTokens()
 	end
 end
 
-function WarpartyBattle:OnClosed()
+function WarpartyBattle:OnWindowClosed()
+	if self.tWndRefs.wndMain == nil or not self.tWndRefs.wndMain:IsValid() then
+		return
+	end	
 
 	self.currentType = nil
 	Apollo.StopTimer("RetryLoadingGuilds")
-	if self.btnHousingDecorate:IsChecked() then
+	if self.tWndRefs.btnHousingDecorate:IsChecked() then
 		HousingLib.SetEditMode(false)
 		Event_FireGenericEvent("HousingExitEditMode")
 	end
-	self.wndMain:Close()
+	self.tWndRefs.wndMain:Destroy()
+	self.tWndRefs = {}
+end
+
+function WarpartyBattle:OnClosed()
+	if self.tWndRefs.wndMain == nil or not self.tWndRefs.wndMain:IsValid() then
+		return
+	end	
+
+	self.tWndRefs.wndMain:Close()
 end
 
 function WarpartyBattle:OnEnterEditMode()
-	self.btnHousingDecorate:SetCheck(true)
+	if self.tWndRefs.btnHousingDecorate ~= nil and self.tWndRefs.btnHousingDecorate:IsValid() then
+		self.tWndRefs.btnHousingDecorate:SetCheck(true)
+	end
 end
 
 function WarpartyBattle:OnExitEditMode()
-	self.btnHousingDecorate:SetCheck(false)
+	if self.tWndRefs.btnHousingDecorate ~= nil and self.tWndRefs.btnHousingDecorate:IsValid() then
+		self.tWndRefs.btnHousingDecorate:SetCheck(false)
+	end
 end
 
 function WarpartyBattle:OnBossTokensUpdated(guildWarparty)
@@ -138,9 +159,10 @@ function WarpartyBattle:OnBossTokensUpdated(guildWarparty)
 
 	self.bHasTokens = true
 	if self.bIsOpening then
+		self:Initialize()
 		self:UpdateTokenList(guildWarparty)
-		self.wndMain:Show(true)
-	elseif self.wndMain:IsShown() then
+		self.tWndRefs.wndMain:Invoke()
+	elseif self.tWndRefs.wndMain ~= nil and self.tWndRefs.wndMain:IsShown() then
 		self:UpdateTokenList(guildWarparty)
 	end
 	self.bIsOpening = false
@@ -150,11 +172,12 @@ function WarpartyBattle:OnGuildResult( guildWarparty, strName, nRank, eResult )
 	if guildWarparty == nil or guildWarparty:GetType() ~= GuildLib.GuildType_WarParty then
 		return
 	end
-	if self.bIsOpening and not self.wndMain:IsShown() then
+	if self.bIsOpening and (self.tWndRefs.wndMain == nil or not self.tWndRefs.wndMain:IsValid() or not self.tWndRefs.wndMain:IsShown()) then
 		self.bIsOpening = false
 		self.bHasTokens = true
+		self:Initialize()
 		self:UpdateTokenList(guildWarparty)
-		self.wndMain:Show(true)
+		self.tWndRefs.wndMain:Invoke()
 	end
 end
 
@@ -162,11 +185,11 @@ function WarpartyBattle:UpdateTokenList(guildWarparty)
 	local nDisplayCount = 0
 
 	if guildWarparty == nil or guildWarparty:GetType() ~= GuildLib.GuildType_WarParty then
-		self.wndMain:SetData(nil)
+		self.tWndRefs.wndMain:SetData(nil)
 		self:HelperHideExcessWindows(0)
-		self.wndMain:FindChild('BtnHousingDecorate'):Enable(false)
+		self.tWndRefs.wndMain:FindChild('BtnHousingDecorate'):Enable(false)
 	else	
-		self.wndMain:SetData(guildWarparty)
+		self.tWndRefs.wndMain:SetData(guildWarparty)
 
 		local arTokens = guildWarparty:GetBossTokens()
 
@@ -179,10 +202,10 @@ function WarpartyBattle:UpdateTokenList(guildWarparty)
 		end
 		
 		self:HelperHideExcessWindows(nTokenCount)
-		self.wndMain:FindChild('BtnHousingDecorate'):Enable(true)
+		self.tWndRefs.wndMain:FindChild('BtnHousingDecorate'):Enable(true)
 	end
 	
-	local wndL, wndT, wndR, wndB = self.wndMain:GetAnchorOffsets()
+	local wndL, wndT, wndR, wndB = self.tWndRefs.wndMain:GetAnchorOffsets()
 	
 	local nDisplayCountX = math.max(nDisplayCount, kMinimumCountX)
 	local nDisplayCountY = math.max(nDisplayCount, kMinimumCountY)
@@ -195,14 +218,14 @@ function WarpartyBattle:UpdateTokenList(guildWarparty)
 	wndR = wndL + nWidhtOffset
 	wndB = wndT + nHeightOffset
 	
-	self.wndMain:SetAnchorOffsets(wndL, wndT, wndR, wndB)
+	self.tWndRefs.wndMain:SetAnchorOffsets(wndL, wndT, wndR, wndB)
 
-	local wndParent = self.wndMain:FindChild("BossTokenEntries")
-	wndParent:ArrangeChildrenTiles(0)
+	local wndParent = self.tWndRefs.wndMain:FindChild("BossTokenEntries")
+	wndParent:ArrangeChildrenTiles(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function WarpartyBattle:GetBossTokenWnd(nIndex)
-	local wndParent = self.wndMain:FindChild("BossTokenEntries")
+	local wndParent = self.tWndRefs.wndMain:FindChild("BossTokenEntries")
 	local wnd = wndParent:FindChildByUserData(nIndex)
 	if not wnd then
 		wnd = Apollo.LoadForm(self.xmlDoc, "BossTokenEntry", wndParent, self)
@@ -254,8 +277,13 @@ end
 ---------------------------------------------------------------------------------------------------
 function WarpartyBattle:OnBattleStateChanged()
 	local tBattleState = MatchingGame:GetWarPlotBattleState()
+	
+	if self.tWndRefs.wndMain == nil or not self.tWndRefs.wndMain:IsValid() then
+		return
+	end
+	
 	for idx,tState in pairs(tBattleState) do
-		local wndPlug = self.wndMain:FindChild("WndPlug" .. tostring(tState.nPlugIndex))
+		local wndPlug = self.tWndRefs.wndMain:FindChild("WndPlug" .. tostring(tState.nPlugIndex))
 		if wndPlug ~= nil then
 			local nPercHealth = tState.nCurrentHealth * 1.0 / tState.nMaxHealth
 			local wndHp = wndPlug:FindChild("LblHealth")			
@@ -272,15 +300,15 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function WarpartyBattle:OnBossTokens( wndHandler, wndControl, eMouseButton )
-	local wndBossToken = self.wndMain:FindChild("BossTokenEntries")
-	local wndWarplotLayout = self.wndMain:FindChild("WarplotLayout")
+	local wndBossToken = self.tWndRefs.wndMain:FindChild("BossTokenEntries")
+	local wndWarplotLayout = self.tWndRefs.wndMain:FindChild("WarplotLayout")
 	wndBossToken:Show(true)
 	wndWarplotLayout:Show(false)
 end
 
 function WarpartyBattle:OnWarplotLayout( wndHandler, wndControl, eMouseButton  )
-	local wndBossToken = self.wndMain:FindChild("BossTokenEntries")
-	local wndWarplotLayout = self.wndMain:FindChild("WarplotLayout")
+	local wndBossToken = self.tWndRefs.wndMain:FindChild("BossTokenEntries")
+	local wndWarplotLayout = self.tWndRefs.wndMain:FindChild("WarplotLayout")
 	wndBossToken:Show(false)
 	wndWarplotLayout:Show(true)
 	self:OnBattleStateChanged()

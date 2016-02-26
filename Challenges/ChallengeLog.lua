@@ -6,9 +6,17 @@
 require "Window"
 require "GameLib"
 require "ChallengesLib"
+require "RewardTrackLib"
 
 local ChallengeLog = {}
-local kIdDeselected = -1
+local kIdAllZoneBtn = -1
+local knProgressBarScale = 30
+local keRewardTrack = 
+{
+	Bronze = 0,
+	Silver = 1,
+	Gold = 2,
+}
 function ChallengeLog:new(o)
     o = o or {}
     setmetatable(o, self)
@@ -34,15 +42,20 @@ function ChallengeLog:OnDocumentReady()
 		return
 	end
 
-	Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded", "OnInterfaceMenuListHasLoaded", self)
+	Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded", 	"OnInterfaceMenuListHasLoaded", self)
 
 	Apollo.RegisterEventHandler("PL_ToggleChallengesWindow", 	"ToggleWindow", self)
 	Apollo.RegisterEventHandler("PL_TabChanged", 				"OnCloseChallengeLogTab", self)
 	Apollo.RegisterEventHandler("CodexWindowHasBeenClosed", 	"OnCloseChallengeLogTab", self)
 	
 	Apollo.RegisterEventHandler("ChallengeShared", 				"OnChallengeShared", self)
-	Apollo.RegisterEventHandler("ChallengeReward_SpinBegin", 	"OnChallengeReward_SpinBegin", self)
-	Apollo.RegisterEventHandler("ChallengeReward_SpinEnd", 		"OnChallengeReward_SpinEnd", self) -- Track challenge reward wheel even if it hasn't been loaded yet
+
+	Apollo.RegisterEventHandler("RewardTrackUpdated",			"UpdateRewardTracker", self)
+	Apollo.RegisterEventHandler("RewardTrackActive",			"UpdateRewardTracker", self)
+	
+	Apollo.RegisterEventHandler("CharacterEntitlementUpdate",	"OnEntitlementUpdate", self)
+	Apollo.RegisterEventHandler("AccountEntitlementUpdate",		"OnEntitlementUpdate", self)
+	Apollo.RegisterEventHandler("StoreLinksRefresh",			"RefreshStoreLink", self)
 
 	self.tTimerAreaRestriction =
 	{
@@ -65,13 +78,13 @@ function ChallengeLog:OnDocumentReady()
 	self.timerPlayerAtStartLocationCheck = ApolloTimer.Create(1.0, true, "OnTimerPlayerAtStartLocationCheck", self)
 	self.timerPlayerAtStartLocationCheck:Stop()
 
-	self.timerMaxChallengeReward = ApolloTimer.Create(10.0, false, "OnChallengeReward_SpinEnd", self)
-	self.timerMaxChallengeReward:Stop()
-
-	local wndTEMP1 = Apollo.LoadForm(self.xmlDoc, "ListItem", nil, self)
-	self.knOrigItemLeft, self.knOrigItemTop, self.knOrigItemRight, self.knOrigItemBottom = wndTEMP1:GetAnchorOffsets()
-	wndTEMP1:Destroy()
-
+	local wndOriginalListItem = Apollo.LoadForm(self.xmlDoc, "ListItem", nil, self)
+	local wndOriginalListItemBtn = wndOriginalListItem:FindChild("ListItemBtn")
+	local wndOriginalListItemDescription = wndOriginalListItem:FindChild("ListItemDescription")
+	self.knListItemDescriptionOriginalHeight = wndOriginalListItemDescription:GetHeight()
+	self.knListItemDescriptionOriginalHeightPadding = wndOriginalListItem:GetHeight() - wndOriginalListItemBtn:GetHeight()
+	wndOriginalListItem:Destroy()
+	
 	local wndTEMP2 = Apollo.LoadForm(self.xmlDoc, "HeaderItem", nil, self)
 	local nLeft, nTop, nRight, nBottom = wndTEMP2:GetAnchorOffsets()
     local nLeft2, nTop2, nRight2, nBottom2 = wndTEMP2:FindChild("HeaderContainer"):GetAnchorOffsets()
@@ -80,18 +93,40 @@ function ChallengeLog:OnDocumentReady()
 	wndTEMP2:Destroy()
 
 	self.tFailMessagesList 		= {}
-	self.bRewardWheelSpinning 	= false
 	self.nSelectedBigZone 		= nil
 	self.wndShowAllBigZone 		= nil
 	self.nSelectedListItem 		= nil
 
 	self.wndMain = nil
 	self.wndChallengeShare = nil
+	self.nAlertCount = 0
 end
 
 function ChallengeLog:OnInterfaceMenuListHasLoaded()
 	local tData = { "ToggleChallengesWindow", "Challenges", "Icon_Windows32_UI_CRB_InterfaceMenu_ChallengeLog" }
 	Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("InterfaceMenu_ChallengeLog"), tData)
+	self.bLoadedToInterfaceMenuList = true
+	
+	self:UpdateInterfaceMenuAlerts()
+end
+
+function ChallengeLog:UpdateInterfaceMenuAlerts()
+	if not self.bLoadedToInterfaceMenuList then
+		return
+	end
+	local tActiveClgRewardTracks = RewardTrackLib.GetActiveRewardTracks()
+	if tActiveClgRewardTracks then
+		for idx, rtRewardTrack in pairs(tActiveClgRewardTracks) do
+			if rtRewardTrack:GetType() == RewardTrackLib.CodeEnumRewardTrackType.Challenge then
+				for idx, tReward in pairs(rtRewardTrack:GetAllRewards()) do
+					if  tReward.bCanClaim and not tReward.bIsClaimed then
+						self.nAlertCount = self.nAlertCount + 1
+					end
+				end
+			end
+		end
+	end
+	Event_FireGenericEvent("InterfaceMenuList_AlertAddOn", Apollo.GetString("InterfaceMenu_ChallengeLog"), {self.nAlertCount ~= 0, "", self.nAlertCount})
 end
 
 function ChallengeLog:HelperHandleLocationTimer()
@@ -99,14 +134,14 @@ function ChallengeLog:HelperHandleLocationTimer()
 		return
 	end
 	--Don't need to check if player is at location because the Challenge Log isn't shown or player doesn't have a challenge selected.
-	 if not self.wndMain or not self.wndMain:IsShown() or not self.nSelectedListItem or self.nSelectedListItem == kIdDeselected or not self.tCurrentlyDisplayedChallenges then
+	 if not self.wndMain or not self.wndMain:IsShown() or not self.nSelectedListItem or not self.nSelectedListItem or not self.tCurrentlyDisplayedChallenges then
 		self.timerPlayerAtStartLocationCheck:Stop()
 		return
 	end
 
 	local clgCurrent = self.tCurrentlyDisplayedChallenges[self.nSelectedListItem]
 	if clgCurrent then --if the currently selected challenge needs to update its controls, allow it
-		local bIsStartable = not clgCurrent:IsActivated() and not clgCurrent:IsInCooldown() and not clgCurrent:ShouldCollectReward() and self:IsStartable(clgCurrent)
+		local bIsStartable = not clgCurrent:IsActivated() and not clgCurrent:IsInCooldown() and self:IsStartable(clgCurrent)
 		local bIsInZone = self:HelperIsInZone(clgCurrent:GetZoneRestrictionInfo())
 		
 		if not bIsInZone or not bIsStartable then
@@ -122,11 +157,30 @@ function ChallengeLog:ToggleWindow(clgDetails)--Optional clgDetails coming from 
 		self:Initialize()
 	end
 
+	local wndCurZoneBtn = self.wndShowAllBigZone:FindChild("BigZoneBtn")
+	local nCurrentZoneId = GameLib.GetCurrentZoneId()
+	if nCurrentZoneId ~= nil then
+		local tChildren = self.wndMain:FindChild("LeftSide:BigZoneListContainer"):GetChildren()
+		for idx, wndZoneItem in pairs(tChildren) do
+			local wndBtn = wndZoneItem:FindChild("BigZoneBtn")
+			local nBthZoneId = wndBtn:GetData()
+			if nBthZoneId == nCurrentZoneId or GameLib.IsZoneInZone(nCurrentZoneId, nBthZoneId) then
+				wndCurZoneBtn = wndBtn
+				break
+			end
+		end
+	end
+
+	wndCurZoneBtn:SetCheck(true)
+	self:OnBigZoneBtnPress(wndCurZoneBtn, wndCurZoneBtn)
+	
+	--In case challenges have updated or been aquired while window was not shown.
 	self.wndMain:Show(true)
+	self:Redraw()
 	self.timerChallengeLogUpdateInfo:Start()
 	
 	--Should Deselect if there is already a previously selected List ItemList.
-	if self.nSelectedListItem and self.nSelectedListItem ~= kIdDeselected then
+	if self.nSelectedListItem then
 		self:HelperDeselectCurrentListItem()
 	end
 	--If we got a challenge, should Select the challenge that was passed in through toggle.
@@ -135,7 +189,7 @@ function ChallengeLog:ToggleWindow(clgDetails)--Optional clgDetails coming from 
 	end
 	
 	--Want to immediately update challenge controls when toggled if a challenge is selected.
-	if self.nSelectedListItem and self.nSelectedListItem ~= kIdDeselected and self.tCurrentlyDisplayedChallenges then
+	if self.nSelectedListItem and self.tCurrentlyDisplayedChallenges then
 		local clgCurrent = self.tCurrentlyDisplayedChallenges[self.nSelectedListItem]
 		if clgCurrent then --if the currently selected challenge needs to update its controls, allow it
 			self:HelperUpdateControlsForChallenge(clgCurrent)
@@ -152,7 +206,7 @@ function ChallengeLog:HelperDeselectCurrentListItem()
 
 	local tListItemInfo = self:HelperGetChallengeListItemInfoById(self.nSelectedListItem)
 	if tListItemInfo and tListItemInfo.wndChallengeListItem then
-		self.nSelectedListItem = kIdDeselected
+		self.nSelectedListItem = nil
 		tListItemInfo.wndChallengeListItem:FindChild("ListItemBtn"):SetCheck(false)
 	end
 end
@@ -189,7 +243,7 @@ function ChallengeLog:Initialize()
 	Apollo.RegisterEventHandler("ChallengeUnlocked", 			"OnChallengeUnlocked", self)
 
 	self.wndMain = Apollo.LoadForm(self.xmlDoc, "ChallengeLogForm", g_wndProgressLog:FindChild("ContentWnd_3"), self)
-    self.wndTopLevel = self.wndMain:FindChild("RightSide:ItemList")
+    self.wndTopLevel = self.wndMain:FindChild("RightSide:ChallengeControls:ItemList")
 
 	self.wndMain:FindChild("SortByDropdownBtn"):AttachWindow(self.wndMain:FindChild("SortByDropdownContainer"))
 
@@ -205,7 +259,6 @@ function ChallengeLog:Initialize()
 	
 	--Creating references to challenge control buttons so the timer calls for seeing if player is in challenge start location are not expensive.
 	local wndInteractArea = self.wndMain:FindChild("RightSide:BGRightFooter:InteractArea")
-	self.wndRewardChallengeBtn = wndInteractArea:FindChild("RewardChallengeBtn")
 	self.wndStartChallengeBtn = wndInteractArea:FindChild("StartChallengeBtn")
 	self.wndAbandonChallengeBtn = wndInteractArea:FindChild("AbandonChallengeBtn")
 	self.wndLocateChallengeBtn = wndInteractArea:FindChild("LocateChallengeBtn")
@@ -227,6 +280,11 @@ function ChallengeLog:Initialize()
 		self:HelperAddToChallengesByZoneId(clgCurrent)
 	end
 
+	self.wndRewardList = self.wndMain:FindChild("RewardList")
+	self.wndRewardListOpenBtn = self.wndMain:FindChild("RewardListOpenBtn")
+	self.wndRewardListCloseBtn = self.wndMain:FindChild("RewardListCloseBtn")
+	
+	self:RefreshStoreLink()
 	self:Redraw()
 end
 
@@ -253,7 +311,7 @@ end
 
 function ChallengeLog:HelperGetCurrentChallengesForZone()
 	local tZoneChallenges = {}
-	if self.nSelectedBigZone == kIdDeselected then --give back all challenges for all zones
+	if self.nSelectedBigZone == kIdAllZoneBtn then --give back all challenges for all zones
 		tZoneChallenges = ChallengesLib.GetActiveChallengeList()
 	else--give back challenges for currently selected zone
 		tZoneChallenges = self.tChallengesByZoneId[self.nSelectedBigZone]
@@ -305,7 +363,7 @@ function ChallengeLog:OnUpdateChallengeTimeString()
 end
 
 function ChallengeLog:OnTimerPlayerAtStartLocationCheck()
-	if not self.nSelectedListItem or self.nSelectedListItem == kIdDeselected or not self.tCurrentlyDisplayedChallenges then
+	if not self.nSelectedListItem or not self.tCurrentlyDisplayedChallenges then
 		return
 	end
 
@@ -347,8 +405,7 @@ function ChallengeLog:HelperShouldListItemBeDestroyed(clgBeingDrawn)
 
 	--If showing rewards but this challenge doesn't have a reward, or showing cooldown but this challenge isnt't in cooldown,
 	--or showing the challenges that are ready but this one is in cooldown.
-	if  self.wndMain:FindChild("ToggleRewardsBtn"):IsChecked() 	and not clgBeingDrawn:ShouldCollectReward() 	or 
-		self.wndMain:FindChild("ToggleCooldownBtn"):IsChecked() 	and not clgBeingDrawn:IsInCooldown() 				or
+	if  self.wndMain:FindChild("ToggleCooldownBtn"):IsChecked() 	and not clgBeingDrawn:IsInCooldown() 				or
 		self.wndMain:FindChild("ToggleReadyBtn"):IsChecked() 		and  	 clgBeingDrawn:IsInCooldown()				then
 		return true
 	end
@@ -423,7 +480,6 @@ function ChallengeLog:HelperGetFilteredChallenges()
 
 	local wndTopHeader = self.wndMain:FindChild("TopHeader")
 	local bShowAll = wndTopHeader:FindChild("ToggleShowAllBtn"):IsChecked()
-	local bShowRewards = wndTopHeader:FindChild("ToggleRewardsBtn"):IsChecked()
 	local bShowCooldown = wndTopHeader:FindChild("ToggleCooldownBtn"):IsChecked()
 	local bShowReady = wndTopHeader:FindChild("ToggleReadyBtn"):IsChecked()
 
@@ -431,12 +487,12 @@ function ChallengeLog:HelperGetFilteredChallenges()
 	--By this point, self.tCurrentlyDisplayedChallenges will be the appropriate challenges by zone and search string if any
 	for idx, clgCurrent in pairs(self.tCurrentlyDisplayedChallenges) do
 		local tZoneInfo = clgCurrent:GetZoneInfo()
-		if bShowAll or bShowRewards and clgCurrent:ShouldCollectReward() or bShowCooldown and clgCurrent:IsInCooldown()  then
+		if bShowAll or bShowCooldown and clgCurrent:IsInCooldown()  then
 				tFilteredChallenges[idx] = clgCurrent
 
 		elseif bShowReady and not clgCurrent:IsInCooldown() then
 			-- Show activated or challenges with rewards or show challenges that can be started. Filter out challenges that are on cooldown
-			if  clgCurrent:IsActivated() or clgCurrent:ShouldCollectReward() or self:IsStartable(clgCurrent) and self:HelperIsInZone(clgCurrent:GetZoneRestrictionInfo()) then
+			if  clgCurrent:IsActivated() or self:IsStartable(clgCurrent) and self:HelperIsInZone(clgCurrent:GetZoneRestrictionInfo()) then
 				tFilteredChallenges[idx] = clgCurrent
 			end
 		end
@@ -449,7 +505,6 @@ end
 
 -- Clicking a Header button and the timer also routes here
 function ChallengeLog:Redraw()
-
     if not self.wndMain:IsShown() then
 		return
 	end
@@ -458,6 +513,9 @@ function ChallengeLog:Redraw()
 	self:DrawLeftPanelUI(self.tCurrentlyDisplayedChallenges)
 	self:DrawRightPanelUI(tFilteredChallenges)
 
+	--Draw RewardTacker
+	self:UpdateRewardTracker()
+	
 	-- Just exit if we have 0 challenges, we've already drawn the empty messages
     if not tFilteredChallenges or self:GetTableSize(tFilteredChallenges) == 0 then
 		self:DestroyHeaderWindows()
@@ -466,15 +524,371 @@ function ChallengeLog:Redraw()
 	end
 end
 
+-----------------------------------------------------------------------------------------------------------
+--Reward Tracker Functions
+-----------------------------------------------------------------------------------------------------------
+
+
+function ChallengeLog:UpdateRewardTracker()
+	if not self.wndMain or not self.wndMain:IsValid() then
+		return
+	end
+
+	self:HideRewardList()
+
+	local wndRewardTracker = self.wndMain:FindChild("RewardTracker")
+	local wndChallengControls = self.wndMain:FindChild("ChallengeControls")
+
+	local arRewards = self.rtRewardTrack and self.rtRewardTrack:GetAllRewards()
+	local bShowRewardTracker = arRewards ~= nil
+	if bShowRewardTracker then
+		local wndContainer = wndRewardTracker:FindChild("Container")
+		wndContainer:DestroyChildren()
+		for idx, tReward in pairs(arRewards) do
+			if idx ~= #arRewards then
+				local wndRewardPoint = Apollo.LoadForm(self.xmlDoc, "RewardPoint", wndContainer, self)
+				self:DrawRewardPoint(wndRewardPoint, arRewards, tReward, true)
+			else
+				self:DrawRewardPoint(wndRewardTracker:FindChild("FinalRewardPoint"), arRewards, tReward, false)
+			end
+		end
+		
+		local nRewardProgress = self.rtRewardTrack:GetRewardPointsEarned()
+		if nRewardProgress == nil then
+			nRewardProgress = 0
+		end
+		local nRewardMax = arRewards[#arRewards].nCost
+		local wndRewardTrackTitleContainer = wndRewardTracker:FindChild("RewardTrackTitleContainer")
+		local wndRewardTrackTitle = wndRewardTrackTitleContainer:FindChild("RewardTrackTitle")
+		local strTitle = string.format('<P Font="CRB_HeaderTiny" ><T TextColor="UI_TextMetalBodyHighlight">%s </T><T TextColor="UI_TextMetalGoldHighlight">%s</T></P>', self.rtRewardTrack:GetName(), String_GetWeaselString(Apollo.GetString("ChallengeLog_PointsReadout"), nRewardProgress))
+
+		wndRewardTrackTitle:SetAML(strTitle)
+		
+		local nWidth, nHeight = wndRewardTrackTitle:SetHeightToContentHeight()
+		local nLeft, nTop, nRight, nBottom = wndRewardTrackTitleContainer:GetAnchorOffsets()
+		local nHeightDifference = wndRewardTrackTitleContainer:GetHeight() - nHeight
+		wndRewardTrackTitleContainer:SetAnchorOffsets(nLeft, nTop + nHeightDifference / 2, nRight, nBottom - nHeightDifference / 2)
+
+		local wndRewardProgressBar = wndRewardTracker:FindChild("ProgressBar")
+		wndRewardProgressBar:SetMax(nRewardMax)
+		wndRewardProgressBar:SetProgress(nRewardProgress, wndRewardProgressBar:GetHeight() * knProgressBarScale)
+		wndRewardProgressBar:SetData(nRewardProgress)
+		wndRewardProgressBar:SetTooltip(String_GetWeaselString(Apollo.GetString("Contracts_RewardBarProgressTooltip"), nRewardProgress, Apollo.FormatNumber(nRewardMax)))
+	
+		local wndRewardListContainer = wndRewardTracker:FindChild("RewardList:Container")
+		local nScrollPos = wndRewardListContainer:GetVScrollPos()
+		wndRewardListContainer:DestroyChildren()
+		for idx, tReward in pairs(arRewards) do
+			local wndEntry = Apollo.LoadForm(self.xmlDoc, "RewardListEntry", wndRewardListContainer, self)
+			self:DrawRewardListEntry(wndEntry, tReward)
+		end
+
+		wndRewardListContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+		wndRewardListContainer:SetVScrollPos(nScrollPos)
+	end
+	
+	wndRewardTracker:Show(bShowRewardTracker)
+	self.wndMain:FindChild("GradientShadow"):Show(bShowRewardTracker)
+
+	local nLeft, nTop, nRight, nBottom = wndChallengControls:GetAnchorOffsets()
+	wndChallengControls:SetAnchorOffsets(nLeft, bShowRewardTracker and wndRewardTracker:GetHeight() or 0, nRight, nBottom)	
+end
+
+function ChallengeLog:DrawRewardPoint(wndRewardPoint, arRewards, tReward, bMoveIntoPlace)
+	local nRewardMax = arRewards[#arRewards].nCost
+	local wndContainer = self.wndMain:FindChild("Container")
+	
+	if bMoveIntoPlace then
+		local nLeftSection = wndContainer:GetWidth() * (tReward.nCost / nRewardMax)
+		local nWidth = wndRewardPoint:GetWidth()
+		
+		local wndHalfTrackerHeight = wndContainer:GetHeight() / 2.0
+		local nHalfPointHeight = wndRewardPoint:GetHeight() / 2.0
+		
+		
+		local nLeft, nTop, nRight, nBottom = wndRewardPoint:GetAnchorOffsets()
+		wndRewardPoint:SetAnchorOffsets(nLeftSection - nWidth / 2, wndHalfTrackerHeight - nHalfPointHeight, nLeftSection + nWidth / 2, wndHalfTrackerHeight + nHalfPointHeight)
+	end
+
+	local strRewardLabel = nil
+	local strHeader = nil
+	local strClickAction = nil
+	local crRewardLabel = nil
+	local nDisplayRewardIdx = tReward.nRewardIdx + 1
+
+	local wndTooltip = wndRewardPoint:FindChild("RewardPointTooltip")
+	local wndClickAction = wndTooltip:FindChild("ClickAction")
+	local wndRewardLabel = wndTooltip:FindChild("RewardLabel")
+	local wndItemHeader = wndTooltip:FindChild("ItemHeader")
+	local wndActionBtn = wndRewardPoint:FindChild("ActionBtn")
+	local wndAchievedBG = wndRewardPoint:FindChild("AchievedBG")
+	local wndHighlightBG = wndRewardPoint:FindChild("HighlightBG")
+
+	if tReward.bIsClaimed then
+		strClickAction = Apollo.GetString("Contracts_ClickToExpand")
+		strRewardLabel = String_GetWeaselString(Apollo.GetString("Contracts_RewardAlreadyClaimed"), nDisplayRewardIdx)
+		crRewardLabel = ApolloColor.new("UI_TextHoloBody")
+		strHeader = Apollo.GetString("Contracts_RewardChosenFrom")
+		wndAchievedBG:Show(true)
+
+	elseif tReward.bCanClaim then
+		strClickAction = Apollo.GetString("Contracts_ClickToChooseReward")
+		strRewardLabel = String_GetWeaselString(Apollo.GetString("Contracts_RewardsReadyToClaim"), nDisplayRewardIdx)
+		crRewardLabel = ApolloColor.new("UI_BtnTextGreenNormal")
+		strHeader = Apollo.GetString("Contracts_RewardChoices")
+
+	else
+		strClickAction = Apollo.GetString("Contracts_ClickForDetails")
+		local nPointsRequired = self.rtRewardTrack:GetRewardPointsEarned()
+		if nPointsRequired == nil then
+			nPointsRequired = 0
+		else
+			nPointsRequired = tReward.nCost - nPointsRequired
+		end
+		strRewardLabel = String_GetWeaselString(Apollo.GetString("Contracts_RewardRequiresMorePoints"), nDisplayRewardIdx, Apollo.FormatNumber(nPointsRequired))
+		crRewardLabel = ApolloColor.new("white")
+		strHeader = Apollo.GetString("Contracts_RewardChoices")
+	end
+
+	wndClickAction:SetText(strClickAction)
+	wndRewardLabel:SetText(strRewardLabel)
+	wndRewardLabel:SetTextColor(crRewardLabel)
+	wndItemHeader:SetText(strHeader)
+
+	-- tooltip Cash
+	wndTooltip:FindChild("CashReward"):Show(tReward.monReward and tReward.monReward:GetAmount() > 0 or false)
+	wndTooltip:FindChild("CashReward"):SetAmount(tReward.monReward, true)
+	
+	-- Tooltip items
+	local wndItemContainer = wndTooltip:FindChild("ItemRewards")
+	wndItemContainer:DestroyChildren()
+	for idx, tItemChoice in pairs(tReward.tRewardChoices or {}) do
+		if tItemChoice.eRewardType == RewardTrack.RewardTrackRewardType.Item then
+			local wndItem = Apollo.LoadForm(self.xmlDoc, "RewardPointTooltipItem", wndItemContainer, self)
+			
+			wndItem:FindChild("ItemCantUse"):Show(tItemChoice.itemReward:IsEquippable() and not tItemChoice.itemReward:CanEquip())
+			wndItem:FindChild("ItemIcon"):GetWindowSubclass():SetItem(tItemChoice.itemReward)
+		end
+	end
+	wndItemContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	
+	wndActionBtn:SetData({ ["tReward"] = tReward, ["wndTooltip"] = wndTooltip })
+end
+
+function ChallengeLog:DrawRewardListEntry(wndEntry, tReward)
+	local nDisplayRewardIdx = tReward.nRewardIdx + 1
+	wndEntry:SetData({ ["tReward"] = tReward})
+	
+	local wndEntryContainer = wndEntry:FindChild("Container")
+	local wndRewardListClaimBtn = wndEntryContainer:FindChild("RewardListClaimBtn")
+	wndRewardListClaimBtn:SetData({ ["tReward"] = tReward})
+	
+	wndRewardListClaimBtn:Show(tReward.bCanClaim and not tReward.bIsClaimed)
+	wndRewardListClaimBtn:Enable(tReward.tRewardChoices and #tReward.tRewardChoices == 0 or false)
+	
+	local strRewardLabel = nil
+	local crRewardLabel = nil
+	local strHeader = nil
+
+	local wndRewardLabel = wndEntryContainer:FindChild("RewardLabel")
+	local wndItemHeader = wndEntryContainer:FindChild("ItemHeader")
+	
+	if tReward.bIsClaimed then
+		strRewardLabel = String_GetWeaselString(Apollo.GetString("Contracts_RewardAlreadyClaimed"), nDisplayRewardIdx)
+		strHeader = Apollo.GetString("Contracts_RewardChosenFrom")
+		crRewardLabel = ApolloColor.new("UI_TextHoloBody")
+	elseif tReward.bCanClaim then
+		strRewardLabel = String_GetWeaselString(Apollo.GetString("Contracts_RewardsReadyToClaim"), nDisplayRewardIdx)
+		strHeader = Apollo.GetString("Contracts_PleaseChooseReward")
+		crRewardLabel = ApolloColor.new("UI_BtnTextGreenNormal")
+	else
+		local nPointsRequired = self.rtRewardTrack:GetRewardPointsEarned()
+		if nPointsRequired == nil then
+			nPointsRequired = 0
+		else
+			nPointsRequired = tReward.nCost - nPointsRequired
+		end
+		strRewardLabel = String_GetWeaselString(Apollo.GetString("Contracts_RewardRequiresMorePoints"), nDisplayRewardIdx, Apollo.FormatNumber(nPointsRequired))
+		strHeader = Apollo.GetString("Contracts_RewardChoices")
+		crRewardLabel = ApolloColor.new("white")
+	end
+	
+	wndRewardLabel:SetText(strRewardLabel)
+	wndRewardLabel:SetTextColor(crRewardLabel)
+	wndItemHeader:SetText(strHeader)
+	
+	-- Cash
+	wndEntryContainer:FindChild("CashReward"):Show(tReward.monReward:GetAmount() > 0)
+	wndEntryContainer:FindChild("CashReward"):SetAmount(tReward.monReward, true)
+	
+	-- Items
+	local wndItemRewardContainer = wndEntryContainer:FindChild("ItemRewardContainer")
+	local wndItemContainer = wndItemRewardContainer:FindChild("ItemRewards")
+	wndItemContainer:DestroyChildren()
+	for idx, tItemChoice in pairs(tReward.tRewardChoices or {}) do
+		if tItemChoice.eRewardType == RewardTrack.RewardTrackRewardType.Item then
+			local wndItem = Apollo.LoadForm(self.xmlDoc, "RewardSelectionItem", wndItemContainer, self)
+			
+			wndItem:FindChild("ItemCantUse"):Show(tItemChoice.itemReward:IsEquippable() and not tItemChoice.itemReward:CanEquip())
+			local wndItemIcon = wndItem:FindChild("ItemIcon")
+			wndItemIcon:GetWindowSubclass():SetItem(tItemChoice.itemReward)
+			wndItemIcon:AddEventHandler("GenerateTooltip", "OnGenerateRewardItemTooltip")
+			wndItemIcon:SetData(tItemChoice)
+			local wndSelectionBtn = wndItem:FindChild("SelectionBtn")
+			wndSelectionBtn:SetData({ ["tItemChoice"] = tItemChoice, ["wndRewardListClaimBtn"] = wndRewardListClaimBtn })
+			wndSelectionBtn:Enable(tReward.bCanClaim and not tReward.bIsClaimed)
+			wndItem:FindChild("ItemStackCount"):SetText(tItemChoice.nRewardCount)
+		end
+	end
+	wndItemContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	wndItemRewardContainer:Show(tReward.tRewardChoices and #tReward.tRewardChoices > 0 or false)
+	
+	local nHeight = wndEntryContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	local nLeft, nTop, nRight, nBottom = wndEntry:GetAnchorOffsets()
+	wndEntry:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nHeight)
+end
+
+function ChallengeLog:OnRewardPointMouseEnter(wndHandler, wndControl, x, y)
+	if wndHandler ~= wndControl then
+		return
+	end
+
+	wndControl:GetParent():FindChild("RewardPointTooltip"):Show(not self.wndRewardList:IsShown())
+end
+
+function ChallengeLog:OnRewardPointMouseExit(wndHandler, wndControl, x, y)
+	if wndHandler ~= wndControl then
+		return
+	end
+
+	wndControl:GetParent():FindChild("RewardPointTooltip"):Show(false)
+end
+
+function ChallengeLog:ShowRewardList()
+	if not self.wndRewardList:IsShown() then
+		self.wndRewardList:Show(true)
+		self.wndRewardListOpenBtn:SetCheck(true)
+		Sound.Play(Sound.PlayUIButtonMetalLarge)
+	end
+
+end
+
+function ChallengeLog:HideRewardList()
+	if self.wndRewardList:IsShown() then
+		self.wndRewardList:Show(false)
+		self.wndRewardListOpenBtn:SetCheck(false)
+		Sound.Play(Sound.PlayUIButtonMetalLarge)
+	end
+end
+
+function ChallengeLog:OnRewardPointBtnSignal(wndHandler, wndControl)
+	self:ShowRewardList()
+	local tData = wndControl:GetData()
+	tData.wndTooltip:Show(false)
+	Sound.Play(Sound.PlayUIButtonHoloSmall)
+	local wndContainer = self.wndRewardList:FindChild("Container")
+	for idx, wndRewardEntry in pairs(wndContainer:GetChildren()) do
+		if tData.tReward.idReward == wndRewardEntry:GetData().tReward.idReward then
+			wndRewardEntry:FindChild("SelectedHighlight"):Show(true)
+			wndRewardEntry:FindChild("Flasher"):SetSprite("BK3:UI_BK3_Holo_RefreshReflectionSquare_anim")
+			wndContainer:EnsureChildVisible(wndRewardEntry)
+		else
+			wndRewardEntry:FindChild("SelectedHighlight"):Show(false)
+		end
+	end
+end
+
 function ChallengeLog:HelperGetListOfLists(tFilteredChallenges)
 	local tChallengeListOfList = nil
-	if self.wndMain:FindChild("SortByDropdownContainer:btnToggleZone"):IsChecked() then
+	local wndSortByDropdownContainer = self.wndMain:FindChild("RightSide:Reward:Tracker:ChallengeControls:SortByDropdownContainer")
+	if wndSortByDropdownContainer:FindChild("btnToggleZone"):IsChecked() then
 		tChallengeListOfList = self:SetUpZoneList(tFilteredChallenges)
-	elseif self.wndMain:FindChild("SortByDropdownContainer:btnToggleType"):IsChecked() then
+	elseif wndSortByDropdownContainer:FindChild("btnToggleType"):IsChecked() then
 		tChallengeListOfList = self:SetUpTypeList(tFilteredChallenges)
     end
 	return tChallengeListOfList
 end
+
+function ChallengeLog:OnGenerateRewardItemTooltip(wndHandler, wndControl, eToolTipType, x, y)
+	if wndHandler ~= wndControl or Tooltip == nil then
+		return
+	end
+
+	local tData = wndControl:GetData()
+	
+	local tPrimaryTooltipOpts =
+	{
+		bPrimary = true,
+		itemCompare = tData.itemReward:GetEquippedItemForItemType()
+	}
+
+	Tooltip.GetItemTooltipForm(self, wndControl, tData.itemReward, tPrimaryTooltipOpts)
+end
+
+function ChallengeLog:OnGenerateCashRewardTooltip(wndHandler, wndControl, eToolTipType, monA, monB)
+	if wndHandler ~= wndControl or Tooltip == nil then
+		return
+	end
+
+	if eToolTipType == Tooltip.TooltipGenerateType_Money then
+		local xml = nil
+		
+		if monA:GetAmount() > 0 then
+			if xml == nil then
+				xml = XmlDoc.new()
+			end
+			xml:AddLine("<P>".. monA:GetMoneyString() .."</P>")
+		end
+		
+		if monB:GetAmount() > 0 then
+			if xml == nil then
+				xml = XmlDoc.new()
+			end
+			xml:AddLine("<P>".. monB:GetMoneyString() .."</P>")
+		end
+		
+		wndControl:SetTooltipDoc(xml)
+	end
+end
+
+function ChallengeLog:OnRewardConfirmTakeBtnSignal(wndHandler, wndControl, eMouseButton)
+	local tData = wndControl:GetData()
+	if not tData then
+		return
+	end
+
+	local nRewardIdx = tData.tReward.nRewardIdx
+	local nRewardItemChoiceIdx = tData.nChoiceIdx
+	
+	Sound.Play(nRewardIdx == self.rtRewardTrack:GetNumRewards() - 1 and Sound.PlayUIContractGoldMilestoneTurnIn or Sound.PlayUIContractMilestoneTurnIn)
+	self.rtRewardTrack:ClaimRewardPoint(nRewardIdx, nRewardItemChoiceIdx)
+	self:UpdateInterfaceMenuAlerts()
+end
+
+function ChallengeLog:OnRewardItemSelectionBtnCheck(wndHandler, wndControl, eMouseButton)
+	local tData = wndControl:GetData()
+	if not tData then
+		return
+	end
+
+	local tClaimData = tData.wndRewardListClaimBtn:GetData()
+	local tReward = tClaimData.tReward
+	
+	tClaimData.nChoiceIdx = tData.tItemChoice.nChoiceIdx
+	tData.wndRewardListClaimBtn:SetData(tClaimData)
+	tData.wndRewardListClaimBtn:Enable(tReward.bCanClaim and not tReward.bIsClaimed)
+end
+
+function ChallengeLog:OnRewardItemSelectionBtnUncheck(wndHandler, wndControl, eMouseButton)
+	local tData = wndControl:GetData()
+	if not tData then
+		return
+	end
+
+	tData.wndRewardListClaimBtn:Enable(false)
+end
+
+-----------------------------------------------------------------------------------------------------------
 
 function ChallengeLog:BuildChallengeList(tFilteredChallenges)
 	-- This is essentially step 2 of the Redraw() method, if we do have valid data to show
@@ -500,7 +914,7 @@ function ChallengeLog:BuildChallengeList(tFilteredChallenges)
 		wndCurrHeader:FindChild("HeaderContainer"):Show(bDrawItemsInHeader)
 		self:SetHeaderSize(wndCurrHeader, nHeight, true)
     end
-
+	
     self.wndTopLevel:ArrangeChildrenVert()
     self.wndTopLevel:SetVScrollPos(nVScrollPos)
 end
@@ -552,7 +966,6 @@ function ChallengeLog:DrawPanelContents(wndParent)
 	local eChallengeType = clgBeingDrawn:GetType()
 	local bActivated = clgBeingDrawn:IsActivated()
 	local bIsInCooldown = clgBeingDrawn:IsInCooldown()
-	local bCollectReward = clgBeingDrawn:ShouldCollectReward()
 	local nCompletionCount = clgBeingDrawn:GetCompletionCount()
 	local tZoneRestrictionInfo = clgBeingDrawn:GetZoneRestrictionInfo()
 
@@ -566,7 +979,8 @@ function ChallengeLog:DrawPanelContents(wndParent)
 	wndListItemBtn:FindChild("ListItemTypeIcon"):SetSprite(self:CalculateIconPath(eChallengeType))
 
 	-- Draw location if possible
-	if tZoneRestrictionInfo.strSubZoneName and tZoneRestrictionInfo.strSubZoneName ~= "" and self.wndMain:FindChild("SortByDropdownContainer:btnToggleType"):IsChecked()then
+	local wndSortByDropdownContainer = self.wndMain:FindChild("RightSide:Reward:Tracker:ChallengeControls:SortByDropdownContainer")
+	if tZoneRestrictionInfo.strSubZoneName and tZoneRestrictionInfo.strSubZoneName ~= "" and wndSortByDropdownContainer:FindChild("btnToggleType"):IsChecked()then
 		if tZoneRestrictionInfo.strLocationName and tZoneRestrictionInfo.strLocationName ~= "" then
 			wndListItemLocation:SetText(tZoneRestrictionInfo.strSubZoneName .. " : " .. tZoneRestrictionInfo.strLocationName)
 		else
@@ -585,7 +999,7 @@ function ChallengeLog:DrawPanelContents(wndParent)
     end
 
 	self:DrawTierInfo(wndParent, clgBeingDrawn)
-	self:DrawWarningWindow(clgBeingDrawn, idChallenge, eChallengeType, bActivated, bCollectReward, tZoneRestrictionInfo)
+	self:DrawWarningWindow(clgBeingDrawn, idChallenge, eChallengeType, bActivated, false, tZoneRestrictionInfo)
 
 	-- Should be redundant
 	if self.nSelectedListItem and self.nSelectedListItem == idChallenge then
@@ -593,7 +1007,7 @@ function ChallengeLog:DrawPanelContents(wndParent)
 	end
 
     -- Completed Challenges are disabled, unless lootable
-    if not self:IsStartable(clgBeingDrawn) and not bCollectReward then
+    if not self:IsStartable(clgBeingDrawn) then
         wndListItemBtn:Enable(false)
     end
 
@@ -648,10 +1062,11 @@ function ChallengeLog:DrawTierInfo(wndContainer, clgBeingDrawn)
 		-- Resize
 		local nContentX, nContentY = wndListItemDescription:GetContentSize()
 		local nOffsetY = 0
-		if nContentY > 20 then
-			nOffsetY = nContentY - 20 + 2 -- The +2 is for lower g-height
+		if nContentY > self.knListItemDescriptionOriginalHeight then
+			nOffsetY = nContentY - self.knListItemDescriptionOriginalHeight + self.knListItemDescriptionOriginalHeightPadding
 		end
-        wndContainer:SetAnchorOffsets(self.knOrigItemLeft, self.knOrigItemTop, self.knOrigItemRight, self.knOrigItemBottom + math.min(900, nOffsetY))
+		local nLeft, nTop, nRight, nBottom = wndContainer:GetOriginalLocation():GetOffsets()
+        wndContainer:SetAnchorOffsets(nLeft, nTop, nRight, nBottom + nOffsetY)
 
 		-- Move Objectives to where TierIcons would've been
 		wndDescriptionTieredObjective:SetAnchorOffsets(-85, 34, -8, 0) -- TODO TEMP HACK: Super hardcoded formatting, replace with arrangehorz
@@ -711,20 +1126,33 @@ function ChallengeLog:DrawTierInfo(wndContainer, clgBeingDrawn)
         wndSilverIcon:FindChild("TierIconCheckmark"):Show(nNumCompletedTiers >= 2)
         wndGoldIcon:FindChild("TierIconCheckmark"):Show(nNumCompletedTiers >= 3)
 
+		local nBronzeReward = ChallengesLib.GetRewardTrackPoints(keRewardTrack.Bronze)
+		local nSilverReward = ChallengesLib.GetRewardTrackPoints(keRewardTrack.Silver)
+		local nGoldReward = ChallengesLib.GetRewardTrackPoints(keRewardTrack.Gold)
+
+		wndBronzeIcon:SetTooltip(String_GetWeaselString(Apollo.GetString("ChallengeLog_RewardTrack_Toolip"), nBronzeReward))
+		wndSilverIcon:SetTooltip(String_GetWeaselString(Apollo.GetString("ChallengeLog_RewardTrack_Toolip"), nBronzeReward + nSilverReward))
+		wndGoldIcon:SetTooltip(String_GetWeaselString(Apollo.GetString("ChallengeLog_RewardTrack_Toolip"), nBronzeReward + nSilverReward + nGoldReward))
+		
 		-- Resize
 		local nContentX, nContentY = wndDescriptionTieredObjective:GetContentSize()
 		local nOffsetY = 0
-		if nContentY > 20 then
-			nOffsetY = nContentY - 20 + 2 -- The +2 is for lower g-height
+		if nContentY > self.knListItemDescriptionOriginalHeight then
+			nOffsetY = nContentY - self.knListItemDescriptionOriginalHeight + self.knListItemDescriptionOriginalHeightPadding
 		end
-        wndContainer:SetAnchorOffsets(self.knOrigItemLeft, self.knOrigItemTop, self.knOrigItemRight, self.knOrigItemBottom + math.min(900, nOffsetY))
+		local nListItemDescContentX, nListItemDescContentY = wndListItemDescription:GetContentSize()
+		if nListItemDescContentY > self.knListItemDescriptionOriginalHeight and nListItemDescContentY > nContentY then
+			nOffsetY = nListItemDescContentY - self.knListItemDescriptionOriginalHeight + self.knListItemDescriptionOriginalHeightPadding
+		end
+		local nLeft, nTop, nRight, nBottom = wndContainer:GetOriginalLocation():GetOffsets()
+        wndContainer:SetAnchorOffsets(nLeft, nTop, nRight, nBottom + nOffsetY)
     end
 end
 
 function ChallengeLog:DrawWarningWindow(clgCurrent, idChallenge, eChallengeType, bActivated, bCollectReward, tZoneRestrictionInfo)
-	local wndWarningWindow = self.wndMain:FindChild("RightSide:WarningWindow")
+	local wndWarningWindow = self.wndMain:FindChild("RightSide:ChallengeControls:WarningWindow")
     if self.nSelectedListItem and self.nSelectedListItem == idChallenge then
-		local wndInteractArea = self.wndMain:FindChild("RightSide:BGRightFooter:InteractArea")
+		local wndInteractArea = self.wndMain:FindChild("RightSide:ChallengeControls:BGRightFooter:InteractArea")
 		-- Highest Priority is warning event text, don't overwride this until it fades naturally
 		if not wndWarningWindow:FindChild("WarningEventText"):IsShown() then
 			local bInZone = self:HelperIsInZone(tZoneRestrictionInfo)
@@ -744,14 +1172,8 @@ function ChallengeLog:DrawLeftPanelUI(tChallengeList)
 	-- Show count of lootable challenges for the selected big zone, even if we have 0 challenges
 	local nLootCount = 0
 	local strRewardsText = self.strRewardsTabText
-	for idx, clgCurrent in pairs(tChallengeList) do
-		if clgCurrent:ShouldCollectReward() and (clgCurrent:GetZoneInfo().idZone == self.nSelectedBigZone or self.nSelectedBigZone == kIdDeselected) then
-			nLootCount = nLootCount + 1
-			strRewardsText = String_GetWeaselString(Apollo.GetString("Vendor_TabLabelMultiple"), self.strRewardsTabText, nLootCount)
-		end
-	end
-	self.wndMain:FindChild("TopHeader:ToggleRewardsBtn"):SetText(strRewardsText)
-	self.wndMain:FindChild("LeftSide:BigZoneListContainer"):ArrangeChildrenVert(0)
+	self.wndMain:FindChild("RightSide:ChallengeControls:TopHeader:ToggleRewardsBtn"):SetText(strRewardsText)
+	self.wndMain:FindChild("LeftSide:BigZoneListContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function ChallengeLog:DrawRightPanelUI(tFilteredChallenges)
@@ -763,11 +1185,11 @@ function ChallengeLog:DrawRightPanelUI(tFilteredChallenges)
 	if bShowEmptyListWarning then
 		if wndTopHeader:FindChild("ToggleShowAllBtn"):IsChecked() or wndTopHeader:FindChild("ToggleReadyBtn"):IsChecked() then
 			strEmptyListNotification = Apollo.GetString("Challenges_FindNewChallenges")
-		elseif wndTopHeader:FindChild("ToggleRewardsBtn"):IsChecked() and self.nSelectedBigZone == kIdDeselected then
+		elseif wndTopHeader:FindChild("ToggleRewardsBtn"):IsChecked() and self.nSelectedBigZone == kIdAllZoneBtn then
 			strEmptyListNotification = Apollo.GetString("Challenges_AllLooted")
 		elseif wndTopHeader:FindChild("ToggleRewardsBtn"):IsChecked() then
 			strEmptyListNotification = String_GetWeaselString(Apollo.GetString("Challenges_ZoneLooted"), wndRightSide:FindChild("ItemListZoneName"):GetText())
-		elseif wndTopHeader:FindChild("ToggleCooldownBtn"):IsChecked() and self.nSelectedBigZone == kIdDeselected then
+		elseif wndTopHeader:FindChild("ToggleCooldownBtn"):IsChecked() and self.nSelectedBigZone == kIdAllZoneBtn then
 			strEmptyListNotification = Apollo.GetString("Challenges_NoCooldown")
 		elseif wndTopHeader:FindChild("ToggleCooldownBtn"):IsChecked() then
 			strEmptyListNotification = String_GetWeaselString(Apollo.GetString("Challenges_NoCDZone"), wndRightSide:FindChild("ItemListZoneName"):GetText())
@@ -790,8 +1212,9 @@ function ChallengeLog:DrawHeader(strCurrId, tChallengeListOfList)
 	wndResult:SetData(strCurrId)
 
 	local strDesc = ""
+	local wndSortByDropdownContainer = self.wndMain:FindChild("RightSide:Reward:Tracker:ChallengeControls:SortByDropdownContainer")
 	for key, clgCurrent in pairs(tChallengeListOfList[strCurrId]) do
-        if self.wndMain:FindChild("SortByDropdownContainer:btnToggleZone"):IsChecked() then
+        if wndSortByDropdownContainer:FindChild("btnToggleZone"):IsChecked() then
 			local strLocalHeader = clgCurrent:GetZoneRestrictionInfo().strSubZoneName
             if strLocalHeader == "" then
                 strDesc = Apollo.GetString("Challenges_UnspecifiedArea")
@@ -809,15 +1232,15 @@ function ChallengeLog:DrawHeader(strCurrId, tChallengeListOfList)
 
 			local eChallengeType = clgCurrent:GetType()
             if eChallengeType == ChallengesLib.ChallengeType_Combat then
-				tInfo["name"] = Apollo.GetString("Challenges_CombatChallenge")
+				tInfo["name"] = Apollo.GetString("Challenges_CombatChallengePlural")
             elseif eChallengeType == ChallengesLib.ChallengeType_Ability then
-				tInfo["name"] = Apollo.GetString("Challenges_AbilityChallenge")
+				tInfo["name"] = Apollo.GetString("Challenges_AbilityChallengePlural")
             elseif eChallengeType == ChallengesLib.ChallengeType_General then
-				tInfo["name"] = Apollo.GetString("Challenges_GeneralChallenge")
+				tInfo["name"] = Apollo.GetString("Challenges_GeneralChallengePlural")
             elseif eChallengeType == ChallengesLib.ChallengeType_Item then
-				tInfo["name"] = Apollo.GetString("Challenges_ItemChallenge")
+				tInfo["name"] = Apollo.GetString("Challenges_ItemChallengePlural")
 			elseif eChallengeType == ChallengesLib.ChallengeType_ChecklistActivate then
-				tInfo["name"] = Apollo.GetString("Challenges_ActivateChallenge")
+				tInfo["name"] = Apollo.GetString("Challenges_ActivateChallengePlural")
 			end
 			if tInfo["name"] ~= "" then
 				strDesc = String_GetWeaselString(Apollo.GetString("CRB_MultipleNoNumber"), tInfo)
@@ -842,11 +1265,17 @@ function ChallengeLog:OnBigZoneBtnPress(wndHandler, wndControl)
 	end
 
 	self:HelperPickBigZone(wndHandler)
+	self.rtRewardTrack = nil
+
+	if self.nSelectedBigZone ~= kIdAllZoneBtn then
+		self.rtRewardTrack = ChallengesLib.GetRewardTrackByZone(self.nSelectedBigZone)--Redraw will handle updating the reward tracker.
+	end
 
 	--Want to make sure that current string in the search bar is accounted for. This has to happen after the HelperPickBigZone has been called
-	local wndEditBox =self.wndMain:FindChild("HeaderSearchBox")
-	self:OnEditBoxChanged(wndEditBox, wndEditBox, wndEditBox:GetText())--so that the cleared text will take effect for the filtered challenges
-
+	local strText = self.wndMain:FindChild("HeaderSearchBox"):GetText()
+	if strText ~= "" then
+		self:OnEditBoxChanged(wndEditBox, wndEditBox, strText)--so that the cleared text will take effect for the filtered challenges
+	end
 	self:Redraw() --changing zones should clear all the currently displayed challenges
 end
 
@@ -862,16 +1291,28 @@ function ChallengeLog:OnListItemClick(wndHandler, wndControl)
 	
 	--When clicking on challenge, player may be in subzone, so need to recognize if they move into area to start.
 	self:HelperHandleLocationTimer()
+	
+	local rtClickedRewardTrack = clgClicked:GetRewardTrack()
+
+	--In case challenge reward track doesn't match the zone. This can be removed when it is guaranteed that all challenges in a zone point to same reward track.
+	if rtClickedRewardTrack ~= self.rtRewardTrack then
+		self.rtRewardTrack = rtClickedRewardTrack
+		self:UpdateRewardTracker()
+	end
 end
 
 function ChallengeLog:OnAbandonChallengeBtn(wndHandler, wndControl)
-	if not self.nSelectedListItem or self.nSelectedListItem == kIdDeselected then return end
+	if not self.nSelectedListItem then
+		return
+	end
 
 	ChallengesLib.AbandonChallenge(self.nSelectedListItem)
 end
 
 function ChallengeLog:OnStartChallengeBtn(wndHandler, wndControl)
-	if not self.nSelectedListItem or self.nSelectedListItem == kIdDeselected then return end
+	if not self.nSelectedListItem then
+		return
+	end
 
 	ChallengesLib.ShowHintArrow(self.nSelectedListItem)
 	ChallengesLib.ActivateChallenge(self.nSelectedListItem)
@@ -883,16 +1324,20 @@ function ChallengeLog:OnStartChallengeBtn(wndHandler, wndControl)
 end
 
 function ChallengeLog:OnLocateChallengeBtn()
-	if not self.nSelectedListItem or self.nSelectedListItem == kIdDeselected then return end
+	if not self.nSelectedListItem then
+		return
+	end
+
 	ChallengesLib.ShowHintArrow(self.nSelectedListItem)
 end
 
 function ChallengeLog:OnRewardChallengeBtn() -- We need a generic event to get the tracker to close a loot window
-    if self.nSelectedListItem ~= nil then
-		Event_FireGenericEvent("ChallengeRewardShow", self.nSelectedListItem)
-		-- Hackish. Loading from log in screen has the logic+ui slightly out of sync in terms of events, so simulate the events.
-		self:OnChallengeCompleted(self.nSelectedListItem, nil, nil, nil)
-    end
+	if not self.nSelectedListItem then
+		return
+	end
+
+	-- Hackish. Loading from log in screen has the logic+ui slightly out of sync in terms of events, so simulate the events.
+	self:OnChallengeCompleted(self.nSelectedListItem, nil, nil, nil)
 end
 
 function ChallengeLog:OnEmptyListNotificationBtn()
@@ -904,23 +1349,9 @@ function ChallengeLog:OnEmptyListNotificationBtn()
 
 
 	-- Pick "Show All"
-	self.nSelectedBigZone = kIdDeselected
+	self.nSelectedBigZone = kIdAllZoneBtn
 	self:HelperPickBigZone(self.wndShowAllBigZone:FindChild("BigZoneBtn"))
 	self:Redraw()
-end
-
------------------------------------------------------------------------------------------------
--- Events from Reward Wheel
------------------------------------------------------------------------------------------------
-
-function ChallengeLog:OnChallengeReward_SpinEnd()
-	self.timerMaxChallengeReward:Stop()
-	self.bRewardWheelSpinning = false
-end
-
-function ChallengeLog:OnChallengeReward_SpinBegin()
-	self.timerMaxChallengeReward:Start()
-	self.bRewardWheelSpinning = true
 end
 
 -----------------------------------------------------------------------------------------------
@@ -1005,7 +1436,7 @@ function ChallengeLog:OnChallengeCompleted(idChallenge, strHeader, strDescriptio
 end
 
 function ChallengeLog:OnChallengeAreaRestriction(idChallenge, strHeader, strDescription, fDuration)
-	local wndWarningText = self.wndMain:FindChild("RightSide:WarningWindow:WarningEventText")
+	local wndWarningText = self.wndMain:FindChild("RightSide:ChallengeControls:WarningWindow:WarningEventText")
 	wndWarningText:Show(true)
 	wndWarningText:SetText(strDescription)
 	for idx, clgCurrent in pairs(ChallengesLib.GetActiveChallengeList()) do
@@ -1021,7 +1452,7 @@ function ChallengeLog:OnChallengeAreaRestriction(idChallenge, strHeader, strDesc
 end
 
 function ChallengeLog:OnAreaRestrictionTimer()
-	self.wndMain:FindChild("RightSide:WarningWindow:WarningEventText"):Show(false)
+	self.wndMain:FindChild("RightSide:ChallengeControls:WarningWindow:WarningEventText"):Show(false)
 end
 
 -- Selecting challenge types to show lead here.
@@ -1125,9 +1556,10 @@ function ChallengeLog:ShouldDraw(clgCurrent, nCurrTypeOrZoneId, wndCurrHeader)
 	end
 
 	local bResult = false
-    if nCurrTypeOrZoneId == clgCurrent:GetType() and self.wndMain:FindChild("SortByDropdownContainer:btnToggleType"):IsChecked() then
+	local wndSortByDropdownContainer = self.wndMain:FindChild("RightSide:Reward:Tracker:ChallengeControls:SortByDropdownContainer")
+    if nCurrTypeOrZoneId == clgCurrent:GetType() and wndSortByDropdownContainer:FindChild("btnToggleType"):IsChecked() then
         bResult = true
-    elseif nCurrTypeOrZoneId == clgCurrent:GetZoneRestrictionInfo().idSubZone and self.wndMain:FindChild("SortByDropdownContainer:btnToggleZone"):IsChecked() then
+    elseif nCurrTypeOrZoneId == clgCurrent:GetZoneRestrictionInfo().idSubZone and wndSortByDropdownContainer:FindChild("btnToggleZone"):IsChecked() then
         bResult = true
     end
     return bResult
@@ -1136,15 +1568,10 @@ end
 function ChallengeLog:AddShowAllToBigZoneList()
 	if not self.wndShowAllBigZone then
 		self.wndShowAllBigZone = Apollo.LoadForm(self.xmlDoc, "BigZoneItem", self.wndMain:FindChild("LeftSide:BigZoneListContainer"), self)
-		self.wndShowAllBigZone:SetName("kIdDeselected")
-		self.wndShowAllBigZone:SetData("All Zones")
 
 		local wndBigZoneBtn = self.wndShowAllBigZone:FindChild("BigZoneBtn")
-		wndBigZoneBtn:SetData(kIdDeselected)
+		wndBigZoneBtn:SetData(kIdAllZoneBtn)
 		wndBigZoneBtn:SetText(Apollo.GetString("Challenges_AllZones"))
-		--as defualt the all zones button will be selected.
-		wndBigZoneBtn:SetCheck(true)
-		self.nSelectedBigZone = kIdDeselected
 	end
 end
 
@@ -1212,28 +1639,25 @@ function ChallengeLog:HelperUpdateControlsForChallenge(clgUpdate)
 
 	local idStartLocationRestriction = clgUpdate:GetStartLocationRestrictionId()
 	local bActivated = clgUpdate:IsActivated()
-	local bCollectReward = clgUpdate:ShouldCollectReward()
 	local tZoneRestrictionInfo = clgUpdate:GetZoneRestrictionInfo()
 
-	local bIsStartable = not bActivated and not clgUpdate:IsInCooldown() and not bCollectReward and self:IsStartable(clgUpdate)
+	local bIsStartable = not bActivated and not clgUpdate:IsInCooldown()  and self:IsStartable(clgUpdate)
 	local bIsInLocation = self:HelperIsInZone(tZoneRestrictionInfo) and self:HelperIsInLocation(idStartLocationRestriction)
 	
-	self.wndRewardChallengeBtn:Enable(bCollectReward and not self.bRewardWheelSpinning)
     self.wndStartChallengeBtn:Enable(bIsStartable and bIsInLocation)
 	self.wndAbandonChallengeBtn:Enable(bActivated)
 	self.wndLocateChallengeBtn:Show(bIsStartable and not bIsInLocation)
 end
 
 function ChallengeLog:HelperResetWarningTextsAndChallengeButtonControls()
-	self.nSelectedListItem = kIdDeselected
-	local wndWarningWindow = self.wndMain:FindChild("RightSide:WarningWindow")
+	self.nSelectedListItem = nil
+	local wndWarningWindow = self.wndMain:FindChild("RightSide:ChallengeControls:WarningWindow")
 	wndWarningWindow:Show(false)
 	wndWarningWindow:FindChild("WarningTypeText"):Show(false)
 	wndWarningWindow:FindChild("WarningZoneText"):Show(false)
 	wndWarningWindow:FindChild("WarningEventText"):Show(false)
 	self.wndLocateChallengeBtn:Show(false)
 	self.wndStartChallengeBtn:Enable(false)
-	self.wndRewardChallengeBtn:Enable(false)
 	self.wndAbandonChallengeBtn:Enable(false)
 end
 
@@ -1314,16 +1738,15 @@ function ChallengeLog:HelperConvertToTime(nInSeconds, bReturnZero)
 end
 
 function ChallengeLog:BigZoneFilter(tArg)
-	return (tArg and tArg.idZone == self.nSelectedBigZone) or self.nSelectedBigZone == kIdDeselected
+	return (tArg and tArg.idZone == self.nSelectedBigZone) or self.nSelectedBigZone == kIdAllZoneBtn
 end
 
 function ChallengeLog:HelperPickBigZone(wndArg) -- wndArg is a "BigZoneBtn"
 	for key, wndCurr in pairs(self.wndMain:FindChild("LeftSide:BigZoneListContainer"):GetChildren()) do
-		local wndBigZoneBtn = wndCurr:FindChild("BigZoneBtn")
-		wndBigZoneBtn:SetCheck(false)
+		wndCurr:FindChild("BigZoneBtn"):SetCheck(false)
 	end
 	wndArg:SetCheck(true)
-	self.wndMain:FindChild("RightSide:ItemListZoneName"):SetText(wndArg:GetText())
+	self.wndMain:FindChild("RightSide:ChallengeControls:ItemListZoneName"):SetText(wndArg:GetText())
 
 	self.tCurrentlyDisplayedChallenges = self:HelperGetCurrentChallengesForZone()--update the challenges for the zone to be for the currently selected zone button.
 end
@@ -1343,6 +1766,85 @@ function ChallengeLog:HelperCurrentTypeAlreadyActive(eChallengeType, idChallenge
 			end
 		end
 	end
+end
+
+function ChallengeLog:OnEntitlementUpdate(tEntitlementInfo)
+	if not self.wndMain then
+		return
+	end
+
+	local bSignature = AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0
+	local bLoyaltyBonus = AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.LoyaltyChallengeBonus) > 0
+
+	local wndRewardTracker = self.wndMain:FindChild("RewardTracker")
+	local wndBonusesContainer = wndRewardTracker:FindChild("BonusesContainer")
+	local wndIconMTXFormatContainer = wndBonusesContainer:FindChild("IconMTXFormatContainer")
+	local wndProgressContainer = wndRewardTracker:FindChild("ProgressContainer")
+	local wndProgressBar = wndProgressContainer:FindChild("ProgressBar")
+	
+	-- Show/Hide MTX Icon
+	wndIconMTXFormatContainer:Show(bSignature or bLoyaltyBonus)
+
+	if bSignature or bLoyaltyBonus then
+		wndProgressBar:SetFullSprite("challenges:sprChallenges_RewardsProgressFGSig")
+
+		-- Set tooltip
+		local tRewardTrackInfo = ChallengesLib.GetRewardTrackInfo()
+		local nTotalBonus = 0
+		local nSigBonus = 0
+		local nLoyBonus = 0
+		if tRewardTrackInfo.tBonuses ~= nil then
+			if tRewardTrackInfo.tBonuses.fSignature ~= nil then
+				nSigBonus = tRewardTrackInfo.tBonuses.fSignature
+				nTotalBonus = nTotalBonus + nSigBonus
+			end
+			if tRewardTrackInfo.tBonuses.fLoyalty ~= nil then
+				nLoyBonus = tRewardTrackInfo.tBonuses.fLoyalty
+				nTotalBonus = nTotalBonus + nLoyBonus
+			end
+		end
+
+		self.wndMain:FindChild("IconMTX"):SetTooltip(String_GetWeaselString(Apollo.GetString("Challenges_PercentBonus"), nTotalBonus * 100, nSigBonus * 100, nLoyBonus * 100))
+	else
+		wndProgressBar:SetFullSprite("challenges:sprChallenges_RewardsProgressFG")
+	end
+	
+
+	-- Show/Hide upsell button
+	local wndSigPlayerBtn = wndRewardTracker:FindChild("SigPlayerBtn")
+	local wndRewardTrackTitleContainer = wndRewardTracker:FindChild("RewardTrackTitleContainer")
+	local nLeft, nTop, nRight, nBottom = wndRewardTrackTitleContainer:GetOriginalLocation():GetOffsets()
+	if not bSignature then
+		wndSigPlayerBtn:Show(self.bStoreLinkValid)
+	else
+		wndSigPlayerBtn:Show(false)
+	end
+
+	local nChidrenWidth = wndBonusesContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.RightOrBottom)
+	nRight = nRight - nChidrenWidth
+	wndRewardTrackTitleContainer:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+end
+
+function ChallengeLog:RefreshStoreLink()
+	self.bStoreLinkValid = StorefrontLib.IsLinkValid(StorefrontLib.CodeEnumStoreLink.Signature) 
+	
+	self:OnEntitlementUpdate({ nEntitlementId = AccountItemLib.CodeEnumEntitlement.Free })
+end
+
+function ChallengeLog:OnBecomeSignature(wndHandler, wndControl)
+	if wndHandler ~= wndControl then
+		return
+	end
+	
+	StorefrontLib.OpenLink(StorefrontLib.CodeEnumStoreLink.Signature)
+end
+
+function ChallengeLog:OnGenerateSignatureTooltip(wndHandler, wndControl)
+	if wndHandler ~= wndControl then
+		return
+	end
+
+	Tooltip.GetSignatureTooltipForm(self, wndControl, Apollo.GetString("Signature_RewardTrackTooltip"))
 end
 
 local ChallengeLogInst = ChallengeLog:new()

@@ -346,7 +346,7 @@ function GroupDisplayOptions:HelperInitializeWindows(tLootThreshold, strLuaNameI
 		wndCurr:SetName(strLuaNameId)
 		wndCurr:FindChild("SubOptionsBtnText"):SetText(strCurrData)
 	end
-	wndParent:ArrangeChildrenVert(0, function(a,b) return a:GetData() < b:GetData() end)
+	wndParent:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function(a,b) return a:GetData() < b:GetData() end)
 	wndParent:SetTooltip(GroupLib.AmILeader() and "" or "<P Font=\"CRB_InterfaceMedium\" TextColor=\"ff9d9d9d\">" .. Apollo.GetString("Group_PermissionsDisabledTooltip") .. "</P>")
 end
 

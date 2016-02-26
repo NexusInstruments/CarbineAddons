@@ -147,7 +147,7 @@ function RealmSelect:OnRealmListChanged()
 
 	-- Realm message of the day
 	self.arMessages = RealmSelectScreenLib.GetRealmMessages()
-	self.nMsgCount = #self.arMessages
+	self.nMsgCount = self.arMessages and #self.arMessages or 0
 	if self.nMsgCount == 0 then
 		self.wndMOTD:Show(false)
 	else
@@ -161,7 +161,7 @@ function RealmSelect:OnRealmListChanged()
 		strAllMessage = strAllMessage .. strMessage .. "\n"
 	end
 	
-	self.wndServerMessage:SetAML(string.format("<T Font=\"CRB_Interface10_B\" TextColor=\"xkcdBurntYellow\">%s</T>", strAllMessage))
+	self.wndServerMessage:SetAML(string.format("<T Font=\"CRB_Interface10_B\" TextColor=\"BurntYellow\">%s</T>", strAllMessage))
 	self.wndServerMessagesContainer:Show(string.len(strAllMessage or "") > 0)
 	local nWidth, nHeight = self.wndServerMessage:SetHeightToContentHeight()
 	local nLeft, nTop, nRight, nBottom = self.wndServerMessagesContainer:GetAnchorOffsets()
@@ -247,7 +247,7 @@ local tSortTypeFieldMap =
 
 function RealmSelect:SortList()
 	local this = self
-	self.wndRealmList:ArrangeChildrenVert(0, function(wndLeft, wndRight)
+	self.wndRealmList:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function(wndLeft, wndRight)
 		local tLeft = wndLeft:GetData()
 		local tRight = wndRight:GetData()
 
@@ -411,7 +411,7 @@ function RealmSelect:HelperConfigureRealmEntry(tRealm)
 		wndItem:FindChild("CharacterIcon"):Show(false)
 	end
 
-	wndItem:FindChild("VertSortContainer"):ArrangeChildrenVert(1)
+	wndItem:FindChild("VertSortContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.Middle)
 	wndItem:FindChild("HorzSortContainer"):ArrangeChildrenHorz()
 end
 

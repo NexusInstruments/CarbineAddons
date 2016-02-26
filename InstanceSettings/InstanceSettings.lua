@@ -89,22 +89,23 @@ function InstanceSettings:OnDocumentReady()
 end
 
 function InstanceSettings:OnShowRestricted()
-	self:DestroyAll()
+	self:CloseForms()
 	self.wndWaiting = Apollo.LoadForm(self.xmlDoc , "InstanceSettingsRestrictedForm", nil, self)
-	
+	self.wndWaiting:Invoke()
 	if self.locSavedRestrictedLoc then
 		self.wndWaiting:MoveToLocation(self.locSavedRestrictedLoc)
 	end
 end
 
 function InstanceSettings:OnShowDialog(tData)
-	self:DestroyAll()
+	self:CloseForms()
 	
 
 	self.bNormalIsAllowed = tData.bDifficultyNormal
 	self.bVeteranIsAllowed = tData.bDifficultyVeteran
 	self.bScalingIsAllowed = tData.bFlagsScaling
 	self.wndMain = Apollo.LoadForm(self.xmlDoc , "InstanceSettingsForm", nil, self)
+	self.wndMain:Invoke()
 	self.bHidingInterface = false
 	self.wndMain:FindChild("LevelScalingButton"):Enable(true)
 	self.wndMain:FindChild("LevelScalingButton"):Show(true)
@@ -188,8 +189,9 @@ end
 function InstanceSettings:OnPendingWorldRemovalWarning()
 	local nRemaining = GameLib.GetPendingRemovalWarningRemaining()
 	if nRemaining > 0 then
-		self:DestroyAll()
+		self:CloseForms()
 		self.wndPendingRemoval = Apollo.LoadForm(self.xmlDoc , "InstanceSettingsPendingRemoval", nil, self)
+		self.wndPendingRemoval:Invoke()
 		self.wndPendingRemoval:FindChild("RemovalCountdownLabel"):SetText(nRemaining)
 		self.wndPendingRemoval:SetData(nRemaining)
 		Apollo.CreateTimer("InstanceSettings_PendingRemovalTimer", 1, true)
@@ -198,6 +200,7 @@ end
 
 function InstanceSettings:OnPendingWorldRemovalCancel()
 	if self.wndPendingRemoval then
+		self.wndPendingRemoval:Close()
 		self.wndPendingRemoval:Destroy()
 	end
 	Apollo.StopTimer("InstanceSettings_PendingRemovalTimer")
@@ -275,7 +278,7 @@ function InstanceSettings:OnOK()
 	end
 
 	GameLib.SetInstanceSettings(eDifficulty, nRally)
-	self:DestroyAll()
+	self:CloseForms()
 end
 
 function InstanceSettings:OnReset()
@@ -292,8 +295,16 @@ function InstanceSettings:OnHideDialog(bNeedToNotifyServer)
 	end
 end
 
-function InstanceSettings:OnCancel()
+function InstanceSettings:OnWindowClosed()
 	self:OnHideDialog(true) -- we must tell the server about this 
+end
+
+function InstanceSettings:CloseForms()
+	if self.wndMain then
+		self.wndMain:Close()
+	elseif self.wndWaiting then
+		self.wndWaiting:Close()
+	end
 end
 
 function InstanceSettings:OnChangeWorld()

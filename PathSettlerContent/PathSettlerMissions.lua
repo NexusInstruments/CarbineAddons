@@ -152,7 +152,7 @@ function PathSettlerMissions:OnHubUpdateTimer()
 		end
 	end
 
-	wndHub:FindChild("StatsContainerContent"):ArrangeChildrenVert(0)
+	wndHub:FindChild("StatsContainerContent"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 	local strCount = ""
 	local strDescription = ""
@@ -204,7 +204,7 @@ function PathSettlerMissions:OnInfrastructureUpdateTimer()
 	wndHub:FindChild("ContributionsText"):SetText(string.format("<P Font=\"CRB_InterfaceSmall\" TextColor=\"%s\">%s</P>", crContributionsText, pmMission:GetSummary()))
 	wndHub:FindChild("ContributionsText"):SetHeightToContentHeight()
 
-	local nHeight = wndHub:FindChild("MissionContainer"):ArrangeChildrenVert(0)
+	local nHeight = wndHub:FindChild("MissionContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	local nLeft, nTop, nRight, nBottom = wndHub:FindChild("MissionContainer"):GetAnchorOffsets()
 	wndHub:FindChild("MissionContainer"):SetAnchorOffsets(nLeft, nTop, nRight, nTop + nHeight)
 	local nBGLeft, nBGTop, nBGRight, nBGBottom = wndHub:FindChild("InfraMissionBack"):GetAnchorOffsets()
@@ -362,7 +362,7 @@ function PathSettlerMissions:BuildChecklist(pmMission, tInfo)
 		end
 	end
 
-	self.wndMain:FindChild("ChecklistItemContainer"):ArrangeChildrenVert(0)
+	self.wndMain:FindChild("ChecklistItemContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function PathSettlerMissions:OnChecklistItemBtn(wndHandler, wndControl)

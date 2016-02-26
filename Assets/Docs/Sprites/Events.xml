@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Sprites>
+    <Sprite Name="sprEvent_Shade_Title_Localized" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_Event_ShadesEve_Title_Localized.tex" x0="0" x1="0" x2="1" x3="249" x4="250" x5="250" y0="0" y1="0" y2="1" y3="214" y4="215" y5="215" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprEvent_Winterfest_Frame" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_Event_Frame.tex" x0="401" x1="401" x2="401" x3="401" x4="401" x5="787" y0="9" y1="221" y2="313" y3="313" y4="313" y5="416" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprEvent_Shade_Frame" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_Event_Frame.tex" x0="5" x1="5" x2="5" x3="5" x4="5" x5="391" y0="14" y1="170" y2="318" y3="318" y4="318" y5="421" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+</Sprites>

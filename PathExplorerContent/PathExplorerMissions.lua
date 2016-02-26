@@ -170,7 +170,7 @@ function PathExplorerMissions:OnClaimUpdateTimer() -- TODO: Merge these into one
 	self.wndMain:FindChild("ClaimLocateButton"):Enable(tNodeInfo.fRatio < 1)
 	self.wndMain:FindChild("ClaimLocateButtonShade"):Show(tNodeInfo.fRatio >= 1)
 	self.wndMain:FindChild("ClaimTitle"):SetText(String_GetWeaselString(Apollo.GetString("FloatText_MissionProgress"), pmClaimMission:GetName(), pmClaimMission:GetNumCompleted(), pmClaimMission:GetNumNeeded()))
-	self.wndMain:FindChild("ClaimArrangeHorz"):ArrangeChildrenHorz(1)
+	self.wndMain:FindChild("ClaimArrangeHorz"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.Middle)
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -249,14 +249,14 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function PathExplorerMissions:OnHuntCloseBtn()
-	self.wndExplorerHuntNotice:Show(false)
+	self.wndExplorerHuntNotice:Close()
 end
 
 function PathExplorerMissions:DisplayExplorerHuntNotice(pmMission)
     if pmMission:GetNumNeeded() == 0 then return end
 
     local unitCreature = pmMission:GetExplorerHuntStartCreature()
-	self.wndExplorerHuntNotice:Show(true)
+	self.wndExplorerHuntNotice:Invoke()
 	self.wndExplorerHuntNotice:SetData(pmMission)
 	self.wndExplorerHuntNotice:FindChild("HuntCloseBtn"):SetData(0)
 	self.wndExplorerHuntNotice:FindChild("HuntHeader"):SetText(Creature_GetName(unitCreature))
@@ -277,7 +277,7 @@ function PathExplorerMissions:PlayerPathExplorerHuntNoticeUpdate()
 	end
 
 	if nCurrentClue >= nMaxNumClue then
-		self.wndExplorerHuntNotice:Show(false)
+		self.wndExplorerHuntNotice:Close()
 	else
 		self.wndExplorerHuntNotice:FindChild("HuntCloseBtn"):SetData(nCurrentClue + 1)
 		self.wndExplorerHuntNotice:FindChild("HuntDescription"):SetText(String_GetWeaselString(Apollo.GetString("ExplorerMissions_ClueDescription"), nCurrentClue + 1, nMaxNumClue, pmMission:GetExplorerClueString(nCurrentClue)))
@@ -350,9 +350,9 @@ function PathExplorerMissions:OnScavengerUpdateTimer()
 			wndCurr:SetAnchorOffsets(nLeft, nTop, nRight, nBottom2 + 8)
 		end
 
-		wndCurr:FindChild("ScavengerClueItemBG"):ArrangeChildrenHorz(0)
+		wndCurr:FindChild("ScavengerClueItemBG"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	end
-	wndScav:FindChild("ScavClueContainer"):ArrangeChildrenVert(0)
+	wndScav:FindChild("ScavClueContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	wndScav:FindChild("ScavClueContainer"):SetVScrollPos(nVScrollPos)
 
 	-- Bucket
@@ -454,7 +454,7 @@ function PathExplorerMissions:OnPowerMapUpdateTimer()
 	-- Range Text and Range Finder on Target
 	self:PositionPowerMapRangeFinder(self.wndPowerMapRangeFinder, self.wndPowerMapRangeFinder:GetData(), tPowerMap.bIsWaiting, tPowerMap.fRatio)
 
-	--wndPowerMapContainer:ArrangeChildrenVert(1)
+	--wndPowerMapContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.Middle)
 end
 
 function PathExplorerMissions:PositionPowerMapRangeFinder(wndPowerMapRangeFinder, unitTarget, bIsWaiting, nRatio)

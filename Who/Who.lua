@@ -115,7 +115,7 @@ function Who:OnLoad()
 	
 	Apollo.RegisterEventHandler("Group_Join", 					"HelperDelayResetUI", self)
 	Apollo.RegisterEventHandler("Group_Left", 					"HelperDelayResetUI", self)
-	Apollo.RegisterEventHandler("Group_FlagsChanged", 			"HelperDelayResetUI", self)
+	Apollo.RegisterEventHandler("Group_FlagsChanged", 		"HelperDelayResetUI", self)
 	
 	self.wndObjectiveTracker = nil
 	self.nWhoSort = karSortTypes.NameAsc
@@ -183,7 +183,8 @@ function Who:OnDocumentReady()
 	
 	self:Initialize()
 	
-	return true
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 end
 
 function Who:OnInterfaceMenuListHasLoaded()
@@ -221,6 +222,13 @@ function Who:OnObjectiveTrackerLoaded(wndForm)
 end
 
 function Who:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", 
+		{
+			wnd = self.tWndRefs.wndMain, 
+			strName = Apollo.GetString("Who_WindowTitle"), 
+			nSaveVersion = 1
+		}
+	)
 	Event_FireGenericEvent("WindowManagementAdd", 
 		{
 			wnd = self.tWndRefs.wndMain, 
@@ -229,6 +237,13 @@ function Who:OnWindowManagementReady()
 		}
 	)
 	
+	Event_FireGenericEvent("WindowManagementRegister", 
+		{
+			wnd = self.tWndRefs.wndPlayerForm, 
+			strName = Apollo.GetString("Who_NearbyFloater"), 
+			nSaveVersion = 1
+		}
+	)
 	Event_FireGenericEvent("WindowManagementAdd", 
 		{
 			wnd = self.tWndRefs.wndPlayerForm, 
@@ -359,14 +374,18 @@ function Who:OnWhoResponse(arResponse, eWhoResult, strResponse)
 	
 	self.bShowSearchResults = true
 	self:HelperResetUI()
-	self.tWndRefs.wndMain:Show(true)
+	self.tWndRefs.wndMain:Invoke()
 end
 
 function Who:OnWhoButtonClicked(wndHandler, wndControl)
 	self.bShowSearchResults = false
 	
 	self:HelperResetUI()
-	self.tWndRefs.wndMain:Show(not self.tWndRefs.wndMain:IsShown())
+	if not self.tWndRefs.wndMain:IsShown() then
+		self.tWndRefs.wndMain:Invoke()
+	else
+		self.tWndRefs.wndMain:Close()
+	end
 end
 
 function Who:OnToggleShowNearbyPlayers()
@@ -400,6 +419,11 @@ function Who:HelperDelayResetUI()
 end
 
 function Who:HelperResetUI()
+	-- if this form hasn't loaded then none should be loaded so exit early
+	if self.tWndRefs.wndMain == nil then
+		return
+	end
+	
 	self.bTimerRunning = false
 	self.timer:Stop()
 	
@@ -469,6 +493,7 @@ function Who:HelperResetUI()
 			local strLocation = strSubZone and string.format("%s: %s", tResult.strZone, strSubZone) or tResult.strZone
 			
 			local wndFormWhoListItem = self:FactoryProduce(self.tWndRefs.wndFormWhoContent, "WhoListItem", tResult)
+			
 			wndFormWhoListItem:FindChild("ListItemBig"):SetBGColor(ApolloColor.new(nWhoCount % 2 == 1 and "33ffffff" or "00ffffff"))
 			wndFormWhoListItem:FindChild("ListItemName"):SetText(tResult.strName)
 			wndFormWhoListItem:FindChild("ListItemLocation"):SetText(strLocation)
@@ -520,6 +545,10 @@ function Who:HelperResetUI()
 		
 		local nRowCount = 0
 		local unitPlayer = GameLib:GetPlayerUnit()
+		if unitPlayer == nil then
+			return
+		end
+
 		for unitName, unit in ipairs(tNearbyPlayers) do
 			nRowCount = nRowCount + 1
 			local strClassIconSprite = ktClassToIconPanel[unit:GetClassId()] or ""
@@ -566,6 +595,7 @@ function Who:HelperResetUI()
 			nRivals = unit:IsRival() and nRivals + 1 or nRivals + 0
 			
 			local wndTrackerListItem = self:FactoryProduce(wndParentContent, "TrackerListItem", unit)
+			self:HelperSelectInteractHintArrowObject(unit, wndTrackerListItem:FindChild("ListItemBigBtn"))
 			wndTrackerListItem:FindChild("ListItemBigBtn"):SetData(unit)
 			wndTrackerListItem:FindChild("ListItemName"):SetText(unit:GetName())
 			wndTrackerListItem:FindChild("ListItemName"):SetTextColor(strColor)
@@ -626,6 +656,18 @@ function Who:HelperResetUI()
 	}
 
 	Event_FireGenericEvent("ObjectiveTracker_UpdateAddOn", tData)
+end
+
+function Who:HelperSelectInteractHintArrowObject(oCur, wndBtn)
+	local oInteractObject = GameLib.GetInteractHintArrowObject()
+	if not oInteractObject or oInteractObject and (oInteractObject.eHintArrowType == GameLib.CodeEnumHintType.None) then
+		return
+	end
+
+	local bIsInteractHintArrowObject = oInteractObject.objTarget and oInteractObject.objTarget == oCur
+	if bIsInteractHintArrowObject and not wndBtn:IsChecked() then
+		wndBtn:SetCheck(true)
+	end
 end
 
 function Who:OnWhoSortToggle(wndHandler, wndControl)	
@@ -730,7 +772,7 @@ function Who:OnResizeContainer(wndEpisodeGroup, bIsShown)
 		end
 	end
 
-	wndEpisodeGroupContainer:ArrangeChildrenVert(0)
+	wndEpisodeGroupContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	
 	local nLeft, nTop, nRight, nBottom = wndEpisodeGroup:GetAnchorOffsets()
 	wndEpisodeGroup:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nOngoingGroupHeight)
@@ -823,6 +865,7 @@ function Who:OnListItemClicked(wndHandler, wndControl, eMouseButton, x, y)
 	else
 		GameLib.SetTargetUnit(unit)
 		unit:ShowHintArrow()
+		GameLib.SetInteractHintArrowObject(unit) 
 	end
 end
 

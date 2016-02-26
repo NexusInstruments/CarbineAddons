@@ -68,7 +68,7 @@ function Stuck:RedrawCooldowns()
 		self.wndMain:FindChild("HomeButton"):Enable(nHomeTime == 0)
 		self.wndMain:FindChild("HomeButton"):Show(HousingLib.IsResidenceOwner())
 		self.wndMain:FindChild("HomeCooldownText"):SetText(self:HelperConvertTimeToString(nHomeTime))
-		self.wndMain:FindChild("ArrangeHorz"):ArrangeChildrenHorz(1)
+		self.wndMain:FindChild("ArrangeHorz"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.Middle)
 		Apollo.StartTimer("Stuck_OneSecondTimer")
 	end
 end

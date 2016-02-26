@@ -58,8 +58,6 @@ function MasterLoot:OnDocumentReady()
 		return
 	end
 
-	Apollo.RegisterEventHandler("WindowManagementReady", 		"OnWindowManagementReady", self)
-
 	Apollo.RegisterEventHandler("MasterLootUpdate",				"OnMasterLootUpdate", self)
 	Apollo.RegisterEventHandler("LootAssigned",					"OnLootAssigned", self)
 
@@ -86,9 +84,13 @@ function MasterLoot:OnDocumentReady()
 	self.wndLooter:Show(false)
 
 	self.tOld_MasterLootList = {}
+
+	Apollo.RegisterEventHandler("WindowManagementReady", 		"OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 end
 
 function MasterLoot:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", { strName = Apollo.GetString("Group_MasterLoot"), nSaveVersion = 1 })
 	Event_FireGenericEvent("WindowManagementAdd", { wnd = self.wndMasterLoot, strName = Apollo.GetString("Group_MasterLoot"), nSaveVersion = 1 })
 end
 

@@ -10,7 +10,6 @@ require "AchievementsLib"
 require "PlayerPathLib"
 
 local Achievements = {}
-local knWindowOffset = 10
 local knDesignerPadding = 4 -- To offset ProgressBar in achievement view
 local knChecklistPadding = 25 -- To pad between achievement description and bullet points
 
@@ -27,244 +26,12 @@ local ktRomanNumeralMap =
     M = 1000,
 }
 
-local knCategoryPathType = 9
-local ktPathIconText =
+local ktPathIconsText =
 {
 	[PlayerPathLib.PlayerPathType_Soldier] 		= "IconSprites:Icon_Achievement_Achievement_Path_Soldier",
 	[PlayerPathLib.PlayerPathType_Settler] 		= "IconSprites:Icon_Achievement_Achievement_Path_Settler",
 	[PlayerPathLib.PlayerPathType_Scientist] 	= "IconSprites:Icon_Achievement_Achievement_Path_Scientist",
 	[PlayerPathLib.PlayerPathType_Explorer] 	= "IconSprites:Icon_Achievement_Achievement_Path_Explorer",
-}
-
-local ktAchievementIconsText =
-{
-	[1	]		= "IconSprites:Icon_Achievement_Achievement_Exploration",
-	[2	]		= "IconSprites:Icon_Achievement_Achievement_GenericAchievement",
-	[3	]		= "IconSprites:Icon_Achievement_Achievement_Quest",
-	[4	]		= "IconSprites:Icon_Achievement_Achievement_Combat",
-	[7	]		= "IconSprites:Icon_Achievement_Achievement_PvP",
-	[8	]		= "IconSprites:Icon_Achievement_Achievement_MetaAchievement",
-	[10	]		= "IconSprites:Icon_Achievement_Achievement_Datacube",
-	[11	]		= "IconSprites:Icon_Achievement_Achievement_Reputation",
-	[12	]		= "IconSprites:Icon_Achievement_Achievement_GenericAchievement",
-	[13	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_WeaponCrafting",
-	[14	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Armorer",
-	[15	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Outfitter",
-	[16	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Tailor",
-	[19	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_WeaponCrafting",
-	[20	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_WeaponCrafting",
-	[21	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_WeaponCrafting",
-	[22	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_WeaponCrafting",
-	[23	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_WeaponCrafting",
-	[25	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Armorer",
-	[26	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Armorer",
-	[27	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Armorer",
-	[28	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Armorer",
-	[29	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Armorer",
-	[31	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Outfitter",
-	[32	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Outfitter",
-	[33	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Outfitter",
-	[34	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Tailor",
-	[35	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Tailor",
-	[36	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Architect",
-	[37	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Architect",
-	[38	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Technologist",
-	[39	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Technologist",
-	[41	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Outfitter",
-	[42	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Outfitter",
-	[43	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Tailor",
-	[44	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Tailor",
-	[45	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Tailor",
-	[47	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Cooking",
-	[57	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Architect",
-	[58	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Architect",
-	[59	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Architect",
-	[54	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Technologist",
-	[55	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Technologist",
-	[56	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Technologist",
-	[65	]		= "IconSprites:Icon_Achievement_Achievement_Dungeon",
-	[66	]		= "IconSprites:Icon_Achievement_Achievement_Dungeon",
-	[67	]		= "IconSprites:Icon_Achievement_Achievement_Dungeon",
-	[68	]		= "IconSprites:Icon_Achievement_Achievement_Dungeon",
-	[70	]		= "IconSprites:Icon_Achievement_Achievement_PvP",
-	[71	]		= "IconSprites:Icon_Achievement_Achievement_PvP",
-	[76	]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Cooking",
-	[79	]		= "IconSprites:Icon_Achievement_Achievement_Adventures",
-	[80	]		= "IconSprites:Icon_Achievement_Achievement_Adventures",
-	[81	]		= "IconSprites:Icon_Achievement_Achievement_Adventures",
-	[82	]		= "IconSprites:Icon_Achievement_Achievement_Adventures",
-	[83	]		= "IconSprites:Icon_Achievement_Achievement_Adventures",
-	[84	]		= "IconSprites:Icon_Achievement_Achievement_Adventures",
-	[85	]		= "IconSprites:Icon_Achievement_Achievement_Adventures",
-	[86	]		= "IconSprites:Icon_Achievement_Achievement_Adventures",
-	[87	]		= "IconSprites:Icon_Achievement_Achievement_Adventures",
-	[88	]		= "IconSprites:Icon_Achievement_Achievement_Adventures",
-	[89	]		= "IconSprites:Icon_Achievement_Achievement_Adventures",
-	[90	]		= "IconSprites:Icon_Achievement_Achievement_Adventures",
-	[91	]		= "IconSprites:Icon_Achievement_Achievement_Adventures",
-	[92	]		= "IconSprites:Icon_Achievement_Achievement_Adventures",
-	[94	]		= "IconSprites:Icon_Achievement_Achievement_Adventures",
-	[95	]		= "IconSprites:Icon_Achievement_Achievement_Adventures",
-	[149]		= "IconSprites:Icon_Achievement_Achievement_PvP",
-	[150]		= "IconSprites:Icon_Achievement_Achievement_PvP",
-	[153]		= "IconSprites:Icon_Achievement_Achievement_PvP",
-	[154]		= "IconSprites:Icon_Achievement_Achievement_PvP",
-	[155]		= "IconSprites:Icon_Achievement_Achievement_PvP",
-	[156]		= "IconSprites:Icon_Achievement_Achievement_PvP",
-	[158]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Survivalist",
-	[159]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Miner",
-	[160]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_RelicHunter",
-	[161]		= "IconSprites:Icon_Achievement_Achievement_Challenges",
-	[162]		= "IconSprites:Icon_Achievement_Achievement_Shiphand",
-	[163]		= "IconSprites:Icon_Achievement_Achievement_PublicEvent",
-	[164]		= "IconSprites:Icon_Achievement_Achievement_Raid",
-	[165]		= "IconSprites:Icon_Achievement_Achievement_Raid",
-	[166]		= "IconSprites:Icon_Achievement_Achievement_Dungeon",
-	[167]		= "IconSprites:Icon_Achievement_Achievement_Dungeon",
-	[168]		= "IconSprites:Icon_Achievement_Achievement_Dungeon",
-	[169]		= "IconSprites:Icon_Achievement_Achievement_Dungeon",
-	[170]		= "IconSprites:Icon_Achievement_Achievement_Dungeon",
-	[171]		= "IconSprites:Icon_Achievement_Achievement_Dungeon",
-	[172]		= "IconSprites:Icon_Achievement_Achievement_Dungeon",
-	[173]		= "IconSprites:Icon_Achievement_Achievement_Dungeon",
-	[174]		= "IconSprites:Icon_Achievement_Achievement_Dungeon",
-	[175]		= "IconSprites:Icon_Achievement_Achievement_WorldEvent",
-	[176]		= "IconSprites:Icon_Achievement_Achievement_Quest",
-	[177]		= "IconSprites:Icon_Achievement_Achievement_Quest",
-	[178]		= "IconSprites:Icon_Achievement_Achievement_Quest",
-	[179]		= "IconSprites:Icon_Achievement_Achievement_Quest",
-	[180]		= "IconSprites:Icon_Achievement_Achievement_Quest",
-	[181]		= "IconSprites:Icon_Achievement_Achievement_Quest",
-	[182]		= "IconSprites:Icon_Achievement_Achievement_Quest",
-	[183]		= "IconSprites:Icon_Achievement_Achievement_Quest",
-	[184]		= "IconSprites:Icon_Achievement_Achievement_Quest",
-	[185]		= "IconSprites:Icon_Achievement_Achievement_Quest",
-	[186]		= "IconSprites:Icon_Achievement_Achievement_Quest",
-	[187]		= "IconSprites:Icon_Achievement_Achievement_Quest",
-	[188]		= "IconSprites:Icon_Achievement_Achievement_Quest",
-	[189]		= "IconSprites:Icon_Achievement_Achievement_Quest",
-	[190]		= "IconSprites:Icon_Achievement_Achievement_Quest",
-	[191]		= "IconSprites:Icon_Achievement_Achievement_Exploration",
-	[192]		= "IconSprites:Icon_Achievement_Achievement_Exploration",
-	[193]		= "IconSprites:Icon_Achievement_Achievement_Exploration",
-	[194]		= "IconSprites:Icon_Achievement_Achievement_Exploration",
-	[195]		= "IconSprites:Icon_Achievement_Achievement_Exploration",
-	[196]		= "IconSprites:Icon_Achievement_Achievement_Exploration",
-	[197]		= "IconSprites:Icon_Achievement_Achievement_Exploration",
-	[198]		= "IconSprites:Icon_Achievement_Achievement_Exploration",
-	[199]		= "IconSprites:Icon_Achievement_Achievement_Exploration",
-	[200]		= "IconSprites:Icon_Achievement_Achievement_Exploration",
-	[201]		= "IconSprites:Icon_Achievement_Achievement_Exploration",
-	[202]		= "IconSprites:Icon_Achievement_Achievement_Exploration",
-	[203]		= "IconSprites:Icon_Achievement_Achievement_Exploration",
-	[204]		= "IconSprites:Icon_Achievement_Achievement_Exploration",
-	[205]		= "IconSprites:Icon_Achievement_Achievement_Exploration",
-	[206]		= "IconSprites:Icon_Achievement_Achievement_Exploration",
-	[207]		= "IconSprites:Icon_Achievement_Achievement_Exploration",
-	[208]		= "IconSprites:Icon_Achievement_Achievement_Combat",
-	[209]		= "IconSprites:Icon_Achievement_Achievement_Combat",
-	[210]		= "IconSprites:Icon_Achievement_Achievement_Combat",
-	[211]		= "IconSprites:Icon_Achievement_Achievement_Combat",
-	[212]		= "IconSprites:Icon_Achievement_Achievement_Combat",
-	[213]		= "IconSprites:Icon_Achievement_Achievement_Combat",
-	[214]		= "IconSprites:Icon_Achievement_Achievement_Combat",
-	[215]		= "IconSprites:Icon_Achievement_Achievement_Combat",
-	[216]		= "IconSprites:Icon_Achievement_Achievement_Combat",
-	[217]		= "IconSprites:Icon_Achievement_Achievement_Combat",
-	[218]		= "IconSprites:Icon_Achievement_Achievement_Combat",
-	[219]		= "IconSprites:Icon_Achievement_Achievement_Combat",
-	[220]		= "IconSprites:Icon_Achievement_Achievement_Combat",
-	[221]		= "IconSprites:Icon_Achievement_Achievement_Combat",
-	[222]		= "IconSprites:Icon_Achievement_Achievement_Combat",
-	[224]		= "IconSprites:Icon_Achievement_Achievement_PublicEvent",
-	[225]		= "IconSprites:Icon_Achievement_Achievement_PublicEvent",
-	[226]		= "IconSprites:Icon_Achievement_Achievement_PublicEvent",
-	[227]		= "IconSprites:Icon_Achievement_Achievement_PublicEvent",
-	[228]		= "IconSprites:Icon_Achievement_Achievement_PublicEvent",
-	[229]		= "IconSprites:Icon_Achievement_Achievement_PublicEvent",
-	[230]		= "IconSprites:Icon_Achievement_Achievement_PublicEvent",
-	[231]		= "IconSprites:Icon_Achievement_Achievement_PublicEvent",
-	[232]		= "IconSprites:Icon_Achievement_Achievement_PublicEvent",
-	[233]		= "IconSprites:Icon_Achievement_Achievement_PublicEvent",
-	[234]		= "IconSprites:Icon_Achievement_Achievement_PublicEvent",
-	[235]		= "IconSprites:Icon_Achievement_Achievement_PublicEvent",
-	[236]		= "IconSprites:Icon_Achievement_Achievement_PublicEvent",
-	[237]		= "IconSprites:Icon_Achievement_Achievement_PublicEvent",
-	[238]		= "IconSprites:Icon_Achievement_Achievement_PublicEvent",
-	[244]		= "IconSprites:Icon_Achievement_Achievement_Reputation",
-	[245]		= "IconSprites:Icon_Achievement_Achievement_Reputation",
-	[246]		= "IconSprites:Icon_Achievement_Achievement_Reputation",
-	[247]		= "IconSprites:Icon_Achievement_Achievement_Reputation",
-	[248]		= "IconSprites:Icon_Achievement_Achievement_Reputation",
-	[249]		= "IconSprites:Icon_Achievement_Achievement_Reputation",
-	[250]		= "IconSprites:Icon_Achievement_Achievement_Reputation",
-	[251]		= "IconSprites:Icon_Achievement_Achievement_Reputation",
-	[252]		= "IconSprites:Icon_Achievement_Achievement_Reputation",
-	[253]		= "IconSprites:Icon_Achievement_Achievement_Reputation",
-	[254]		= "IconSprites:Icon_Achievement_Achievement_Reputation",
-	[281]		= "IconSprites:Icon_Achievement_Achievement_Social",
-	[282]		= "IconSprites:Icon_Achievement_Achievement_Combat",
-	[283]		= "IconSprites:Icon_Achievement_Achievement_Combat",
-	[284]		= "IconSprites:Icon_Achievement_Achievement_ServerWide_General",
-	[290]		= "IconSprites:Icon_Achievement_Achievement_GenericAchievement",
-	[259]		= "IconSprites:Icon_Achievement_Achievement_Challenges",
-	[260]		= "IconSprites:Icon_Achievement_Achievement_Challenges",
-	[261]		= "IconSprites:Icon_Achievement_Achievement_Challenges",
-	[262]		= "IconSprites:Icon_Achievement_Achievement_Challenges",
-	[263]		= "IconSprites:Icon_Achievement_Achievement_Challenges",
-	[264]		= "IconSprites:Icon_Achievement_Achievement_Challenges",
-	[265]		= "IconSprites:Icon_Achievement_Achievement_Challenges",
-	[266]		= "IconSprites:Icon_Achievement_Achievement_Challenges",
-	[267]		= "IconSprites:Icon_Achievement_Achievement_Challenges",
-	[268]		= "IconSprites:Icon_Achievement_Achievement_Challenges",
-	[269]		= "IconSprites:Icon_Achievement_Achievement_Challenges",
-	[272]		= "IconSprites:Icon_Achievement_Achievement_Challenges",
-	[273]		= "IconSprites:Icon_Achievement_Achievement_Challenges",
-	[274]		= "IconSprites:Icon_Achievement_Achievement_Shiphand",
-	[275]		= "IconSprites:Icon_Achievement_Achievement_Shiphand",
-	[276]		= "IconSprites:Icon_Achievement_Achievement_Shiphand",
-	[277]		= "IconSprites:Icon_Achievement_Achievement_Shiphand",
-	[278]		= "IconSprites:Icon_Achievement_Achievement_Shiphand",
-	[279]		= "IconSprites:Icon_Achievement_Achievement_Shiphand",
-	[285]		= "IconSprites:Icon_Achievement_Achievement_PvP",
-	[286]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_WeaponCrafting",
-	[287]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Armorer",
-	[288]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Outfitter",
-	[289]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Tailor",
-	[293]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Architect",
-	[294]		= "IconSprites:Icon_Achievement_Achievement_Tradeskill_Architect",
-	[239]		= "IconSprites:Icon_Achievement_Achievement_Raid",
-	[295]		= "IconSprites:Icon_Achievement_Achievement_Combat",
-	[297]		= "IconSprites:Icon_Achievement_Achievement_Raid",
-	[298]		= "IconSprites:Icon_Achievement_Achievement_Quest",
-	[299]		= "IconSprites:Icon_Achievement_Achievement_Exploration",
-	[300]		= "IconSprites:Icon_Achievement_Achievement_Combat",
-	[301]		= "IconSprites:Icon_Achievement_Achievement_PublicEvent", -- Public Event The Defile
-	[302]		= "IconSprites:Icon_Achievement_Achievement_Reputation",
-	[303]		= "IconSprites:Icon_Achievement_Achievement_Challenges",
-	[307]		= "IconSprites:Icon_Achievement_Achievement_GenericAchievement",
-	[308]		= "IconSprites:Icon_Achievement_Achievement_GenericAchievement",
-	[309]		= "IconSprites:Icon_Achievement_Achievement_Reputation",
-	[310]		= "IconSprites:Icon_Achievement_Achievement_Combat",
-	[311]		= "IconSprites:Icon_Achievement_Achievement_Challenges",
-	[312]		= "IconSprites:Icon_Achievement_Achievement_Quest",
-	[313]		= "IconSprites:Icon_Achievement_Achievement_Exploration",
-	[314]		= "IconSprites:Icon_Achievement_Achievement_Raid",
-	[315]		= "IconSprites:Icon_Achievement_Achievement_Raid",
-	[316]		= "IconSprites:Icon_Achievement_Achievement_Raid",
-	[317]		= "IconSprites:Icon_Achievement_Achievement_Raid", --PROTOGAMES!
-	[318]		= "IconSprites:Icon_Achievement_Achievement_Quest", -- Quest The Defile
-	[319]		= "IconSprites:Icon_Achievement_Achievement_Exploration", -- Exploration The Defile
-	[320]		= "IconSprites:Icon_Achievement_Achievement_Combat", -- Kill The Defile
-	[321]		= "IconSprites:Icon_Achievement_Achievement_PublicEvent", -- Public Event The Defile
-	[322]		= "IconSprites:Icon_Achievement_Achievement_Reputation", -- Reputation The Defile
-	[323]		= "IconSprites:Icon_Achievement_Achievement_Challenges", --Challeneges The Defile
-	[325]		= "IconSprites:Icon_Achievement_Achievement_Raid", --Augmentors Raid
-	[326]		= "IconSprites:Icon_Achievement_Achievement_Raid", -- Datascape 40
-	[329]		= "IconSprites:Icon_Achievement_Achievement_Shiphand",
-	[331]		= "IconSprites:Icon_Achievement_Achievement_Contract",
-	[332]		= "IconSprites:Icon_Achievement_Achievement_Contract",
-	[333]		= "IconSprites:Icon_Achievement_Achievement_Contract",
 }
 
 function Achievements:new(o)
@@ -300,6 +67,31 @@ function Achievements:OnDocumentReady()
 	Apollo.RegisterEventHandler("AchievementGranted", 			"OnAchievementGranted", self)
 
 	self.wndLastTopGroupSelected = nil
+	
+	self.tAchievementIconsText =
+	{
+		[AchievementsLib.CodeEnumAchievementCategory.Exploration] 		= "IconSprites:Icon_Achievement_Achievement_Exploration",
+		[AchievementsLib.CodeEnumAchievementCategory.Collection] 		= "IconSprites:Icon_Achievement_Achievement_GenericAchievement",
+		[AchievementsLib.CodeEnumAchievementCategory.Quest] 			= "IconSprites:Icon_Achievement_Achievement_Quest",
+		[AchievementsLib.CodeEnumAchievementCategory.Kill] 				= "IconSprites:Icon_Achievement_Achievement_Combat",
+		[AchievementsLib.CodeEnumAchievementCategory.PVP] 				= "IconSprites:Icon_Achievement_Achievement_PvP",
+		[AchievementsLib.CodeEnumAchievementCategory.Meta] 				= "IconSprites:Icon_Achievement_Achievement_MetaAchievement",
+		[AchievementsLib.CodeEnumAchievementCategory.Datacube] 			= "IconSprites:Icon_Achievement_Achievement_Datacube",
+		[AchievementsLib.CodeEnumAchievementCategory.Reputation] 		= "IconSprites:Icon_Achievement_Achievement_Reputation",
+		[AchievementsLib.CodeEnumAchievementCategory.General] 			= "IconSprites:Icon_Achievement_Achievement_GenericAchievement",
+		[AchievementsLib.CodeEnumAchievementCategory.Dungeons] 			= "IconSprites:Icon_Achievement_Achievement_Dungeon",
+		[AchievementsLib.CodeEnumAchievementCategory.Adventures] 		= "IconSprites:Icon_Achievement_Achievement_Adventures",
+		[AchievementsLib.CodeEnumAchievementCategory.Challenges] 		= "IconSprites:Icon_Achievement_Achievement_Challenges",
+		[AchievementsLib.CodeEnumAchievementCategory.Expedition] 		= "IconSprites:Icon_Achievement_Achievement_Shiphand",
+		[AchievementsLib.CodeEnumAchievementCategory.PublicEvent] 		= "IconSprites:Icon_Achievement_Achievement_PublicEvent",
+		[AchievementsLib.CodeEnumAchievementCategory.Raids] 			= "IconSprites:Icon_Achievement_Achievement_Raid",
+		[AchievementsLib.CodeEnumAchievementCategory.WorldStory]		= "IconSprites:Icon_Achievement_Achievement_WorldEvent",
+		[AchievementsLib.CodeEnumAchievementCategory.Social]			= "IconSprites:Icon_Achievement_Achievement_Social",
+		[AchievementsLib.CodeEnumAchievementCategory.Hotshot]			= "IconSprites:Icon_Achievement_Achievement_ServerWide_General",
+		[AchievementsLib.CodeEnumAchievementCategory.ItemImbuements]	= "IconSprites:Icon_Achievement_Achievement_GenericAchievement",
+		[AchievementsLib.CodeEnumAchievementCategory.LiveEvents]		= "IconSprites:Icon_Achievement_Achievement_GenericAchievement",
+		[AchievementsLib.CodeEnumAchievementCategory.Contracts]			= "IconSprites:Icon_Achievement_Achievement_Contract",
+	}
 end
 
 function Achievements:OnInterfaceMenuListHasLoaded()
@@ -428,7 +220,7 @@ function Achievements:BuildCategoryTree()
 			wndMiddleGroup:SetData(tMiddleLevel.nGroupId)
 			wndMiddleGroup:FindChild("MiddleExpandBtn"):SetData(wndMiddleGroup)
 			wndMiddleGroup:FindChild("MiddleExpandBtn"):Show(tMiddleLevel and #tMiddleLevel.tSubGroups > 0 and false)
-			wndMidContents:ArrangeChildrenVert(0)
+			wndMidContents:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 		end
 
 		local bTopGroupHasChildren = #wndTopContents:GetChildren() > 0
@@ -438,7 +230,7 @@ function Achievements:BuildCategoryTree()
 		wndTopGroupBtn:ChangeArt(bTopGroupHasChildren and "BK3:btnMetal_ExpandMenu_Large" or "BK3:btnMetal_ExpandMenu_LargeClean")
 
 		wndTopGroup:SetData(tTopLevel.nCategoryId)
-		wndTopContents:ArrangeChildrenVert(0)
+		wndTopContents:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	end
 
 	self:ResizeTree()
@@ -462,7 +254,7 @@ function Achievements:ResizeTree()
 				local nBottomHeight = 0
 				if wndMiddleGroup:FindChild("MiddleExpandBtn"):IsChecked() then
 					wndTopButton:SetCheck(true)
-					nBottomHeight = wndMiddleGroup:FindChild("GroupContents"):ArrangeChildrenVert(0)
+					nBottomHeight = wndMiddleGroup:FindChild("GroupContents"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 					if nBottomHeight > 0 then
 						nBottomHeight = nBottomHeight + 7
@@ -483,10 +275,10 @@ function Achievements:ResizeTree()
 
 		local nLeft, nTop, nRight, nBottom = wndTopGroup:GetAnchorOffsets()
 		wndTopGroup:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nMiddleHeight + self.nTopGroupHeight)
-		wndTopContents:ArrangeChildrenVert(0)
+		wndTopContents:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	end
 
-	wndLeftScroll:ArrangeChildrenVert(0)
+	wndLeftScroll:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	wndLeftScroll:SetVScrollPos(nVScrollPos)
 end
 
@@ -510,7 +302,7 @@ end
 function Achievements:OnTopGroupSelect(wndHandler, wndControl)
 	-- wndHandler is "TopGroupBtn" or self.wndSummaryGroup, and its data is {wndTopGroup, nCategoryId}
 	-- TODO: Quick hack: Both the select and unselect route here to simulate DisallowUnselect
-	if wndHandler == self.wndSummaryGroup:FindChild("TopGroupBtn") or self.wndLastTopGroupSelected == wndControl then
+	if wndHandler == self.wndSummaryGroup:FindChild("TopGroupBtn") or (wndControl ~= nil and self.wndLastTopGroupSelected == wndControl) then
 		self:LoadSummaryScreen()
 		self.wndLastTopGroupSelected = self.wndSummaryGroup:FindChild("TopGroupBtn")
 		return
@@ -622,10 +414,17 @@ function Achievements:LoadSummaryScreen() -- TODO: Figure out why this is being 
 	for idx, achUpdated in pairs(tRecent) do
 		local wndListItem = Apollo.LoadForm(self.xmlDoc, "RecentUpdateItem", wndRecentUpdateContainer, self)
 		wndListItem:FindChild("RecentUpdateBtn"):SetData(achUpdated)
+		
+		local achParentTier = achUpdated:GetParentTier()
+		local nCurrTierIndex = 1
+		while achParentTier ~= nil do
+			nCurrTierIndex = nCurrTierIndex + 1
+			achParentTier = achParentTier:GetParentTier()
+		end
 
 		local strAchieveName = achUpdated:GetName()
 		if achUpdated:GetChildTier() or achUpdated:GetParentTier() then
-			strAchieveName = String_GetWeaselString(Apollo.GetString("Achievements_IncompleteTitle"), achUpdated:GetName(), self:HelperNumberToRomanNumerals(idx))
+			strAchieveName = String_GetWeaselString(Apollo.GetString("Achievements_IncompleteTitle"), achUpdated:GetName(), self:HelperNumberToRomanNumerals(nCurrTierIndex))
 		end
 		wndListItem:FindChild("RecentUpdateName"):SetText(strAchieveName)
 
@@ -637,7 +436,7 @@ function Achievements:LoadSummaryScreen() -- TODO: Figure out why this is being 
 		end
 		wndListItem:FindChild("RecentUpdatePoints"):SetText(String_GetWeaselString(Apollo.GetString("Achievements_PointValue"), achUpdated:GetPoints()))
 	end
-	wndRecentUpdateContainer:ArrangeChildrenVert(0)
+	wndRecentUpdateContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 	-- Build overall progress
 	local tCategoryTree = AchievementsLib.GetAchievementCategoryTree(self.bShowGuild)
@@ -666,7 +465,7 @@ function Achievements:LoadSummaryScreen() -- TODO: Figure out why this is being 
 		wndCurr:FindChild("SummaryItemName"):SetText(tTopLevel.strCategoryName)
 		wndCurr:FindChild("SummaryItemStatus"):SetText(String_GetWeaselString(Apollo.GetString("CRB_Progress"), nComplete, nTotal))
 	end
-	wndSummaryContainer:ArrangeChildrenTiles(0, function(a,b) return (a:GetData() < b:GetData()) end) -- TODO: refactor, this is expensive
+	wndSummaryContainer:ArrangeChildrenTiles(Window.CodeEnumArrangeOrigin.LeftOrTop, function(a,b) return (a:GetData() < b:GetData()) end) -- TODO: refactor, this is expensive
 end
 
 function Achievements:OnRecentUpdateBtn(wndHandler, wndControl)
@@ -688,8 +487,21 @@ function Achievements:OnRecentUpdateBtn(wndHandler, wndControl)
 	wndOngoing:SetCheck(false)
 	wndComplete:SetCheck(false)
 
-	self:OnZoomToAchievementIfValid(wndHandler:GetData())
-	local wndTarget = wndRightScroll:FindChildByUserData(wndHandler:GetData())
+	local achAchievement = wndHandler:GetData()
+	self:OnZoomToAchievementIfValid(achAchievement)
+	
+	-- the achievement listing will use the current active tier, but we have the completed tier so get the first active child
+	local achChildTier = achAchievement:GetChildTier()
+	
+	while achChildTier ~= nil do
+		if not achChildTier:IsComplete() or not achChildTier:GetChildTier() then
+			achAchievement = achChildTier
+			break
+		end
+		achChildTier = achChildTier:GetChildTier()
+	end
+	
+	local wndTarget = wndRightScroll:FindChildByUserData(achAchievement)
 	wndRightScroll:EnsureChildVisible(wndTarget)
 end
 
@@ -821,15 +633,14 @@ function Achievements:BuildRightPanel()
 					wndCurrTier:FindChild("TierItemBtn"):SetCheck(true)
 
 					local achCurrent = wndCurrTier:GetData()
-					self:BuildSimpleAchievement(wndTop, achCurrent)
-					wndTop:SetData(achCurrent)
-
 					if not achCurrent:IsComplete() then
 						local strTitleText = String_GetWeaselString(Apollo.GetString("Achievements_IncompleteTitle"), achCurrent:GetName(), self:HelperNumberToRomanNumerals(idx))
 						wndTop:FindChild("AchievementExpanderBtn"):SetCheck(true)
 						wndTop:FindChild("TitleText"):SetText(strTitleText)
-						self:OnAchievementExpand(wndTop)
 					end
+					
+					self:BuildSimpleAchievement(wndTop, achCurrent)
+					wndTop:SetData(achCurrent)
 					break
 				end
 			end
@@ -837,7 +648,7 @@ function Achievements:BuildRightPanel()
 	end
 
 	self.wndMain:FindChild("RightEmptyMessage"):Show(#wndRightScroll:GetChildren() == 0)
-	wndRightScroll:ArrangeChildrenVert(0, function(a,b) return a:GetData():IsComplete() end)
+	wndRightScroll:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function(a,b) return a:GetData():IsComplete() end)
 	wndRightScroll:RecalculateContentExtents()
 end
 
@@ -860,16 +671,22 @@ function Achievements:BuildSimpleAchievement(wndContainer, achData)
 		wndContainer:FindChild("TitleText"):SetText(achData:GetName())
 	end
 	
-
-	local nId = achData:GetCategoryId()
+	local eBaseCategory = achData:GetCategoryId()
+	local eCategory = eBaseCategory
 	local strSprite = ""
-	if ktAchievementIconsText[nId] then
-		strSprite = ktAchievementIconsText[nId]
-	elseif nId == knCategoryPathType then
-		strSprite = ktPathIconText[GameLib.GetPlayerUnit():GetPlayerPathType()]
+	
+	while eCategory and eCategory ~= 0 and strSprite == "" do
+		if self.tAchievementIconsText[eCategory] then
+			strSprite = self.tAchievementIconsText[eCategory]
+		elseif eCategory == AchievementsLib.CodeEnumAchievementCategory.PlayerPath then
+			strSprite = ktPathIconsText[GameLib.GetPlayerUnit():GetPlayerPathType()]
+		end
+		
+		eCategory = AchievementsLib.GetCategoryParent(eCategory)		
 	end
 
-	if(strSprite) then
+	if strSprite then
+		self.tAchievementIconsText[eBaseCategory] = strSprite
 		wndContainer:FindChild("AchievementIcon"):SetSprite(strSprite)
 	end
 
@@ -921,7 +738,7 @@ function Achievements:BuildSimpleAchievement(wndContainer, achData)
 		wndReward:FindChild("LootIconPicture"):Show(true)
 		wndReward:FindChild("LootIconPicture"):SetTooltip(String_GetWeaselString(Apollo.GetString("Achievements_RewardTitle"), tRewards.strTitle:GetTitle()))
 	end
-	wndContainer:FindChild("RewardsContainer"):ArrangeChildrenHorz(2)
+	wndContainer:FindChild("RewardsContainer"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.RightOrBottom)
 	
 	wndContainer:SetData(achData)
 	self:ResizeHelper(wndContainer)
@@ -935,16 +752,14 @@ end
 
 function Achievements:UpdateChecklistAchievement(achData, wndContainer)
 	local wndChecklist = wndContainer:FindChild("AchievementExtraContainer:ChecklistGrid")
+	if not achData:IsComplete() then
+		wndContainer:FindChild("AchievementExpanderBtn"):SetCheck(true)
+	end
 	self:BuildSimpleAchievement(wndContainer, achData)
 	wndContainer:SetData(achData)
 
 	wndContainer:FindChild("AchievementExpanderBtn"):Show(true)
 	wndContainer:FindChild("AchievementExpanderBtn"):SetData(wndContainer)
-	
-	if not achData:IsComplete() then
-		wndContainer:FindChild("AchievementExpanderBtn"):SetCheck(true)
-		self:OnAchievementExpand(wndContainer)
-	end
 
 	for idx, tCurr in pairs(achData:GetChecklistItems()) do
 		local tPreviousEntry = wndChecklist:GetCellLuaData(idx, 1)
@@ -984,7 +799,7 @@ function Achievements:BuildTieredItem(achData, wndTierBox)
 
 	self:UpdateTierItem(achData, wndTierItem)
 	
-	wndTierBox:ArrangeChildrenHorz(0)
+	wndTierBox:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function Achievements:UpdateTierItem(achData, wndTierItem)
@@ -1039,24 +854,8 @@ function Achievements:OnAchievementExpanderBtn(wndHandler, wndControl) -- the ac
 end
 
 function Achievements:OnAchievementExpand(wndParent) -- the function it triggers
-	local achSelected = wndParent:GetData()
-	local bButtonChecked = wndParent:FindChild("AchievementExpanderBtn"):IsChecked()
-
-	local nLeft, nTop, nRight, nBottom = wndParent:GetAnchorOffsets()
-	if achSelected:IsChecklist() and bButtonChecked then
-		nBottom = nBottom + (8 + #achSelected:GetChecklistItems() * 20) -- TODO hardcoded formatting
-	elseif achSelected:IsChecklist() and not bButtonChecked then
-		nBottom = nBottom - (8 + #achSelected:GetChecklistItems() * 20)
-	elseif bButtonChecked then
-		nBottom = nBottom + 82
-	else
-		nBottom = nBottom - 82
-	end
-
-	wndParent:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
-	wndParent:FindChild("AchievementExtraContainer"):Show(bButtonChecked)
-
-	self.wndMain:FindChild("RightScroll"):ArrangeChildrenVert(0)
+	self:ResizeHelper(wndParent)
+	self.wndMain:FindChild("RightScroll"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function Achievements:OnClearSearchBtn(wndHandler, wndControl)
@@ -1165,29 +964,33 @@ function Achievements:ResizeHelper(wndContainer)
 	local wndDescText = wndContainer:FindChild("DescriptionText")
 	-- Resize based on description height
 	local nDescHeight = wndDescText:GetHeight()
-	local nOldLeft, nOldTop, nOldRight, nOldBottom = wndContainer:GetAnchorOffsets()
+	local nLeft, nTop, nRight, nBottom = wndContainer:GetAnchorOffsets()
+	local nContainerOffsets = wndContainer:GetOriginalLocation():ToTable().nOffsets
+	nNewBottom = nTop + nContainerOffsets[4] - nContainerOffsets[2]
 	wndDescText:SetHeightToContentHeight()
 	
 	--Always calculate offset for new content location
 	local nOffset = wndDescText:GetHeight() - nDescHeight
-	
-	local nLeft, nTop, nRight, nBottom = wndContainer:GetAnchorOffsets()
-	local nNewBottom = nOldBottom
-	--Box is already at smallest size so only allow growing
-	if nOffset > 0 then
-		nNewBottom = nBottom + nOffset
-	end
+	--Check if description has expanded
+	local nDesTextOrigOffsets = wndDescText:GetOriginalLocation():ToTable().nOffsets
+	local bDescTextExpand = (nDesTextOrigOffsets[4] - nDesTextOrigOffsets[2]) < wndDescText:GetHeight()
 
-	local wndAchExtraContainer = wndContainer:FindChild("AchievementExtraContainer")
+	--Box is already at smallest size so only allow growing
+	if (nDesTextOrigOffsets[4] - nDesTextOrigOffsets[2]) < wndDescText:GetHeight() then
+		nNewBottom = nNewBottom + nOffset
+	end
+	
 	local nChecklistGridHeight = 0
 	local achData = wndContainer:GetData()
+	local bButtonChecked = wndContainer:FindChild("AchievementExpanderBtn"):IsChecked()
 	--Not all achievements have a checklist
-	if achData:GetChecklistItems() ~= nil then
+	if achData:GetChecklistItems() ~= nil and bButtonChecked then
 		nChecklistGridHeight = #achData:GetChecklistItems() * 20
 	end
 	local bHasTier = achData:GetChildTier() or achData:GetParentTier()
 	local nTierBoxHeight = 0
-	if bHasTier then
+	local wndAchExtraContainer = wndContainer:FindChild("AchievementExtraContainer")
+	if bHasTier and bButtonChecked then
 		local wndTierBox = wndAchExtraContainer:FindChild("TierBox")
 		if wndTierBox then
 			nTierBoxHeight = wndTierBox:GetHeight()
@@ -1195,13 +998,14 @@ function Achievements:ResizeHelper(wndContainer)
 	end	
 	local bShowProgressBar = achData:IsChecklist() or bHasTier or (achData:GetNumNeeded() > 1 and not achData:IsComplete())
 	if bShowProgressBar then
-		if nOffset > 0 then
-			nNewBottom = nNewBottom + wndAchExtraContainer:GetHeight()
-		end
 		local tAchExraOffsets = wndAchExtraContainer:GetOriginalLocation():ToTable().nOffsets
-		wndAchExtraContainer:SetAnchorOffsets(tAchExraOffsets[1], tAchExraOffsets[2] - nTierBoxHeight - nChecklistGridHeight - knWindowOffset - knDesignerPadding, tAchExraOffsets[3], tAchExraOffsets[4])
+		if bDescTextExpand then
+			nNewBottom = nNewBottom + tAchExraOffsets[4] - tAchExraOffsets[2]
+		end
+		wndAchExtraContainer:Show(bButtonChecked)
+		wndAchExtraContainer:SetAnchorOffsets(tAchExraOffsets[1], tAchExraOffsets[2] - nTierBoxHeight - nChecklistGridHeight - (2 * knDesignerPadding), tAchExraOffsets[3], tAchExraOffsets[4])
 	end
-	wndContainer:SetAnchorOffsets(nLeft, nTop, nRight, nNewBottom)
+	wndContainer:SetAnchorOffsets(nLeft, nTop, nRight, nNewBottom + nTierBoxHeight + nChecklistGridHeight)
 end
 
 local AchievementsInst = Achievements:new()

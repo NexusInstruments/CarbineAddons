@@ -58,6 +58,7 @@ function NonCombatSpellbook:new(o)
     setmetatable(o, self)
     self.__index = self
 
+	o.tWndRefs = {}
 	o.arLists =
 	{
 		[karTabTypes.Misc] = {},
@@ -85,26 +86,19 @@ function NonCombatSpellbook:OnDocumentReady()
 		return
 	end
 	
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
+	
 	Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded", 	"OnInterfaceMenuListHasLoaded", self)
-	Apollo.RegisterEventHandler("WindowManagementReady", 		"OnWindowManagementReady", self)
 	
 	Apollo.RegisterEventHandler("GenericEvent_OpenNonCombatSpellbook", "OnNonCombatSpellbookOn", self)
 	Apollo.RegisterEventHandler("ToggleNonCombatSpellbook", "OnToggleNonCombatSpellbook", self)
+	Apollo.RegisterEventHandler("ToggleNonCombatAbilitiesWindow", "OnToggleNonCombatSpellbook", self)
 	Apollo.RegisterEventHandler("AbilityBookChange", "OnAbilityBookChange", self)
-	
-	-- load our forms
-	self.wndMain = Apollo.LoadForm(self.xmlDoc, "NonCombatSpellbookForm", nil, self)
-	self.wndMain:Show(false)
-	
-	self.wndEntryContainer = self.wndMain:FindChild("EntriesContainer")
-	self.wndEntryContainerMisc = self.wndMain:FindChild("EntriesContainerMisc")
-	self.wndTabsContainer = self.wndMain:FindChild("TabsContainer")
-	self.wndTabsContainer:FindChild("BankTabBtnMisc"):SetData(karTabTypes.Misc)
-	self.wndTabsContainer:FindChild("BankTabBtnCmd"):SetData(karTabTypes.Cmd)
 end
 
 function NonCombatSpellbook:OnWindowManagementReady()
-	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("InterfaceMenu_NonCombatAbilities")})
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("InterfaceMenu_NonCombatAbilities")})
 end
 
 function NonCombatSpellbook:OnInterfaceMenuListHasLoaded()
@@ -112,15 +106,15 @@ function NonCombatSpellbook:OnInterfaceMenuListHasLoaded()
 end
 
 function NonCombatSpellbook:OnToggleNonCombatSpellbook()
-	if self.wndMain and self.wndMain:IsValid() and self.wndMain:IsVisible() then
-		self.wndMain:Close()
+	if self.tWndRefs.wndMain and self.tWndRefs.wndMain:IsValid() and self.tWndRefs.wndMain:IsVisible() then
+		self.tWndRefs.wndMain:Close()
 	else
 		self:OnNonCombatSpellbookOn()
 	end
 end
 
 function NonCombatSpellbook:OnAbilityBookChange()
-	if self.wndMain == nil or not self.wndMain:IsShown() then
+	if self.tWndRefs.wndMain == nil or not self.tWndRefs.wndMain:IsShown() then
 		return
 	end
 	
@@ -129,9 +123,19 @@ end
 
 function NonCombatSpellbook:OnNonCombatSpellbookOn()
 	self.nSelectedTab = self.nSelectedTab or karTabTypes.Cmd
+	
+	local wndMain = Apollo.LoadForm(self.xmlDoc, "NonCombatSpellbookForm", nil, self)
+	self.tWndRefs.wndMain = wndMain
+	self.wndEntryContainer = wndMain:FindChild("EntriesContainer")
+	self.wndEntryContainerMisc = wndMain:FindChild("EntriesContainerMisc")
+	self.wndTabsContainer = wndMain:FindChild("TabsContainer")
+	self.wndTabsContainer:FindChild("BankTabBtnMisc"):SetData(karTabTypes.Misc)
+	self.wndTabsContainer:FindChild("BankTabBtnCmd"):SetData(karTabTypes.Cmd)
+
+	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.tWndRefs.wndMain, strName = Apollo.GetString("InterfaceMenu_NonCombatAbilities")})
+	
 	self:Redraw()
-	self.wndMain:Show(true)
-	self.wndMain:ToFront()
+	self.tWndRefs.wndMain:Invoke()
 end
 
 function NonCombatSpellbook:Redraw()
@@ -184,8 +188,8 @@ function NonCombatSpellbook:ShowTab()
 		return (aData.strName or aData.strName) < (bData.strName or bData.strName)
 	end
 
-	self.wndEntryContainer:ArrangeChildrenVert(0, SortFunction(a,b))
-	self.wndEntryContainerMisc:ArrangeChildrenVert(0, SortFunction(a,b))
+	self.wndEntryContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, SortFunction(a,b))
+	self.wndEntryContainerMisc:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, SortFunction(a,b))
 	self.wndEntryContainer:SetText(#self.wndEntryContainer:GetChildren() == 0 and Apollo.GetString("NCSpellbook_NoResultsAvailable") or "")
 	self.wndEntryContainerMisc:SetText(#self.wndEntryContainerMisc:GetChildren() == 0 and Apollo.GetString("NCSpellbook_NoResultsAvailable") or "")
 
@@ -217,8 +221,17 @@ function NonCombatSpellbook:HelperCreateGameCmdEntry(tData)
 	wndEntry:FindChild("ActionBarButton"):SetContentId(tData.nGameCommandId)
 end
 
+function NonCombatSpellbook:OnCloseBtn(wndHandler, wndControl)
+	self.tWndRefs.wndMain:Close()
+end
+
 function NonCombatSpellbook:OnClose()
-	self.wndMain:Show(false)
+	if self.tWndRefs.wndMain ~= nil and self.tWndRefs.wndMain:IsValid() then
+		self.tWndRefs.wndMain:Destroy()
+		self.tWndRefs = {}
+		
+		Event_FireGenericEvent("WindowManagementRemove", {strName = Apollo.GetString("InterfaceMenu_NonCombatAbilities")})
+	end
 end
 
 function NonCombatSpellbook:OnTabBtnCheck(wndHandler, wndControl, eMouseButton)

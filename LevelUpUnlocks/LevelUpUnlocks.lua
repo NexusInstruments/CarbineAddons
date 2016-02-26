@@ -18,6 +18,7 @@ local ktUnlockMapping =
 	[""] 													= 0,
 	[GameLib.LevelUpUnlockType.Dungeon_New] 				= GameLib.CodeEnumInputAction.GroupFinder,						-- Dungeons:New Dungeon
 	[GameLib.LevelUpUnlockType.Adventure_New] 				= GameLib.CodeEnumInputAction.GroupFinder,						-- Adventures: New Adventure
+	[GameLib.LevelUpUnlockType.Shiphand_New] 				= GameLib.CodeEnumInputAction.GroupFinder,						-- Expeditions: New Expeditions
 	[GameLib.LevelUpUnlockType.Content_Zone] 				= GameLib.CodeEnumInputAction.WorldMap,							-- Content: New Zones
 	[GameLib.LevelUpUnlockType.Content_Feature] 			= 0,															-- Content: New Feature
 	[GameLib.LevelUpUnlockType.Class_Feature] 				= 0, 															-- Classes: New Feature
@@ -50,6 +51,7 @@ local ktUnlockActions =
 	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.GroupFinder_Adventures, 						strEvent = "LevelUpUnlock_GroupFinder_Adventures" },
 	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.GroupFinder_Arenas, 							strEvent = "LevelUpUnlock_GroupFinder_Arenas" },
 	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.GroupFinder_Warplots, 						strEvent = "LevelUpUnlock_GroupFinder_Warplots" },
+	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.GroupFinder_Expeditions, 					strEvent = "LevelUpUnlock_GroupFinder_Expeditions" },
 	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.Character_CostumeSlot2, 						strEvent = "LevelUpUnlock_Character_CostumeSlot2" },
 	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.Character_CostumeSlot3, 						strEvent = "LevelUpUnlock_Character_CostumeSlot3" },
 	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.Character_CostumeSlot4, 						strEvent = "LevelUpUnlock_Character_CostumeSlot4" },
@@ -59,12 +61,6 @@ local ktUnlockActions =
 	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.Customization_Mount, 						strEvent = "LevelUpUnlock_Customization_Mount" },
 	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.Customization_Scanbot, 						strEvent = "LevelUpUnlock_Customization_Scanbot" }, --TODO
 	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.Character_CostumeSystem, 					strEvent = "LevelUpUnlock_Character_CostumeSystem" },
-	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.WorldMapAdventure_Astrovoid, 				strEvent = "LevelUpUnlock_WorldMapAdventure_Astrovoid" },
-	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.WorldMapAdventure_Galeras, 					strEvent = "LevelUpUnlock_WorldMapAdventure_Galeras" },
-	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.WorldMapAdventure_Hycrest, 					strEvent = "LevelUpUnlock_WorldMapAdventure_Hycrest" },
-	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.WorldMapAdventure_Malgrave,		 			strEvent = "LevelUpUnlock_WorldMapAdventure_Malgrave" },
-	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.WorldMapAdventure_NorthernWilds,				strEvent = "LevelUpUnlock_WorldMapAdventure_NorthernWilds" },
-	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.WorldMapAdventure_Whitevale, 				strEvent = "LevelUpUnlock_WorldMapAdventure_Whitevale" },
 	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.Builder_AMPPoint, 							strEvent = "LevelUpUnlock_AMPPoint" },
 	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.Builder_NewTierPoint, 						strEvent = "LevelUpUnlock_NewTierPoint" },
 	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.Builder_LASSlot2, 							strEvent = "LevelUpUnlock_LASSlot2" },
@@ -98,13 +94,6 @@ local ktUnlockActions =
 	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.WorldMapNewZone_NorthernWilds, 				strEvent = "LevelUpUnlock_WorldMapNewZone_NorthernWilds" },
 	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.WorldMapNewZone_Whitevale, 					strEvent = "LevelUpUnlock_WorldMapNewZone_Whitevale" },
 	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.WorldMapNewZone_Wilderrun,					strEvent = "LevelUpUnlock_WorldMapNewZone_Wilderrun" },
-	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.WorldMapDungeon_ProtogamesAcademyExile,		strEvent = "LevelUpUnlock_WorldMapDungeon_ProtogamesAcademyExile" },
-	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.WorldMapDungeon_ProtogamesAcademyDominion,	strEvent = "LevelUpUnlock_WorldMapDungeon_ProtogamesAcademyDominion" },
-	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.WorldMapDungeon_Stormtalon, 					strEvent = "LevelUpUnlock_WorldMapDungeon_Stormtalon" },
-	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.WorldMapDungeon_KelVoreth, 					strEvent = "LevelUpUnlock_WorldMapDungeon_KelVoreth" },
-	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.WorldMapDungeon_Skullcano, 					strEvent = "LevelUpUnlock_WorldMapDungeon_Skullcano" },
-	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.WorldMapDungeon_SwordMaiden, 				strEvent = "LevelUpUnlock_WorldMapDungeon_SwordMaiden" },
-	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.WorldMapDungeon_UltimateProtogames,		 	strEvent = "LevelUpUnlock_WorldMapDungeon_UltimateProtogames" },
 	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.Character_GearSlot_Gadgets,		 			strEvent = "LevelUpUnlock_Character_GearSlot_Gadgets" },
 	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.Character_GearSlot_Gloves,				 	strEvent = "LevelUpUnlock_Character_GearSlot_Gloves" },
 	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.Character_GearSlot_Helm, 					strEvent = "LevelUpUnlock_Character_GearSlot_Helm" },
@@ -114,7 +103,7 @@ local ktUnlockActions =
 	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.Character_GearSlot_Shoulders,		 		strEvent = "LevelUpUnlock_Character_GearSlot_Shoulders" },
 	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.Character_GearSlot_SupportSystem,		 	strEvent = "LevelUpUnlock_Character_GearSlot_SupportSystem" },
 	{ strField = "nId", 	eValue = GameLib.LevelUpUnlock.Character_GearSlot_WeaponAttachment,			strEvent = "LevelUpUnlock_Character_GearSlot_WeaponAttachment" },
-	{ strField = "nId",	eValue = GameLib.LevelUpUnlock.Contracts, 											strEvent = "LevelUpUnlock_PvE_Contracts" },
+	{ strField = "nId",		eValue = GameLib.LevelUpUnlock.Contracts, 									strEvent = "LevelUpUnlock_PvE_Contracts" },
 	{ strField = "nType",	eValue = GameLib.LevelUpUnlockType.Class_Attribute, 						strEvent = "LevelUpUnlock_Class_Attribute" },
 	{ strField = "nType",	eValue = GameLib.LevelUpUnlockType.Class_Ability, 							strEvent = "LevelUpUnlock_Class_Ability" }, --TODO
 	{ strField = "nType",	eValue = GameLib.LevelUpUnlockType.Path_Item, 								strEvent = "LevelUpUnlock_Path_Item" },
@@ -122,7 +111,10 @@ local ktUnlockActions =
 	{ strField = "nType",	eValue = GameLib.LevelUpUnlockType.Path_ScanBot, 							strEvent = "LevelUpUnlock_Path_ScanBot" },
 	{ strField = "nType",	eValue = GameLib.LevelUpUnlockType.Path_Spell, 								strEvent = "LevelUpUnlock_Path_Spell" },
 	{ strField = "nType",	eValue = GameLib.LevelUpUnlockType.Path_Title, 								strEvent = "LevelUpUnlock_Path_Title" },
-	{ strField = "nType",	eValue = GameLib.LevelUpUnlockType.PvP_Battleground, 						strEvent = "LevelUpUnlock_PvP_Battleground" },
+	{ strField = "nType",	eValue = GameLib.LevelUpUnlockType.PvP_Battleground, 						strEvent = "OpenContentFinderToUnlock" },
+	{ strField = "nType",	eValue = GameLib.LevelUpUnlockType.Dungeon_New,								strEvent = "OpenContentFinderToUnlock" },
+	{ strField = "nType",	eValue = GameLib.LevelUpUnlockType.Adventure_New,							strEvent = "OpenContentFinderToUnlock" },
+	{ strField = "nType",	eValue = GameLib.LevelUpUnlockType.Shiphand_New,							strEvent = "OpenContentFinderToUnlock" },
 }
 
 function LevelUpUnlocks:new(o)
@@ -150,6 +142,9 @@ function LevelUpUnlocks:OnDocumentReady()
 		return
 	end
 
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
+
 	Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded", 	"OnInterfaceMenuListHasLoaded", self)
 	Apollo.RegisterEventHandler("PathLevelUp", 					"OnPathLevelUp", self)
 	Apollo.RegisterEventHandler("PlayerLevelChange", 			"OnPlayerLevelChange", self)
@@ -167,6 +162,12 @@ function LevelUpUnlocks:OnDocumentReady()
 	if GameLib.GetPlayerUnit() then
 		self:Initialize()
 	end
+end
+
+function LevelUpUnlocks:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("InterfaceMenu_LevelUpUnlocks")})
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("InterfaceMenu_LevelUpUnlocksLeveldUp")})
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("InterfaceMenu_LevelUpUnlockRewards")})
 end
 
 function LevelUpUnlocks:OnInterfaceMenuListHasLoaded()
@@ -188,8 +189,8 @@ function LevelUpUnlocks:OnToggleLevelUpUnlockWindow()
 	end
 end
 
-function LevelUpUnlocks:OnPlayerLevelChange(nLevel)
-	GameLib.GetUnlocksForLevel(nLevel, GameLib.LevelUpUnlockSystem.Level)
+function LevelUpUnlocks:OnPlayerLevelChange(nCurrPlayerLevel, nNewAttributePoints, nNewAbilityPoints)
+	GameLib.GetUnlocksForLevel(nCurrPlayerLevel, GameLib.LevelUpUnlockSystem.Level)
 	self:OnClose()
 	self:OnCloseToReminder()
 end
@@ -210,7 +211,9 @@ function LevelUpUnlocks:DisplayLevelUpUnlockPermanentWindow(nSpecificLevel)
 		
 		Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndPermanent, strName = Apollo.GetString("InterfaceMenu_LevelUpUnlocks")})
 	end
-	self.wndPermanent:Show(true)
+	
+	self.wndPermanent:Invoke()
+	
 	-- Path or Level
 	local bShowPath = self.wndPermanent:FindChild("LevelUpPathFilterBtn"):IsChecked()
 	if not nSpecificLevel then
@@ -238,7 +241,7 @@ function LevelUpUnlocks:DisplayLevelUpUnlockPermanentWindow(nSpecificLevel)
 		local wndUnlockItem = self:BuildLevelItem(tUnlock, self.wndPermanent:FindChild("LevelUpItemContainer"), nSpecificLevel)
 		--wndUnlockItem:FindChild("LevelUpItemBtn"):Enable(false)
 	end
-	self.wndPermanent:FindChild("LevelUpItemContainer"):ArrangeChildrenVert(0, function(a,b) return a:GetData() < b:GetData() end)
+	self.wndPermanent:FindChild("LevelUpItemContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function(a,b) return a:GetData() < b:GetData() end)
 
 	-- Level Picker
 	self.wndPermanent:FindChild("LevelUpPickerList"):DestroyChildren()
@@ -248,13 +251,14 @@ function LevelUpUnlocks:DisplayLevelUpUnlockPermanentWindow(nSpecificLevel)
 		wndCurr:SetData(idx)
 		wndCurr:SetText(String_GetWeaselString(Apollo.GetString("LevelUpUnlocks_LevelNum"), idx))
 	end
-	self.wndPermanent:FindChild("LevelUpPickerList"):ArrangeChildrenVert(0)
+	self.wndPermanent:FindChild("LevelUpPickerList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	self.wndPermanent:FindChild("LevelUpPickerList"):SetVScrollPos((nSpecificLevel - 1) * 30) -- 30 is hardcoded formatting of the list item height	
 end
 
 function LevelUpUnlocks:DisplayLevelUpUnlockDetailsWindow() -- Also from XML, such as the fanfare window
 	if not self.wndMain or not self.wndMain:IsValid() then
 		self.wndMain = Apollo.LoadForm(self.xmlDoc, "LevelUpUnlockDetails", nil, self)
+		self.wndMain:Invoke()
 		
 		Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("InterfaceMenu_LevelUpUnlocksLeveldUp")})
 	end
@@ -278,9 +282,9 @@ function LevelUpUnlocks:DisplayLevelUpUnlockDetailsWindow() -- Also from XML, su
 	-- Rest of the formatting
 	self.wndMain:FindChild("BGLevelPathSeparator"):Show(false)
 	self.wndMain:FindChild("PathUpHeaderLevelText"):SetText(nPathLevel)
-	self.wndMain:FindChild("PathUpItemContainer"):ArrangeChildrenVert(0, function(a,b) return a:GetData() < b:GetData() end)
+	self.wndMain:FindChild("PathUpItemContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function(a,b) return a:GetData() < b:GetData() end)
 	self.wndMain:FindChild("LevelUpHeaderLevelText"):SetText(nPlayerLevel)
-	self.wndMain:FindChild("LevelUpItemContainer"):ArrangeChildrenVert(0, function(a,b) return a:GetData() < b:GetData() end)
+	self.wndMain:FindChild("LevelUpItemContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function(a,b) return a:GetData() < b:GetData() end)
 	self.wndMain:FindChild("LevelUpItemContainer"):SetVScrollPos(nVScrollPos)
 
 	-- Resize
@@ -323,7 +327,7 @@ function LevelUpUnlocks:BuildLevelItem(tUnlock, wndParent, nCurrentLevel)
 	wndUnlockItem:FindChild("LevelUpItemDescription"):SetText(tUnlock.strDescription)
 
 	-- Header
-	local nHeight = wndHeader:FindChild("LevelUpHeaderItems"):ArrangeChildrenVert(0)
+	local nHeight = wndHeader:FindChild("LevelUpHeaderItems"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	local nLeft, nTop, nRight, nBottom = wndHeader:GetAnchorOffsets()
 	wndHeader:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nHeight + 65)
 
@@ -364,7 +368,7 @@ function LevelUpUnlocks:OnLevelUpItemActionBtn(wndHandler, wndControl, eMouseBut
 
 	for idx, tAction in pairs(ktUnlockActions) do
 		if tUnlock[tAction.strField] == tAction.eValue then
-			Event_FireGenericEvent(tAction.strEvent, tUnlock.nExtraData, tAction.eValue)
+			Event_FireGenericEvent(tAction.strEvent, tUnlock.nType, tUnlock.nId, tUnlock.nExtraData)
 		end
 	end
 end

@@ -27,7 +27,7 @@ end
 function FloatText:OnLoad()
 	Apollo.RegisterEventHandler("OptionsUpdated_Floaters", 					"OnOptionsUpdated", self)
 
-	Apollo.RegisterEventHandler("LootedMoney", 								"OnLootedMoney", self)
+	Apollo.RegisterEventHandler("ChannelUpdate_Loot",						"OnChannelUpdate_Loot", self)
 	Apollo.RegisterEventHandler("SpellCastFailed", 							"OnSpellCastFailed", self)
 	Apollo.RegisterEventHandler("DamageOrHealingDone",				 		"OnDamageOrHealing", self)
 	Apollo.RegisterEventHandler("CombatMomentum", 							"OnCombatMomentum", self)
@@ -45,9 +45,11 @@ function FloatText:OnLoad()
 	Apollo.RegisterEventHandler("CountdownTick", 							"OnCountdownTick", self)
 	Apollo.RegisterEventHandler("TradeSkillFloater",				 		"OnTradeSkillFloater", self)
 	Apollo.RegisterEventHandler("FactionFloater", 							"OnFactionFloater", self)
-	Apollo.RegisterEventHandler("CombatLogTransference", 					"OnCombatLogTransference", self)
+	Apollo.RegisterEventHandler("FloaterTransference", 						"OnFloaterTransference", self)
 	Apollo.RegisterEventHandler("CombatLogCCState", 						"OnCombatLogCCState", self)
 	Apollo.RegisterEventHandler("CombatLogImmunity", 						"OnCombatLogImmunity", self)
+	Apollo.RegisterEventHandler("FloaterMultiHit", 							"OnFloaterMultiHit", self)
+	Apollo.RegisterEventHandler("FloaterMultiHeal", 						"OnFloaterMultiHeal", self)
 	Apollo.RegisterEventHandler("ActionBarNonSpellShortcutAddFailed", 		"OnActionBarNonSpellShortcutAddFailed", self)
 	Apollo.RegisterEventHandler("GenericEvent_GenericError",				"OnGenericError", self)
 
@@ -344,7 +346,27 @@ function FloatText:OnDeath()
 end
 
 ---------------------------------------------------------------------------------------------------
-function FloatText:OnCombatLogTransference(tEventArgs)
+function FloatText:OnFloaterMultiHit(tEventArgs)
+	local bCritical = tEventArgs.eCombatResult == GameLib.CodeEnumCombatResult.Critical
+	if tEventArgs.unitCaster == GameLib.GetControlledUnit() then -- Target does the transference to the source
+		self:OnDamageOrHealing( tEventArgs.unitCaster, tEventArgs.unitTarget, tEventArgs.eDamageType, math.abs(tEventArgs.nDamageAmount), math.abs(tEventArgs.nShield), math.abs(tEventArgs.nAbsorption), bCritical )
+	else -- creature taking damage
+		self:OnPlayerDamageOrHealing( tEventArgs.unitTarget, tEventArgs.eDamageType, math.abs(tEventArgs.nDamageAmount), math.abs(tEventArgs.nShield), math.abs(tEventArgs.nAbsorption), bCritical )
+	end
+end
+
+---------------------------------------------------------------------------------------------------
+function FloatText:OnFloaterMultiHeal(tEventArgs)
+	local bCritical = tEventArgs.eCombatResult == GameLib.CodeEnumCombatResult.Critical
+	if tEventArgs.unitTarget == GameLib.GetPlayerUnit() then -- source recieves the transference from the taker
+		self:OnPlayerDamageOrHealing(tEventArgs.unitCaster, GameLib.CodeEnumDamageType.Heal, math.abs(tEventArgs.nHealAmount), 0, 0, bCritical )
+	else
+		self:OnDamageOrHealing(tEventArgs.unitCaster, tEventArgs.unitTarget, GameLib.CodeEnumDamageType.Heal, math.abs(tEventArgs.nHealAmount), 0, 0, bCritical )
+	end
+end
+
+---------------------------------------------------------------------------------------------------
+function FloatText:OnFloaterTransference(tEventArgs)
 	local bCritical = tEventArgs.eCombatResult == GameLib.CodeEnumCombatResult.Critical
 	if tEventArgs.unitCaster == GameLib.GetControlledUnit() then -- Target does the transference to the source
 		self:OnDamageOrHealing( tEventArgs.unitCaster, tEventArgs.unitTarget, tEventArgs.eDamageType, math.abs(tEventArgs.nDamageAmount), math.abs(tEventArgs.nShield), math.abs(tEventArgs.nAbsorption), bCritical )
@@ -358,7 +380,7 @@ function FloatText:OnCombatLogTransference(tEventArgs)
 		if tHeal.unitHealed == GameLib.GetPlayerUnit() then -- source recieves the transference from the taker
 			self:OnPlayerDamageOrHealing(tEventArgs.unitCaster, GameLib.CodeEnumDamageType.Heal, math.abs(tHeal.nHealAmount), 0, 0, bCritical )
 		else
-			self:OnDamageOrHealing(tEventArgs.unitCaster, tHeal.unitHealed, tEventArgs.eDamageType, math.abs(tHeal.nHealAmount), 0, 0, bCritical )
+			self:OnDamageOrHealing(tEventArgs.unitCaster, tHeal.unitHealed, GameLib.CodeEnumDamageType.Heal, math.abs(tHeal.nHealAmount), 0, 0, bCritical )
 		end
 	end
 end
@@ -578,30 +600,18 @@ function FloatText:OnFactionFloater(unitTarget, strMessage, nAmount, strFactionN
 end
 
 ---------------------------------------------------------------------------------------------------
-function FloatText:OnLootedMoney(monLooted) -- karCurrencyTypeToString filters to most alternate currencies but Money. Money displays in LootNotificationWindow.
-	if not monLooted then
+function FloatText:OnChannelUpdate_Loot(eType, tEventArgs)
+
+	if eType ~= GameLib.ChannelUpdateLootType.Currency or not tEventArgs.monNew then
 		return
 	end
 
-	local arCurrencyTypeToString =
-	{
-		[Money.CodeEnumCurrencyType.Renown] 			= "CRB_Renown",
-		[Money.CodeEnumCurrencyType.ElderGems] 			= "CRB_Elder_Gems",
-		[Money.CodeEnumCurrencyType.Prestige] 			= "CRB_Prestige",
-		[Money.CodeEnumCurrencyType.CraftingVouchers]	= "CRB_Crafting_Vouchers",
-		[Money.CodeEnumCurrencyType.Glory]				= "CRB_Glory",
-	}
-
-	local strCurrencyType = arCurrencyTypeToString[monLooted:GetMoneyType()] or ""
-	if strCurrencyType == "" then
+	if tEventArgs.monNew:GetMoneyType() == Money.CodeEnumCurrencyType.Credits then
 		return
-	else
-		strCurrencyType = Apollo.GetString(strCurrencyType)
 	end
 
-	-- TODO
 	local eMessageType = LuaEnumMessageType.AlternateCurrency
-	local strFormatted = String_GetWeaselString(Apollo.GetString("FloatText_AlternateMoney"), monLooted:GetAmount(), strCurrencyType)
+	local strFormatted = String_GetWeaselString(Apollo.GetString("FloatText_AlternateMoney"), tEventArgs.monNew:GetAmount(), tEventArgs.monNew:GetTypeString())
 
 	local tTextOption = self:GetDefaultTextOption()
 	tTextOption.fScale = 1.0
@@ -623,8 +633,8 @@ function FloatText:OnLootedMoney(monLooted) -- karCurrencyTypeToString filters t
 	local tContent =
 	{
 		eType = LuaEnumMessageType.AlternateCurrency,
-		eCurrencyType = monLooted:GetMoneyType(),
-		nAmount = monLooted:GetAmount(),
+		eCurrencyType = tEventArgs.monNew:GetMoneyType(),
+		nAmount = tEventArgs.monNew:GetAmount(),
 	}
 
 	self:RequestShowTextFloater(eMessageType, GameLib.GetControlledUnit(), strFormatted, tTextOption, 0, tContent)
@@ -724,13 +734,6 @@ function FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageType, nDama
 		return
 	end
 
-	-- NOTE: This needs to be changed if we're ever planning to display shield and normal damage in different formats.
-	-- NOTE: Right now, we're just telling the player the amount of damage they did and not the specific type to keep things neat
-	local nTotalDamage = nDamage
-	if type(nShieldDamaged) == "number" and nShieldDamaged > 0 then
-		nTotalDamage = nDamage + nShieldDamaged
-	end
-
 	local tTextOption = self:GetDefaultTextOption()
 	local tTextOptionAbsorb = self:GetDefaultTextOption()
 
@@ -810,18 +813,20 @@ function FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageType, nDama
 	if type(nAbsorptionAmount) == "number" and nAbsorptionAmount > 0 then -- secondary "if" so we don't see absorption and "0"
 		CombatFloater.ShowTextFloater( unitTarget, String_GetWeaselString(Apollo.GetString("FloatText_Absorbed"), nAbsorptionAmount), tTextOptionAbsorb )
 
-		if nTotalDamage > 0 then
+		if nDamage > 0 then
 			tTextOption.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.Vertical
 			if bHeal then
-				CombatFloater.ShowTextFloater( unitTarget, String_GetWeaselString(Apollo.GetString("FloatText_PlusValue"), nTotalDamage), tTextOption )
+				CombatFloater.ShowTextFloater( unitTarget, String_GetWeaselString(Apollo.GetString("FloatText_PlusValue"), nDamage), tTextOption )
 			else
-				CombatFloater.ShowTextFloater( unitTarget, nTotalDamage, tTextOption )
+				CombatFloater.ShowTextFloater( unitTarget, nDamage, nShieldDamaged, tTextOption )
 			end
 		end
 	elseif bHeal then
-		CombatFloater.ShowTextFloater( unitTarget, String_GetWeaselString(Apollo.GetString("FloatText_PlusValue"), nTotalDamage), tTextOption ) -- we show "0" when there's no absorption
+		if nDamage > 0 then
+			CombatFloater.ShowTextFloater( unitTarget, String_GetWeaselString(Apollo.GetString("FloatText_PlusValue"), nDamage), tTextOption ) -- we show "0" when there's no absorption
+		end
 	else
-		CombatFloater.ShowTextFloater( unitTarget, nTotalDamage, tTextOption )
+		CombatFloater.ShowTextFloater( unitTarget, nDamage, nShieldDamaged, tTextOption )
 	end
 end
 
@@ -860,10 +865,6 @@ function FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDamage, nSh
 			[3] = {fScale = 0.7,	fTime = .2 + nStallTime,	fAlpha = 1.0,	fVelocityDirection = 180,	fVelocityMagnitude = 3,},
 			[4] = {fScale = 0.7,	fTime = .45 + nStallTime,	fAlpha = 0.2,	fVelocityDirection = 180,},
 		}
-	end
-
-	if type(nShieldDamaged) == "number" and nShieldDamaged > 0 then
-		nDamage = nDamage + nShieldDamaged
 	end
 
 	local bHeal = eDamageType == GameLib.CodeEnumDamageType.Heal or eDamageType == GameLib.CodeEnumDamageType.HealShields
@@ -930,8 +931,8 @@ function FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDamage, nSh
 
 	if nDamage > 0 and bHeal then
 		CombatFloater.ShowTextFloater( unitPlayer, String_GetWeaselString(Apollo.GetString("FloatText_PlusValue"), nDamage), tTextOption )
-	elseif nDamage > 0 then
-		CombatFloater.ShowTextFloater( unitPlayer, nDamage, tTextOption )
+	elseif not bHeal then
+		CombatFloater.ShowTextFloater( unitPlayer, nDamage, nShieldDamaged, tTextOption )
 	end
 end
 

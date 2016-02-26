@@ -199,16 +199,23 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function Datachron:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
-	if eAnchor ~= GameLib.CodeEnumTutorialAnchor.Datachron then return end
-
-	local tRect = {}
-	if self.wndMinimized:IsShown() then
-		tRect.l, tRect.t, tRect.r, tRect.b = self.wndMinimized:GetRect()
-	else
-		tRect.l, tRect.t, tRect.r, tRect.b = g_wndDatachron:GetRect()
+	local tAnchors =
+	{
+		[GameLib.CodeEnumTutorialAnchor.Datachron] = true,
+	}
+	
+	if not tAnchors[eAnchor] or not self.wndMinimized then 
+		return 
 	end
-
-	Event_FireGenericEvent("Tutorial_RequestUIAnchorResponse", eAnchor, idTutorial, strPopupText, tRect)
+	
+	local tAnchorMapping = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.Datachron] 	= self.wndMinimized:FindChild("CommPlayBtnMin"),
+	}
+	
+	if tAnchorMapping[eAnchor] then
+		Event_FireGenericEvent("Tutorial_ShowCallout", eAnchor, idTutorial, strPopupText, tAnchorMapping[eAnchor])
+	end
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -489,7 +496,7 @@ function Datachron:BuildCallbackList()
 	local bResult = false
 	g_wndDatachron:FindChild("QueuedCallsList"):DestroyChildren()
 
-	local tCallbackList = Quest:GetCallbackList(true) -- Boolean is to show out leveled quests or not
+	local tCallbackList = Quest.GetCallbackList(true) -- Boolean is to show out leveled quests or not
 	if tCallbackList == nil or #tCallbackList <= 0 then
 		return false
 	end
@@ -509,7 +516,7 @@ function Datachron:BuildCallbackList()
 		end
 	end
 
-	g_wndDatachron:FindChild("QueuedCallsList"):ArrangeChildrenVert(0)
+	g_wndDatachron:FindChild("QueuedCallsList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 	return bResult
 end
@@ -636,7 +643,6 @@ function Datachron:ProcessSpamQueue()
 	self.timerNPCBubbleFade:Stop()
 	self.timerNPCBubbleFade = ApolloTimer.Create(fDuration, false, "OnNpcBubbleFade", self)
 	self:SetCommunicatorCreature(idCreature)
-	Event_FireGenericEvent("ShowCommDisplay")
 	self:DrawCallSystem()
 
 	-- post the message to the chat log

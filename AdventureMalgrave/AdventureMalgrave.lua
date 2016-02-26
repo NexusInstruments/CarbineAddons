@@ -81,10 +81,12 @@ function MalgraveAdventureResources:OnLoad()
 end
 
 function MalgraveAdventureResources:OnDocumentReady()
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
+
     Apollo.RegisterEventHandler("AdvMalgraveResourceSet", "OnSet", self)
 	Apollo.RegisterEventHandler("ChangeWorld", "OnHide", self)
 	Apollo.RegisterEventHandler("AdvMalgraveHideResource", "OnHide", self)
-	Apollo.RegisterSlashCommand("malgraveres", "Initialize", self)
 	Apollo.RegisterEventHandler("AdvMalgraveShowResource", "Initialize", self)
     Apollo.RegisterEventHandler("AdvMalgraveUpdateResource", "OnUpdate", self)
 	
@@ -93,9 +95,14 @@ function MalgraveAdventureResources:OnDocumentReady()
 	end
 end
 
+function MalgraveAdventureResources:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("Lore_Malgrave")})
+end
+
 function MalgraveAdventureResources:Initialize()
 	if not self.wndMain or not self.wndMain:IsValid() then
 		self.wndMain = Apollo.LoadForm(self.xmlDoc, "MalgraveAdventureResourcesForm", nil, self)
+		
 		Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("Lore_Malgrave")})
 		
 		self.timerMaxProgressFalshIcon = ApolloTimer.Create(8, false, "OnMaxProgressFlashIcon", self)

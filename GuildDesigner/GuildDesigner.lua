@@ -30,8 +30,6 @@ local GuildDesigner = {}
 -----------------------------------------------------------------------------------------------
 -- Constants
 -----------------------------------------------------------------------------------------------
--- e.g. local kiExampleVariableMax = 999
-	
 local kstrNoPermissions = Apollo.GetString("GuildDesigner_NotEnoughPermissions")
  
 -----------------------------------------------------------------------------------------------
@@ -42,7 +40,7 @@ function GuildDesigner:new(o)
     setmetatable(o, self)
     self.__index = self 
 
-    -- initialize variables here
+    o.tWndRefs = {}
 
     return o
 end
@@ -64,53 +62,44 @@ function GuildDesigner:OnDocumentReady()
 		return
 	end
 	
-	Apollo.RegisterEventHandler("WindowManagementReady", 	"OnWindowManagementReady", self)
-	
-    -- Register handlers for events, slash commands and timer, etc.
-    -- e.g. Apollo.RegisterEventHandler("KeyDown", "OnKeyDown", self)
-	Apollo.RegisterEventHandler("Event_GuildDesignerOn", 	"OnGuildDesignerOn", self)
-	Apollo.RegisterEventHandler("GuildResultInterceptResponse", "OnGuildResultInterceptResponse", self)
-	Apollo.RegisterEventHandler("GuildStandard", 			"OnGuildDesignUpdated", self)
-	Apollo.RegisterEventHandler("GuildInfluenceAndMoney", 	"OnGuildInfluenceAndMoney", self)
-	Apollo.RegisterEventHandler("GuildRegistrarClose",		"OnCloseVendorWindow", self)
-	
-	--Apollo.RegisterEventHandler("GuildRegistrarOpen", 	"OnGuildDesignerOn", self)	
- 	--Apollo.RegisterEventHandler("ToggleGuildDesigner", 	"OnGuildDesignerOn", self) -- TODO: War Parties NYI  
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
     
-    -- load our forms
-    self.wndMain 			= Apollo.LoadForm(self.xmlDoc, "GuildDesignerForm", nil, self)
-   	self.wndGuildName 		= self.wndMain:FindChild("GuildNameString")
-	self.wndRegisterBtn		= self.wndMain:FindChild("RegisterBtn")
-	self.wndAlert 			= self.wndMain:FindChild("AlertMessage")
-	self.wndHolomark 		= self.wndMain:FindChild("HolomarkContent")
-	self.wndHolomarkCostume = self.wndMain:FindChild("HolomarkCostume")
-	
-	self.tCurrent 			= {}
-	self.tNewOptions		= {}
-	self.bShowingResult 	= false
-	
-	self.wndMain:Show(false)
-	if self.locSavedWindowLoc then
-		self.wndMain:MoveToLocation(self.locSavedWindowLoc)
-	end
-	
-	self:SetDefaults()
+	Apollo.RegisterEventHandler("Event_GuildDesignerOn", "OnGuildDesignerOn", self)
+	Apollo.RegisterEventHandler("GuildResultInterceptResponse", "OnGuildResultInterceptResponse", self)
+	Apollo.RegisterEventHandler("GuildStandard", "OnGuildDesignUpdated", self)
+	Apollo.RegisterEventHandler("GuildInfluenceAndMoney", "OnGuildInfluenceAndMoney", self)
+	Apollo.RegisterEventHandler("GuildRegistrarClose", "OnCloseVendorWindow", self) 
 end
 
 function GuildDesigner:OnWindowManagementReady()
-	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("GuildDesigner_GuildDesigner")})
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("GuildDesigner_GuildDesigner")})
 end
 
 -----------------------------------------------------------------------------------------------
 -- GuildDesigner Functions
 -----------------------------------------------------------------------------------------------
--- Define general functions here
+function GuildDesigner:Initialize()
+	local wndMain = Apollo.LoadForm(self.xmlDoc, "GuildDesignerForm", nil, self)
+    self.tWndRefs.wndMain = wndMain
+   	self.tWndRefs.wndGuildName = wndMain:FindChild("GuildNameString")
+	self.tWndRefs.wndRegisterBtn = wndMain:FindChild("RegisterBtn")
+	self.tWndRefs.wndAlert = wndMain:FindChild("AlertMessage")
+	self.tWndRefs.wndHolomark = wndMain:FindChild("HolomarkContent")
+	self.tWndRefs.wndHolomarkCostume = wndMain:FindChild("HolomarkCostume")
+	
+	self.tCurrent 			= {}
+	self.tNewOptions		= {}
+	self.bShowingResult 	= false
+	
+	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.tWndRefs.wndMain, strName = Apollo.GetString("GuildDesigner_GuildDesigner")})
+end
 
 function GuildDesigner:OnGuildDesignerOn()
+	self:Initialize()
 	self:SetDefaults()
 	self:ResetOptions()
-	self.wndMain:Show(true) -- show the window
-	self.wndMain:ToFront()
+	self.tWndRefs.wndMain:Invoke()
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -123,13 +112,25 @@ function GuildDesigner:OnWindowClosed(wndHandler, wndControl)
 	    return
 	end
 	
+	if self.timerModifyError then
+		self.timerModifyError:Stop()
+	end
+	if self.timerModifySuccess then
+		self.timerModifySuccess:Stop()
+	end
+
+	self.tWndRefs = {}
+	
 	Event_CancelGuildRegistration()
 	
 	Sound.Play(Sound.PlayUIWindowClose)
+	Event_FireGenericEvent("WindowManagementRemove", {strName = Apollo.GetString("GuildDesigner_GuildDesigner")})
 end
 
 function GuildDesigner:OnCloseVendorWindow()
-	self.wndMain:Close() -- just close the window which will trigger OnWindowClosed
+	if self.tWndRefs.wndMain ~= nil and self.tWndRefs.wndMain:IsValid() then
+		self.tWndRefs.wndMain:Close() -- just close the window which will trigger OnWindowClosed
+	end
 end
 
 function GuildDesigner:SetDefaults()
@@ -148,64 +149,68 @@ function GuildDesigner:SetDefaults()
 		return
 	end
 	
-	self.wndRegisterBtn:SetData(guildLoaded)
+	self.tWndRefs.wndRegisterBtn:SetData(guildLoaded)
 	
-	self.wndMain:FindChild("GuildRevertBtn"):Enable(false)
-	self.wndMain:FindChild("CostAmount"):SetText(0)
-	self.wndMain:FindChild("InfluenceAmount"):SetText(guildLoaded:GetInfluence())
+	self.tWndRefs.wndMain:FindChild("GuildRevertBtn"):Enable(false)
+	self.tWndRefs.wndMain:FindChild("CostAmount"):SetText(0)
+	self.tWndRefs.wndMain:FindChild("InfluenceAmount"):SetText(guildLoaded:GetInfluence())
 	
 	self.tCurrent.strName = guildLoaded:GetName()
-	self.wndGuildName:SetText(self.tCurrent.strName)
-	self.wndGuildName:Enable(false)
+	self.tWndRefs.wndGuildName:SetText(self.tCurrent.strName)
+	self.tWndRefs.wndGuildName:Enable(false)
 	
 	self:SetDefaultHolomark()
 	
 	if guildLoaded:GetMyRank() ~= 1 then -- not a leader. TODO: enum not hardcoded
-		self.wndMain:FindChild("GuildPermissionsAlert"):SetText(kstrNoPermissions)
+		self.tWndRefs.wndMain:FindChild("GuildPermissionsAlert"):SetText(kstrNoPermissions)
 	else
-		self.wndMain:FindChild("GuildPermissionsAlert"):SetText("")
+		self.tWndRefs.wndMain:FindChild("GuildPermissionsAlert"):SetText("")
 	end	
 end
 
 function GuildDesigner:FormatNoGuild()
-	self.wndGuildName:Enable(true)
-	self.wndRegisterBtn:Enable(false)
-	self.wndAlert:Show(true)
-	self.wndAlert:FindChild("MessageAlertText"):SetText(Apollo.GetString("GuildDesigner_NoGuild"))
-	self.wndAlert:FindChild("MessageAlertText"):SetTextColor(ApolloColor.new("xkcdLightOrange"))
-	self.wndAlert:FindChild("MessageBodyText"):SetText(Apollo.GetString("GuildDesginer_MustBeInGuild"))
+	self.tWndRefs.wndGuildName:Enable(true)
+	self.tWndRefs.wndRegisterBtn:Enable(false)
+	self.tWndRefs.wndAlert:Show(true)
+	self.tWndRefs.wndAlert:FindChild("MessageAlertText"):SetText(Apollo.GetString("GuildDesigner_NoGuild"))
+	self.tWndRefs.wndAlert:FindChild("MessageAlertText"):SetTextColor(ApolloColor.new("LightOrange"))
+	self.tWndRefs.wndAlert:FindChild("MessageBodyText"):SetText(Apollo.GetString("GuildDesginer_MustBeInGuild"))
 
 end
 
 function GuildDesigner:ResetOptions()
 	if self.tCurrent.strName ~= nil then
-		self.wndGuildName:SetText(self.tCurrent.strName)
+		self.tWndRefs.wndGuildName:SetText(self.tCurrent.strName)
 	else
-		self.wndGuildName:SetText("")
+		self.tWndRefs.wndGuildName:SetText("")
 	end
 	
-	self.wndAlert:Show(false)
-	self.wndAlert:FindChild("MessageAlertText"):SetText("")
-	self.wndAlert:FindChild("MessageBodyText"):SetText("")
+	self.tWndRefs.wndAlert:Show(false)
+	self.tWndRefs.wndAlert:FindChild("MessageAlertText"):SetText("")
+	self.tWndRefs.wndAlert:FindChild("MessageBodyText"):SetText("")
 
 	self:UpdateOptions()
 end
 
 function GuildDesigner:UpdateOptions()
-	local guildOwner = self.wndRegisterBtn:GetData()
+	local guildOwner = self.tWndRefs.wndRegisterBtn:GetData()
 	if guildOwner == nil then
 		return
 	end
 	
 	local tRanks = guildOwner:GetRanks()
+	if tRanks == nil then
+		return
+	end
+
 	local bHasGuildPermissions = tRanks[guildOwner:GetMyRank()].bEmblemAndStandard
 	
-	self.wndMain:FindChild("GuildPermissionsAlert"):SetText(bHasGuildPermissions and kstrNoPermissions or "")
+	self.tWndRefs.wndMain:FindChild("GuildPermissionsAlert"):SetText(bHasGuildPermissions and kstrNoPermissions or "")
 
 	local bChangeDetected = self:IsHolomarkChanged()
 	
-	self.wndMain:FindChild("ResetAllBtn"):Enable(bChangeDetected)
-	self.wndRegisterBtn:Enable(bChangeDetected and bHasGuildPermissions)
+	self.tWndRefs.wndMain:FindChild("ResetAllBtn"):Enable(bChangeDetected)
+	self.tWndRefs.wndRegisterBtn:Enable(bChangeDetected and bHasGuildPermissions)
 
 	self:UpdateCost()
 end
@@ -218,7 +223,7 @@ function GuildDesigner:UpdateCost()
 		nCost = nCost + GuildLib.GetHolomarkModifyCost()
 	end
 	
-	self.wndMain:FindChild("CostAmount"):SetText(nCost)
+	self.tWndRefs.wndMain:FindChild("CostAmount"):SetText(nCost)
 
 end
 
@@ -229,7 +234,7 @@ function GuildDesigner:SetDefaultHolomark()
 
 	self:InitializeHolomarkParts()
 	
-	local guildOwner = self.wndRegisterBtn:GetData()
+	local guildOwner = self.tWndRefs.wndRegisterBtn:GetData()
 	if guildOwner == nil then
 		return
 	end
@@ -242,7 +247,7 @@ function GuildDesigner:SetDefaultHolomark()
 	for idx, tPartList in ipairs(self.tHolomarkParts) do
 		for key, tPart in ipairs(tPartList) do
 			if tPart.idBannerPart == self.tCurrent.tHolomark[tHolomarkPartNames[idx]].idPart then
-				self.wndMain:FindChild("HolomarkOption."..idx):SetText(tPart.strName)
+				self.tWndRefs.wndMain:FindChild("HolomarkOption."..idx):SetText(tPart.strName)
 			end
 		end
 	end
@@ -279,14 +284,14 @@ function GuildDesigner:SetDefaultHolomark()
 	--]]
 
 	
-	self.wndHolomarkCostume:SetCostumeToGuildStandard(self.tCurrent.tHolomark)
+	self.tWndRefs.wndHolomarkCostume:SetCostumeToGuildStandard(self.tCurrent.tHolomark)
 end
 
 function GuildDesigner:InitializeHolomarkParts()
 
 	self.tHolomarkPartListItems = {}
-	self.wndHolomarkOption = nil
-	self.wndHolomarkOptionList = nil
+	self.tWndRefs.wndHolomarkOption = nil
+	self.tWndRefs.wndHolomarkOptionList = nil
 	
 	self.tHolomarkParts = {}
 	self.tHolomarkParts[1] = GuildLib.GetBannerBackgroundIcons()
@@ -296,42 +301,42 @@ end
 
 function GuildDesigner:OnHolomarkPartCheck1( wndHandler, wndControl, eMouseButton )
 	self:FillHolomarkPartList(1)
-	self.wndHolomarkOption = self.wndMain:FindChild("HolomarkOption.1")
-	self.wndHolomarkOptionList = self.wndMain:FindChild("HolomarkPartWindow.1")
-	self.wndHolomarkOptionList:SetData(1)
-	self.wndHolomarkOptionList:Show(true)
+	self.tWndRefs.wndHolomarkOption = self.tWndRefs.wndMain:FindChild("HolomarkOption.1")
+	self.tWndRefs.wndHolomarkOptionList = self.tWndRefs.wndMain:FindChild("HolomarkPartWindow.1")
+	self.tWndRefs.wndHolomarkOptionList:SetData(1)
+	self.tWndRefs.wndHolomarkOptionList:Show(true)
 end
 
 function GuildDesigner:OnHolomarkPartUncheck1( wndHandler, wndControl, eMouseButton )
-	self.wndMain:FindChild("HolomarkPartWindow.1"):Show(false)
+	self.tWndRefs.wndMain:FindChild("HolomarkPartWindow.1"):Show(false)
 end
 
 function GuildDesigner:OnHolomarkPartCheck2( wndHandler, wndControl, eMouseButton )
 	self:FillHolomarkPartList(2)
-	self.wndHolomarkOption = self.wndMain:FindChild("HolomarkOption.2")
-	self.wndHolomarkOptionList = self.wndMain:FindChild("HolomarkPartWindow.2")
-	self.wndHolomarkOptionList:SetData(2)
-	self.wndHolomarkOptionList:Show(true)
+	self.tWndRefs.wndHolomarkOption = self.tWndRefs.wndMain:FindChild("HolomarkOption.2")
+	self.tWndRefs.wndHolomarkOptionList = self.tWndRefs.wndMain:FindChild("HolomarkPartWindow.2")
+	self.tWndRefs.wndHolomarkOptionList:SetData(2)
+	self.tWndRefs.wndHolomarkOptionList:Show(true)
 end
 
 function GuildDesigner:OnHolomarkPartUncheck2( wndHandler, wndControl, eMouseButton )
-	self.wndMain:FindChild("HolomarkPartWindow.2"):Show(false)
+	self.tWndRefs.wndMain:FindChild("HolomarkPartWindow.2"):Show(false)
 end
 
 function GuildDesigner:OnHolomarkPartCheck3( wndHandler, wndControl, eMouseButton )
 	self:FillHolomarkPartList(3)
-	self.wndHolomarkOption = self.wndMain:FindChild("HolomarkOption.3")
-	self.wndHolomarkOptionList = self.wndMain:FindChild("HolomarkPartWindow.3")
-	self.wndHolomarkOptionList:SetData(3)
-	self.wndHolomarkOptionList:Show(true)
+	self.tWndRefs.wndHolomarkOption = self.tWndRefs.wndMain:FindChild("HolomarkOption.3")
+	self.tWndRefs.wndHolomarkOptionList = self.tWndRefs.wndMain:FindChild("HolomarkPartWindow.3")
+	self.tWndRefs.wndHolomarkOptionList:SetData(3)
+	self.tWndRefs.wndHolomarkOptionList:Show(true)
 end
 
 function GuildDesigner:OnHolomarkPartUncheck3( wndHandler, wndControl, eMouseButton )
-	self.wndMain:FindChild("HolomarkPartWindow.3"):Show(false)
+	self.tWndRefs.wndMain:FindChild("HolomarkPartWindow.3"):Show(false)
 end
 
 function GuildDesigner:FillHolomarkPartList( ePartType )
-	local wndList = self.wndMain:FindChild("HolomarkPartList."..(ePartType))
+	local wndList = self.tWndRefs.wndMain:FindChild("HolomarkPartList."..(ePartType))
 	wndList:DestroyChildren()
 	
 	local tPartList = self.tHolomarkParts[ePartType]
@@ -365,10 +370,10 @@ function GuildDesigner:OnHolomarkPartSelectionClosed( wndHandler, wndControl )
 		wnd:Destroy()
 	end
 	
-	if self.wndHolomarkOptionList:IsVisible() then
-        self.wndHolomarkOptionList:Show(false)
+	if self.tWndRefs.wndHolomarkOptionList:IsVisible() then
+        self.tWndRefs.wndHolomarkOptionList:Show(false)
 	end
-	self.wndHolomarkOption:SetCheck(false)
+	self.tWndRefs.wndHolomarkOption:SetCheck(false)
 
 	-- clear the list item array
 	self.tHolomarkPartListItems = {}
@@ -380,10 +385,10 @@ function GuildDesigner:OnHolomarkPartItemSelected(wndHandler, wndControl)
     end
 
 	local tPart = wndControl:GetData()
-    if tPart ~= nil and self.wndHolomarkOption ~= nil then
-		self.wndHolomarkOption:SetText(tPart.strName)
+    if tPart ~= nil and self.tWndRefs.wndHolomarkOption ~= nil then
+		self.tWndRefs.wndHolomarkOption:SetText(tPart.strName)
 		
-		local eType = self.wndHolomarkOptionList:GetData()
+		local eType = self.tWndRefs.wndHolomarkOptionList:GetData()
 		if eType == 1 then
 			self.tNewOptions.tHolomark.tBackgroundIcon.idPart = tPart.idBannerPart
 		elseif eType == 2 then
@@ -392,7 +397,7 @@ function GuildDesigner:OnHolomarkPartItemSelected(wndHandler, wndControl)
 			self.tNewOptions.tHolomark.tScanLines.idPart = tPart.idBannerPart
 		end
 
-		self.wndHolomarkCostume:SetCostumeToGuildStandard(self.tNewOptions.tHolomark)
+		self.tWndRefs.wndHolomarkCostume:SetCostumeToGuildStandard(self.tNewOptions.tHolomark)
 	end
 	
 	self:UpdateOptions()
@@ -428,12 +433,12 @@ function GuildDesigner:OnCommitBtn(wndHandler, wndControl)  -- TODO!!!
 										 GuildLib.GuildResult_InvalidGuildName, GuildLib.GuildResult_RankLacksSufficientPermissions, GuildLib.GuildResult_InsufficientInfluence, 
 										 GuildLib.GuildResult_GuildNameUnavailable }
 
-		Event_FireGenericEvent("GuildResultInterceptRequest", GuildLib.GuildType_Guild, self.wndMain, arGuildResultsExpected )
+		Event_FireGenericEvent("GuildResultInterceptRequest", GuildLib.GuildType_Guild, self.tWndRefs.wndMain, arGuildResultsExpected )
 
 		guildCommitted:Modify(self.tNewOptions.tHolomark)
 
-		self.wndRegisterBtn:Enable(false)
-		self.wndMain:FindChild("ResetAllBtn"):Enable(false)
+		self.tWndRefs.wndRegisterBtn:Enable(false)
+		self.tWndRefs.wndMain:FindChild("ResetAllBtn"):Enable(false)
 	end
 	
 	--NOTE: Requires a server response to progress
@@ -442,67 +447,67 @@ end
 -- when the Cancel button is clicked
 function GuildDesigner:OnCancel(wndHandler, wndControl)
 	self:ResetOptions()	
-	self.wndMain:Close()
+	self.tWndRefs.wndMain:Close()
 end
 
 function GuildDesigner:OnResetAllBtn(wndHandler, wndControl)
 	self:SetDefaults()
-	self.wndRegisterBtn:Enable(false)
+	self.tWndRefs.wndRegisterBtn:Enable(false)
 end
 
 -- FAILURE ONLY
 function GuildDesigner:OnGuildResultInterceptResponse( guildCurr, eGuildType, eResult, wndRegistration, strAlertMessage )
-	if eGuildType ~= GuildLib.GuildType_Guild or wndRegistration ~= self.wndMain then
+	if eGuildType ~= GuildLib.GuildType_Guild or wndRegistration ~= self.tWndRefs.wndMain then
 		return
 	end
 
 	-- NOTE: success is processed with a different message.
 
-	if not self.wndAlert or not self.wndAlert:IsValid() then
+	if not self.tWndRefs.wndAlert or not self.tWndRefs.wndAlert:IsValid() then
 		return
 	end
 
 	self.bShowingResult = true
 	
-	self.wndAlert:FindChild("MessageAlertText"):SetText(Apollo.GetString("GuildDesigner_Whoops"))
-	self.timerModifyError = ApolloTimer.Create(3.00, false, "OnGuildDesigner_ModifyErrorTimer", self)				
+	self.tWndRefs.wndAlert:FindChild("MessageAlertText"):SetText(Apollo.GetString("GuildDesigner_Whoops"))
+	self.timerModifyError = ApolloTimer.Create(3.00, false, "OnGuildDesigner_ModifyErrorTimer", self)
 
-	self.wndAlert:FindChild("MessageBodyText"):SetText(strAlertMessage)
-	self.wndAlert:Show(true)
+	self.tWndRefs.wndAlert:FindChild("MessageBodyText"):SetText(strAlertMessage)
+	self.tWndRefs.wndAlert:Show(true)
 end
 
 -- SUCCESS ONLY
 function GuildDesigner:OnGuildDesignUpdated(guildUpdated) 
-	if guildUpdated ~= self.wndRegisterBtn:GetData() then 
-		return 
+	if self.tWndRefs.wndRegisterBtn == nil or guildUpdated ~= self.tWndRefs.wndRegisterBtn:GetData() then 
+		return
 	end
 	
 	self.bShowingResult = true
 	
-	self.wndAlert:FindChild("MessageAlertText"):SetText(Apollo.GetString("GuildDesigner_Success"))
-	self.wndAlert:FindChild("MessageAlertText"):SetTextColor(ApolloColor.new("UI_TextHoloTitle"))
+	self.tWndRefs.wndAlert:FindChild("MessageAlertText"):SetText(Apollo.GetString("GuildDesigner_Success"))
+	self.tWndRefs.wndAlert:FindChild("MessageAlertText"):SetTextColor(ApolloColor.new("UI_TextHoloTitle"))
 	self.timerModifySuccess = ApolloTimer.Create(3.00, false, "OnGuildDesigner_ModifySuccessfulTimer", self)
 
-	self.wndAlert:FindChild("MessageBodyText"):SetText(Apollo.GetString("GuildDesigner_Updated"))
-	self.wndAlert:Show(true)
+	self.tWndRefs.wndAlert:FindChild("MessageBodyText"):SetText(Apollo.GetString("GuildDesigner_Updated"))
+	self.tWndRefs.wndAlert:Show(true)
 end
 
 function GuildDesigner:OnGuildDesigner_ModifySuccessfulTimer()
 	self.bShowingResult = false
-	self.wndAlert:Show(false)
+	self.tWndRefs.wndAlert:Show(false)
 	self:SetDefaults()
 end
 
 function GuildDesigner:OnGuildDesigner_ModifyErrorTimer()
 	self.bShowingResult = false
-	self.wndAlert:Show(false)
-	self.wndMain:FindChild("ResetAllBtn"):Enable(true) -- something had to have been changed
-	self.wndRegisterBtn:Enable(true) -- safe to assume since it was clicked once
+	self.tWndRefs.wndAlert:Show(false)
+	self.tWndRefs.wndMain:FindChild("ResetAllBtn"):Enable(true) -- something had to have been changed
+	self.tWndRefs.wndRegisterBtn:Enable(true) -- safe to assume since it was clicked once
 end
 
 function GuildDesigner:OnGuildInfluenceAndMoney(guildCurr, monInfluence, monCash)
-	if guildCurr:GetType() == GuildLib.GuildType_Guild then
-		self.wndMain:FindChild("InfluenceAmount"):SetText(guildCurr:GetInfluence())
+	if guildCurr:GetType() == GuildLib.GuildType_Guild and self.tWndRefs.wndMain ~= nil then
+		self.tWndRefs.wndMain:FindChild("InfluenceAmount"):SetText(guildCurr:GetInfluence())
 	end
 end
 

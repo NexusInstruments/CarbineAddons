@@ -12,6 +12,7 @@ require "XmlDoc"
 require "PlayerPathLib"
 require "CommunicatorLib"
 require "Unit"
+require "CommDialog"
 
 ---------------------------------------------------------------------------------------------------
 -- CommDisplay
@@ -68,13 +69,12 @@ function CommDisplay:OnDocumentReady()
 		self.nDialogLeft, self.nDialogTop, self.nDialogRight, self.nDialogBottom = self.wndMain:FindChild("DialogFraming"):GetAnchorOffsets()
 	end
 
-	Apollo.RegisterEventHandler("WindowManagementReady", 	"OnWindowManagementReady", self)
-	Apollo.RegisterEventHandler("ShowCommDisplay", 			"OnShowCommDisplay", self)
-	Apollo.RegisterEventHandler("HideCommDisplay", 			"OnHideCommDisplay", self)
-	Apollo.RegisterEventHandler("CloseCommDisplay", 		"OnHideCommDisplay", self)
-	Apollo.RegisterEventHandler("StopTalkingCommDisplay", 	"OnStopTalkingCommDisplay", self)
-	Apollo.RegisterEventHandler("CommDisplayQuestText", 	"OnCommDisplayQuestText", self)
-	Apollo.RegisterEventHandler("CommDisplayRegularText", 	"OnCommDisplayRegularText", self)
+	Apollo.RegisterEventHandler("HideCommDisplay",				"OnHideCommDisplay", self)
+	Apollo.RegisterEventHandler("CloseCommDisplay",				"OnHideCommDisplay", self)
+	Apollo.RegisterEventHandler("StopTalkingCommDisplay",		"OnStopTalkingCommDisplay", self)
+	Apollo.RegisterEventHandler("CommDisplayQuestText",			"OnCommDisplayQuestText", self)
+	Apollo.RegisterEventHandler("CommDisplayRegularText",		"OnCommDisplayRegularText", self)
+	Apollo.RegisterEventHandler("Communicator_ShowQueuedMsg",	"OnCommunicator_ShowQueuedMsg", self)
 
 	self.tGivenRewardData = {}
 	self.tGivenRewardIcons = {}
@@ -84,9 +84,13 @@ function CommDisplay:OnDocumentReady()
 
 	self.wndCommPortraitLeft = self.wndMain:FindChild("CommPortraitLeft")
 	self.wndCommPortraitRight = self.wndMain:FindChild("CommPortraitRight")
+
+	Apollo.RegisterEventHandler("WindowManagementReady", 	"OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 end
 
 function CommDisplay:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("InputAction_Communicator"), nSaveVersion=2})
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("InputAction_Communicator"), nSaveVersion=2})
 end
 
@@ -137,48 +141,92 @@ function CommDisplay:OnCommDisplayRegularText(idMsg, idCreature, strMessageText,
 		return
 	end
 
-	if CommunicatorLib.PlaySpamVO(idMsg) then
-		-- if we can play a real VO, then wait for the signal that that VO ended
-		self.wndMain:SetAnimElapsedTime(9.0)
-		self.wndMain:PauseAnim()
-		Sound.Play(Sound.PlayUIDatachronSpam)
-	else
-		self.wndMain:PlayAnim(0)
-		Sound.Play(Sound.PlayUIDatachronSpamNoVO)
-	end
-
-	self.wndCommPortraitLeft:PlayTalkSequence()
-	self.wndCommPortraitRight:PlayTalkSequence()
-
-	local tOffsets = {self.wndMain:GetAnchorOffsets()}
-	self.tDefaultOffsets = {tOffsets[1], tOffsets[2], tOffsets[1] + knDefaultWidth, tOffsets[2] + knDefaultHeight}
-
-	self.wndMain:FindChild("CloseBtn"):Show(true)
-	self:DrawText(strMessageText, "", true, tLayout, idCreature, nil, nil) -- 2nd argument: bIsCommCall
+	local tCommToQueue =
+	{
+		strType = "Spam",
+		idMsg = idMsg,
+		idCreature = idCreature,
+		strMessageText = strMessageText,
+		tLayout = tLayout,
+	}
+	
+	CommunicatorLib.QueueMessage(tCommToQueue)
 end
 
-function CommDisplay:OnCommDisplayQuestText(idState, idQuest, bIsCommCall, tLayout)
-	-- From Datachron
-	self.wndMain:DetachAnim()
+function CommDisplay:OnCommDisplayQuestText(idState, idQuest, bIsCommCall, tLayout)	
+	local tCommToQueue =
+	{
+		strType = "Quest",
+		idState = idState,
+		idQuest = idQuest,
+		bIsCommCall = bIsCommCall,
+		tLayout = tLayout,
+		cdDialog = DialogSys.GetNPCText(idQuest),
+		idCreature = DialogSys.GetCommCreatureId()
+	}
+	
+	CommunicatorLib.QueueMessage(tCommToQueue)
+end
 
-	self:OnShowCommDisplay()
-
-	self.wndCommPortraitLeft:PlayTalkSequence()
-	self.wndCommPortraitRight:PlayTalkSequence()
-	self.wndMain:FindChild("DialogText"):SetAML("")
-	self.wndMain:FindChild("CloseBtn"):Show(false)
-
-	self.tChoiceRewardData = {}
-	self.tGivenRewardData = {}
-	local unitNpc = DialogSys.GetNPC() -- Note: this will be nil if this is a communicator or we're talking to an item
-
-	local strMessageText = DialogSys.GetNPCText(idQuest)
-	if strMessageText == nil or string.len(strMessageText) == 0 then strMessageText = "" end
-
-	local tOffsets = {self.wndMain:GetAnchorOffsets()}
-	self.tDefaultOffsets = {tOffsets[1], tOffsets[2], tOffsets[1] + knDefaultWidth, tOffsets[2] + knDefaultHeight}
-
-	self:DrawText(strMessageText, "", bIsCommCall, tLayout, DialogSys.GetCommCreatureId(), idState, idQuest)
+function CommDisplay:OnCommunicator_ShowQueuedMsg(tMessage)
+	if tMessage == nil then
+		return
+	end
+	
+	if tMessage.strType == "Quest" then
+		-- From Datachron
+		self.wndMain:DetachAnim()
+	
+		self:OnShowCommDisplay()
+	
+		self.wndCommPortraitLeft:PlayTalkSequence()
+		self.wndCommPortraitRight:PlayTalkSequence()
+		self.wndMain:FindChild("DialogText"):SetAML("")
+		self.wndMain:FindChild("CloseBtn"):Show(false)
+	
+		self.tChoiceRewardData = {}
+		self.tGivenRewardData = {}
+		local strMessageText = ""
+		
+		if tMessage.cdDialog ~= nil then
+			strMessageText = tMessage.cdDialog:GetText()
+			
+			if tMessage.cdDialog:HasVO() then
+				tMessage.cdDialog:PlayVO()
+			end
+		end
+		
+		if strMessageText == nil or string.len(strMessageText) == 0 then
+			strMessageText = ""
+		end
+	
+		local tOffsets = {self.wndMain:GetAnchorOffsets()}
+		self.tDefaultOffsets = {tOffsets[1], tOffsets[2], tOffsets[1] + knDefaultWidth, tOffsets[2] + knDefaultHeight}
+	
+		self:DrawText(strMessageText, "", tMessage.bIsCommCall, tMessage.tLayout, tMessage.idCreature, tMessage.idState, tMessage.idQuest)
+		
+	elseif tMessage.strType == "Spam" then
+		self:OnShowCommDisplay()
+	
+		if CommunicatorLib.PlaySpamVO(tMessage.idMsg) then
+			-- if we can play a real VO, then wait for the signal that that VO ended
+			self.wndMain:SetAnimElapsedTime(9.0)
+			self.wndMain:PauseAnim()
+			Sound.Play(Sound.PlayUIDatachronSpam)
+		else
+			self.wndMain:PlayAnim(0)
+			Sound.Play(Sound.PlayUIDatachronSpamNoVO)
+		end
+	
+		self.wndCommPortraitLeft:PlayTalkSequence()
+		self.wndCommPortraitRight:PlayTalkSequence()
+	
+		local tOffsets = {self.wndMain:GetAnchorOffsets()}
+		self.tDefaultOffsets = {tOffsets[1], tOffsets[2], tOffsets[1] + knDefaultWidth, tOffsets[2] + knDefaultHeight}
+	
+		self.wndMain:FindChild("CloseBtn"):Show(true)
+		self:DrawText(tMessage.strMessageText, "", true, tMessage.tLayout, tMessage.idCreature, nil, nil) -- 2nd argument: bIsCommCall
+	end
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -195,7 +243,7 @@ function CommDisplay:DrawText(strMessageText, strSubTitleText, bIsCommCall, tLay
 	]]--
 	self.wndMain:FindChild("PortraitContainerLeft"):Show(not tLayout or tLayout.ePortraitPlacement == CommunicatorLib.CommunicatorPortraitPlacement_Left)
 	self.wndMain:FindChild("PortraitContainerRight"):Show(tLayout and tLayout.ePortraitPlacement == CommunicatorLib.CommunicatorPortraitPlacement_Right)
-	self.wndMain:FindChild("HorizontalTopContainer"):ArrangeChildrenHorz(0)
+	self.wndMain:FindChild("HorizontalTopContainer"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	if tLayout then
 		local wndFramingOrigin = self.wndMain:FindChild("Framing:SpecificFraming")
 		local wndIconOrigin = self.wndMain:FindChild("SpecificIcon")
@@ -217,9 +265,9 @@ function CommDisplay:DrawText(strMessageText, strSubTitleText, bIsCommCall, tLay
 		end
 
 		if tLayout.ePortraitPlacement == CommunicatorLib.CommunicatorPortraitPlacement_Right then
-			self.wndMain:FindChild("HorizontalTopContainer"):ArrangeChildrenHorz(2)
+			self.wndMain:FindChild("HorizontalTopContainer"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.RightOrBottom)
 		else
-			self.wndMain:FindChild("HorizontalTopContainer"):ArrangeChildrenHorz(0)
+			self.wndMain:FindChild("HorizontalTopContainer"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 		end
 	end
 
@@ -327,7 +375,7 @@ function CommDisplay:DrawRewards(wndArg, idState, idQuest)
 			self:DrawLootItem(tCurrReward, wndArg:FindChild("GivenRewardsItems"))
 		end
 
-		nGivenContainerHeight = wndArg:FindChild("GivenRewardsItems"):ArrangeChildrenVert(0)
+		nGivenContainerHeight = wndArg:FindChild("GivenRewardsItems"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 		wndArg:FindChild("GivenContainer"):SetAnchorOffsets(0, 0, 0, nGivenContainerHeight)
 		wndArg:FindChild("GivenContainer"):Show(true)
 
@@ -342,7 +390,7 @@ function CommDisplay:DrawRewards(wndArg, idState, idQuest)
 			self:DrawLootItem(tCurrReward, wndArg:FindChild("ChoiceRewardsItems"))
 		end
 
-		nChoiceContainerHeight = wndArg:FindChild("ChoiceRewardsItems"):ArrangeChildrenVert(0, function(a,b) return b:FindChild("LootIconCantUse"):IsShown() end)
+		nChoiceContainerHeight = wndArg:FindChild("ChoiceRewardsItems"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function(a,b) return b:FindChild("LootIconCantUse"):IsShown() end)
 		wndArg:FindChild("ChoiceContainer"):SetAnchorOffsets(0, 0, 0, nChoiceContainerHeight)
 		wndArg:FindChild("ChoiceContainer"):Show(true)
 		wndArg:FindChild("ChoiceRewardsText"):Show(#tRewardInfo.arRewardChoices > 1)
@@ -352,7 +400,7 @@ function CommDisplay:DrawRewards(wndArg, idState, idQuest)
 		end -- Do text padding after SetAnchorOffsets so the box doesn't expand
 	end
 
-	wndArg:FindChild("RewardsArrangeVert"):ArrangeChildrenVert(0)
+	wndArg:FindChild("RewardsArrangeVert"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	if nGivenContainerHeight + nChoiceContainerHeight == 0 and not self.wndMain:FindChild("CashRewards"):IsShown() then
 		return 0
 	end

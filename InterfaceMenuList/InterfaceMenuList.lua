@@ -6,6 +6,9 @@
 require "Window"
 require "GameLib"
 require "Apollo"
+require "PublicEvent"
+require "LiveEvent"
+require "LiveEventsLib"
 
 local InterfaceMenuList = {}
 local knVersion = 2
@@ -26,10 +29,14 @@ function InterfaceMenuList:OnSave(eType)
 		return
 	end
 	
+	local nRegisteredAddons = self:GetTableSize(self.tMenuData)
+	if #self.tPinnedAddons > nRegisteredAddons then
+		self.tPinnedAddons = {}
+	end
+	
 	local tSavedData = {
 		nVersion = knVersion,
 		tPinnedAddons = self.tPinnedAddons,
-		bLiveEventSeen = self.bLiveEventSeen,
 	}
 	
 	return tSavedData
@@ -47,8 +54,6 @@ function InterfaceMenuList:OnRestore(eType, tSavedData)
 	if tSavedData.tPinnedAddons then
 		self.tPinnedAddons = tSavedData.tPinnedAddons
 	end
-	
-	self.bLiveEventSeen = tSavedData.bLiveEventSeen
 	
 	self.tSavedData = tSavedData
 end
@@ -73,6 +78,10 @@ function InterfaceMenuList:OnDocumentReady()
 	Apollo.RegisterEventHandler("ApplicationWindowSizeChanged", 		"ButtonListRedraw", self)
 	Apollo.RegisterEventHandler("OptionsUpdated_HUDPreferences", 		"OnUpdateTimer", self)
 	Apollo.RegisterEventHandler("LiveEvent_WindowClosed", 				"OnLiveEventClosed", self)
+	Apollo.RegisterEventHandler("PublicEventStart",						"OnPublicEventStart", self)
+	Apollo.RegisterEventHandler("PublicEventEnd",						"OnPublicEventEnd", self)
+	Apollo.RegisterEventHandler("BonusEventsChanged",					"UpdateBonusEvents", self)
+	Apollo.RegisterEventHandler("AccountCurrencyChanged",				"OnAccountCurrencyChanged", self)
 
     self.wndMain = Apollo.LoadForm(self.xmlDoc , "InterfaceMenuListForm", "FixedHudStratumHigh", self)
 	self.wndList = Apollo.LoadForm(self.xmlDoc , "FullListFrame", nil, self)
@@ -96,14 +105,30 @@ function InterfaceMenuList:OnDocumentReady()
 	end
 	
 	self.tMenuData = {
-		[Apollo.GetString("InterfaceMenu_SystemMenu")] = { "", "Escape", "Icon_Windows32_UI_CRB_InterfaceMenu_EscMenu" }, --
+		[Apollo.GetString("InterfaceMenu_SystemMenu")] = { "", "Escape", "Icon_Windows32_UI_CRB_InterfaceMenu_EscMenu" },
+		[Apollo.GetString("InterfaceMenu_Store")] = { "", "Store", "Icon_Windows32_UI_CRB_InterfaceMenu_Credd" },
 	}
+	
+	local wndInterfaceMenuBtn = Apollo.LoadForm(self.xmlDoc , "InterfaceMenuButton", nil, self)
+	self.knInterfaceMenuBtnWidth = wndInterfaceMenuBtn:GetWidth()
+	wndInterfaceMenuBtn:Destroy()
 	
 	self.tMenuTooltips = {}
 	self.tMenuAlerts = {}
-
+	
+	self.nPrevNumLiveEvents = 0
+	self.nNumLiveEvents = 0
+	if self.tLiveEvents == nil then
+		self.tLiveEvents = {}
+	end
+	self.bPreviouslyHadBonusEvents = false
+	self.bHasBonusEvents = false
+	
 	self:ButtonListRedraw()
-
+	
+	local nFortuneCoinAmount = AccountItemLib.GetAccountCurrency(AccountItemLib.CodeEnumAccountCurrency.MysticShiny):GetAmount()
+	self.wndMain:FindChild("CoinsPendingAnim"):Show(nFortuneCoinAmount > 0)
+	
 	if GameLib.GetPlayerUnit() then
 		self:OnCharacterCreated()
 	end
@@ -114,7 +139,11 @@ function InterfaceMenuList:OnListShow()
 end
 
 function InterfaceMenuList:OnCharacterCreated()	
-	Apollo.CreateTimer("TimeUpdateTimer", 1.0, true)
+	if self.timerUpdateSec == nil and not self.bHasLoaded then
+		self.timerUpdateSec = ApolloTimer.Create(1.0, false, "TimeUpdateTimer", self)
+	end
+	self:UpdateLiveEvents()
+	self:UpdateBonusEvents()
 end
 
 function InterfaceMenuList:OnUpdateTimer()
@@ -122,85 +151,156 @@ function InterfaceMenuList:OnUpdateTimer()
 		Event_FireGenericEvent("InterfaceMenuListHasLoaded")
 		self.wndMain:FindChild("OpenFullListBtn"):Enable(true)
 		self.bHasLoaded = true
+		self.timerUpdateSec = nil
+	end
+end
+
+function InterfaceMenuList:OnAccountCurrencyChanged()
+	if self.wndMain ~= nil and self.wndMain:IsValid() then
+		local nFortuneCoinAmount = AccountItemLib.GetAccountCurrency(AccountItemLib.CodeEnumAccountCurrency.MysticShiny):GetAmount()
+		self.wndMain:FindChild("CoinsPendingAnim"):Show(nFortuneCoinAmount > 0)
+	end
+end
+
+function InterfaceMenuList:OnPublicEventStart(peStart)
+	local nId = nil
+	local leEvent = peStart:GetLiveEvent()
+	if leEvent then
+		nId = leEvent:GetId()
+	else
+		return
 	end
 	
-	if self.bHasLoaded and not self.bLiveEventLoaded and GameLib.IsCharacterLoaded() then
-		-- PublicEventStart will catch it if this loads too early
-		local bLiveEventActive = false
-		for idx, peEvent in pairs(PublicEvent.GetActiveEvents() or {}) do
-			if peEvent:GetEventType() == PublicEvent.PublicEventType_LiveEvent then
-				bLiveEventActive = true
-				break
+	if peStart:GetEventType() == PublicEvent.PublicEventType_LiveEvent then
+		if self.tLiveEvents == nil then
+			self.tLiveEvents = {}
+		end
+		if not self.tLiveEvents[nId] then
+			self.tLiveEvents[nId] = true
+			self.nNumLiveEvents = self.nNumLiveEvents + 1 
+		end
+		
+		self:UpdateLiveEventButtons()
+	end
+end
+
+function InterfaceMenuList:OnPublicEventEnd(peEnd)
+	local nId = nil
+	local leEvent = peEnd:GetLiveEvent()
+	if leEvent then
+		nId = leEvent:GetId()
+	else
+		return
+	end
+	
+	if peEnd:GetEventType() == PublicEvent.PublicEventType_LiveEvent then
+		if self.tLiveEvents[nId] then
+			self.tLiveEvents[nId] = nil
+			self.nNumLiveEvents = self.nNumLiveEvents - 1 
+		end
+		
+		self:UpdateLiveEventButtons()
+	end
+end
+
+function InterfaceMenuList:UpdateLiveEvents()
+	self.nNumLiveEvents = 0
+	self.tLiveEvents = {}
+	
+	for idx, peEvent in pairs(LiveEventsLib.GetActiveLiveEvents()) do
+		self.tLiveEvents[peEvent:GetLiveEvent():GetId()] = true
+		self.nNumLiveEvents = self.nNumLiveEvents + 1
+	end
+	
+	self:UpdateLiveEventButtons()
+end
+
+function InterfaceMenuList:UpdateBonusEvents()
+	self.bHasBonusEvents = false
+	for idx, leEvent in pairs(LiveEventsLib.GetBonusLiveEventList()) do
+		self.bHasBonusEvents = true
+		break
+	end
+	
+	self:UpdateLiveEventButtons()
+end
+
+function InterfaceMenuList:UpdateLiveEventButtons()
+	local bButtonUpdated = false
+	if self.nPrevNumLiveEvents < self.nNumLiveEvents then
+		if self.nPrevNumLiveEvents <= 0 then
+			local leEvent = nil
+			
+			for nLiveEventId, bActive in pairs(self.tLiveEvents) do
+				leEvent = LiveEventsLib.GetLiveEvent(nLiveEventId)
+				break	-- Get only the first live event
 			end
-		end
-		
-		--reset bLiveEventSeen if it was previously active and now isn't.
-		if not bLiveEventActive then
-			self.bLiveEventSeen = false
-		end
-		
-		if bLiveEventActive then
+			
+			if leEvent == nil then
+				return
+			end
+			
 			local wndLiveEvent = self.wndMain:FindChild("LiveEvent")
 			wndLiveEvent:Show(true)
+			self.wndMain:FindChild("BonusEvent"):Show(false)
+			bButtonUpdated = true
 			
-			local btnLiveEvent = wndLiveEvent:FindChild("EventMoreInfoBtn")
-			btnLiveEvent:SetTooltip(string.format(
+			local wndLiveEventBtn = wndLiveEvent:FindChild("EventMoreInfoBtn")
+			wndLiveEventBtn:ChangeArt(leEvent:GetButtonIcon())
+			wndLiveEventBtn:SetTooltip(string.format(
 				"%s%s%s", 
 				Apollo.GetString("Event_WorldEventTitle"), 
 				Apollo.GetString("Chat_ColonBreak"), 
-				Apollo.GetString("Event_ShadesEveTitle")
+				leEvent:GetName()
 			))
 			
-			local wndButtons = self.wndMain:FindChild("ButtonList")
-			local nLeft, nTop, nRight, nBottom = wndButtons:GetAnchorOffsets()
+			Event_FireGenericEvent("LiveEvent_OpenWindow")
+		end
+		
+		self.nPrevNumLiveEvents = self.nNumLiveEvents
+	elseif self.nPrevNumLiveEvents > self.nNumLiveEvents then
+		if self.nNumLiveEvents <= 0 then
+			local wndLiveEvent = self.wndMain:FindChild("LiveEvent")
+			wndLiveEvent:Show(false)
+			self.wndMain:FindChild("BonusEvent"):Show(self.bHasBonusEvents)
+			bButtonUpdated = true
 			
-			wndButtons:SetAnchorOffsets(nLeft + wndLiveEvent:GetWidth(), nTop, nRight, nBottom)
-			
-			if not self.bLiveEventSeen then
-				Event_FireGenericEvent("LiveEvent_ToggleWindow")
-				self.bLiveEventSeen = true
-				wndLiveEvent:FindChild("EventAlert"):Show(true)
-			end
-			
-			self.bLiveEventLoaded = true
+			Event_FireGenericEvent("LiveEvent_CloseWindow")
+		end
+		
+		self.nPrevNumLiveEvents = self.nNumLiveEvents
+	end
+	
+	if not self.bPreviouslyHadBonusEvents and self.bHasBonusEvents then
+		local wndBonusEvent = self.wndMain:FindChild("BonusEvent")
+		wndBonusEvent:Show(not self.wndMain:FindChild("LiveEvent"):IsShown())
+		bButtonUpdated = true
+		
+		self.bPreviouslyHadBonusEvents = self.bHasBonusEvents
+	elseif self.bPreviouslyHadBonusEvents and not self.bHasBonusEvents then
+		local wndBonusEvent = self.wndMain:FindChild("BonusEvent")
+		wndBonusEvent:Show(false)
+		bButtonUpdated = true
+		
+		self.bPreviouslyHadBonusEvents = self.bHasBonusEvents
+	end
+	
+	if bButtonUpdated then
+		local wndButtonList = self.wndMain:FindChild("ButtonList")
+		local nLeft, nTop, nRight, nBottom = wndButtonList:GetOriginalLocation():GetOffsets()
+		if self.wndMain:FindChild("BonusEvent"):IsShown() or self.wndMain:FindChild("LiveEvent"):IsShown() then
+			wndButtonList:SetAnchorOffsets(nLeft + self.knInterfaceMenuBtnWidth, nTop, nRight, nBottom)
+		else
+			wndButtonList:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
 		end
 	end
-
-	--Toggle Visibility based on ui preference
-	local nVisibility = Apollo.GetConsoleVariable("hud.TimeDisplay")
-	
-	local tLocalTime = GameLib.GetLocalTime()
-	local tServerTime = GameLib.GetServerTime()
-	local b24Hour = true
-	local nLocalHour = tLocalTime.nHour > 12 and tLocalTime.nHour - 12 or tLocalTime.nHour == 0 and 12 or tLocalTime.nHour
-	local nServerHour = tServerTime.nHour > 12 and tServerTime.nHour - 12 or tServerTime.nHour == 0 and 12 or tServerTime.nHour
-		
-	self.wndMain:FindChild("Time"):SetText(string.format("%02d:%02d", tostring(tLocalTime.nHour), tostring(tLocalTime.nMinute)))
-	
-	if nVisibility == 2 then --Local 12hr am/pm
-		self.wndMain:FindChild("Time"):SetText(string.format("%02d:%02d", tostring(nLocalHour), tostring(tLocalTime.nMinute)))
-		
-		b24Hour = false
-	elseif nVisibility == 3 then --Server 24hr
-		self.wndMain:FindChild("Time"):SetText(string.format("%02d:%02d", tostring(tServerTime.nHour), tostring(tServerTime.nMinute)))
-	elseif nVisibility == 4 then --Server 12hr am/pm
-		self.wndMain:FindChild("Time"):SetText(string.format("%02d:%02d", tostring(nServerHour), tostring(tServerTime.nMinute)))
-		
-		b24Hour = false
-	end
-	
-	nLocalHour = b24Hour and tLocalTime.nHour or nLocalHour
-	nServerHour = b24Hour and tServerTime.nHour or nServerHour
-	
-	self.wndMain:FindChild("Time"):SetTooltip(
-		string.format("%s%02d:%02d\n%s%02d:%02d", 
-			Apollo.GetString("OptionsHUD_Local"), tostring(nLocalHour), tostring(tLocalTime.nMinute),
-			Apollo.GetString("OptionsHUD_Server"), tostring(nServerHour), tostring(tServerTime.nMinute)
-		)
-	)
 end
 
 function InterfaceMenuList:OnNewAddonListed(strKey, tParams)
+	if type(strKey) ~= "string" or type(tParams) ~= "table" then
+		return
+	end
+	
 	strKey = string.gsub(strKey, ":", "|") -- ":'s don't work for window names, sorry!"
 
 	self.tMenuData[strKey] = tParams
@@ -210,10 +310,9 @@ function InterfaceMenuList:OnNewAddonListed(strKey, tParams)
 end
 
 function InterfaceMenuList:IsPinned(strText)
-	for idx, strWindowText in pairs(self.tPinnedAddons) do
-		if (strText == strWindowText) then
-			return true
-		end
+	local nHasTableValue = self:GetPinIndex(self.tPinnedAddons,strText)
+	if nHasTableValue ~= nil then 
+		return true
 	end
 	
 	return false
@@ -228,13 +327,13 @@ function InterfaceMenuList:FullListRedraw()
 		strQuery = ""
 	end
 
-	for strWindowText, tData in pairs(self.tMenuData) do
-		local bSearchResultMatch = string.find(Apollo.StringToLower(strWindowText), strQuery) ~= nil
+	for strAddonName, tData in pairs(self.tMenuData) do
+		local bSearchResultMatch = string.find(Apollo.StringToLower(strAddonName), strQuery) ~= nil
 		
 		if strQuery == "" or bSearchResultMatch then
-			local wndMenuItem = self:LoadByName("MenuListItem", wndParent, strWindowText)
-			local wndMenuButton = self:LoadByName("InterfaceMenuButton", wndMenuItem:FindChild("Icon"), strWindowText)
-			local strTooltip = strWindowText
+			local wndMenuItem = self:LoadByName("MenuListItem", wndParent, strAddonName)
+			local wndMenuButton = self:LoadByName("InterfaceMenuButton", wndMenuItem:FindChild("Icon"), strAddonName)
+			local strTooltip = strAddonName
 			
 			if string.len(tData[2]) > 0 then
 				local strKeyBindLetter = GameLib.GetKeyBinding(tData[2])
@@ -249,26 +348,29 @@ function InterfaceMenuList:FullListRedraw()
 				wndMenuButton:FindChild("Icon"):SetText(string.sub(strTooltip, 1, 1))
 			end
 			
-			wndMenuButton:FindChild("ShortcutBtn"):SetData(strWindowText)
+			wndMenuButton:FindChild("ShortcutBtn"):SetData(strAddonName)
 			wndMenuButton:FindChild("Icon"):SetTooltip(strTooltip)
-			self.tMenuTooltips[strWindowText] = strTooltip
+			self.tMenuTooltips[strAddonName] = strTooltip
 			
-			wndMenuItem:FindChild("MenuListItemBtn"):SetText(strWindowText)
-			wndMenuItem:FindChild("MenuListItemBtn"):SetData(tData[1])
+			wndMenuItem:FindChild("MenuListItemBtn"):SetText(strAddonName)
+			wndMenuItem:FindChild("MenuListItemBtn"):SetData(strAddonName)
 			
-			wndMenuItem:FindChild("PinBtn"):SetCheck(self:IsPinned(strWindowText))
-			wndMenuItem:FindChild("PinBtn"):SetData(strWindowText)
+			wndMenuItem:FindChild("PinBtn"):SetCheck(self:IsPinned(strAddonName))
+			wndMenuItem:FindChild("PinBtn"):SetData(strAddonName)
 			
 			if string.len(tData[2]) > 0 then
 				local strKeyBindLetter = GameLib.GetKeyBinding(tData[2])
 				wndMenuItem:FindChild("MenuListItemBtn"):FindChild("MenuListItemKeybind"):SetText(strKeyBindLetter == strUnbound and "" or string.format("(%s)", strKeyBindLetter))  -- LOCALIZE
 			end
-		elseif not bSearchResultMatch and wndParent:FindChild(strWindowText) then
-			wndParent:FindChild(strWindowText):Destroy()
+		elseif not bSearchResultMatch and wndParent:FindChild(strAddonName) then
+			wndParent:FindChild(strAddonName):Destroy()
+		end
+		if self.tMenuAlerts[strAddonName] then
+			self:OnDrawAlertVisual(strAddonName, self.tMenuAlerts[strAddonName])
 		end
 	end
 	
-	wndParent:ArrangeChildrenVert(0, function (a,b) return a:GetName() < b:GetName() end)
+	wndParent:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function (a,b) return a:GetName() < b:GetName() end)
 end
 
 function InterfaceMenuList:ButtonListRedraw()
@@ -277,46 +379,61 @@ function InterfaceMenuList:ButtonListRedraw()
 end
 
 function InterfaceMenuList:OnQueuedRedraw()
-	local strUnbound = Apollo.GetString("Keybinding_Unbound")
 	local wndParent = self.wndMain:FindChild("ButtonList")
 	wndParent:DestroyChildren()
+
+	for idx, strPinName in ipairs(self.tPinnedAddons) do
+		self:AddPinToButtonList(strPinName)
+	end
+end
+
+function InterfaceMenuList:AddPinToButtonList(strAddonName)
+	local wndParent = self.wndMain:FindChild("ButtonList")
 	local nParentWidth = wndParent:GetWidth()
-	
 	local nLastButtonWidth = 0
 	local nTotalWidth = 0
-
-	for idx, strWindowText in pairs(self.tPinnedAddons) do
-		tData = self.tMenuData[strWindowText]
+	local tData = self.tMenuData[strAddonName]
 		
-		--Magic number below is allowing the 1 pixel gutter on the right
-		if tData and nTotalWidth + nLastButtonWidth <= nParentWidth + 1 then
-			local wndMenuItem = self:LoadByName("InterfaceMenuButton", wndParent, strWindowText)
-			local strTooltip = strWindowText
-			nLastButtonWidth = wndMenuItem:GetWidth()
-			nTotalWidth = nTotalWidth + nLastButtonWidth
+	if tData then -- Checks that the AddOn has loaded/added info to the Menu Data table.
+		local wndMenuItem = self:LoadByName("InterfaceMenuButton", wndParent, strAddonName)
+		local strTooltip = strAddonName
 
-			if string.len(tData[2]) > 0 then
-				local strKeyBindLetter = GameLib.GetKeyBinding(tData[2])
-				strKeyBindLetter = strKeyBindLetter == strUnbound and "" or string.format(" (%s)", strKeyBindLetter)  -- LOCALIZE
-				strTooltip = strKeyBindLetter ~= "" and strTooltip .. strKeyBindLetter or strTooltip
-			end
-			
-			if tData[3] ~= "" then
-				wndMenuItem:FindChild("Icon"):SetSprite(tData[3])
-			else 
-				wndMenuItem:FindChild("Icon"):SetText(string.sub(strTooltip, 1, 1))
-			end
-			
-			wndMenuItem:FindChild("ShortcutBtn"):SetData(strWindowText)
-			wndMenuItem:FindChild("Icon"):SetTooltip(strTooltip)
+		if string.len(tData[2]) > 0 then
+			local strKeyBindLetter = GameLib.GetKeyBinding(tData[2])
+			strKeyBindLetter = strKeyBindLetter == strUnbound and "" or string.format(" (%s)", strKeyBindLetter)  -- LOCALIZE
+			strTooltip = strKeyBindLetter ~= "" and strTooltip .. strKeyBindLetter or strTooltip
 		end
-		
-		if self.tMenuAlerts[strWindowText] then
-			self:OnDrawAlert(strWindowText, self.tMenuAlerts[strWindowText])
+			
+		if tData[3] ~= "" then
+			wndMenuItem:FindChild("Icon"):SetSprite(tData[3])
+		else 
+			wndMenuItem:FindChild("Icon"):SetText(string.sub(strTooltip, 1, 1))
 		end
+			
+		wndMenuItem:FindChild("ShortcutBtn"):SetData(strAddonName)
+		wndMenuItem:FindChild("Icon"):SetTooltip(strTooltip)
+		wndMenuItem:SetName("InterfaceMenuButton_" .. strAddonName)			
 	end
+		
+	wndParent:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
+			
+	if self.tMenuAlerts[strAddonName] then
+		self:OnDrawAlertVisual(strAddonName, self.tMenuAlerts[strAddonName])
+	end
+end
 	
-	wndParent:ArrangeChildrenHorz(0)
+function InterfaceMenuList:RemovePinFromButtonList(strAddonName)
+	local wndParent = self.wndMain:FindChild("ButtonList")
+	local wndButtonListItem = wndParent:FindChild("InterfaceMenuButton_" .. strAddonName)
+	
+	if wndButtonListItem then 
+		wndButtonListItem:Destroy()
+		wndParent:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	end
+end
+
+function InterfaceMenuList:OnListClose()
+	self.wndMain:FindChild("OpenFullListBtn"):SetCheck(false)
 end
 
 -----------------------------------------------------------------------------------------------
@@ -346,24 +463,47 @@ end
 -- Alerts
 -----------------------------------------------------------------------------------------------
 
-function InterfaceMenuList:OnDrawAlert(strWindowName, tParams)
-	self.tMenuAlerts[strWindowName] = tParams
-	for idx, wndTarget in pairs(self.wndMain:FindChild("ButtonList"):GetChildren()) do
-		if wndTarget and tParams then
-			local wndButton = wndTarget:FindChild("ShortcutBtn")
-			if wndButton then 
+function InterfaceMenuList:OnDrawAlert(strAddonName, tParams)-- Should be reserved for AddOns pushing updates.
+	if type(strAddonName) ~= "string" or type(tParams) ~= "table" then
+		return
+	end
+	
+	local wndButtonList = self.wndMain:FindChild("ButtonList")		
+	local wndButtonListItem = wndButtonList:FindChild("InterfaceMenuButton_" .. strAddonName)
+	local nPinIndex = self:GetPinIndex(self.tPinnedAddons, strAddonName)
+
+	if wndButtonListItem and nPinIndex ~= nil then
+		local wndButton = wndButtonListItem:FindChild("ShortcutBtn")
+		if tParams[3] and self.tMenuAlerts[strAddonName][3] < tParams[3] then -- Make sure # of alerts is going up before displaying blip
+			local wndFlash = self:LoadByName("AlertBlip", wndButton:FindChild("Alert"), "AlertBlip")
+			wndFlash:FindChild("Sonar"):SetSprite("PlayerPathContent_TEMP:spr_Crafting_TEMP_Stretch_QuestZoneNoLoop")
+		elseif wndButton:FindChild("AlertBlip") ~= nil then
+			wndButton:FindChild("AlertBlip"):Destroy()
+		end
+	end
+	
+	self.tMenuAlerts[strAddonName] = tParams
+	self:OnDrawAlertVisual(strAddonName, tParams) 
+end
+
+function InterfaceMenuList:OnDrawAlertVisual(strAddonName, tParams)
+	
+	local wndButtonList = self.wndMain:FindChild("ButtonList")		
+	local wndButtonListItem = wndButtonList:FindChild("InterfaceMenuButton_" .. strAddonName)
+	local nPinIndex = self:GetPinIndex(self.tPinnedAddons, strAddonName)
+	
+	if wndButtonListItem and nPinIndex ~= nil then
+		local wndButton = wndButtonListItem:FindChild("ShortcutBtn")
 				local wndIcon = wndButton:FindChild("Icon")
 				
-				if wndButton:GetData() == strWindowName then
 					if tParams[1] then
 						local wndIndicator = self:LoadByName("AlertIndicator", wndButton:FindChild("Alert"), "AlertIndicator")
-						
 					elseif wndButton:FindChild("AlertIndicator") ~= nil then
 						wndButton:FindChild("AlertIndicator"):Destroy()
 					end
 					
 					if tParams[2] then
-						wndIcon:SetTooltip(string.format("%s\n\n%s", self.tMenuTooltips[strWindowName], tParams[2]))
+						wndIcon:SetTooltip(string.format("%s\n\n%s", self.tMenuTooltips[strAddonName], tParams[2]))
 					end
 					
 					if tParams[3] and tParams[3] > 0 then
@@ -378,16 +518,13 @@ function InterfaceMenuList:OnDrawAlert(strWindowName, tParams)
 						wndButton:FindChild("Number"):SetTextColor(ApolloColor.new("UI_TextHoloTitle"))
 					end
 				end
-			end
-		end
-	end
 	
 	local wndParent = self.wndList:FindChild("FullListScroll")
 	for idx, wndTarget in pairs(wndParent:GetChildren()) do
 		local wndButton = wndTarget:FindChild("ShortcutBtn")
 		local wndIcon = wndButton:FindChild("Icon")
 		
-		if wndButton:GetData() == strWindowName then
+		if wndButton:GetData() == strAddonName then
 			if tParams[1] then
 				local wndIndicator = self:LoadByName("AlertIndicator", wndButton:FindChild("Alert"), "AlertIndicator")
 			elseif wndButton:FindChild("AlertIndicator") ~= nil then
@@ -395,7 +532,7 @@ function InterfaceMenuList:OnDrawAlert(strWindowName, tParams)
 			end
 			
 			if tParams[2] then
-				wndIcon:SetTooltip(string.format("%s\n\n%s", self.tMenuTooltips[strWindowName], tParams[2]))
+				wndIcon:SetTooltip(string.format("%s\n\n%s", self.tMenuTooltips[strAddonName], tParams[2]))
 			end
 			
 			if tParams[3] and tParams[3] > 0 then
@@ -412,7 +549,6 @@ function InterfaceMenuList:OnDrawAlert(strWindowName, tParams)
 end
 
 function InterfaceMenuList:OnLiveEventClosed()
-	self.wndMain:FindChild("EventAlert"):Show(false)
 end
 
 -----------------------------------------------------------------------------------------------
@@ -422,39 +558,63 @@ end
 function InterfaceMenuList:OnMenuListItemClick(wndHandler, wndControl)
 	if wndHandler ~= wndControl then return end
 	
-	if string.len(wndControl:GetData()) > 0 then
-		Event_FireGenericEvent(wndControl:GetData())
-	else
-		InvokeOptionsScreen()
-	end
-	self.wndList:Show(false)
-end
-
-function InterfaceMenuList:OnPinBtnChecked(wndHandler, wndControl)
-	if wndHandler ~= wndControl then return end
-	
-	local wndParent = wndControl:GetParent():GetParent()
-	
-	self.tPinnedAddons = {}
-	
-	for idx, wndMenuItem in pairs(wndParent:GetChildren()) do
-		if wndMenuItem:FindChild("PinBtn"):IsChecked() then
-		
-			table.insert(self.tPinnedAddons, wndMenuItem:FindChild("PinBtn"):GetData())
-		end
-	end
-	
-	self:ButtonListRedraw()
-end
-
-function InterfaceMenuList:OnListBtnClick(wndHandler, wndControl) -- These are the five always on icons on the top
-	if wndHandler ~= wndControl then return end
-	local strMappingResult = wndHandler:GetData() and self.tMenuData[wndHandler:GetData()][1] or ""
+	local strKey = wndHandler:GetData()
+	local strMappingResult = (strKey and self.tMenuData[strKey]) and self.tMenuData[strKey][1] or ""
 	
 	if string.len(strMappingResult) > 0 then
 		Event_FireGenericEvent(strMappingResult)
 	else
-		InvokeOptionsScreen()
+		if strKey == Apollo.GetString("InterfaceMenu_SystemMenu") then
+			InvokeOptionsScreen()
+		elseif strKey == Apollo.GetString("InterfaceMenu_Store") then
+			GameLib.OpenStore()
+		else
+			InvokeOptionsScreen()
+		end
+	end
+	
+	self.wndList:Close()
+end
+
+function InterfaceMenuList:OnPinChecked(wndHandler, wndControl)
+	local strPinName = wndControl:GetData()
+	local nPinTableSize = self:GetTableSize(self.tPinnedAddons) + 1
+	table.insert(self.tPinnedAddons, strPinName)
+	self:AddPinToButtonList(strPinName )
+end
+	
+function InterfaceMenuList:OnPinUnchecked(wndHandler, wndControl)
+	local strPinName = wndControl:GetData()
+	local nPinIndex = self:GetPinIndex(self.tPinnedAddons, strPinName)
+	
+	if nPinIndex > 0 then
+		table.remove(self.tPinnedAddons, nPinIndex) -- Remove from pinned table  
+	end
+	
+	self:RemovePinFromButtonList(strPinName)
+end
+
+function InterfaceMenuList:OnListBtnClick(wndHandler, wndControl) -- These are the five always on icons on the top
+	if wndHandler ~= wndControl then return end
+	local strKey = wndHandler:GetData()
+	local strMappingResult = wndHandler:GetData() and self.tMenuData[strKey][1] or ""
+	
+	if string.len(strMappingResult) > 0 then
+		Event_FireGenericEvent(strMappingResult)
+	else
+		if strKey == Apollo.GetString("InterfaceMenu_SystemMenu") then
+			InvokeOptionsScreen()
+		elseif strKey == Apollo.GetString("InterfaceMenu_Store") then
+			GameLib.OpenStore()
+		else
+			InvokeOptionsScreen()
+		end
+	end
+	
+	--If AddOn has a new alert, remove it once the window has been opened.
+	local wndAlertActive = wndControl:FindChild("AlertBlip") or nil
+	if wndAlertActive ~= nil then
+		wndAlertActive:Destroy()
 	end
 end
 
@@ -471,11 +631,16 @@ end
 
 function InterfaceMenuList:OnOpenFullListCheck(wndHandler, wndControl)
 	self.wndList:FindChild("SearchEditBox"):SetFocus()
+	self.wndList:Invoke()
 	self:FullListRedraw()
 end
 
 function InterfaceMenuList:OnEventMoreInfoBtn(wndHandler, wndControl)
 	Event_FireGenericEvent("LiveEvent_ToggleWindow")
+end
+
+function InterfaceMenuList:OnLoginRewardsOpenBtn(wndHandler, wndControl)
+	Event_FireGenericEvent("OpenDailyLogin")
 end
 
 function InterfaceMenuList:LoadByName(strForm, wndParent, strCustomName)
@@ -488,28 +653,59 @@ function InterfaceMenuList:LoadByName(strForm, wndParent, strCustomName)
 end
 
 function InterfaceMenuList:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
-	local arTutorialAnchorMapping =
+	local tAnchors = 
 	{
-		--[GameLib.CodeEnumTutorialAnchor.Abilities] 			= "LASBtn",
-		--[GameLib.CodeEnumTutorialAnchor.Character] 		= "CharacterBtn",
-		--[GameLib.CodeEnumTutorialAnchor.Mail] 				= "MailBtn",
-		--[GameLib.CodeEnumTutorialAnchor.GalacticArchive] = "LoreBtn",
-		--[GameLib.CodeEnumTutorialAnchor.Social] 			= "SocialBtn",
-		--[GameLib.CodeEnumTutorialAnchor.GroupFinder] 		= "GroupFinderBtn",
+		[GameLib.CodeEnumTutorialAnchor.LASBuilderButton] 			= true,
+		[GameLib.CodeEnumTutorialAnchor.InterfaceMenuListCharacter] = true,
+		[GameLib.CodeEnumTutorialAnchor.FortuneButton]				= true,
+		[GameLib.CodeEnumTutorialAnchor.StorefrontButton]			= true,
 	}
-
-	local strWindowName = "ButtonList" or false
-	if not strWindowName then
+	
+	if not tAnchors[eAnchor] or not self.wndMain then
 		return
 	end
-
-	local tRect = {}
-	tRect.l, tRect.t, tRect.r, tRect.b = self.wndMain:FindChild(strWindowName):GetRect()
-	tRect.r = tRect.r - 26
 	
-	if arTutorialAnchorMapping[eAnchor] then
-		Event_FireGenericEvent("Tutorial_RequestUIAnchorResponse", eAnchor, idTutorial, strPopupText, tRect)
+	local tAnchorMapping =
+	{
+		[GameLib.CodeEnumTutorialAnchor.LASBuilderButton]			= self.wndMain:FindChild("ButtonList"),
+		[GameLib.CodeEnumTutorialAnchor.InterfaceMenuListCharacter]	= self.wndMain:FindChild("ButtonList"),
+		[GameLib.CodeEnumTutorialAnchor.FortuneButton]				= self.wndMain:FindChild("MTX"),
+		[GameLib.CodeEnumTutorialAnchor.StorefrontButton]			= self.wndMain:FindChild("OpenMarketplaceBtn"),
+	}
+	
+	if tAnchorMapping[eAnchor] then
+		Event_FireGenericEvent("Tutorial_ShowCallout", eAnchor, idTutorial, strPopupText, tAnchorMapping[eAnchor])
 	end
+end
+
+function InterfaceMenuList:OnGatchaOpenBtn(wndHandler, wndControl)
+	GameLib.OpenFortunes()
+end
+
+function InterfaceMenuList:OnMarketplaceOpenBtn(wndHandler, wndControl)
+
+	if wndControl:FindChild("MTXBtn_Runner"):IsShown() then
+		wndControl:FindChild("MTXBtn_Runner"):Show(false)
+	end
+	
+	GameLib.OpenStore()
+end
+	
+function InterfaceMenuList:GetTableSize(tName)
+	local nCount = 0
+	for _ in pairs(tName) do
+		nCount = nCount + 1
+	end
+	return nCount
+end
+
+function InterfaceMenuList:GetPinIndex(tName, strValue)
+	for idx, strPinName in ipairs(tName) do
+		if strPinName == strValue then
+			return idx
+		end
+	end
+	return nil
 end
 
 local InterfaceMenuListInst = InterfaceMenuList:new()

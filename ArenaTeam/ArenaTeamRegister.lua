@@ -49,9 +49,7 @@ function ArenaTeamRegister:OnDocumentReady()
 	if self.xmlDoc == nil then
 		return
 	end
-	
-	Apollo.RegisterEventHandler("WindowManagementReady", 		"OnWindowManagementReady", self)
-	
+
 	Apollo.RegisterEventHandler("GuildResultInterceptResponse", "OnGuildResultInterceptResponse", self)
  	Apollo.RegisterEventHandler("GenericEvent_RegisterArenaTeam", "OnArenaTeamRegistration", self)
 	Apollo.RegisterEventHandler("Event_ShowArenaInfo", "OnCancel", self)
@@ -79,9 +77,13 @@ function ArenaTeamRegister:OnDocumentReady()
 	self.tCreate.iColor = 1
 
 	self:ResetOptions()
+
+	Apollo.RegisterEventHandler("WindowManagementReady", 		"OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 end
 
 function ArenaTeamRegister:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {wnd = self.wndMain, strName = Apollo.GetString("MatchMaker_Arenas"), nSaveVersion=2})
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("MatchMaker_Arenas"), nSaveVersion=2})
 end
 

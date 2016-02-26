@@ -55,8 +55,9 @@ function Dialog:OnDocumentReady()
 		return
 	end
 	Apollo.LoadSprites("UI\\Dialog\\DialogSprites.xml") -- Old
-	Apollo.RegisterEventHandler("Dialog_ShowState", "OnDialog_ShowState", self)
-	Apollo.RegisterEventHandler("Dialog_Close", "OnDialog_Close", self)
+	Apollo.RegisterEventHandler("Dialog_ShowState", 						"OnDialog_ShowState", self)
+	Apollo.RegisterEventHandler("Dialog_Close", 							"OnDialog_Close", self)
+	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 				"OnTutorial_RequestUIAnchor", self)
 
 	self.wndPlayer = Apollo.LoadForm(self.xmlDoc, "PlayerWindow", nil, self)
 	self.wndPlayer:ToFront()
@@ -81,9 +82,9 @@ end
 -- New Player Bubble Methods
 ---------------------------------------------------------------------------------------------------
 function Dialog:OnDialog_Close()
-	self.wndPlayer:Show(false)
-	self.wndItem:Show(false)
-	self.wndNpc:Show(false)
+	self.wndPlayer:Close()
+	self.wndItem:Close()
+	self.wndNpc:Close()
 	self.timerUpdate:Stop()
 end
 
@@ -193,7 +194,7 @@ function Dialog:DrawResponses(eState, idQuest, tResponseList)
 			nResponseHeight = nResponseHeight + wndCurr:GetHeight()
 		end
 	end
-	self.wndPlayer:FindChild("ResponseItemContainer"):ArrangeChildrenVert(0, function(a,b) return b:FindChild("ResponseItemCantUse"):IsShown() end)
+	self.wndPlayer:FindChild("ResponseItemContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function(a,b) return b:FindChild("ResponseItemCantUse"):IsShown() end)
 
 	local nLeft, nTop, nRight, nBottom = self.wndPlayer:FindChild("ResponseItemContainer"):GetAnchorOffsets()
 	self.wndPlayer:FindChild("ResponseItemContainer"):SetAnchorOffsets(nLeft, nTop, nRight, nTop + nResponseHeight)
@@ -203,8 +204,13 @@ function Dialog:DrawResponses(eState, idQuest, tResponseList)
 	Event_FireGenericEvent("Test_MouseReturnSignal") -- TODO: possibly remove
 
 	self.wndPlayer:SetAnchorOffsets(self.nWndPlayerLeft, self.nWndPlayerTop, self.nWndPlayerRight, self.nWndPlayerBottom + nOnGoingHeight + nResponseHeight)
-	self.wndPlayer:Show(true)
-	self.wndPlayer:ToFront()
+	self.wndPlayer:Invoke()
+	
+	if self.tPendingTutorialData then		
+		Event_FireGenericEvent("Tutorial_ShowCallout", self.tPendingTutorialData.eAnchor, self.tPendingTutorialData.idTutorial, self.tPendingTutorialData.strPopupText, self.wndPlayer:FindChild("ResponseItemBtn"))
+		
+		self.tPendingTutorialData = nil
+	end
 end
 
 function Dialog:OnResponseBtnClick(wndHandler, wndControl, eMouseButton) -- ResponseItemBtn
@@ -352,7 +358,7 @@ end
 
 function Dialog:HelperDrawLootItem(wndCurrReward, tCurrReward, bSimple)
 	local strIconSprite = ""
-	if tCurrReward and tCurrReward.eType == Quest.Quest2RewardType_Item then
+	if tCurrReward and tCurrReward.eType == Quest.Quest2RewardType_Item and tCurrReward.itemReward then
 
 		strIconSprite = tCurrReward.itemReward:GetIcon()
 		wndCurrReward:FindChild("LootDescription"):SetText(tCurrReward.itemReward:GetName())
@@ -447,7 +453,13 @@ end
 
 function Dialog:DrawNpcBubble(wndArg, eState, idQuest)
 	-- Text
-	local strText = DialogSys.GetNPCText(idQuest)
+	local cdDialog = DialogSys.GetNPCText(idQuest)
+	if cdDialog == nil then
+		wndArg:Show(false)
+		return
+	end
+	
+	local strText = cdDialog:GetText()
 	if not strText or string.len(strText) == 0 then
 		wndArg:Show(false)
 		return
@@ -455,6 +467,10 @@ function Dialog:DrawNpcBubble(wndArg, eState, idQuest)
 	wndArg:FindChild("BubbleText"):SetAML("<P Font=\"CRB_InterfaceMedium\" TextColor=\"ff7fffb9\">"..strText.."</P>")
 	wndArg:FindChild("BubbleText"):SetHeightToContentHeight()
 
+	if cdDialog:HasVO() then
+		cdDialog:PlayVO()
+	end
+	
 	-- Rewards
 	wndArg:FindChild("GivenRewardsText"):Show(false)
 	wndArg:FindChild("ChoiceRewardsText"):Show(false)
@@ -464,28 +480,29 @@ function Dialog:DrawNpcBubble(wndArg, eState, idQuest)
 	local nPadding = 5
 	if queCurr then
 		local tRewardInfo = queCurr:GetRewardData()
+		local wndGivenRewardsItems = wndArg:FindChild("GivenRewardsItems")
 		if tRewardInfo.arFixedRewards and #tRewardInfo.arFixedRewards > 0 then
-			wndArg:FindChild("GivenRewardsItems"):DestroyChildren()
+			wndGivenRewardsItems:DestroyChildren()
 
 			--add the xp given
 			local nGivenXP = queCurr:CalcRewardXP()
 			if nGivenXP > 0 then
-				local wndCurrXPReward = Apollo.LoadForm(self.xmlDoc, "XPReward", wndArg:FindChild("GivenRewardsItems"), self)
+				local wndCurrXPReward = Apollo.LoadForm(self.xmlDoc, "XPReward", wndGivenRewardsItems, self)
 				wndCurrXPReward:SetText(String_GetWeaselString(Apollo.GetString("CombatFloaterMessage_Experience_Default"), tostring(nGivenXP)))
 				nGivenContainerHeight = nGivenContainerHeight + wndCurrXPReward:GetHeight()
 			end
 
-			local tDoThisLast = nil
+			local tDoThisLast = {}
 			for idx, tCurrReward in ipairs(tRewardInfo.arFixedRewards) do
 				if tCurrReward and tCurrReward.eType == Quest.Quest2RewardType_Money and tCurrReward.nAmount > 0 then
-					tDoThisLast = tCurrReward
+					tDoThisLast[tCurrReward.eCurrencyType] = tCurrReward
 				elseif tCurrReward then
 					local wndCurrReward = nil
 					if tCurrReward.eType ~= Quest.Quest2RewardType_Reputation then
-						wndCurrReward = Apollo.LoadForm(self.xmlDoc, "LootItem", wndArg:FindChild("GivenRewardsItems"), self)
+						wndCurrReward = Apollo.LoadForm(self.xmlDoc, "LootItem", wndGivenRewardsItems, self)
 						self:HelperDrawLootItem(wndCurrReward, tCurrReward, false)
 					else
-						wndCurrReward = Apollo.LoadForm(self.xmlDoc, "GivenLootItemSimple", wndArg:FindChild("GivenRewardsItems"), self)
+						wndCurrReward = Apollo.LoadForm(self.xmlDoc, "GivenLootItemSimple", wndGivenRewardsItems, self)
 						self:HelperDrawLootItem(wndCurrReward, tCurrReward, true)
 					end
 
@@ -494,15 +511,16 @@ function Dialog:DrawNpcBubble(wndArg, eState, idQuest)
 			end
 
 			 -- Given Rewards Only: Draw money at the bottom
-			if tDoThisLast then
-				local wndCurrReward = Apollo.LoadForm(self.xmlDoc, "GivenLootItemSimple", wndArg:FindChild("GivenRewardsItems"), self)
-				self:HelperDrawLootItem(wndCurrReward, tDoThisLast, true)
+			for idx, tLast in pairs(tDoThisLast) do
+				local wndCurrReward = Apollo.LoadForm(self.xmlDoc, "GivenLootItemSimple", wndGivenRewardsItems, self)
+				self:HelperDrawLootItem(wndCurrReward, tLast, true)
 				nGivenContainerHeight = nGivenContainerHeight + wndCurrReward:GetHeight()
 			end
+
 			-- End draw money and xp
 			nGivenContainerHeight = nGivenContainerHeight + (nPadding * 2)
-			wndArg:FindChild("GivenRewardsItems"):ArrangeChildrenVert()
-			wndArg:FindChild("GivenRewardsItems"):SetAnchorOffsets(0, 0, 0, nGivenContainerHeight)
+			wndGivenRewardsItems:ArrangeChildrenVert()
+			wndGivenRewardsItems:SetAnchorOffsets(0, 0, 0, nGivenContainerHeight)
 
 			wndArg:FindChild("GivenRewardsText"):Show(true)
 			nGivenContainerHeight = nGivenContainerHeight + 30 -- +30 for the text label after resizing
@@ -671,6 +689,36 @@ end
 
 function Dialog:HelperPrereqFailed(itemCurr)
 	return itemCurr and itemCurr:IsEquippable() and not itemCurr:CanEquip()
+end
+
+---------------------------------------------------------------------------------------------------
+-- Tutorial anchor request
+---------------------------------------------------------------------------------------------------
+
+function Dialog:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
+	local tAnchors =
+	{
+		[GameLib.CodeEnumTutorialAnchor.QuestIntroduction] 	= true,
+		[GameLib.CodeEnumTutorialAnchor.QuestAccept] 		= true,
+	}
+	
+	if not tAnchors[eAnchor] or not self.wndPlayer then
+		return
+	end
+	
+	if not self.wndPlayer:FindChild("ResponseItemBtn") then
+		self.tPendingTutorialData = {eAnchor = eAnchor, idTutorial = idTutorial, strPopupText = strPopupText}
+	else	
+		local tAnchorMapping = 
+		{
+			[GameLib.CodeEnumTutorialAnchor.QuestIntroduction] 	= self.wndPlayer:FindChild("ResponseItemBtn"),
+			[GameLib.CodeEnumTutorialAnchor.QuestAccept] 		= self.wndPlayer:FindChild("ResponseItemBtn"),
+		}
+		
+		if tAnchorMapping[eAnchor] then
+			Event_FireGenericEvent("Tutorial_ShowCallout", eAnchor, idTutorial, strPopupText, tAnchorMapping[eAnchor])
+		end
+	end
 end
 
 ---------------------------------------------------------------------------------------------------

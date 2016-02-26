@@ -4,16 +4,21 @@
 -----------------------------------------------------------------------------------------------
 require "Apollo"
 require "Sound"
-require "GameLib"
 require "Spell"
 require "Item"
+require "Unit"
 require "CharacterTitle"
-require "AttributeMilestonesLib"
+require "GameLib"
 require "CostumesLib"
+require "AccountItemLib"
+require "GuildLib"
+require "PlayerPathLib"
 
 local Character = {}
 
-local knNumCostumes = 10
+local knSaveVersion = 3
+local knAttributeContainerPadding = 11
+local knGearScoreDecimalThreshold = 10
 
 local ktSlotWindowNameToTooltip =
 {
@@ -33,26 +38,6 @@ local ktSlotWindowNameToTooltip =
 	["WeaponSlot"] 				= Apollo.GetString("Character_WeaponEmpty"),
 }
 
-local ktAttributeIconsText =
-{
-	[Unit.CodeEnumProperties.Dexterity] 					= {strIcon = "ClientSprites:Icon_Windows_UI_CRB_Attribute_Finesse", 			strName = Apollo.GetString("CRB_Finesse")},
-	[Unit.CodeEnumProperties.Technology] 					= {strIcon = "ClientSprites:Icon_Windows_UI_CRB_Attribute_Technology", 			strName = Apollo.GetString("CRB_Tech_Attribute")},
-	[Unit.CodeEnumProperties.Magic] 						= {strIcon = "ClientSprites:Icon_Windows_UI_CRB_Attribute_Moxie", 				strName = Apollo.GetString("CRB_Moxie")},
-	[Unit.CodeEnumProperties.Wisdom] 						= {strIcon = "ClientSprites:Icon_Windows_UI_CRB_Attribute_Insight", 			strName = Apollo.GetString("UnitPropertyInsight")},
-	[Unit.CodeEnumProperties.Stamina] 						= {strIcon = "ClientSprites:Icon_Windows_UI_CRB_Attribute_Grit", 				strName = Apollo.GetString("CRB_Grit")},
-	[Unit.CodeEnumProperties.Strength] 						= {strIcon = "ClientSprites:Icon_Windows_UI_CRB_Attribute_BruteForce", 			strName = Apollo.GetString("CRB_Brutality")},
-	[Unit.CodeEnumProperties.AssaultPower] 					= {strIcon = "ClientSprites:Icon_Windows_UI_CRB_Attribute_AssaultPower", 		strName = Apollo.GetString("CRB_Assault_Power")},
-	[Unit.CodeEnumProperties.SupportPower] 					= {strIcon = "ClientSprites:Icon_Windows_UI_CRB_Attribute_SupportPower", 		strName = Apollo.GetString("CRB_Support_Power")},
-	[Unit.CodeEnumProperties.Rating_AvoidReduce] 			= {strIcon = "ClientSprites:Icon_Windows_UI_CRB_Attribute_Strikethrough", 		strName = Apollo.GetString("CRB_Strikethrough_Rating")},
-	[Unit.CodeEnumProperties.Rating_CritChanceIncrease] 	= {strIcon = "ClientSprites:Icon_Windows_UI_CRB_Attribute_CriticalHit", 		strName = Apollo.GetString("CRB_Critical_Chance")},
-	[Unit.CodeEnumProperties.RatingCritSeverityIncrease] 	= {strIcon = "ClientSprites:Icon_Windows_UI_CRB_Attribute_CriticalSeverity", 	strName = Apollo.GetString("CRB_Critical_Severity")},
-	[Unit.CodeEnumProperties.Rating_AvoidIncrease] 			= {strIcon = "ClientSprites:Icon_Windows_UI_CRB_Attribute_Deflect", 			strName = Apollo.GetString("CRB_Deflect_Rating")},
-	[Unit.CodeEnumProperties.Rating_CritChanceDecrease] 	= {strIcon = "ClientSprites:Icon_Windows_UI_CRB_Attribute_DeflectCritical", 	strName = Apollo.GetString("CRB_Deflect_Critical_Hit_Rating")},
-	[Unit.CodeEnumProperties.ManaPerFiveSeconds] 			= {strIcon = "ClientSprites:Icon_Windows_UI_CRB_Attribute_Recovery", 			strName = Apollo.GetString("CRB_Attribute_Recovery_Rating")},
-	[Unit.CodeEnumProperties.HealthRegenMultiplier] 		= {strIcon = "ClientSprites:Icon_Windows_UI_CRB_Attribute_Recovery", 			strName = Apollo.GetString("CRB_Health_Regen_Factor")},
-	[Unit.CodeEnumProperties.BaseHealth] 					= {strIcon = "ClientSprites:Icon_Windows_UI_CRB_Attribute_Health", 				strName = Apollo.GetString("CRB_Health_Max")},
-}
-
 local karClassToString =
 {
 	[GameLib.CodeEnumClass.Warrior] 		= Apollo.GetString("ClassWarrior"),
@@ -65,12 +50,12 @@ local karClassToString =
 
 local karClassToIcon =
 {
-	[GameLib.CodeEnumClass.Warrior] 		= "IconSprites:Icon_Windows_UI_CRB_Warrior",
-	[GameLib.CodeEnumClass.Engineer] 		= "IconSprites:Icon_Windows_UI_CRB_Engineer",
-	[GameLib.CodeEnumClass.Esper] 			= "IconSprites:Icon_Windows_UI_CRB_Esper",
-	[GameLib.CodeEnumClass.Medic] 			= "IconSprites:Icon_Windows_UI_CRB_Medic",
-	[GameLib.CodeEnumClass.Stalker] 		= "IconSprites:Icon_Windows_UI_CRB_Stalker",
-	[GameLib.CodeEnumClass.Spellslinger] 	= "IconSprites:Icon_Windows_UI_CRB_Spellslinger",
+	[GameLib.CodeEnumClass.Warrior] 		= "BK3:UI_Icon_CharacterCreate_Class_Warrior",
+	[GameLib.CodeEnumClass.Engineer] 		= "BK3:UI_Icon_CharacterCreate_Class_Engineer",
+	[GameLib.CodeEnumClass.Esper] 			= "BK3:UI_Icon_CharacterCreate_Class_Esper",
+	[GameLib.CodeEnumClass.Medic] 			= "BK3:UI_Icon_CharacterCreate_Class_Medic",
+	[GameLib.CodeEnumClass.Stalker] 		= "BK3:UI_Icon_CharacterCreate_Class_Stalker",
+	[GameLib.CodeEnumClass.Spellslinger] 	= "BK3:UI_Icon_CharacterCreate_Class_Spellslinger",
 }
 
 local ktPathToString =
@@ -83,10 +68,10 @@ local ktPathToString =
 
 local ktPathToIcon =
 {
-  [PlayerPathLib.PlayerPathType_Soldier]    = "CRB_PlayerPathSprites:spr_Path_Soldier_Stretch",
-  [PlayerPathLib.PlayerPathType_Settler]    = "CRB_PlayerPathSprites:spr_Path_Settler_Stretch",
-  [PlayerPathLib.PlayerPathType_Scientist]  = "CRB_PlayerPathSprites:spr_Path_Scientist_Stretch",
-  [PlayerPathLib.PlayerPathType_Explorer]   = "CRB_PlayerPathSprites:spr_Path_Explorer_Stretch",
+  [PlayerPathLib.PlayerPathType_Soldier]    = "BK3:UI_Icon_CharacterCreate_Path_Soldier",
+  [PlayerPathLib.PlayerPathType_Settler]    = "BK3:UI_Icon_CharacterCreate_Path_Settler",
+  [PlayerPathLib.PlayerPathType_Scientist]  = "BK3:UI_Icon_CharacterCreate_Path_Scientist",
+  [PlayerPathLib.PlayerPathType_Explorer]   = "BK3:UI_Icon_CharacterCreate_Path_Explorer",
 }
 
 local karFactionToString =
@@ -112,6 +97,54 @@ local karRaceToString =
 	[GameLib.CodeEnumRace.Mordesh] 	= Apollo.GetString("CRB_Mordesh"),
 }
 
+local ktRaceToIcon =
+{
+	[Unit.CodeEnumFaction.DominionPlayer] = 
+	{
+		[Unit.CodeEnumGender.Male] =
+		{
+			[GameLib.CodeEnumRace.Human] 	= "charactercreate:sprCharC_Finalize_RaceDomM",
+			[GameLib.CodeEnumRace.Granok] 	= "charactercreate:sprCharC_Finalize_RaceGranokM",
+			[GameLib.CodeEnumRace.Aurin] 	= "charactercreate:sprCharC_Finalize_RaceAurinM",
+			[GameLib.CodeEnumRace.Draken] 	= "charactercreate:sprCharC_Finalize_RaceDrakenM",
+			[GameLib.CodeEnumRace.Mechari] 	= "charactercreate:sprCharC_Finalize_RaceMechariM",
+			[GameLib.CodeEnumRace.Mordesh] 	= "charactercreate:sprCharC_Finalize_RaceMordeshM",
+			[GameLib.CodeEnumRace.Chua] 	= "charactercreate:sprCharC_Finalize_RaceChua",
+		},
+		[Unit.CodeEnumGender.Female] =
+		{
+			[GameLib.CodeEnumRace.Human] 	= "charactercreate:sprCharC_Finalize_RaceDomF",
+			[GameLib.CodeEnumRace.Granok] 	= "charactercreate:sprCharC_Finalize_RaceGranokF",
+			[GameLib.CodeEnumRace.Aurin] 	= "charactercreate:sprCharC_Finalize_RaceAurinF",
+			[GameLib.CodeEnumRace.Draken] 	= "charactercreate:sprCharC_Finalize_RaceDrakenF",
+			[GameLib.CodeEnumRace.Mechari] 	= "charactercreate:sprCharC_Finalize_RaceMechariF",
+			[GameLib.CodeEnumRace.Mordesh] 	= "charactercreate:sprCharC_Finalize_RaceMordeshF",
+			[GameLib.CodeEnumRace.Chua] 	= "charactercreate:sprCharC_Finalize_RaceChua",
+		}
+	},
+	[Unit.CodeEnumFaction.ExilesPlayer] = 
+	{
+		[Unit.CodeEnumGender.Male] =
+		{
+			[GameLib.CodeEnumRace.Human] 	= "charactercreate:sprCharC_Finalize_RaceExileM",
+			[GameLib.CodeEnumRace.Granok] 	= "charactercreate:sprCharC_Finalize_RaceGranokM",
+			[GameLib.CodeEnumRace.Aurin] 	= "charactercreate:sprCharC_Finalize_RaceAurinM",
+			[GameLib.CodeEnumRace.Draken] 	= "charactercreate:sprCharC_Finalize_RaceDrakenM",
+			[GameLib.CodeEnumRace.Mechari] 	= "charactercreate:sprCharC_Finalize_RaceMechariM",
+			[GameLib.CodeEnumRace.Mordesh] 	= "charactercreate:sprCharC_Finalize_RaceMordeshM",
+		},
+		[Unit.CodeEnumGender.Female] =
+		{
+			[GameLib.CodeEnumRace.Human] 	= "charactercreate:sprCharC_Finalize_RaceExileF",
+			[GameLib.CodeEnumRace.Granok] 	= "charactercreate:sprCharC_Finalize_RaceGranokF",
+			[GameLib.CodeEnumRace.Aurin] 	= "charactercreate:sprCharC_Finalize_RaceAurinF",
+			[GameLib.CodeEnumRace.Draken] 	= "charactercreate:sprCharC_Finalize_RaceDrakenF",
+			[GameLib.CodeEnumRace.Mechari] 	= "charactercreate:sprCharC_Finalize_RaceMechariF",
+			[GameLib.CodeEnumRace.Mordesh] 	= "charactercreate:sprCharC_Finalize_RaceMordeshF",
+		}
+	},
+}
+
 local kstrInspectAffiliation =
 {
 	[GuildLib.GuildType_Guild]			= Apollo.GetString("Inspect_GuildDisplay"),
@@ -120,6 +153,28 @@ local kstrInspectAffiliation =
 	[GuildLib.GuildType_ArenaTeam_3v3]	= Apollo.GetString("Inspect_3v3ArenaDisplay"),
 	[GuildLib.GuildType_ArenaTeam_5v5]	= Apollo.GetString("Inspect_5v5ArenaDisplay"),
 	[GuildLib.GuildType_WarParty]		= Apollo.GetString("Inspect_WarpartyDisplay")
+}
+
+local karCostumeSlots =
+{
+	GameLib.CodeEnumItemSlots.Weapon,
+	GameLib.CodeEnumItemSlots.Head,
+	GameLib.CodeEnumItemSlots.Shoulder,
+	GameLib.CodeEnumItemSlots.Chest,
+	GameLib.CodeEnumItemSlots.Hands,
+	GameLib.CodeEnumItemSlots.Legs,
+	GameLib.CodeEnumItemSlots.Feet,
+}
+
+local ktItemSlotToEquippedItems =
+{
+	[GameLib.CodeEnumEquippedItems.Chest] = 		GameLib.CodeEnumItemSlots.Chest, 
+	[GameLib.CodeEnumEquippedItems.Legs] = 			GameLib.CodeEnumItemSlots.Legs,
+	[GameLib.CodeEnumEquippedItems.Head] = 			GameLib.CodeEnumItemSlots.Head,
+	[GameLib.CodeEnumEquippedItems.Shoulder] = 		GameLib.CodeEnumItemSlots.Shoulder,
+	[GameLib.CodeEnumEquippedItems.Feet] = 			GameLib.CodeEnumItemSlots.Feet,
+	[GameLib.CodeEnumEquippedItems.Hands] = 		GameLib.CodeEnumItemSlots.Hands,
+	[GameLib.CodeEnumEquippedItems.WeaponPrimary] = GameLib.CodeEnumItemSlots.Weapon,
 }
 
 function Character:new(o)
@@ -149,7 +204,6 @@ function Character:OnDocumentReady()
 	end
 
 	Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded",						"OnInterfaceMenuListHasLoaded", self)
-	Apollo.RegisterEventHandler("WindowManagementReady",							"OnWindowManagementReady", self)
 
 	self.timerTitleChange = ApolloTimer.Create(1.0, false, "OnDrawEditNamePopout", self)
 	self.timerTitleChange:Stop()
@@ -161,12 +215,14 @@ function Character:OnDocumentReady()
 	Apollo.RegisterEventHandler("Death", 											"DrawAttributes", self)
 	Apollo.RegisterEventHandler("GuildChange", 										"OnGuildChange", self)
 	Apollo.RegisterEventHandler("ItemConfirmSoulboundOnEquip",						"OnItemConfirmSoulboundOnEquip", self)
+	Apollo.RegisterEventHandler("ItemConfirmClearRestockOnEquip",					"OnItemConfirmClearRestockOnEquip", self)
 	Apollo.RegisterEventHandler("ItemDurabilityUpdate",								"OnItemDurabilityUpdate", self)
 	Apollo.RegisterEventHandler("CostumeSet",										"OnCostumeSet", self)
+	Apollo.RegisterEventHandler("CostumeCooldownComplete",							"OnThrottleEnd", self)
 	Apollo.RegisterEventHandler("ChangeWorld",										"OnClose", self)
+	Apollo.RegisterEventHandler("PlayerLevelChange",					 			"OnPlayerLevelChange", self)
 
 	-- Open Tab UIs
-	Apollo.RegisterEventHandler("InterfaceMenu_ToggleSets", 						"OnInterfaceMenu_ToggleSets", self)
 	Apollo.RegisterEventHandler("GenericEvent_ToggleReputation", 					"OnToggleReputation", self)
 	Apollo.RegisterEventHandler("ToggleReputationInterface", 						"OnToggleReputation", self)
 
@@ -188,6 +244,12 @@ function Character:OnDocumentReady()
 	Apollo.RegisterEventHandler("LevelUpUnlock_Character_GearSlot_WeaponAttachment","OnLevelUpUnlock_Character_Generic", self)
 	Apollo.RegisterEventHandler("LevelUpUnlock_Class_Attribute",					"OnLevelUpUnlock_Character_Generic", self)
 	Apollo.RegisterEventHandler("LevelUpUnlock_Path_Title",							"OnLevelUpUnlock_Character_Generic", self)
+	
+	Apollo.RegisterEventHandler("PlayerEquippedItemChanged",						"MapEquipment", self)
+
+	Apollo.RegisterEventHandler("AccountEntitlementUpdate", 						"OnEntitlementUpdate", self)
+	Apollo.RegisterEventHandler("CharacterEntitlementUpdate",						"OnEntitlementUpdate", self)
+	Apollo.RegisterEventHandler("StoreLinksRefresh",								"RefreshStoreLink", self)
 
 	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 						"OnTutorial_RequestUIAnchor", self)
 
@@ -197,33 +259,32 @@ function Character:OnDocumentReady()
 	self.wndCharacter 				= Apollo.LoadForm(self.xmlDoc, "CharacterWindow", nil, self)
 	self.wndCostume 				= self.wndCharacter:FindChild("CharFrame_BGArt:Costume")
 
-	self.wndBonusFrame				= self.wndCharacter:FindChild("BonusFrame")
-	self.wndCharacterTitles			= self.wndCharacter:FindChild("CharacterTitles")
-	self.wndCharacterStats			= self.wndCharacter:FindChild("CharacterStats")
-	self.wndCharacterMounts			= self.wndCharacter:FindChild("CharacterMounts")
-	self.wndCharacterReputation		= self.wndCharacter:FindChild("CharacterReputation")
-	self.wndCharacterReputationList	= self.wndCharacter:FindChild("CharacterReputationList")
-	self.wndCostumeSelectionList 	= self.wndCharacter:FindChild("CharFrame_BGArt:CostumeBtnHolder")
+	self.wndCharacterEverything		= self.wndCharacter:FindChild("CharacterEverything")
+	self.wndCharacterStats			= self.wndCharacterEverything:FindChild("CharacterStats")
+	self.wndCharacterBonus			= self.wndCharacterEverything:FindChild("CharacterBonus")
+	self.wndCharacterTitles			= self.wndCharacter:FindChild("CharacterInformation")
+	self.wndCharacterCostumes		= self.wndCharacterEverything:FindChild("CharacterCostumes")
+	self.wndCostumeSelectionList 	= self.wndCharacterEverything:FindChild("CharacterCostumes:CostumeBtnHolder")
+	self.wndCostumeList				= self.wndCostumeSelectionList:FindChild("CostumeList")
+	self.wndCostumeListBlocker		= self.wndCostumeSelectionList:FindChild("CostumeListBlocker")
+	self.wndEntitlements			= self.wndCharacter:FindChild("Entitlements")
+	self.wndGridContainer 			= self.wndEntitlements:FindChild("GridContainer")
+	self.wndCharacterReputation		= self.wndCharacterEverything:FindChild("CharacterReputation")
+	self.wndDropdownContents		= self.wndCharacterEverything:FindChild("DropdownContents")
 
-	self.wndCharacter:FindChild("CharacterTitleBtn"):AttachWindow(self.wndCharacterTitles)
-	self.wndCharacter:FindChild("SelectCostumeWindowToggle"):AttachWindow(self.wndCostumeSelectionList)
-	self.wndCharacter:FindChild("BonusTab"):AttachWindow(self.wndBonusFrame)
-	self.wndCharacter:FindChild("CharacterStatsBtn"):AttachWindow(self.wndCharacterStats)
-	self.wndCharacter:FindChild("CharacterReputationBtn"):AttachWindow(self.wndCharacterReputation)
+	self.wndCharacter:FindChild("DropdownBtn"):AttachWindow(self.wndDropdownContents)
 	self.wndCharacter:FindChild("TitleSelectionBtn"):AttachWindow(self.wndCharacter:FindChild("NameEditTitleContainer"))
 	self.wndCharacter:FindChild("ClassTitleGuild"):AttachWindow(self.wndCharacter:FindChild("NameEditGuildTagContainer"))
+	self.wndCharacter:FindChild("CharacterTitleDropdown"):AttachWindow(self.wndCharacter:FindChild("CharacterTitleContainer"))
 
 	self.wndCharacter:Show(false)
 
-	self.wndSoulbindConfirm	= Apollo.LoadForm(self.xmlDoc, "SoulbindConfirm", nil, self)
-	self.wndSoulbindConfirm:Show(false, true)
+	self.wndBindConfirm	= Apollo.LoadForm(self.xmlDoc, "BindConfirm", nil, self)
 
 	self.bStatsValid 		= false
 	self.listAttributes 	= {}
 	self.tOffensiveStats 	= {}
 	self.tDefensiveStats 	= {}
-	self.wCostumeCheckBtn = self.wndCharacter:FindChild("CharFrame_BGArt:BGArt_HeaderFrame:SelectCostumeWindowToggle")
-	self.wndCostumeSelectionList:Show(false)
 
 	local wndVisibleSlots = self.wndCharacter:FindChild("VisibleSlots")
 	self.arSlotsWindowsByName = -- each one has the slot name and then the corresponding UI window
@@ -236,28 +297,20 @@ function Character:OnDocumentReady()
 		[Apollo.GetString("InventorySlot_Feet")] 			= wndVisibleSlots:FindChild("FeetSlot"),
 		[Apollo.GetString("InventorySlot_WeaponPrimary")] 	= wndVisibleSlots:FindChild("WeaponSlot")
 	}
+	
+	-- Titles
+	self.wndSelectedTitle = nil;
 
 	-- Costumes
-	self.nCostumeCount = CostumesLib.GetCostumeCount()
+	self.nCostumeCount = 0
+	self:RefreshStoreLink()
 
 	self.wndCostumeSelectionList:FindChild("ClearCostumeBtn"):SetData(0)
+
+	self.wndCharacter:FindChild("DropdownBtn"):SetText(String_GetWeaselString(Apollo.GetString("Character_Display"), Apollo.GetString("Character_Stats")))
 	
-	for idx = 1, knNumCostumes do
-		local wndCostumeBtn = self.wndCostumeSelectionList:FindChild("CostumeBtn"..idx)
-		wndCostumeBtn:SetData(idx)
-		wndCostumeBtn:Show(idx <= self.nCostumeCount)
-	end
-
-	self.nCurrentCostume = nil
-
-	self.wndCharacter:FindChild("PrimaryAttributeTab"):SetCheck(true)
-	self.wndCharacter:FindChild("SecondaryAttributeFrame"):Show(false)
-	self.wndCharacter:FindChild("BonusFrame"):Show(false)
-
-	self:LoadMilestones(self.wndCharacter)
-
 	-- Guild Holo
-	local wndHolomarkContainer = self.wndCharacter:FindChild("CharacterTitles:NameEditGuildHolomarkContainer")
+	local wndHolomarkContainer = self.wndCharacterTitles:FindChild("NameEditGuildHolomarkContainer")
 	wndHolomarkContainer:FindChild("GuildHolomarkLeftBtn"):SetCheck(GameLib.GetGuildHolomarkVisible(GameLib.GuildHolomark.Left))
     wndHolomarkContainer:FindChild("GuildHolomarkRightBtn"):SetCheck(GameLib.GetGuildHolomarkVisible(GameLib.GuildHolomark.Right))
     wndHolomarkContainer:FindChild("GuildHolomarkBackBtn"):SetCheck(GameLib.GetGuildHolomarkVisible(GameLib.GuildHolomark.Back))
@@ -267,36 +320,9 @@ function Character:OnDocumentReady()
 	else
 	    wndHolomarkContainer:SetRadioSel("GuildHolomarkDistance", 2)
     end
-end
 
-function Character:LoadMilestones(wndUpdate)
-	local wndMilestoneContainer = wndUpdate:FindChild("MilestoneContainer")
-	wndMilestoneContainer:Show(true)
-
-	-- Milestones
-	-- Make an enum for the string keys?
-	local arMilestones =  -- window, then attribute enum for comparison
-	{
-		["strength"] 	= {wndMilestone = "", eMilestoneId = Unit.CodeEnumProperties.Strength, 		nOrder = 1},
-		["dexterity"] 	= {wndMilestone = "", eMilestoneId = Unit.CodeEnumProperties.Dexterity, 	nOrder = 2},
-		["technology"] 	= {wndMilestone = "", eMilestoneId = Unit.CodeEnumProperties.Technology, 	nOrder = 4},
-		["magic"]		= {wndMilestone = "", eMilestoneId = Unit.CodeEnumProperties.Magic, 		nOrder = 3},
-		["wisdom"] 		= {wndMilestone = "", eMilestoneId = Unit.CodeEnumProperties.Wisdom, 		nOrder = 5},
-		["stamina"] 	= {wndMilestone = "", eMilestoneId = Unit.CodeEnumProperties.Stamina, 		nOrder = 6},
-	}
-
-	for iSeq = 1, 6 do
-		for idx, tMilestoneInfo in pairs(arMilestones) do
-			if tMilestoneInfo.nOrder == iSeq then
-				local wndMilestone = Apollo.LoadForm(self.xmlDoc, "AttributeMilestoneEntry", wndMilestoneContainer, self)
-				tMilestoneInfo.wndMilestone = wndMilestone
-			end
-		end
-	end
-
-	wndMilestoneContainer:SetData(arMilestones)
-	wndMilestoneContainer:ArrangeChildrenVert(0)
-	self:UpdateMilestones(wndUpdate)
+    Apollo.RegisterEventHandler("WindowManagementReady",							"OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 end
 
 function Character:OnInterfaceMenuListHasLoaded()
@@ -305,6 +331,7 @@ function Character:OnInterfaceMenuListHasLoaded()
 end
 
 function Character:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("InterfaceMenu_Character"), nSaveVersion = knSaveVersion})
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndCharacter, strName = Apollo.GetString("InterfaceMenu_Character")})
 end
 
@@ -316,7 +343,7 @@ function Character:OnToggleCharacterWindow()
 	if not self.wndCharacter:IsVisible() then
 		self:ShowCharacterWindow()
 	else
-		self.wndCharacter:Show(false)
+		self.wndCharacter:Close()
 		Event_FireGenericEvent("CharacterWindowHasBeenClosed")
 		Sound.Play(Sound.PlayUI01ClosePhysical)
 	end
@@ -332,31 +359,20 @@ end
 
 function Character:OpenReputation()
 	self:ShowCharacterWindow()
-
 	if not self.wndCharacterReputation:IsShown() then
-		Event_FireGenericEvent("GenericEvent_InitializeReputation", self.wndCharacterReputationList)
+		Event_FireGenericEvent("GenericEvent_InitializeReputation", self.wndCharacterReputation)
 	end
-
-	self.wndCharacterTitles:Show(false)
+	self.wndCharacterCostumes:Show(false)
 	self.wndCharacterStats:Show(false)
-	self.wndCharacterMounts:Show(false)
+	self.wndCharacterBonus:Show(false)
 	self.wndCharacterReputation:Show(true)
-	Event_FireGenericEvent("GenericEvent_DestroyMountsCustomization")
+	self.wndCharacter:FindChild("DropdownBtn"):SetText(String_GetWeaselString(Apollo.GetString("Character_Display"), Apollo.GetString("Character_Reputation")))
+	self.wndDropdownContents:Show(false)
+	self.wndEntitlements:Show(false)
 end
 
-function Character:OnCharacterMountsCheck(wndHandler, wndControl)
-	Event_FireGenericEvent("GenericEvent_InitializeMountsCustomization", self.wndCharacterMounts)
-end
-
-function Character:OnCharacterMountsUncheck(wndHandler, wndControl)
-	Event_FireGenericEvent("GenericEvent_DestroyMountsCustomization")
-end
-
-function Character:OnCharacterReputationCheck(wndHandler, wndControl)
-	Event_FireGenericEvent("GenericEvent_InitializeReputation", self.wndCharacterReputationList)
-end
-
-function Character:OnCharacterReputationUncheck(wndHandler, wndControl)
+function Character:CloseReputation()
+	self.wndCharacterReputation:Show(false)
 	Event_FireGenericEvent("GenericEvent_DestroyReputation")
 end
 
@@ -367,33 +383,31 @@ end
 function Character:OnNameEditClearTitleBtn()
 	CharacterTitle.SetTitle(nil)
 	self.strTitle = ""
+	self.wndCharacterTitles:FindChild("NameEditClearTitleBtn"):Enable(false)
+	
+	-- Uncheck the previously selected title in the list
+	if self.wndSelectedTitle ~= nil then
+		self.wndSelectedTitle:SetCheck(false)
+		self.wndSelectedTitle = nil
+	end
 end
 
 function Character:ShowCharacterWindow()
 	local unitPlayer = GameLib.GetPlayerUnit()
 	self.wndCharacter:SetData(unitPlayer)
 
-	self.wndCharacter:Show(true)
+	self.wndCharacter:Invoke()
+	self:MapEquipment()
+	self:OnDrawEditNamePopout()
 
-	self.nCostumeCount = CostumesLib.GetCostumeCount()
-
-	for idx = 1, knNumCostumes do
-		local wndCostume = self.wndCharacter:FindChild("CostumeBtn" .. idx)
-		wndCostume:SetCheck(false)
-		wndCostume:SetText(String_GetWeaselString(Apollo.GetString("Character_CostumeNum"), idx))
-		wndCostume:Show(idx <= self.nCostumeCount)
-	end
-
-	local nLeft, nTop, nRight, nBottom = self.wndCharacter:FindChild("CostumeBtnHolder"):GetAnchorOffsets()
-	self.wndCharacter:FindChild("CostumeBtnHolder"):SetAnchorOffsets(nLeft, nTop, nRight, nTop + (91 + 28 * self.nCostumeCount))
-
-	self.wndCostumeSelectionList:Show(false)
+	self.wndCharacter:FindChild("DropdownBtn"):SetText(String_GetWeaselString(Apollo.GetString("Character_Display"), Apollo.GetString("Character_Stats")))
+	self.wndCharacterEverything:Show(true)
 	self.wndCharacterStats:Show(true)
-	self.wndCharacterTitles:Show(false)
+	self.wndCharacterCostumes:Show(false)
+	self.wndCharacterBonus:Show(false)
 	self.wndCharacterReputation:Show(false)
-	self.wndCharacterMounts:Show(false)
+	self.wndEntitlements:Show(false)
 	self.wndCharacter:ToFront()
-	self:UpdateMilestones(self.wndCharacter)
 	self:DrawAttributes(self.wndCharacter)
 	self:DrawNames(self.wndCharacter)
 
@@ -405,31 +419,170 @@ function Character:ShowCharacterWindow()
 	Event_ShowTutorial(GameLib.CodeEnumTutorial.CharacterPanel)
 end
 
+--Entitlements
+function Character:OnEntitlementUpdate(tEntitlementInfo)
+	self:RefreshEntitlements()
+	self:UpdateCostumeList(tEntitlementInfo)
+end
+
+function Character:RefreshEntitlements()
+	if not self.wndCharacter or not self.wndCharacter:IsValid() then
+		return
+	end
+
+	local tEntitlements = {}
+	for idx, tEntitlement in pairs(AccountItemLib.GetAccountEntitlements()) do
+		if tEntitlement.nId ~= nil then
+			tEntitlement.bAccount = true
+			tEntitlements[tEntitlement.nId] = tEntitlement
+		end
+	end
+	
+	for idx, tEntitlement in pairs(AccountItemLib.GetCharacterEntitlements()) do
+		if tEntitlements[tEntitlement.nId] then--This entitlement is for both characters and accounts.
+			tEntitlements[tEntitlement.nId].bCharacter = true
+			tEntitlements[tEntitlement.nId].nCount = tEntitlements[tEntitlement.nId].nCount + tEntitlement.nCount
+		else
+			tEntitlement.bCharacter = true
+			tEntitlements[tEntitlement.nId] = tEntitlement
+		end
+	end
+
+	self.wndGridContainer:DestroyChildren()
+	local nCount = 0
+	for idx, tEntitlement in pairs(tEntitlements) do
+		nCount = nCount + 1
+		local wndObject = Apollo.LoadForm(self.xmlDoc, "EntitlementsForm", self.wndGridContainer, self)
+		local wndEntitlementName = wndObject:FindChild("EntitlementName")
+		local wndGivenIcon = wndObject:FindChild("GivenIcon")
+		if tEntitlement.icon ~= "" then
+			wndGivenIcon:FindChild("Icon"):SetSprite(tEntitlement.icon)
+			wndGivenIcon:Show(true)
+		else
+			local nGivenIconWidth = wndGivenIcon:GetWidth()
+			local nLeft, nTop, nRight, nBottom = wndEntitlementName:GetAnchorOffsets()
+			wndEntitlementName:SetAnchorOffsets(nLeft - nGivenIconWidth, nTop, nRight + nGivenIconWidth, nBottom)
+		end
+
+		wndObject:FindChild("AccountIcon"):Show(tEntitlement.bAccount)
+		wndObject:FindChild("CharacterIcon"):Show(tEntitlement.bCharacter)
+
+		wndObject:SetTooltip(tEntitlement.strDescription)
+		wndEntitlementName:SetText(tEntitlement.nMaxCount > 1 and String_GetWeaselString(Apollo.GetString("CRB_EntitlementCount"), tEntitlement.strName, tEntitlement.nCount) or tEntitlement.strName)
+		wndObject:FindChild("EntitlementCount"):SetText(String_GetWeaselString(Apollo.GetString("CRB_NOutOfN"), AccountItemLib.GetEntitlementCount(tEntitlement.nId), tEntitlement.nMaxCount))
+		
+		wndObject:FindChild("IconContainer"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.RightOrBottom)
+	end
+	
+	self.wndEntitlements:FindChild("NoEntitlements"):Show(nCount == 0)
+	self.wndGridContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+end
+
+function Character:UpdateCostumeList(tEntitlementInfo)
+	if tEntitlementInfo.nEntitlementId ~= AccountItemLib.CodeEnumEntitlement.CostumeSlots then
+		return
+	end
+	
+	self.nCurrentCostume = CostumesLib.GetCostumeIndex()
+	local nCurrentCostumeCount = CostumesLib.GetCostumeCount()
+	if nCurrentCostumeCount < self.nCostumeCount then
+		-- shrink list
+		for idx = nCurrentCostumeCount + 1, self.nCostumeCount do
+			self.wndCostumeList:FindChild("CostumeBtn"..idx):Destroy()
+		end
+		self.wndCostumeList:FindChild("CostumeBtn"..self.nCurrentCostume):SetCheck(true)
+	else
+		-- grow list
+		for idx = self.nCostumeCount + 1, nCurrentCostumeCount do
+			local wndCostumeBtn = Apollo.LoadForm(self.xmlDoc, "CostumeBtn", self.wndCostumeList, self)
+			wndCostumeBtn:SetData(idx)
+			wndCostumeBtn:SetText(String_GetWeaselString(Apollo.GetString("Character_CostumeNum"), idx))
+			wndCostumeBtn:SetName("CostumeBtn" .. idx)
+			wndCostumeBtn:SetCheck(idx == self.nCurrentCostume)
+		end
+	end
+	
+	local wndCostumeBtnMTX = self.wndCostumeList:FindChild("CostumeBtnMTX")
+	self.nCostumeCount = nCurrentCostumeCount
+	local nMTXBtnHeight = 0
+	local nCostumeMaxCount = CostumesLib.GetCostumeMaxCount()
+	if self.nCostumeCount < nCostumeMaxCount and self.bStoreLinkValid then
+		if wndCostumeBtnMTX == nil then
+			wndCostumeBtnMTX = Apollo.LoadForm(self.xmlDoc, "CostumeBtnMTX", self.wndCostumeList, self)
+			wndCostumeBtnMTX:SetData(nCostumeMaxCount)
+		end
+		nMTXBtnHeight = wndCostumeBtnMTX:GetHeight()
+	elseif wndCostumeBtnMTX ~= nil then
+		wndCostumeBtnMTX:Destroy()
+	end
+	
+	self.wndCostumeSelectionList:FindChild("ClearCostumeBtn"):Enable(self.nCurrentCostume ~= 0)
+	self.wndCostumeSelectionList:FindChild("EquipBtn"):Enable(false)
+	local nButtonListHeight = self.wndCostumeList:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function(wndFirst, wndSecond) return wndFirst:GetData() < wndSecond:GetData() end)
+	local nLeft, nTop, nRight, nBottom = self.wndCostumeList:GetAnchorOffsets()
+	self.wndCostumeList:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nButtonListHeight)
+	self.wndCostumeListBlocker:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nButtonListHeight - nMTXBtnHeight)
+end
+
+function Character:RefreshStoreLink()
+	self.bStoreLinkValid = StorefrontLib.IsLinkValid(StorefrontLib.CodeEnumStoreLink.CostumeSlots)
+	self:UpdateCostumeList( { nEntitlementId = AccountItemLib.CodeEnumEntitlement.CostumeSlots } )
+end
+
+function Character:UnlockMoreCostumes()
+	StorefrontLib.OpenLink(StorefrontLib.CodeEnumStoreLink.CostumeSlots)
+end
+
 function Character:OnCostumeBtnToggle(wndHandler, wndCtrl)
 	if wndHandler ~= wndCtrl then
 		return false
 	end
 
-	self.nCurrentCostume = nil
-
-	local wndCostumeHolder = self.wndCharacter:FindChild("CharFrame_BGArt:CostumeBtnHolder")
-	
-	self.nCurrentCostume = CostumesLib.GetCostumeIndex()
-
-	self.wCostumeCheckBtn:SetCheck(false)
-	self.wndCostumeSelectionList:Show(false)
+	--self.nCurrentCostume = CostumesLib.GetCostumeIndex()
 	
 	local idCostume = wndHandler:GetData()
-	CostumesLib.SetCostumeIndex(wndHandler:GetData())
-	
+
+	local costumePreview = CostumesLib.GetCostume(idCostume)
+	for idx = 1, #karCostumeSlots do
+		local eSlot = karCostumeSlots[idx]
+		local bIsVisible = costumePreview:IsSlotVisible(eSlot)
+		local itemEquipped = costumePreview:GetSlotItem(eSlot)--Get Item from costume.
+		if not itemEquipped then--If the item was not in this costume, show the item currently equipped.
+			itemEquipped = self.tEquipmentMap[eSlot]
+		end
+
+		local arDyes = costumePreview:GetSlotDyes(eSlot)
+		if bIsVisible and itemEquipped then
+			self.wndCostume:SetItem(itemEquipped)
+			self.wndCostume:SetItemDye(itemEquipped, arDyes[1].nId, arDyes[2].nId, arDyes[3].nId)
+		else
+			self.wndCostume:RemoveItem(eSlot)
+		end
+	end
+
+	local wndEquipBtn = self.wndCostumeSelectionList:FindChild("EquipBtn")
+	wndEquipBtn:SetData(idCostume)
+	wndEquipBtn:Enable(self.nCurrentCostume ~= idCostume)
+end
+
+function Character:OnEquipBtn(wndHandler, wndControl)
+	local idCostume = wndHandler:GetData()
+	if self.nCurrentCostume == idCostume then
+		return
+	end
+
+	CostumesLib.SetCostumeIndex(idCostume)
+	self.nCurrentCostume = idCostume
 	Event_FireGenericEvent("CostumeSet", idCostume)
-	return true
 end
 
 function Character:OnNoCostumeBtn()
-	self.wCostumeCheckBtn:SetCheck(false)
-	self.wndCostumeSelectionList:Show(false)
-	self.nCurrentCostume = nil
+	if self.nCurrentCostume == 0 then
+		return
+	end
+
+	self.nCurrentCostume = 0
+	self:OnCostumeSet(self.nCurrentCostume)
 	
 	CostumesLib.SetCostumeIndex(0)
 end
@@ -437,6 +590,18 @@ end
 function Character:OnOpenCostumes()
 	Event_FireGenericEvent("GenericEvent_OpenCostumes")
 	self:OnClose()
+end
+
+function Character:OnThrottleEnd()
+	for nIdx, wndCostumeBtn in ipairs(self.wndCostumeList:GetChildren()) do
+		wndCostumeBtn:Enable(true)
+	end
+	self.wndCostumeListBlocker:Show(false)
+	self.wndCostumeSelectionList:FindChild("ClearCostumeBtn"):Enable(self.nCurrentCostume ~= 0)
+
+	local wndEquipBtn = self.wndCostumeSelectionList:FindChild("EquipBtn")
+	local idEquipCostume = wndEquipBtn:GetData()
+	wndEquipBtn:Enable(self.nCurrentCostume ~= idEquipCostume)
 end
 
 function Character:OnItemDurabilityUpdate(itemUpdated, nPreviousDurability)
@@ -447,51 +612,79 @@ end
 function Character:OnPersonaUpdateCharacterStats()
 	if self.wndCharacter:IsShown() then
 		self:DrawAttributes(self.wndCharacter)
-		self:UpdateMilestones(self.wndCharacter)
+	end
+end
+
+function Character:MapEquipment()
+	local unitPlayer = GameLib:GetPlayerUnit()
+	if not unitPlayer then
+		return
+	end
+
+	local arItems = unitPlayer:GetEquippedItems()
+	self.tEquipmentMap = {}
+	
+	for idx = 1, #arItems do
+		local eSlot = ktItemSlotToEquippedItems[arItems[idx]:GetSlot()]
+		if eSlot then
+			self.tEquipmentMap[eSlot] = arItems[idx]
+		end
 	end
 end
 
 function Character:OnCostumeSet(idCostume)
-	local wndButtonHolder = self.wndCharacter:FindChild("CostumeBtnHolder")
-	wndButtonHolder:FindChildByUserData(idCostume):SetCheck(true)
-end
-
-function Character:OnClose()
-	self.wndCharacter:Show(false)
-	Event_FireGenericEvent("CharacterWindowHasBeenClosed")
-end
-
-function Character:OnPrimaryAttributeTabBtn(wndHander, wndControl)
-	local wndParent = wndControl:GetParent()
-	local wndBonusFrame = wndParent:FindChild("BonusFrame")
-	wndParent:FindChild("MilestoneContainer"):Show(true)
-	wndParent:FindChild("SecondaryAttributeFrame"):Show(false)
-
-	if wndBonusFrame then
-		wndBonusFrame:Show(false)
+	for nIdx, wndCostumeBtn in ipairs(self.wndCostumeList:GetChildren()) do
+		wndCostumeBtn:SetCheck(idCostume == wndCostumeBtn:GetData())
+		wndCostumeBtn:Enable(wndCostumeBtn:GetName() == "CostumeBtnMTX")
 	end
+	self.wndCostumeListBlocker:Show(true)
+	self.wndCostumeSelectionList:FindChild("ClearCostumeBtn"):Enable(false)
+	self.wndCostumeSelectionList:FindChild("EquipBtn"):Enable(false)
 end
 
-function Character:OnSecondaryAttributeTabBtn(wndHander, wndControl)
-	local wndParent = wndControl:GetParent()
-	local wndBonusFrame = wndParent:FindChild("BonusFrame")
-	wndParent:FindChild("MilestoneContainer"):Show(false)
-	wndParent:FindChild("SecondaryAttributeFrame"):Show(true)
-	if wndBonusFrame then
-		wndBonusFrame:Show(false)
+function Character:OnClose(wndHandler, wndControl)
+	if wndHandler ~= wndControl then 
+		return
 	end
-end
-
-function Character:OnBonusTabBtn(wndHandler, wndControl)
-	local wndParent = wndControl:GetParent()
-	local wndBonusFrame = wndParent:FindChild("BonusFrame")
-	wndParent:FindChild("MilestoneContainer"):Show(false)
-	wndParent:FindChild("SecondaryAttributeFrame"):Show(false)
 	
-	if wndBonusFrame then
-		wndBonusFrame:Show(true)
-		Event_FireGenericEvent("InterfaceMenu_ToggleSets", wndParent:FindChild("BonusFrame"))
+	self.wndCharacter:Close()
+	Event_FireGenericEvent("CharacterWindowHasBeenClosed")
+	self.wndCharacter:FindChild("NameEditTitleContainer"):Show(false)
+end
+
+function Character:OnPlayerLevelChange()
+	if self.wndCharacter:IsShown() and self.wndCharacterTitles:IsShown() then
+		self:DrawNames(self.wndCharacter)	
 	end
+end
+
+function Character:OnStatsBtn(wndHandler, wndControl)
+	local wndContainer = wndControl:GetParent():GetParent() -- Dropdown contents -> CharacterEverything
+	local wndCharacterStats = wndContainer:FindChild("CharacterStats")
+	local wndCharacterCostumes = wndContainer:FindChild("CharacterCostumes")
+	local wndCharacterBonus = wndContainer:FindChild("CharacterBonus")
+	local wndDropdownContents = wndContainer:FindChild("DropdownContents")
+	local wndEntitlements = wndContainer:FindChild("Entitlements")
+	wndCharacterStats:Show(true)
+	if wndCharacterBonus then
+		wndCharacterCostumes:Show(false)
+		self.wndCharacterBonus:Show(false)
+		wndEntitlements:Show(false)
+		self:CloseReputation()
+	end
+	wndContainer:FindChild("DropdownBtn"):SetText(String_GetWeaselString(Apollo.GetString("Character_Display"), Apollo.GetString("Character_Stats")))
+	wndDropdownContents:Show(false)
+end
+
+function Character:OnBonusBtn(wndHandler, wndControl)
+	self.wndCharacterCostumes:Show(false)
+	self.wndCharacterStats:Show(false)
+	self.wndEntitlements:Show(false)
+	self.wndCharacterBonus:Show(true)
+	Event_FireGenericEvent("UpdateRuneSets", self.wndCharacterBonus)
+	self:CloseReputation()
+	self.wndCharacter:FindChild("DropdownBtn"):SetText(String_GetWeaselString(Apollo.GetString("Character_Display"), Apollo.GetString("Character_SetBonuses")))
+	self.wndDropdownContents:Show(false)
 end
 
 function Character:DrawAttributes(wndUpdate)
@@ -501,190 +694,247 @@ function Character:DrawAttributes(wndUpdate)
 		return
 	end
 
-	wndUpdate:FindChild("SecondaryAttributeFrame"):DestroyChildren()
-	wndUpdate:FindChild("PermAttributeContainer"):DestroyChildren()
-
-	local arProperties = unitPlayer:GetUnitProperties()
-	local arPrimaryAttributes =
+	local arCategories =
 	{
 		{
+			strTitle		= Apollo.GetString("Character_Offensive"),
+			arAttributes	=
 			{
-				strName 	= Apollo.GetString("Character_MaxHealthLabel"),
-				nValue 		= math.ceil(unitPlayer:GetMaxHealth() or 0),
-				strTooltip 	= Apollo.GetString("CRB_Health_Description")
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.BaseAvoidReduceChance),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetStrikethroughChance().nAmount, 2, true)),
+					eState		= unitPlayer:GetStrikethroughChance().eDRState,
+					strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_StrikethroughTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.Rating_AvoidReduce).fValue, 2, true), Apollo.FormatNumber(unitPlayer:GetStrikethroughChance().nAmount - (unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseAvoidReduceChance).fValue * 100), 2, true), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseAvoidReduceChance).fValue * 100, 2, true))
+				},
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.BaseCritChance),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetCritChance().nAmount, 2, true)),
+					eState		= unitPlayer:GetCritChance().eDRState,
+					strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_CritTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.Rating_CritChanceIncrease).fValue, 2, true), Apollo.FormatNumber(unitPlayer:GetCritChance().nAmount - (unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseCritChance).fValue * 100), 2, true), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseCritChance).fValue * 100, 2, true))
+				},
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.CriticalHitSeverityMultiplier),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetCritSeverity().nAmount, 2, true)),
+					eState		= unitPlayer:GetCritSeverity().eDRState,
+					strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_CritSevTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.RatingCritSeverityIncrease).fValue, 2, true), Apollo.FormatNumber(unitPlayer:GetCritSeverity().nAmount - (unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.CriticalHitSeverityMultiplier).fValue * 100), 2, true), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.CriticalHitSeverityMultiplier).fValue * 100, 2, true))
+				},
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.BaseMultiHitChance),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetMultiHitChance().nAmount, 2, true)),
+					eState		= unitPlayer:GetMultiHitChance().eDRState,
+					strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_MultiHitChanceTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.RatingMultiHitChance).fValue, 2, true), Apollo.FormatNumber(unitPlayer:GetMultiHitChance().nAmount - (unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseMultiHitChance).fValue * 100), 2, true), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseMultiHitChance).fValue * 100, 2, true))
+				},
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.BaseMultiHitAmount),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetMultiHitAmount().nAmount, 2, true)),
+					eState		= unitPlayer:GetMultiHitAmount().eDRState,
+					strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_MultiHitSeverityTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.RatingMultiHitAmount).fValue, 2, true), Apollo.FormatNumber(unitPlayer:GetMultiHitAmount().nAmount - (unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseMultiHitAmount).fValue * 100), 2, true), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseMultiHitAmount).fValue * 100, 2, true))
+				},
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.BaseVigor),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetVigor().nAmount, 2, true)),
+					eState		= unitPlayer:GetVigor().eDRState,
+					strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_VigorTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.RatingVigor).fValue, 2, true), Apollo.FormatNumber(unitPlayer:GetVigor().nAmount - (unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseVigor).fValue * 100), 2, true), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseVigor).fValue * 100, 2, true))
+				},
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.IgnoreArmorBase),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetArmorPierce().nAmount, 2, true)),
+					eState		= unitPlayer:GetArmorPierce().eDRState,
+					strTooltip 	=  String_GetWeaselString(Apollo.GetString("Character_ArmorPenTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.RatingArmorPierce).fValue, 2, true), Apollo.FormatNumber(unitPlayer:GetArmorPierce().nAmount - (unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.IgnoreArmorBase).fValue * 100), 2, true), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.IgnoreArmorBase).fValue * 100, 2, true))
+				},
 			},
+		},
+		{
+			strTitle		= Apollo.GetString("Character_Defensive"),
+			arAttributes 	=
 			{
-				strName 	= Apollo.GetString("Character_MaxShieldLabel"),
-				nValue 		= math.ceil(unitPlayer:GetShieldCapacityMax() or 0),
-				strTooltip 	= Apollo.GetString("Character_MaxShieldTooltip")
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.DamageMitigationPctOffsetPhysical),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetPhysicalMitigation().nAmount, 2, true)),
+					eState		= unitPlayer:GetPhysicalMitigation().eDRState,
+					strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_PhysMitTooltip"), Apollo.FormatNumber(unitPlayer:GetPhysicalMitigationRating() + unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.Armor).fValue, 2, true), Apollo.FormatNumber(unitPlayer:GetPhysicalMitigation().nAmount - ((unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.DamageMitigationPctOffsetPhysical).fValue + unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.DamageMitigationPctOffset).fValue) * 100), 2, true), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.ResistPhysical).fValue, 2, true), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.Armor).fValue, 2, true), Apollo.FormatNumber((unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.DamageMitigationPctOffsetPhysical).fValue + unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.DamageMitigationPctOffset).fValue) * 100, 2, true))
+				},
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.DamageMitigationPctOffsetTech),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetTechMitigation().nAmount, 2, true)),
+					eState		= unitPlayer:GetTechMitigation().eDRState,
+					strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_TechMitTooltip"), Apollo.FormatNumber(unitPlayer:GetTechMitigationRating() + unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.Armor).fValue, 2, true), Apollo.FormatNumber(unitPlayer:GetTechMitigation().nAmount - ((unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.DamageMitigationPctOffsetTech).fValue + unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.DamageMitigationPctOffset).fValue) * 100), 2, true), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.ResistTech).fValue, 2, true), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.Armor).fValue, 2, true), Apollo.FormatNumber((unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.DamageMitigationPctOffsetTech).fValue + unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.DamageMitigationPctOffset).fValue) * 100, 2, true))
+				},
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.DamageMitigationPctOffsetMagic),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetMagicMitigation().nAmount, 2, true)),
+					eState		= unitPlayer:GetMagicMitigation().eDRState,
+					strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_MagicMitTooltip"), Apollo.FormatNumber(unitPlayer:GetMagicMitigationRating() + unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.Armor).fValue, 2, true), Apollo.FormatNumber(unitPlayer:GetMagicMitigation().nAmount - ((unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.DamageMitigationPctOffsetMagic).fValue + unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.DamageMitigationPctOffset).fValue) * 100), 2, true), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.ResistMagic).fValue, 2, true), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.Armor).fValue, 2, true), Apollo.FormatNumber((unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.DamageMitigationPctOffsetMagic).fValue + unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.DamageMitigationPctOffset).fValue) * 100, 2, true))
+				},
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.BaseGlanceAmount),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetGlanceAmount().nAmount, 2, true)),
+					eState		= unitPlayer:GetGlanceAmount().eDRState,
+					strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_GlanceSeverityTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.RatingGlanceAmount).fValue, 2, true), Apollo.FormatNumber(unitPlayer:GetGlanceAmount().nAmount - (unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseGlanceAmount).fValue  * 100), 2, true), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseGlanceAmount).fValue * 100, 2, true))
+				},
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.BaseGlanceChance),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetGlanceChance().nAmount, 2, true)),
+					eState		= unitPlayer:GetGlanceChance().eDRState,
+					strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_GlanceChanceTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.RatingGlanceChance).fValue, 2, true), Apollo.FormatNumber(unitPlayer:GetGlanceChance().nAmount -(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseGlanceChance).fValue * 100), 2, true), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseGlanceChance).fValue * 100, 2, true))
+				},
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.BaseCriticalMitigation),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetCriticalMitigation().nAmount, 2, true)),
+					eState		= unitPlayer:GetCriticalMitigation().eDRState,
+					strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_CritMitigationTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.RatingCriticalMitigation).fValue, 2, true), Apollo.FormatNumber(unitPlayer:GetCriticalMitigation().nAmount - (unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseCriticalMitigation).fValue * 100), 2, true), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseCriticalMitigation).fValue * 100, 2, true))
+				},
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.BaseAvoidChance),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetDeflectChance().nAmount, 2, true)),
+					eState		= unitPlayer:GetDeflectChance().eDRState,
+					strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_DeflectTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.Rating_AvoidIncrease).fValue, 2, true), Apollo.FormatNumber(unitPlayer:GetDeflectChance().nAmount - (unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseAvoidChance).fValue * 100), 2, true), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseAvoidChance).fValue * 100, 2, true))
+				},
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.BaseAvoidCritChance),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetDeflectCritChance().nAmount, 2, true)),
+					eState		= unitPlayer:GetDeflectCritChance().eDRState,
+					strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_CritDeflectTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.Rating_CritChanceDecrease).fValue, 2, true), Apollo.FormatNumber(unitPlayer:GetDeflectCritChance().nAmount - (unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseAvoidCritChance).fValue * 100), 2, true), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseAvoidCritChance).fValue * 100, 2, true))
+				},
 			},
+		},
+		{
+			strTitle		= Apollo.GetString("Character_Life"),
+			arAttributes 	=
 			{
-				strName 	= Apollo.GetString("AttributeAssaultPower"),
-				nValue 		= math.floor(unitPlayer:GetAssaultPower() + .5 or 0),
-				strTooltip 	= Apollo.GetString("Character_AssaultTooltip")
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.ShieldMitigationMax),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetShieldMitigationPct(), 2, true)),
+					strTooltip 	= Apollo.GetString("Character_ShieldMitigation_Tooltip")      
+				},
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.ShieldRegenPct),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetShieldRegenPct(), 2, true)),
+					strTooltip 	= Apollo.GetString("Character_ShieldRegenPercentTooltip")
+				},
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.ShieldRebootTime),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_SecondsLabel"), Apollo.FormatNumber(unitPlayer:GetShieldRebootTime(), 2, true)),
+					strTooltip 	= Apollo.GetString("Character_ShieldRebootTooltip")
+				},
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.ShieldTickTime),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_SecondsLabel"), Apollo.FormatNumber(unitPlayer:GetShieldTickTime(), 2, true)),
+					strTooltip 	= Apollo.GetString("Character_ShieldTickTime_Tooltip")      
+				}
 			},
+		},
+		{
+			strTitle		= Apollo.GetString("Character_Utility"),
+			arAttributes 	=
 			{
-				strName 	= Apollo.GetString("AttributeSupportPower"),
-				nValue 		= math.floor(unitPlayer:GetSupportPower() + .5 or 0),
-				strTooltip 	= Apollo.GetString("Character_SupportTooltip")
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.CooldownReductionModifier),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetCooldownReductionModifier(), 2, true)),
+					strTooltip 	= Apollo.GetString("Character_HasteTooltip")
+				},
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.CCDurationModifier),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetCCDurationModifier().nAmount, 2, true)),
+					eState		= unitPlayer:GetCCDurationModifier().eDRState,
+					strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_CCDurationTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.RatingCCResilience).fValue, 2, true), Apollo.FormatNumber(unitPlayer:GetCCDurationModifier().nAmount - (unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.CCDurationModifier).fValue * 100), 2, true), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.CCDurationModifier).fValue * 100, 2, true))
+				},
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.BaseLifesteal),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetLifesteal().nAmount, 2, true)),
+					eState		= unitPlayer:GetLifesteal().eDRState,
+					strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_LifestealTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.RatingLifesteal).fValue, 2, true), Apollo.FormatNumber(unitPlayer:GetLifesteal().nAmount - (unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseLifesteal).fValue * 100), 2, true), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseLifesteal).fValue * 100, 2, true))
+				},
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.BaseFocusPool),
+					strValue 	= Apollo.FormatNumber(unitPlayer:GetMaxFocus(), 0, true),
+					strTooltip 	= Apollo.GetString("Character_FocusPool")
+				},
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.BaseFocusRecoveryInCombat),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetFocusRegenInCombat().nAmount, 2, true)),
+					eState		= unitPlayer:GetFocusRegenInCombat().eDRState,
+					strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_ManaRecoveryTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.RatingFocusRecovery).fValue, 2, true), Apollo.FormatNumber(unitPlayer:GetFocusRegenInCombat().nAmount - (unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseFocusRecoveryInCombat).fValue * 100), 2, true), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseFocusRecoveryInCombat).fValue * 100, 2, true))
+				},
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.FocusCostModifier),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.FocusCostModifier).fValue * 100, 2, true)),
+					strTooltip 	= Apollo.GetString("Character_ManaCostRedTooltip")
+				},
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.BaseDamageReflectChance),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetDamageReflectChance().nAmount, 2, true)),
+					eState		= unitPlayer:GetDamageReflectChance().eDRState,
+					strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_ReflectChanceTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.RatingDamageReflectChance).fValue, 2, true), Apollo.FormatNumber(unitPlayer:GetDamageReflectChance().nAmount - (unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseDamageReflectChance).fValue * 100), 2, true), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseDamageReflectChance).fValue * 100, 2, true))
+				},
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.BaseDamageReflectAmount),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetDamageReflectAmount().nAmount, 2, true)),
+					eState		= unitPlayer:GetDamageReflectAmount().eDRState,
+					strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_ReflectSeverityTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.RatingDamageReflectAmount).fValue, 2, true), Apollo.FormatNumber(unitPlayer:GetDamageReflectAmount().nAmount - (unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseDamageReflectAmount).fValue * 100), 2, true), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseDamageReflectAmount).fValue * 100, 2, true))
+				},
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.BaseIntensity),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetIntensity().nAmount, 2, true)),
+					eState		= unitPlayer:GetIntensity().eDRState,
+					strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_IntensityTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.RatingIntensity).fValue, 2, true), Apollo.FormatNumber(unitPlayer:GetIntensity().nAmount - (unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseIntensity).fValue * 100), 2, true), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.BaseIntensity).fValue * 100, 2, true))
+				},
 			},
+		},
+		{
+			
+			strTitle		= Apollo.GetString("Character_PvP"),
+			arAttributes 	= 
 			{
-				strName 	= Apollo.GetString("CRB_Armor"),
-				nValue 		= math.floor(arProperties and arProperties.Armor and (arProperties.Armor.fValue + .5) or 0),
-				strTooltip 	= Apollo.GetString("Character_ArmorTooltip")
-			}
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.PvPOffensePctOffset),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetPvPDamageI(), 2, true)),
+					strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_PvPOffenseTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.PvPOffensiveRating).fValue, 2, true),
+								  Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.PvPOffensePctOffset).fValue * 100, 2, true), Apollo.FormatNumber(unitPlayer:GetPvPDamageO(), 2, true), Apollo.FormatNumber(unitPlayer:GetPvPDamageI() - unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.PvPOffensePctOffset).fValue * 100, 2, true))
+				},
+				{	-- GOTCHA: Healing actually uses PvPOffenseRating, which is called PvP Power to the player
+					strName 	= Apollo.GetString("Character_PvPHealLabel"),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetPvPHealingI(), 2, true)),
+					strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_PvPHealingTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.PvPOffensiveRating).fValue, 2, true),
+								  Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.PvPOffensePctOffset).fValue * 100, 2, true), Apollo.FormatNumber(unitPlayer:GetPvPHealingO(), 2, true), Apollo.FormatNumber(unitPlayer:GetPvPHealingI() - unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.PvPOffensePctOffset).fValue * 100, 2, true))
+				},
+				{
+					strName 	= Item.GetPropertyName(Unit.CodeEnumProperties.PvPDefensePctOffset),
+					strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(unitPlayer:GetPvPDefenseI(), 2, true)),
+					strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_PvPDefenseTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.PvPDefensiveRating).fValue, 2, true),
+								  Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.PvPDefensePctOffset).fValue * 100, 2, true), Apollo.FormatNumber(unitPlayer:GetPvPDefenseO(), 2, true), Apollo.FormatNumber(unitPlayer:GetPvPDefenseI() - unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.PvPDefensePctOffset).fValue * 100, 2, true))
+				}
+			},
 		}
 	}
 
-	local arSecondaryAttributes =
-	{
-		{
-			{
-				strName 	= Apollo.GetString("Character_StrikethroughLabel"),
-				strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(math.floor((unitPlayer:GetStrikethroughChance() + 0.000005) * 10000) / 100, 2, true)),
-				strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_StrikethroughTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.Rating_AvoidReduce).fValue, 2, true))
-			},
-			{
-				strName 	= Apollo.GetString("Character_CritChanceLabel"),
-				strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(math.floor((unitPlayer:GetCritChance() + 0.000005) * 10000) / 100, 2, true)),
-				strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_CritTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.Rating_CritChanceIncrease).fValue, 2, true))
-			},
-			{
-				strName 	= Apollo.GetString("Character_CritSeverityLabel"),
-				strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(math.floor((unitPlayer:GetCritSeverity() + 0.000005) * 10000) / 100, 2, true)),
-				strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_CritSevTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.RatingCritSeverityIncrease).fValue, 2, true))
-			},
-			{
-				strName 	= Apollo.GetString("Character_ArmorPenLabel"),
-				strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(math.floor((unitPlayer:GetIgnoreArmorBase() + 0.000005) * 10000) / 100, 2, true)),
-				strTooltip 	= Apollo.GetString("Character_ArmorPenTooltip")
-			},
-			{
-				strName 	= Apollo.GetString("Character_ShieldPenLabel"),
-				strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(math.floor((unitPlayer:GetIgnoreShieldBase() + 0.000005) * 10000) / 100, 2, true)),
-				strTooltip 	= Apollo.GetString("Character_ShieldPenTooltip")
-			},
-			{
-				strName 	= Apollo.GetString("Character_LifestealLabel"),
-				strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(math.floor((unitPlayer:GetBaseLifesteal() + 0.000005) * 10000) / 100, 2, true)),
-				strTooltip 	= Apollo.GetString("Character_LifestealTooltip")
-			},
-			{
-				strName 	= Apollo.GetString("Character_HasteLabel"),
-				strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(-1 * math.floor((unitPlayer:GetCooldownReductionModifier() + 0.000005 - 1) * 10000) / 100, 2, true)),
-				strTooltip 	= Apollo.GetString("Character_HasteTooltip")
-			}
-		},
-		{
-			{
-				strName 	= Apollo.GetString("Character_ShieldRegenPercentLabel"),
-				strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(math.floor((unitPlayer:GetShieldRegenPct() + 0.000005) * 10000) / 100, 2, true)),
-				strTooltip 	= Apollo.GetString("Character_ShieldRegenPercentTooltip")
-			},
-			{
-				strName 	= Apollo.GetString("Character_ShieldRebootLabel"),
-				strValue 	= String_GetWeaselString(Apollo.GetString("Character_SecondsLabel"), Apollo.FormatNumber(unitPlayer:GetShieldRebootTime() / 1000, 2, true)),
-				strTooltip 	= Apollo.GetString("Character_ShieldRebootTooltip")
-			}
-		},
-		{
-			{
-				strName 	= Apollo.GetString("Character_PhysicalMitLabel"),
-				strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(math.floor((unitPlayer:GetPhysicalMitigation() + 0.000005) * 10000) / 100, 2, true)),
-				strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_PhysMitTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.ResistPhysical).fValue, 2, true))
-			},
-			{
-				strName 	= Apollo.GetString("Character_TechMitLabel"),
-				strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(math.floor((unitPlayer:GetTechMitigation() + 0.000005) * 10000) / 100, 2, true)),
-				strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_TechMitTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.ResistTech).fValue))
-			},
-			{
-				strName 	= Apollo.GetString("Character_MagicMitLabel"),
-				strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(math.floor((unitPlayer:GetMagicMitigation() + 0.000005) * 10000) / 100, 2, true)),
-				strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_MagicMitTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.ResistMagic).fValue, 2, true))
-			},
-		},
-		{
-			{
-				strName 	= Apollo.GetString("Character_DeflectLabel"),
-				strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(math.floor((unitPlayer:GetDeflectChance() + 0.000005) * 10000) / 100, 2, true)),
-				strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_DeflectTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.Rating_AvoidIncrease).fValue, 2, true))
-			},
-			{
-				strName 	= Apollo.GetString("Character_DeflectCritLabel"),
-				strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(math.floor((unitPlayer:GetDeflectCritChance() + 0.000005) * 10000) / 100, 2, true)),
-				strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_CritDeflectTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.Rating_CritChanceDecrease).fValue, 2, true))
-			},
-			{
-				strName 	= Apollo.GetString("Character_ResilianceLabel"),
-				strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(math.floor((math.abs(unitPlayer:GetCCDurationModifier() -1) + 0.000005) * 10000) / 100, 2, true)),
-				strTooltip 	= Apollo.GetString("Character_ResilianceTooltip")
-			}
-		},
-		{
-			{
-				strName 	= Apollo.GetString("Character_ManaRecoveryLabel"),
-				strValue 	= String_GetWeaselString(Apollo.GetString("Character_PerSecLabel"), Apollo.FormatNumber(unitPlayer:GetManaRegenInCombat() * 2, 2, true)),
-				strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_ManaRecoveryTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.ManaPerFiveSeconds).fValue, 2, true))
-			},
-			{
-				strName 	= Apollo.GetString("Character_ManaCostRedLabel"),
-				strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(math.floor((math.abs(unitPlayer:GetManaCostModifier() -1) + 0.000005) * 10000) / 100, 2, true)),
-				strTooltip 	= Apollo.GetString("Character_ManaCostRedTooltip")
-			}
-		},
-		{
-			{
-				strName 	= Apollo.GetString("Character_PvPOffenseLabel"),
-				strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(math.floor((unitPlayer:GetPvPDamageI() + 0.000005) * 10000) / 100, 2, true)),
-				strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_PvPOffenseTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.PvPOffensiveRating).fValue, 2, true),
-							  Apollo.FormatNumber(math.floor((unitPlayer:GetPvPDamageO() + 0.000005) * 10000) / 100, 2, true))
-			},
-			{	-- GOTCHA: Healing actually uses PvPOffenseRating, which is called PvP Power to the player
-				strName 	= Apollo.GetString("Character_PvPHealLabel"),
-				strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(math.floor((unitPlayer:GetPvPHealingI() + 0.000005) * 10000) / 100, 2, true)),
-				strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_PvPHealingTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.PvPOffensiveRating).fValue, 2, true),
-							  Apollo.FormatNumber(math.floor((unitPlayer:GetPvPHealingO() + 0.000005) * 10000) / 100, 2, true))
-			},
-			{
-				strName 	= Apollo.GetString("Character_PvPDefLabel"),
-				strValue 	= String_GetWeaselString(Apollo.GetString("Character_PercentAppendLabel"), Apollo.FormatNumber(math.floor((1 - unitPlayer:GetPvPDefenseI() + 0.000005) * 10000) / 100, 2, true)),
-				strTooltip 	= String_GetWeaselString(Apollo.GetString("Character_PvPDefenseTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.PvPDefensiveRating).fValue, 2, true),
-							  Apollo.FormatNumber(math.floor((1 - unitPlayer:GetPvPDefenseO() + 0.000005) * 10000) / 100, 2, true))
-			},
-		}
-	}
+	local wndParent = wndUpdate:FindChild("CharacterStats")
+	for idx, tCur in pairs (arCategories) do
+		local wndItemContainer = wndParent:FindChild("AttributeContainer"..idx)
+		local wndItemHolder = nil
+		if wndItemContainer == nil then
+			wndItemContainer = Apollo.LoadForm(self.xmlDoc, "AttributeContainer", wndParent, self)
+			wndItemContainer:SetName("AttributeContainer"..idx)
+			wndItemHolder = Apollo.LoadForm(self.xmlDoc, "AttributeContHolder", wndItemContainer , self)
+		else
+			wndItemHolder = wndItemContainer:FindChild("AttributeContHolder")
+		end
+		local wndAttributeExpanderBtn = wndItemContainer:FindChild("AttributeExpanderBtn")
+		local nContainerLeft, nContainerTop, nContainerRight, nContainerBottom = wndItemHolder:GetOriginalLocation():GetOffsets()
+		local nExpandBtnHeight = wndAttributeExpanderBtn:GetHeight()
+		wndAttributeExpanderBtn:SetCheck(true)
 
-	local wndParent = wndUpdate:FindChild("PermAttributeContainer")
-	for idx, tCur in pairs (arPrimaryAttributes) do
-		local wndItemHolder = Apollo.LoadForm(self.xmlDoc, "CalloutAtContHolder", wndParent , self)
-		local nContainerLeft, nContainerTop, nContainerRight, nContainerBottom = wndParent:GetAnchorOffsets()
-
+		wndAttributeExpanderBtn:SetText(tCur.strTitle)
+		
 		local strIcon = ""
-		for idxInner, tCurInner in pairs (arPrimaryAttributes[idx]) do
-			self:PrimaryStatsDrawHelper(wndItemHolder , tCurInner.strName, tCurInner.nValue, strIcon, "UI_TextMetalGoldHighlight", tCurInner.strTooltip)
+		for idxInner, tCurInner in pairs (tCur.arAttributes) do
+			wndItemHolder:SetData(idxInner)
+			self:StatsDrawHelper(wndItemHolder, tCurInner.strName, tCurInner.strValue, strIcon, "UI_TextHoloBody", tCurInner.eState, tCurInner.strTooltip)
 		end
 
 		local nNewBottom = wndItemHolder:ArrangeChildrenVert()
-		wndItemHolder:SetAnchorOffsets(nContainerLeft, nContainerTop + 5, nContainerRight, nNewBottom + 15 )
-	end
-	wndParent:ArrangeChildrenVert()
-
-	local wndParent = wndUpdate:FindChild("SecondaryAttributeFrame")
-
-	for idx, tCur in pairs (arSecondaryAttributes) do
-		local wndItemContainer = Apollo.LoadForm(self.xmlDoc, "SecondaryAttributeContainer", wndParent, self)
-		local wndItemHolder = Apollo.LoadForm(self.xmlDoc, "SecondaryAttributeContHolder", wndItemContainer , self)
-		local nContainerLeft, nContainerTop, nContainerRight, nContainerBottom = wndItemHolder:GetAnchorOffsets()
-
-		local strIcon = ""
-		for idxInner, tCurInner in pairs (arSecondaryAttributes[idx]) do
-			self:SecondaryStatsDrawHelper(wndItemHolder , tCurInner.strName, tCurInner.strValue, strIcon, "UI_TextHoloBody", tCurInner.strTooltip)
-		end
-
-		local nNewBottom = wndItemHolder:ArrangeChildrenVert()
-		wndItemHolder:SetAnchorOffsets(nContainerLeft, nContainerTop, nContainerRight, nNewBottom )
-		wndItemContainer:SetAnchorOffsets(nContainerLeft, nContainerTop, nContainerRight, nNewBottom + 11)
+		wndItemHolder:SetAnchorOffsets(nContainerLeft, nContainerTop + nExpandBtnHeight, nContainerRight, nNewBottom + nExpandBtnHeight )
+		wndItemContainer:SetAnchorOffsets(nContainerLeft, nContainerTop, nContainerRight, nNewBottom + knAttributeContainerPadding + nExpandBtnHeight)
 	end
 	wndParent:ArrangeChildrenVert()
 
@@ -705,253 +955,115 @@ function Character:DrawAttributes(wndUpdate)
 
 		local wndVisibleSlots = wndUpdate:FindChild("VisibleSlots")
 
-		local arSlotsWindowsByName = -- each one has the slot name and then the corresponding UI window
-		{
-			[Apollo.GetString("InventorySlot_Head")] 			= wndVisibleSlots:FindChild("HeadSlot"), -- TODO: No enum to compare to code
-			[Apollo.GetString("InventorySlot_Shoulder")] 		= wndVisibleSlots:FindChild("ShoulderSlot"),
-			[Apollo.GetString("InventorySlot_Chest")] 			= wndVisibleSlots:FindChild("ChestSlot"),
-			[Apollo.GetString("InventorySlot_Hands")] 			= wndVisibleSlots:FindChild("HandsSlot"),
-			[Apollo.GetString("InventorySlot_Legs")] 			= wndVisibleSlots:FindChild("LegsSlot"),
-			[Apollo.GetString("InventorySlot_Feet")] 			= wndVisibleSlots:FindChild("FeetSlot"),
-			[Apollo.GetString("InventorySlot_WeaponPrimary")] 	= wndVisibleSlots:FindChild("WeaponSlot")
-		}
-
 		for idx, itemCurr in ipairs(tItems) do
 			local wndSlot = nil
-			for iSlot, wndValue in pairs(arSlotsWindowsByName) do
+			for iSlot, wndValue in pairs(self.arSlotsWindowsByName) do
 				if itemCurr:GetSlotName() == iSlot then
 					wndSlot = wndValue
 				end
 			end
 
 			if wndSlot ~= nil then
-				local nDurabilityMax = itemCurr:GetMaxDurability()
-				local nDurabilityCurrent = itemCurr:GetDurability()
-				local nDurabilityRation = (nDurabilityCurrent / nDurabilityMax)
-				local bHasDurability = nDurabilityMax > 0
-
-				wndSlot:FindChild("DurabilityBlocker"):Show(not bHasDurability)
-				wndSlot:FindChild("DurabilityMeter"):Show(bHasDurability)
-				wndSlot:FindChild("DurabilityMeter"):SetMax(nDurabilityMax)
-				wndSlot:FindChild("DurabilityMeter"):SetProgress(nDurabilityCurrent)
-				if nDurabilityRation <= .100 then
-					wndSlot:FindChild("DurabilityMeter"):SetBarColor("ffaf1212")
-					if wndSlot:FindChild("DurabilityAlert") then
-						wndSlot:FindChild("DurabilityAlert"):Show(true)
-					end
-				elseif nDurabilityRation <= .250 then
-					wndSlot:FindChild("DurabilityMeter"):SetBarColor("ffffba00")
-				elseif nDurabilityRation <= .500 then
-					wndSlot:FindChild("DurabilityMeter"):SetBarColor("ffd7d017")
-				else 
-					wndSlot:FindChild("DurabilityMeter"):SetBarColor("ff129faf")
-				end
-			end
-		end
-	end
-end
-
-function Character:PrimaryStatsDrawHelper(wndContainer, strName, nValue, strIcon, crTextColor, strTooltip)
-	local wndItem = Apollo.LoadForm(self.xmlDoc, "CalloutAttributeItem", wndContainer, self)
-	wndItem:FindChild("StatLabel"):SetAML(string.format("<T Font=\"CRB_InterfaceMedium_B\" TextColor=\"%s\">%s</T>", crTextColor, strName))
-	wndItem:FindChild("StatValue"):SetAML(string.format("<P Font=\"CRB_Header10\" Align=\"Right\" TextColor=\"%s\">%s</P>", crTextColor, Apollo.FormatNumber(nValue, 0, true)))
-	wndItem:SetTooltip(strTooltip)
-end
-
-function Character:SecondaryStatsDrawHelper(wndContainer, strName, strValue, strIcon, crTextColor, strTooltip)
-	local wndItem = Apollo.LoadForm(self.xmlDoc, "SecondaryAttributeItem", wndContainer, self)
-	wndItem:FindChild("StatLabel"):SetAML(string.format("<T Font=\"CRB_InterfaceSmall\" TextColor=\"%s\">%s</T>", crTextColor, strName))
-	wndItem:FindChild("StatValue"):SetAML(string.format("<T Font=\"CRB_Header9\" TextColor=\"%s\">%s</T>", crTextColor, strValue))
-	wndItem:SetTooltip(strTooltip)
-end
-
-function Character:UpdateMilestones(wndUpdated)
-	-- TODO: REFACTOR
-		local unitPlayer = wndUpdated and wndUpdated:GetData() or nil
-	if not unitPlayer then
-		return
-	end
+				local wndDurabilityBlocker = wndSlot:FindChild("DurabilityBlocker")
+				if wndDurabilityBlocker ~= nil then
+					local wndDurabilityMeter = wndSlot:FindChild("DurabilityMeter")
+					local nDurabilityMax = itemCurr:GetMaxDurability()
+					local nDurabilityCurrent = itemCurr:GetDurability()
+					local nDurabilityRation = (nDurabilityCurrent / nDurabilityMax)
+					local bHasDurability = nDurabilityMax > 0
 	
-	local tInfo = AttributeMilestonesLib.GetAttributeMilestoneInfo(unitPlayer:GetClassId())
-
-	if tInfo.eResult == AttributeMilestonesLib.CodeEnumAttributeMilestoneResult.InvalidUnit or tInfo.eResult == AttributeMilestonesLib.CodeEnumAttributeMilestoneResult.UnknownClassId then
-		return
-	end
-	
-	local tMilestoneMap = {}
-	
-	for strIdx, tEntry in pairs(tInfo.tMilestones) do
-		tMilestoneMap[strIdx] = {}
-		for idx, tMilestone in pairs(tEntry.tAttributeMilestones) do
-			if not tMilestoneMap[strIdx][tMilestone.nRequiredAmount] then
-				tMilestoneMap[strIdx][tMilestone.nRequiredAmount] = {tMajor = nil, tMinis = {}}
-			end
-			
-			if tMilestone.bIsMini then
-				table.insert(tMilestoneMap[strIdx][tMilestone.nRequiredAmount].tMinis, tMilestone)
-			else
-				tMilestoneMap[strIdx][tMilestone.nRequiredAmount].tMajor = tMilestone
-			end
-		end
-	end
-	
-	local arMilestones = wndUpdated:FindChild("MilestoneContainer"):GetData()
-
-	for strKey, tMilestones in pairs(tMilestoneMap) do
-		if arMilestones[strKey] ~= nil then
-			local wndMilestone = arMilestones[strKey].wndMilestone
-
-			local tCurrent = unitPlayer:GetUnitProperty(arMilestones[strKey].eMilestoneId)
-			if tCurrent == nil or tCurrent == {} then
-				return
-			end
-
-			-- get all main ranks, figure out where the player is; this will get passed when the "more info" button is pressed
-			local arRanksAndIds = {}
-			local nRankFloor = 0
-			local nRankMax = 0
-			local nCurrentRank = 0
-			local bOutRanked = false
-			local bShowGlow = true
-
-			-- This sets up the tiers by finding a spell and its value (each spell marks the end of a tier)
-			for nRequiredAmount, tData in pairs(tMilestones) do
-				if tData.tMajor and nRequiredAmount ~= nil and nRequiredAmount ~= 0 then
-					local tMilestone = {nRequiredAmount, tData.tMajor.nSpellId}
-					arRanksAndIds[tData.tMajor.nTier + 1] = tMilestone
-				end
-			end
-
-			-- note: this will break if a tier is missing (that should never happen)
-			if #arRanksAndIds > 0 and tCurrent.fValue ~= nil then
-				for idx = 1, #arRanksAndIds do  -- important! order matters for finding floor/ceiling
-					if arRanksAndIds[idx] ~= nil then
-						if tCurrent.fValue < arRanksAndIds[1][1] then -- rank "0"
-							nRankMax = arRanksAndIds[1][1]
-						elseif tCurrent.fValue >= arRanksAndIds[#arRanksAndIds][1] then -- above top rank
-							bOutRanked = true
-							nCurrentRank = #arRanksAndIds
-							-- Set floor and max to last rank to show mini milestones
-							nRankFloor = arRanksAndIds[nCurrentRank-1][1]
-							nRankMax = arRanksAndIds[nCurrentRank][1]
-						elseif tCurrent.fValue >= arRanksAndIds[idx][1] and tCurrent.fValue < arRanksAndIds[idx + 1][1] then
-							nCurrentRank = idx
-							nRankFloor = arRanksAndIds[idx][1]
-							nRankMax = arRanksAndIds[idx + 1][1]
-						end
-
-						if tCurrent.fValue == arRanksAndIds[idx][1] or bOutRanked == true then -- don't show glow without bar
-							bShowGlow = false
-						end
-
-					end
-				end
-			end
-
-			local strRank = ""
-			if nCurrentRank ~= 0 then
-				if bOutRanked then
-					strRank = String_GetWeaselString(Apollo.GetString("Character_RankMaxed"), nCurrentRank)
-				else
-					strRank = String_GetWeaselString(Apollo.GetString("Character_Rank"), nCurrentRank)
-				end
-			end
-
-			if bOutRanked then -- max it without over-drawing
-				wndMilestone:FindChild("ProgressPoints"):SetMax(1)
-				wndMilestone:FindChild("ProgressPoints"):SetFloor(0)
-				wndMilestone:FindChild("ProgressPoints"):SetProgress(1)
-			else
-				wndMilestone:FindChild("ProgressPoints"):SetMax(nRankMax - nRankFloor)
-				wndMilestone:FindChild("ProgressPoints"):SetFloor(0)
-				wndMilestone:FindChild("ProgressPoints"):SetProgress(tCurrent.fValue - nRankFloor)
-			end
-			wndMilestone:FindChild("ProgressPoints"):SetStyleEx("EdgeGlow", bShowGlow)
-
-			wndMilestone:FindChild("AttributeRank"):SetText(strRank)
-			wndMilestone:FindChild("AttributeName"):SetText(ktAttributeIconsText[tCurrent.idProperty].strName .. ": " .. Apollo.FormatNumber(math.floor(tCurrent.fValue, 0, true)) or 0)
-			wndMilestone:FindChild("AttributeNameIcon"):SetSprite(ktAttributeIconsText[tCurrent.idProperty].strIcon)
-			wndMilestone:FindChild("CurrentPoints"):SetText(Apollo.FormatNumber(nRankFloor, 0, true))
-			wndMilestone:FindChild("MaxPoints"):SetText(Apollo.FormatNumber(math.floor(nRankMax), 0, true))
-
-			----------------------------------------------------------------------------
-			-- Now set up mini-milestones just for the tiers we're in
-			----------------------------------------------------------------------------
-			local tContributions = {} -- used on the tooltip
-
-			-- the container needs to be the same size as the progbar for this to work
-			wndMilestone:FindChild("MiniMilestoneTicks"):DestroyChildren()
-			local nLeft, nTop, nRight, nBottom = wndMilestone:FindChild("ProgressPoints"):GetAnchorOffsets()
-			local nLength = nRight - nLeft
-			local nSpan = nRankMax - nRankFloor				
-
-			for nRequiredAmount, tMilestone in pairs(tMilestones) do
-				if tMilestone.tMinis[1] and nRequiredAmount > nRankFloor and nRequiredAmount <= nRankMax then
-					table.sort(tMilestone.tMinis, function(a,b) return a.eUnitProperty > b.eUnitProperty end)
-					
-					local nPosition = ((nRequiredAmount - nRankFloor) / (nRankMax - nRankFloor)) * nLength
-					local wndMini = Apollo.LoadForm(self.xmlDoc, "MiniMilestoneEntry", wndMilestone:FindChild("MiniMilestoneTicks"), self)
-					local nLeft2, nTop2, nRight2, nBottom2 = wndMini:GetAnchorOffsets()
-					local nHalf = (nRight2 - nLeft2) / 2
-					local strReqColor = "ffff5555"
-					local strMiniReq = String_GetWeaselString(Apollo.GetString("Character_MiniMileReq"), Apollo.FormatNumber(nRequiredAmount, 0, true), ktAttributeIconsText[tCurrent.idProperty].strName)
-					wndMini:SetAnchorOffsets(nPosition - nHalf, nTop2, nPosition + nHalf, nBottom2)
-
-					if nRequiredAmount <= tCurrent.fValue then
-						wndMini:FindChild("Icon"):SetBGColor(CColor.new(1,1,1,1))
-						--wndMini:FindChild("Backer"):SetBGColor(CColor.new(0,0,0,1))
-						wndMini:FindChild("Backer"):SetBGColor(ApolloColor.new("UI_BtnTextHoloPressedFlyby"))
-						strReqColor = "ff999999"
+					local bShowDurabilityBlocker = not bHasDurability
+					wndDurabilityMeter:Show(bHasDurability)
+					wndDurabilityMeter:SetMax(nDurabilityMax)
+					wndDurabilityMeter:SetProgress(nDurabilityCurrent)
+					if itemCurr:GetItemFamily() == Item.CodeEnumItem2Family.Costume then
+						bShowDurabilityBlocker = false
 					else
-						wndMini:FindChild("Icon"):SetBGColor(CColor.new(.8,.8,.8,.7))
-						--wndMini:FindChild("Backer"):SetBGColor(CColor.new(1,1,1,1))
-						wndMini:FindChild("Backer"):SetBGColor(ApolloColor.new("UI_TextHoloBody"))
-					end
-
-					if ktAttributeIconsText[tMilestone.tMinis[1].eUnitProperty] ~= nil then
-						wndMini:FindChild("Icon"):SetSprite(ktAttributeIconsText[tMilestone.tMinis[1].eUnitProperty].strIcon)
-					end
-
-					local strMiniAmount = ""
-					
-					for idx, tEntry in pairs(tMilestone.tMinis) do
-						strMiniAmount = strMiniAmount ..string.format("<P Font=\"CRB_InterfaceMedium_B\" TextColor=\"ffffffff\">+%s %s</P>", Apollo.FormatNumber(tEntry.fModifier, 2, true), ktAttributeIconsText[tEntry.eUnitProperty].strName)
-					end
-					strMiniReq = string.format("<P><P Font=\"CRB_InterfaceSmall\" TextColor=\"%s\">%s</P></P>", strReqColor, strMiniReq)
-					wndMini:SetTooltip(strMiniAmount .. strMiniReq)
-				end
-
-				if nRequiredAmount <= tCurrent.fValue then
-					if tMilestone.tMajor and tMilestone.tMajor.eUnitProperty then
-						if tContributions[tMilestone.tMajor.eUnitProperty] ~= nil then
-							tContributions[tMilestone.tMajor.eUnitProperty] = tContributions[tMilestone.tMajor.eUnitProperty] + tMilestone.tMajor.fModifier
-						else
-							tContributions[tMilestone.tMajor.eUnitProperty] = tMilestone.tMajor.fModifier
+						if nDurabilityRation <= .100 then
+							wndDurabilityMeter:SetBarColor("ffaf1212")
+							local wndDurabilityAlert = wndSlot:FindChild("DurabilityAlert")
+							if wndDurabilityAlert then
+								wndDurabilityAlert:Show(true)
+							end
+						elseif nDurabilityRation <= .250 then
+							wndDurabilityMeter:SetBarColor("ffffba00")
+						elseif nDurabilityRation <= .500 then
+							wndDurabilityMeter:SetBarColor("ffd7d017")
+						else 
+							wndDurabilityMeter:SetBarColor("ff129faf")
 						end
 					end
-					
-					for idx, tMiniMilestone in pairs(tMilestone.tMinis) do
-						if tContributions[tMiniMilestone.eUnitProperty] ~= nil then
-							tContributions[tMiniMilestone.eUnitProperty] = tContributions[tMiniMilestone.eUnitProperty] + tMiniMilestone.fModifier
-						else
-							tContributions[tMiniMilestone.eUnitProperty] = tMiniMilestone.fModifier
-						end
-					end
+					wndDurabilityBlocker:Show(bShowDurabilityBlocker)
 				end
 			end
+		end
+		
+		local wndPermAttFrame = wndUpdate:FindChild("PermAttributeFrame")
+		wndPermAttFrame:SetData(unitPlayer)
+		self:UpdateAttributes(wndPermAttFrame)
+	end
+end
 
-			--Give the data we need to the button for the tooltip:
-			
-			local tCarriedData =
-			{
-				id 				= tCurrent.idProperty,
-				tContributions 	= tContributions,
-				tSecondaries 	= tInfo.tMilestones[strKey].tSecondaryStats,
-			}
+function Character:OnToggleAttribute(wndHandler, wndControl)
+	local wndParent = wndControl:GetParent()
+	local wndAttributeContHolder = wndParent:FindChild("AttributeContHolder")
+	local nLeft, nTop, nRight, nBottom = wndParent:GetOriginalLocation():GetOffsets()
+	if wndControl:IsChecked() then
+		wndAttributeContHolder:Show(true)
+		nBottom = nBottom + wndAttributeContHolder:GetHeight()
+	else
+		wndAttributeContHolder:Show(false)
+	end
+	wndParent:SetAnchorOffsets(nLeft, nTop, nRight, nBottom + (knAttributeContainerPadding / 2))
+	wndParent:GetParent():ArrangeChildrenVert()
+end
 
-			wndMilestone:FindChild("AttributeNameIcon"):SetData(tCarriedData)
+function Character:UpdateAttributes(wndUpdate)
+	local unitPlayer = wndUpdate:GetData()
+	local wndAssaultPowerRating = wndUpdate:FindChild("AssaultPowerRating")
+	local wndAssaultPowerRatingIcon = wndUpdate:FindChild("icoAssaultPower")
+	local wndDefensePowerRating = wndUpdate:FindChild("SupportPowerRating")
+	local wndDefensePowerRatingIcon = wndUpdate:FindChild("icoDefensePower")
+	local wndMaxHealth = wndUpdate:FindChild("MaxHealth")
+	local wndMaxShields = wndUpdate:FindChild("MaxShields")
+	local wndCurScore = wndUpdate:FindChild("CurrentScore")
+
+	wndAssaultPowerRating:SetText(Apollo.FormatNumber(unitPlayer:GetAssaultPower(), 0, true))
+	wndDefensePowerRating:SetText(Apollo.FormatNumber(unitPlayer:GetSupportPower(), 0, true))
+	wndMaxHealth:SetText(Apollo.FormatNumber(unitPlayer:GetMaxHealth(), 0, true))
+	wndMaxShields:SetText(Apollo.FormatNumber(unitPlayer:GetShieldCapacityMax(), 0, true))
+	wndCurScore:SetText(Apollo.FormatNumber(unitPlayer and unitPlayer:GetEffectiveItemLevel() or 0, 0, true))
+	wndAssaultPowerRatingIcon:SetTooltip(String_GetWeaselString(Apollo.GetString("Character_AssaultTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.AssaultRating).fValue, 2, true)))
+	wndDefensePowerRatingIcon:SetTooltip(String_GetWeaselString(Apollo.GetString("Character_SupportTooltip"), Apollo.FormatNumber(unitPlayer:GetUnitProperty(Unit.CodeEnumProperties.SupportRating).fValue, 2, true)))
+end
+
+function Character:StatsDrawHelper(wndContainer, strName, strValue, strIcon, crTextColor, eState, strTooltip)
+	local nIndex = wndContainer:GetData()
+	local wndItem = wndContainer:FindChild("AttributeItem"..nIndex)
+	if wndItem == nil then
+		wndItem = Apollo.LoadForm(self.xmlDoc, "AttributeItem", wndContainer, self)
+		wndItem:SetName("AttributeItem"..nIndex)
+	end
+	wndItem:FindChild("StatLabel"):SetAML(string.format("<T Font=\"CRB_InterfaceSmall\" TextColor=\"%s\">%s</T>", crTextColor, strName))
+	local crTextValueColor = "UI_TextHoloBodyCyan"
+	if eState then
+		if eState == Unit.CodeEnumDiminishingReturnState.SoftCap then
+			crTextValueColor = "UI_WindowYellow"
+		elseif eState == Unit.CodeEnumDiminishingReturnState.HardCap then
+			crTextValueColor = "UI_WindowTextRed"
 		end
 	end
+	wndItem:FindChild("StatValue"):SetAML(string.format("<T Font=\"CRB_Header9\" TextColor=\"%s\">%s</T>", crTextValueColor, strValue))
+	wndItem:SetTooltip(strTooltip)
+	local bBackgroundColor = nIndex % 2 == 1
+	if bBackgroundColor then
+		local wndBackground = wndItem:FindChild("Background")
+		wndBackground:Show(true)
+	end
+	
+	local wndParent = wndContainer:GetParent()
+	local wndAttributeExpanderBtn = wndParent:FindChild("AttributeExpanderBtn")
+	self:OnToggleAttribute(wndAttributeExpanderBtn, wndAttributeExpanderBtn)
 end
 
 function Character:OnAttributeIconMouseExit(wndHandler, wndControl)
@@ -959,112 +1071,6 @@ function Character:OnAttributeIconMouseExit(wndHandler, wndControl)
 		self.wndAttributeTooltip:Destroy()
 		self.wndAttributeTooltip = nil
 	end
-end
-
-function Character:OnAttributeIconToolip(wndHandler, wndControl, eType, arg1, arg2)
-	if wndHandler ~= wndControl or wndControl:GetData() == nil then
-		return
-	end
-
-	if self.wndAttributeTooltip and self.wndAttributeTooltip:IsValid() then
-		self.wndAttributeTooltip:Destroy()
-	end
-
-	local tData = wndControl:GetData()
-	local wndRankDisplay = wndControl:LoadTooltipForm("Character.xml", "MilestoneTooltip", self)
-	wndRankDisplay:FindChild("AttributeName"):SetText(ktAttributeIconsText[tData.id].strName)
-	--wndRankDisplay:FindChild("AttributeNameIcon"):SetSprite(ktAttributeIconsText[tData.id].strIcon)
-	wndRankDisplay:FindChild("AttributeSecHeader"):SetText(String_GetWeaselString(Apollo.GetString("Character_AttributeHeader"), ktAttributeIconsText[tData.id].strName))
-
-	-- Secondaries
-	local nSecondaryHeight = 0
-	local wndSecondaries = wndRankDisplay:FindChild("AttributeSecondaries")
-	for idx, tValue in pairs(tData.tSecondaries) do
-		local wndSecondary = Apollo.LoadForm(self.xmlDoc, "RankSecondaryEntry", wndSecondaries, self)
-		local nBonus = string.format("%.02f", tValue.fBonus)
-		wndSecondary:FindChild("RankSecondaryEntryText"):SetText("+" .. Apollo.FormatNumber(nBonus, 2, true) .. " " .. ktAttributeIconsText[tValue.eUnitProperty].strName)
-		wndSecondary:FindChild("RankSecondaryEntryText"):SetHeightToContentHeight()
-		wndSecondary:FindChild("RankSecondaryEntryIcon"):SetSprite(ktAttributeIconsText[tValue.eUnitProperty].strIcon)
-		nSecondaryHeight = nSecondaryHeight + math.max(wndSecondary:FindChild("RankSecondaryEntryText"):GetHeight(), 19)
-	end
-
-	local nLeft1, nTop1, nRight1, nBottom1 = wndSecondaries:GetAnchorOffsets()
-	wndSecondaries:SetAnchorOffsets(nLeft1, nTop1, nRight1, nTop1 + nSecondaryHeight + 3)
-	wndSecondaries:ArrangeChildrenVert()
-
-	-- Milestones
-	local nMilestoneHeight = 0
-	local wndMilestones = wndRankDisplay:FindChild("AttributeTotals")
-
-	for idx, tValue in pairs(tData.tContributions) do
-		local wndMilestone = Apollo.LoadForm(self.xmlDoc, "RankSecondaryEntry", wndMilestones, self)
-		local nBonus = string.format("%.02f", tValue)
-		wndMilestone:FindChild("RankSecondaryEntryText"):SetText("+" .. Apollo.FormatNumber(nBonus, 2, true) .. " " .. ktAttributeIconsText[idx].strName)
-		wndMilestone:FindChild("RankSecondaryEntryText"):SetHeightToContentHeight()
-		wndMilestone:FindChild("RankSecondaryEntryIcon"):SetSprite(ktAttributeIconsText[idx].strIcon)
-		nMilestoneHeight = nMilestoneHeight + math.max(wndMilestone:FindChild("RankSecondaryEntryText"):GetHeight(), 19)
-	end
-
-	local nLeft2, nTop2, nRight2, nBottom2 = wndMilestones:GetAnchorOffsets()
-	wndMilestones:SetAnchorOffsets(nLeft2, nTop2, nRight2, nTop2 + nMilestoneHeight + 3)
-	wndMilestones:ArrangeChildrenVert()
-
-	wndRankDisplay:FindChild("ArrangeVertContainer"):ArrangeChildrenVert()
-	local bottomEntryL, bottomEntryT, bottomEntryR, bottomEntryB = wndMilestones:GetAnchorOffsets()
-	local vertContL, vertContT, vertContR, vertContB = wndRankDisplay:FindChild("ArrangeVertContainer"):GetAnchorOffsets()
-
-	wndRankDisplay:FindChild("ArrangeVertContainer"):SetAnchorOffsets(vertContL, vertContT, vertContR, vertContT + bottomEntryB)
-	vertContL, vertContT, vertContR, vertContB = wndRankDisplay:FindChild("ArrangeVertContainer"):GetAnchorOffsets()
-
-	local nWndLeft, nWndTop, nWndRight, nWndBottom = wndRankDisplay:GetAnchorOffsets()
-	wndRankDisplay:SetAnchorOffsets(nWndLeft, nWndTop, nWndRight, vertContB + 11)
-
-	self.wndAttributeTooltip = wndRankDisplay
-end
-
-function Character:HelperBuildSecondaryTooltips(idx, arProperties)
-	local tCharacterSecondaryStats =
-	{
-	--[[[1] = Apollo.GetString("CRB_Strength_Description"),
-		[2] = Apollo.GetString("CRB_Dexterity_Description"),
-		[3] = Apollo.GetString("CRB_Magic_Description"),
-		[4] = Apollo.GetString("CRB_Technology_Description"),
-		[5] = Apollo.GetString("CRB_Wisdom_Description"),
-		[6] = Apollo.GetString("CRB_Stamina_Description"),--]]
-		[7] = Apollo.GetString("CRB_Health_Description"),
-		[8] = Apollo.GetString("Character_MaxShieldTooltip"),
-		[9] = Apollo.GetString("Character_DeflectTooltip"),
-		[10] = Apollo.GetString("Character_StrikethroughTooltip"),
-		[11] = Apollo.GetString("Character_CritTooltip"),
-		[12] = Apollo.GetString("Character_CritDeflectTooltip"),
-		[16] = Apollo.GetString("Character_ArmorTooltip"),
-		[17] = Apollo.GetString("Character_PhysMitTooltip"),
-		[18] = Apollo.GetString("Character_TechMitTooltip"),
-		[19] = Apollo.GetString("Character_MagicMitTooltip"),
-		[21] = Apollo.GetString("Character_CritSevTooltip"),
-		[22] = Apollo.GetString("Character_CombatRecoveryTooltip"),
-	}
-
-	if idx <= 8 or idx == 16 then
-		return tCharacterSecondaryStats[idx]
-	end
-
-	-- Using strings to show decimal value
-	local tProperties =
-	{
-		[9] = string.format("%.2f", arProperties.Rating_AvoidIncrease.nValue),
-		[10] = string.format("%.2f", arProperties.Rating_AvoidReduce.nValue),
-		[11] = string.format("%.2f", arProperties.Rating_CritChanceIncrease.nValue),
-		[12] = string.format("%.2f", arProperties.Rating_CritChanceDecrease.nValue),
-		[17] = string.format("%.2f", arProperties.ResistPhysical.nValue),
-		[18] = string.format("%.2f", arProperties.ResistTech.nValue),
-		[19] = string.format("%.2f", arProperties.ResistMagic.nValue),
-		[21] = string.format("%.2f", arProperties.RatingCritSeverityIncrease.nValue),
-		[22] = string.format("%.2f", arProperties.ManaPerFiveSeconds.nValue),
-	--	[23] = arProperties.ManaPerFiveSeconds.nValue,
-	}
-
-	return String_GetWeaselString(tCharacterSecondaryStats[idx], tProperties[idx]) or ""
 end
 
 function Character:OnGenerateTooltip(wndHandler, wndControl, eType, itemCurr, idx)
@@ -1084,12 +1090,23 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function Character:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
-	if eAnchor ~= GameLib.CodeEnumTutorialAnchor.Character then return end
-
-	local tRect = {}
-	tRect.l, tRect.t, tRect.r, tRect.b = self.wndCharacter:GetRect()
-
-	Event_FireGenericEvent("Tutorial_RequestUIAnchorResponse", eAnchor, idTutorial, strPopupText, tRect)
+	local tAnchors = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.Character] 	= true,
+	}
+	
+	if not tAnchors[eAnchor] then 
+		return
+	end
+	
+	local tAnchorMapping = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.Character] 	= self.wndCharacter,
+	}
+	
+	if tAnchorMapping[eAnchor] then
+		Event_FireGenericEvent("Tutorial_ShowCallout", eAnchor, idTutorial, strPopupText, tAnchorMapping[eAnchor])
+	end
 end
 
 -----------------------------------------------------------------------------------------------
@@ -1108,6 +1125,8 @@ function Character:OnTitleSelected(wndHandler, wndControl)
 	if wndHandler ~= wndControl then
 		return
 	end
+	
+	self.wndSelectedTitle = wndHandler
 
 	if wndHandler:IsChecked() then
 		local ttlSelected = wndHandler:GetData()
@@ -1122,7 +1141,7 @@ function Character:OnTitleSelected(wndHandler, wndControl)
 
 	self:OnDrawEditNamePopout()
 	self.timerTitleChange:Start()
-	self.wndCharacter:FindChild("NameEditTitleContainer"):Close()
+	self.wndCharacter:FindChild("CharacterTitleContainer"):Close()
 end
 
 function Character:OnPickGuildTag(wndHandler, wndControl) -- GuildTagBtn
@@ -1130,11 +1149,41 @@ function Character:OnPickGuildTag(wndHandler, wndControl) -- GuildTagBtn
 	self.wndCharacter:FindChild("NameEditGuildTagContainer"):Close()
 
 	self:OnDrawEditNamePopout()
+	self.wndCharacter:FindChild("ClassTitleGuild"):SetText(wndHandler:GetText())
 	self.timerTitleChange:Start()
 end
 
-function Character:OnCharacterNameEditBtn(wndHandler, wndControl)
-	self:OnDrawEditNamePopout()
+function Character:OpenEntitlements(wndHandler, wndControl)
+	local wndContainer = wndControl:GetParent():GetParent() -- Dropdown contents -> CharacterEverything
+	local wndDropdownContents = wndContainer:FindChild("DropdownContents")
+	self.wndCharacterEverything:Show(true)
+	self.wndCharacterStats:Show(false)
+	self.wndCharacterCostumes:Show(false)
+	self.wndCharacterBonus:Show(false)
+	self.wndCharacterReputation:Show(false)
+	self.wndEntitlements:Show(true)
+	self:RefreshEntitlements()
+	wndContainer:FindChild("DropdownBtn"):SetText(String_GetWeaselString(Apollo.GetString("Character_Display"), Apollo.GetString("AccountInv_Entitlements")))
+	wndDropdownContents:Show(false)
+end
+
+function Character:OnCostumesBtn(wndHandler, wndControl)
+	local wndContainer = wndControl:GetParent():GetParent() -- Dropdown contents -> CharacterEverything
+	local wndCharacterStats = wndContainer:FindChild("CharacterStats")
+	local wndCharacterCostumes = wndContainer:FindChild("CharacterCostumes")
+	local wndCharacterBonus = wndContainer:FindChild("CharacterBonus")
+	local wndDropdownContents = wndContainer:FindChild("DropdownContents")
+	local wndEntitlements = wndContainer:FindChild("Entitlements")
+	self.wndCostumeSelectionList:Show(true)
+	wndCharacterStats:Show(false)
+	wndCharacterCostumes:Show(true)
+	if wndCharacterBonus ~= nil then
+		wndEntitlements:Show(false)
+		self.wndCharacterBonus:Show(false)
+		self:CloseReputation()
+	end
+	wndContainer:FindChild("DropdownBtn"):SetText(String_GetWeaselString(Apollo.GetString("Character_Display"), Apollo.GetString("Character_Costumes")))
+	wndDropdownContents:Show(false)
 end
 
 function Character:OnEffectiveLevelChange()
@@ -1172,6 +1221,7 @@ function Character:DrawNames(wndUpdate)
 	-- Special coloring if mentored
 	local nDisplayedLevel = 0
 	local strEffectiveLevelStatus
+	local wndAlert = wndUpdate:FindChild("Alert")
 	if tStats then
 		if not tStats.nEffectiveLevel or tStats.nEffectiveLevel == 0 or tStats.nEffectiveLevel == tStats.nLevel then
 			nDisplayedLevel = tStats.nLevel
@@ -1181,16 +1231,16 @@ function Character:DrawNames(wndUpdate)
 			nDisplayedLevel = tStats.nEffectiveLevel
 			strEffectiveLevelStatus = bMentoring and Apollo.GetString("CRB_Mentoring") or Apollo.GetString("MiniMap_Rallied")
 		end
-
+		
 		wndUpdate:FindChild("CharDataLevelBig"):SetText(nDisplayedLevel)
-		wndUpdate:FindChild("CharDataLevelStatus"):Show(strEffectiveLevelStatus)
+		
+		wndAlert:Show(strEffectiveLevelStatus)
 
-		if wndUpdate:FindChild("CharDataLevelStatus"):IsShown() then
-			wndUpdate:FindChild("CharDataLevelStatus"):SetText("(" .. strEffectiveLevelStatus .. ")")
+		if wndAlert:IsShown() then
+			wndAlert:SetTooltip(strEffectiveLevelStatus)
 		end
 
 		local nRaceID = unitPlayer:GetRaceId()
-		wndUpdate:FindChild("CharDataRace"):SetText(karRaceToString[nRaceID])
 
 		wndUpdate:FindChild("BGArt_OverallFrame:PlayerName"):SetText(strTitleName)
 
@@ -1202,18 +1252,23 @@ function Character:DrawNames(wndUpdate)
 			local strCombined = String_GetWeaselString(kstrInspectAffiliation[unitPlayer:GetGuildType()], strGuildName)
 			wndUpdate:FindChild("InspectAffiliation"):SetText((string.len(strGuildName) > 0) and strCombined or "")
 		end
-
-		if wndUpdate:FindChild("TitleSelectionBtn") then
-			wndUpdate:FindChild("TitleSelectionBtn"):SetText(unitPlayer:GetTitle())
-		end
 	end
-	
-	wndUpdate:FindChild("CharDataClass"):SetText(karClassToString[unitPlayer:GetClassId()] or "")
-	wndUpdate:FindChild("CharDataClassIcon"):SetSprite(karClassToIcon[unitPlayer:GetClassId()] or "")
-	wndUpdate:FindChild("CharDataPath"):SetText(ktPathToString[unitPlayer:GetPlayerPathType()] or "")
-	wndUpdate:FindChild("CharDataPathIcon"):SetSprite(ktPathToIcon[unitPlayer:GetPlayerPathType()] or "")
-	wndUpdate:FindChild("CharDataFaction"):SetText(karFactionToString[unitPlayer:GetFaction()] or "")
-	wndUpdate:FindChild("CharDataFactionIcon"):SetSprite(karFactionToIcon[unitPlayer:GetFaction()] or "")
+
+	local eFaction = GameLib.GetPlayerBaseFaction()
+	local eGender = unitPlayer:GetGender()
+	local eClass = unitPlayer:GetClassId()
+	local ePath = unitPlayer:GetPlayerPathType()
+	local eRace = unitPlayer:GetRaceId()
+
+	wndUpdate:FindChild("CharDataClassIcon"):SetTooltip(karClassToString[eClass] or "")
+	wndUpdate:FindChild("CharDataClassIcon"):SetSprite(karClassToIcon[eClass] or "")
+	wndUpdate:FindChild("CharDataPathIcon"):SetTooltip(ktPathToString[ePath] or "")
+	wndUpdate:FindChild("CharDataPathIcon"):SetSprite(ktPathToIcon[ePath] or "")
+	wndUpdate:FindChild("CharTitlePath"):SetText(String_GetWeaselString(Apollo.GetString("Character_PathLevel"), PlayerPathLib.GetPathLevel()))
+	wndUpdate:FindChild("CharDataRaceIcon"):SetTooltip(karRaceToString[eRace] or "")
+	wndUpdate:FindChild("CharDataRaceIcon"):SetSprite(ktRaceToIcon[eFaction][eGender][eRace] or "")
+	wndUpdate:FindChild("CharDataFactionIcon"):SetTooltip(karFactionToString[eFaction] or "")
+	wndUpdate:FindChild("CharDataFactionIcon"):SetSprite(karFactionToIcon[eFaction] or "")
 end
 
 function Character:OnGuildChange()
@@ -1221,11 +1276,18 @@ function Character:OnGuildChange()
 end
 
 function Character:OnDrawEditNamePopout()
+	local unitPlayer = GameLib.GetPlayerUnit()
+	if not unitPlayer then
+		return
+	end
+	
 	local strLastCat = nil
 	local wndEnsureVisible = nil
 	local tTitles = CharacterTitle.GetAvailableTitles()
+	local strTitleName = unitPlayer:GetTitle() or ""
 	table.sort(tTitles, function(a,b) return a:GetCategory() < b:GetCategory() end)
 
+	self.wndCharacterTitles:FindChild("NameEditClearTitleBtn"):Enable(#tTitles > 0 and strTitleName ~= "")
 	self.wndCharacterTitles:FindChild("NameEditTitleList"):DestroyChildren()
 	for idx, titleCurr in pairs(tTitles) do
 		local strCategory = titleCurr:GetCategory()
@@ -1236,7 +1298,7 @@ function Character:OnDrawEditNamePopout()
 		end
 
 		local wndTitle = Apollo.LoadForm(self.xmlDoc, "NameEditTitleButton", self.wndCharacterTitles:FindChild("NameEditTitleList"), self)
-		wndTitle:FindChild("NameEditTitleButtonText"):SetText(titleCurr:GetTitle())
+		wndTitle:SetText(titleCurr:GetTitle())
 		wndTitle:SetData(titleCurr)
 
 		if not CharacterTitle.CanUseTitle(titleCurr) then
@@ -1246,6 +1308,8 @@ function Character:OnDrawEditNamePopout()
 		if CharacterTitle.IsActiveTitle(titleCurr) then
 			wndEnsureVisible = wndTitle
 			wndTitle:SetCheck(true)
+			self.wndSelectedTitle = wndTitle
+			self.wndCharacter:FindChild("CharacterTitleDropdown"):SetText(titleCurr:GetTitle())
 		end
 	end
 
@@ -1253,11 +1317,6 @@ function Character:OnDrawEditNamePopout()
 	self.wndCharacterTitles:FindChild("NameEditTitleList"):EnsureChildVisible(wndEnsureVisible)
 
 	-- Guild Tags
-	local unitPlayer = GameLib.GetPlayerUnit()
-	if not unitPlayer then
-		return
-	end
-
 	local bInAGuild = false
 	local bInATeam = false
 	local strGuildNameCompare = unitPlayer:GetGuildName() or ""
@@ -1273,7 +1332,7 @@ function Character:OnDrawEditNamePopout()
 			guildSelected = guildCurr
 		end
 
-		wndCurr:FindChild("GuildTagBtnText"):SetText(strGuildName)
+		wndCurr:SetText(strGuildName)
 
 		if guildCurr:GetType() == GuildLib.GuildType_Guild then
 			bInAGuild = true
@@ -1281,13 +1340,18 @@ function Character:OnDrawEditNamePopout()
 
 		bInATeam = true
 	end
-	self.wndCharacter:FindChild("NameEditGuildTagList"):ArrangeChildrenVert(0)
+	
+	local bSelectedWasGuild = guildSelected and guildSelected:GetType() == GuildLib.GuildType_Guild
+	self.wndCharacter:FindChild("NameEditGuildTagList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	self.wndCharacter:FindChild("FrameGuild"):Show(bInAGuild or bInATeam)
-	self.wndCharacter:FindChild("NameEditGuildHolomarkContainer"):Show(bInAGuild)
+	self.wndCharacter:FindChild("NameEditGuildHolomarkContainer"):Show(bInAGuild and bSelectedWasGuild)
+	local nHeight = self.wndCharacter:FindChild("ArrangedWindows"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	local nLeftOrig, nTopOrig, nRightOrig, nBottomOrig = self.wndCharacter:FindChild("NameEditTitleContainer"):GetOriginalLocation():GetOffsets()
+	self.wndCharacter:FindChild("NameEditTitleContainer"):SetAnchorOffsets(nLeftOrig, nTopOrig, nRightOrig, nTopOrig + nHeight)
+
 
 	wndHolomarkContainer = self.wndCharacter:FindChild("NameEditGuildHolomarkContainer")
-	bSelectedWasGuild = guildSelected and guildSelected:GetType() == GuildLib.GuildType_Guild
-
+	
 	wndHolomarkContainer:FindChild("GuildHolomarkLeftBtn"):Enable(bSelectedWasGuild)
 	wndHolomarkContainer:FindChild("GuildHolomarkRightBtn"):Enable(bSelectedWasGuild)
 	wndHolomarkContainer:FindChild("GuildHolomarkBackBtn"):Enable(bSelectedWasGuild)
@@ -1326,10 +1390,7 @@ end
 function Character:OnLevelUpUnlock_Character_Generic(nExtraData, eValue)
 	self:ShowCharacterWindow()
 	if eValue and eValue == GameLib.LevelUpUnlockType.Path_Title then
-		self.wndCharacter:FindChild("CharacterReputationBtn"):SetCheck(false)
-		self.wndCharacter:FindChild("CharacterStatsBtn"):SetCheck(false)
-		self.wndCharacter:FindChild("CharacterTitleBtn"):SetCheck(true)
-		self:OnDrawEditNamePopout()
+		self:OnTitlesBtn(nil, self.wndDropdownContents)
 	end
 end
 
@@ -1337,18 +1398,26 @@ end
 -- SoulbindConfirm Functions
 ---------------------------------------------------------------------------------------------------
 
-function Character:OnItemConfirmSoulboundOnEquip(eEquipmentSlot, iDDItemEquip, iDDItemDestination)
-	self.wndSoulbindConfirm:FindChild("ConfirmBtn"):SetActionData(GameLib.CodeEnumConfirmButtonType.EquipItem, iDDItemEquip, iDDItemDestination)
-	self.wndSoulbindConfirm:Show(true)
-	self.wndSoulbindConfirm:ToFront()
+function Character:OnItemConfirmSoulboundOnEquip(eEquipmentSlot, nItemEquip, nItemDestination)
+	self:ShowEquipConfirmation(Apollo.GetString("Character_SoulbindConfirmText"), nItemEquip, nItemDestination)
 end
 
-function Character:OnEquipConfirm()
-	self.wndSoulbindConfirm:Show(false)
+function Character:OnItemConfirmClearRestockOnEquip(eEquipmentSlot, nItemEquip, nItemDestination)
+	self:ShowEquipConfirmation(Apollo.GetString("Character_SoulbindConfirmText_NoRefund"), nItemEquip, nItemDestination)
 end
 
-function Character:OnCancelSoulbindBtn( wndHandler, wndControl, eMouseButton )
-	self.wndSoulbindConfirm:Show(false)
+function Character:ShowEquipConfirmation(strConfirmText, nItemEquip, nItemDestination)
+	self.wndBindConfirm:FindChild("ConfirmText"):SetText(strConfirmText)
+	self.wndBindConfirm:FindChild("ConfirmBtn"):SetActionData(GameLib.CodeEnumConfirmButtonType.EquipItem, nItemEquip, nItemDestination)
+	self.wndBindConfirm:Invoke()
+end
+
+function Character:OnBindConfirm()
+	self.wndBindConfirm:Close()
+end
+
+function Character:OnCancelBindBtn( wndHandler, wndControl, eMouseButton )
+	self.wndBindConfirm:Close()
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -1362,16 +1431,11 @@ function Character:OnInspect(unitTarget, arItems)
 
 	self:OnInspectClose()
 
-	self.wndInspect = Apollo.LoadForm(self.xmlDoc, "InspectWindow", nil, self)
+	if not self.wndInspect then
+		self.wndInspect = Apollo.LoadForm(self.xmlDoc, "InspectWindow", nil, self)
+		local wndCharacterEverything	= self.wndInspect:FindChild("CharacterEverything")
+	end
 	self.wndInspect:SetData(unitTarget)
-
-	local wndInspectStats = self.wndInspect:FindChild("CharacterStats")
-	self.wndInspect:FindChild("BGArt_OverallFrame:InspectHeaders:CharacterStatsBtn"):AttachWindow(wndInspectStats)
-
-	local wndInspectInfo = self.wndInspect:FindChild("CharacterTitles")
-	self.wndInspect:FindChild("BGArt_OverallFrame:InspectHeaders:CharacterInfoBtn"):AttachWindow(wndInspectInfo)
-
-	self.wndInspect:FindChild("BGArt_OverallFrame:InspectHeaders:CharacterStatsBtn"):SetCheck(true)
 
 	self.arInspectItems = arItems
 
@@ -1404,13 +1468,8 @@ function Character:OnInspect(unitTarget, arItems)
 		end
 	end
 
-	self:LoadMilestones(self.wndInspect)
-
 	self:DrawAttributes(self.wndInspect)
 	self:DrawNames(self.wndInspect)
-
-	self.wndInspect:FindChild("CharacterStats:PrimaryAttributeTab"):SetCheck(true)
-	self.wndInspect:FindChild("CharacterStats:SecondaryAttributeFrame"):Show(false)
 
 	local wndInspectCostume = self.wndInspect:FindChild("CharFrame_BGArt:Costume")
 	wndInspectCostume:SetCostume(unitTarget)

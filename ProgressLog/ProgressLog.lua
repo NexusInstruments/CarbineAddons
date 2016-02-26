@@ -29,19 +29,18 @@ function ProgressLog:OnDocumentReady()
 		return
 	end
 
-	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	Apollo.RegisterEventHandler("ToggleCodex", 								"OnProgressLogOn", self)
+	Apollo.RegisterEventHandler("ToggleQuestLog", 							"ToggleQuestLog", self)
+	Apollo.RegisterEventHandler("ToggleProgressLog", 						"OnProgressLogOn", self)
+	Apollo.RegisterEventHandler("ToggleChallengesWindow", 					"ToggleChallenges", self)
+	Apollo.RegisterEventHandler("ToggleAchievementWindow", 					"ToggleAchievements", self)
 
-	Apollo.RegisterEventHandler("ToggleCodex", "OnProgressLogOn", self)
-	Apollo.RegisterEventHandler("ToggleQuestLog", "ToggleQuestLog", self)
-	Apollo.RegisterEventHandler("ToggleProgressLog", "OnProgressLogOn", self)
-	Apollo.RegisterEventHandler("ToggleChallengesWindow", "ToggleChallenges", self)
-	Apollo.RegisterEventHandler("ToggleAchievementWindow", "ToggleAchievements", self)
-
-	Apollo.RegisterEventHandler("ShowQuestLog", "ToggleQuestLogFromCall", self)
-	Apollo.RegisterEventHandler("FloatTextPanel_ToggleAchievementWindow", "ToggleAchievementsWithData", self)
-	Apollo.RegisterEventHandler("PlayerPathShow", "TogglePlayerPath", self)
-	Apollo.RegisterEventHandler("PlayerPathShow_NoHide", "ShowPlayerPath", self )
-	Apollo.RegisterEventHandler("ChallengesShow_NoHide", "ShowChallenges", self )
+	Apollo.RegisterEventHandler("ShowQuestLog", 							"ToggleQuestLogFromCall", self)
+	Apollo.RegisterEventHandler("FloatTextPanel_ToggleAchievementWindow", 	"ToggleAchievementsWithData", self)
+	Apollo.RegisterEventHandler("PlayerPathShow", 							"TogglePlayerPath", self)
+	Apollo.RegisterEventHandler("PlayerPathShow_NoHide", 					"ShowPlayerPath", self )
+	Apollo.RegisterEventHandler("ChallengesShow_NoHide", 					"ShowChallenges", self )
+	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 				"OnTutorial_RequestUIAnchor", self)
 
     g_wndProgressLog = Apollo.LoadForm(self.xmlDoc, "ProgressLogForm", nil, self)
 	g_wndProgressLog:Show(false, true)
@@ -60,19 +59,23 @@ function ProgressLog:OnDocumentReady()
 
 	Event_FireGenericEvent("ProgressLogLoaded")
 	self.nLastSelection = -1
+
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 end
 
 function ProgressLog:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {wnd = g_wndProgressLog, strName = Apollo.GetString("CRB_Codex"), nSaveVersion = 2})
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = g_wndProgressLog, strName = Apollo.GetString("CRB_Codex"), nSaveVersion = 2})
 end
 
 function ProgressLog:OnProgressLogOn() --general toggle
 	if g_wndProgressLog:IsShown() then
-		g_wndProgressLog:Show(false)
+		g_wndProgressLog:Close()
 		Event_FireGenericEvent("CodexWindowHasBeenClosed")
 	else
 		Event_ShowTutorial(GameLib.CodeEnumTutorial.Codex)
-		--g_wndProgressLog:Show(true) -- Don't turn on just yet, the other calls will toggle visibility.
+		--g_wndProgressLog:Invoke() -- Don't turn on just yet, the other calls will toggle visibility.
 
 		self.nLastSelection = self.nLastSelection or 1
 
@@ -92,18 +95,17 @@ function ProgressLog:OnCancel(wndHandler, wndControl)
 	if wndHandler ~= wndControl then
 		return
 	end
-	g_wndProgressLog:Show(false)
+	g_wndProgressLog:Close()
 	Event_FireGenericEvent("CodexWindowHasBeenClosed")
 	Event_FireGenericEvent("PL_TabChanged")
 end
 
 function ProgressLog:ToggleQuestLog()
 	if g_wndProgressLog:IsShown() and self.nLastSelection == 1 then
-		g_wndProgressLog:Show(false)
+		g_wndProgressLog:Close()
 		Event_FireGenericEvent("CodexWindowHasBeenClosed")
 	else
-		g_wndProgressLog:Show(true)
-		g_wndProgressLog:ToFront()
+		g_wndProgressLog:Invoke()
 		self.wndOptions:SetRadioSel("PLogOptions", 1)
 		self:PLogOptionCheck(nil, nil, false)
 	end
@@ -113,61 +115,55 @@ function ProgressLog:ToggleQuestLogFromCall(idQuest) -- the log uses this event 
 	if idQuest == nil then -- we only want calls that pop the log with a quest selected
 		return
 	end
-	g_wndProgressLog:Show(true)
-	g_wndProgressLog:ToFront()
+	g_wndProgressLog:Invoke()
 	self.wndOptions:SetRadioSel("PLogOptions", 1)
 	self:PLogOptionCheck(nil, nil, true) -- this will allow us to open the log, but not override a set quest
 end
 
 function ProgressLog:TogglePlayerPath()
 	if g_wndProgressLog:IsShown() and self.nLastSelection == 2 then
-		g_wndProgressLog:Show(false)
+		g_wndProgressLog:Close()
 	else
 		self:ShowPlayerPath()
 	end
 end
 
 function ProgressLog:ShowPlayerPath()
-	g_wndProgressLog:Show(true)
-	g_wndProgressLog:ToFront()
+	g_wndProgressLog:Invoke()
 	self.wndOptions:SetRadioSel("PLogOptions", 2)
 	self:PLogOptionCheck(nil, nil, false)
 end
 
-function ProgressLog:ToggleChallenges()
+function ProgressLog:ToggleChallenges(clgDetails)--optional challenge data
 	if g_wndProgressLog:IsShown() and self.nLastSelection == 3 then
-		g_wndProgressLog:Show(false)
+		g_wndProgressLog:Close()
 		Event_FireGenericEvent("CodexWindowHasBeenClosed")
 	else
-		g_wndProgressLog:Show(true)
-		g_wndProgressLog:ToFront()
+		g_wndProgressLog:Invoke()
 		self.wndOptions:SetRadioSel("PLogOptions", 3)
-		self:PLogOptionCheck(nil, nil, false)
+		self:PLogOptionCheck(nil, nil, false, clgDetails)
 	end
 end
 
 function ProgressLog:ShowChallenges(clgReceived)
-	g_wndProgressLog:Show(true)
-	g_wndProgressLog:ToFront()
+	g_wndProgressLog:Invoke()
 	self.wndOptions:SetRadioSel("PLogOptions", 3)
 	self:PLogOptionCheck(nil, nil, false, clgReceived)
 end
 
 function ProgressLog:ToggleAchievements()
 	if g_wndProgressLog:IsShown() and self.nLastSelection == 4 then
-		g_wndProgressLog:Show(false)
+		g_wndProgressLog:Close()
 		Event_FireGenericEvent("CodexWindowHasBeenClosed")
 	else
-		g_wndProgressLog:Show(true)
-		g_wndProgressLog:ToFront()
+		g_wndProgressLog:Invoke()
 		self.wndOptions:SetRadioSel("PLogOptions", 4)
 		self:PLogOptionCheck(nil, nil, false)
 	end
 end
 
 function ProgressLog:ToggleAchievementsWithData(achReceived)
-	g_wndProgressLog:Show(true)
-	g_wndProgressLog:ToFront()
+	g_wndProgressLog:Invoke()
 	self.wndOptions:SetRadioSel("PLogOptions", 4)
 	self:PLogOptionCheck(nil, nil, false, achReceived)
 end
@@ -200,8 +196,27 @@ function ProgressLog:PLogOptionCheck(wndHandler, wndControl, bToggledFromCall, t
 	self.tContent[nPLogOption]:Show(true)
 
 	if not g_wndProgressLog:IsVisible() then -- in case it's responding to a key or Datachron toggle
-		g_wndProgressLog:Show(true)
-		g_wndProgressLog:ToFront()
+		g_wndProgressLog:Invoke()
+	end
+end
+
+function ProgressLog:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
+	local tAnchors = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.Codex] = true,
+	}
+	
+	if not tAnchors[eAnchor] then
+		return
+	end
+	
+	local tAnchorMapping = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.Codex] = g_wndProgressLog,
+	}
+	
+	if tAnchorMapping[eAnchor] then
+		Event_FireGenericEvent("Tutorial_ShowCallout", eAnchor, idTutorial, strPopupText, tAnchorMapping[eAnchor])
 	end
 end
 

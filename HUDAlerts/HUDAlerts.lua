@@ -110,7 +110,7 @@ function HUDAlerts:OnHUDAlerts_DelayedInitialize() -- TODO HACK: This needs to d
 		end
 	end
 
-	self.wndAlertContainer:ArrangeChildrenHorz(0)
+	self.wndAlertContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function HUDAlerts:OnActivateCCStateStun()
@@ -156,13 +156,13 @@ function HUDAlerts:OnHoverGlowMouseExit(wndHandler, wndControl)
 end
 
 function HUDAlerts:ShowAndInitializeAlert(wndAlert)
-	self.wndAlertContainer:ArrangeChildrenHorz(0)
+	self.wndAlertContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	wndAlert:Show(true)
 	wndAlert:FindChild("AlertPopout"):Show(false, true)
 	wndAlert:FindChild("AlertItemHover"):Show(false, true)
 	wndAlert:FindChild("AlertItemKeybind"):SetSprite("sprAlert_Square_Black")
 	wndAlert:FindChild("AlertItemTransition"):SetSprite("sprWinAnim_BirthSmallTemp")
-	self.wndAlertContainer:ArrangeChildrenHorz(0)
+	self.wndAlertContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function HUDAlerts:OnUpdateInventory()
@@ -191,7 +191,7 @@ function HUDAlerts:OnCanVacuumChanged(bCanVacuum)
 
 	self:OnUpdateInventory() -- Check Full Bag Indicator
 
-	self.wndAlertContainer:ArrangeChildrenHorz(0)
+	self.wndAlertContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	--self.wndLootAlert:FindChild("AlertItemTransition"):SetSprite("sprWinAnim_BirthSmallTemp") -- No Anim for vacuum
 end
 
@@ -220,12 +220,12 @@ end
 function HUDAlerts:OnHUDAlerts_DatachronCallExpired()
 	self.wndCallAlert:Show(false)
 	self.wndQuestCompleteAlert:Show(false)
-	self.wndAlertContainer:ArrangeChildrenHorz(0)
+	self.wndAlertContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function HUDAlerts:OnDatachronCallCleared()
 	self.wndCallAlert:Show(false)
-	self.wndAlertContainer:ArrangeChildrenHorz(0)
+	self.wndAlertContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function HUDAlerts:OnChallengeUnlocked(tArgChallenge)
@@ -245,7 +245,7 @@ end
 
 function HUDAlerts:OnHUDAlerts_ChallengeTimerExpired()
 	self.wndChallengeAlert:Show(false)
-	self.wndAlertContainer:ArrangeChildrenHorz(0)
+	self.wndAlertContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 -----------------------------------------------------------------------------------------------
@@ -268,14 +268,14 @@ function HUDAlerts:DrawQuestCompleteAlert(tQuestsTracked)
 			self.wndQuestCompleteAlert:FindChild("QuestCompleteMenuBtn"):Show(idx > 1)
 
 			-- Resize to contents
-			wndCurr:FindChild("QuestCompleteItemText"):SetAML("<P Font=\"CRB_InterfaceSmall_O\" TextColor=\"ff7fffb9\">"..tCurrQuest:GetTitle().."</P>")
+			wndCurr:FindChild("QuestCompleteItemText"):SetAML("<P Font=\"CRB_InterfaceSmall\" TextColor=\"UI_BtnTextHoloNormal\">"..tCurrQuest:GetTitle().."</P>")
 			local nWidth, nHeight = wndCurr:FindChild("QuestCompleteItemText"):SetHeightToContentHeight()
 			local nLeft, nTop, nRight, nBottom = wndCurr:GetAnchorOffsets()
 			wndCurr:SetAnchorOffsets(nLeft, nTop, nRight, nHeight + 20) -- todo hardcoded padding above and below
 		end
 	end
 
-	local nHeight = self.wndQuestCompleteAlert:FindChild("QuestMenuList"):ArrangeChildrenVert(0)
+	local nHeight = self.wndQuestCompleteAlert:FindChild("QuestMenuList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	local nLeft, nTop, nRight, nBottom = self.wndQuestCompleteAlert:FindChild("QuestMenuFrame"):GetAnchorOffsets()
 	self.wndQuestCompleteAlert:FindChild("QuestMenuFrame"):SetAnchorOffsets(nLeft, nBottom - nHeight - 16, nRight, nBottom)
 
@@ -376,7 +376,7 @@ function HUDAlerts:ShowDurabilityAlert() -- Also from events
 
 	if nBrokenItems == 0 and nDamagedItems == 0 then
 		self.wndDurabilityAlert:Show(false)
-		self.wndAlertContainer:ArrangeChildrenHorz(0)
+		self.wndAlertContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 		return
 	end
 
@@ -406,7 +406,7 @@ function HUDAlerts:OnChallengeAlertBtn(wndHandler, wndControl, eMouseButton)
 		Event_FireGenericEvent("ToggleChallengesWindow")
 	end
 	self.wndChallengeAlert:Show(false)
-	self.wndAlertContainer:ArrangeChildrenHorz(0)
+	self.wndAlertContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function HUDAlerts:OnDurabilityAlertBtn(wndHandler, wndControl, eMouseButton)
@@ -417,7 +417,7 @@ function HUDAlerts:OnDurabilityAlertBtn(wndHandler, wndControl, eMouseButton)
 		Event_FireGenericEvent("ToggleCharacterWindow")
 	end
 	self.wndDurabilityAlert:Show(false)
-	self.wndAlertContainer:ArrangeChildrenHorz(0)
+	self.wndAlertContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function HUDAlerts:OnDatacubeAlertBtn(wndHandler, wndControl, eMouseButton) -- wndHandler is "DatacubeAlertBtn" and its data is a Datacube
@@ -428,7 +428,7 @@ function HUDAlerts:OnDatacubeAlertBtn(wndHandler, wndControl, eMouseButton) -- w
 		Event_FireGenericEvent("HudAlert_ToggleLoreWindow", wndHandler and wndHandler:GetData() or nil)
 	end
 	self.wndDatacubeAlert:Show(false)
-	self.wndAlertContainer:ArrangeChildrenHorz(0)
+	self.wndAlertContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function HUDAlerts:OnHUDAlerts_PlayDatacubeTrack()
@@ -442,7 +442,7 @@ end
 function HUDAlerts:OnStopPlayingDatacube() -- Lots of events route here, including the natural playing end and manual end from collections
 	Apollo.StopTimer("HUDAlerts_MaxPlayDatacubeTrackTime")
 	self.wndDatacubeAlert:Show(false)
-	self.wndAlertContainer:ArrangeChildrenHorz(0)
+	self.wndAlertContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function HUDAlerts:OnCallAlertBtn(wndHandler, wndControl, eMouseButton)
@@ -463,27 +463,36 @@ function HUDAlerts:OnCallAlertBtn(wndHandler, wndControl, eMouseButton)
 	end
 
 	self.wndCallAlert:Show(false)
-	self.wndAlertContainer:ArrangeChildrenHorz(0)
+	self.wndAlertContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function HUDAlerts:OnQuestCompleteTurnIn(wndHandler, wndControl) -- wndHandler is "QuestCompleteItem" or "QuestCompleteBtn" and its data is tCurrQuest
 	CommunicatorLib.CallContact(wndHandler:GetData())
 	self.wndQuestCompleteAlert:FindChild("QuestMenuFrame"):Show(false)
-	self.wndAlertContainer:ArrangeChildrenHorz(0)
+	self.wndAlertContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 ---------------------------------------------------------------------------------------------------
 -- Tutorial anchor request
 ---------------------------------------------------------------------------------------------------
 function HUDAlerts:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
-	if eAnchor ~= GameLib.CodeEnumTutorialAnchor.HUDAlert then
+	local tAnchors =
+	{
+		[GameLib.CodeEnumTutorialAnchor.HUDAlert] = true,
+	}
+	
+	if not tAnchors[eAnchor] then
 		return
 	end
-
-	local tRect = {}
-	tRect.l, tRect.t, tRect.r, tRect.b = self.wndAlertContainer:GetRect()
-
-	Event_FireGenericEvent("Tutorial_RequestUIAnchorResponse", eAnchor, idTutorial, strPopupText, tRect)
+	
+	local tAnchorMapping = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.HUDAlert] 	= self.wndLootAlert,
+	}
+	
+	if tAnchorMapping[eAnchor] then
+		Event_FireGenericEvent("Tutorial_ShowCallout", eAnchor, idTutorial, strPopupText, tAnchorMapping[eAnchor])
+	end
 end
 
 local HUDAlertsInst = HUDAlerts:new()

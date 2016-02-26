@@ -17,6 +17,10 @@ function OptionsInterface:new(o)
     o = o or {}
     setmetatable(o, self)
     self.__index = self
+
+	o.tTrackedWindowsByName = {}
+	o.tSavedWindowsByName = {}
+
     return o
 end
 
@@ -36,6 +40,7 @@ function OptionsInterface:OnLoad() -- OnLoad then GetAsyncLoad then OnRestore
 	-- Set up defaults
 	g_InterfaceOptions.Carbine.bSpellErrorMessages 			= true
 	g_InterfaceOptions.Carbine.bShowTutorials				= true
+	g_InterfaceOptions.Carbine.bQuestTrackerByDistance		= true
 	g_InterfaceOptions.Carbine.bInteractTextOnUnit			= false
 	g_InterfaceOptions.Carbine.bAreQuestUnitCalloutsVisible	= true
 	g_InterfaceOptions.Carbine.bAreSettlerStructureCalloutsVisible = true
@@ -55,7 +60,7 @@ function OptionsInterface:OnRestore(eType, tSavedData)
 		return
 	end
 
-	if tSavedData  then -- and tSavedData.nSaveVersion == knSaveVersion
+	if tSavedData then -- and tSavedData.nSaveVersion == knSaveVersion
 		if tSavedData.tSavedInterfaceOptions.Carbine then
 			for key, value in pairs(tSavedData.tSavedInterfaceOptions.Carbine) do
 				g_InterfaceOptions.Carbine[key] = value
@@ -63,13 +68,15 @@ function OptionsInterface:OnRestore(eType, tSavedData)
 		end
 
 		if tSavedData.tTrackedWindowsByName then
-			self.tTrackedWindowsByName = tSavedData.tTrackedWindowsByName
+			self.tSavedWindowsByName = tSavedData.tTrackedWindowsByName
 		end
 
 		if tSavedData.nWindowConstraints then
 			self.nWindowConstraints = tSavedData.nWindowConstraints
 		end
 	end
+	
+	self:OnWindowManagementLoadComplete()
 end
 
 function OptionsInterface:OnSave(eType)
@@ -94,7 +101,7 @@ function OptionsInterface:OnDocumentReady()
 		return
 	end
 
-	Apollo.RegisterEventHandler("WindowManagementAdd",			"OnWindowManagementAdd", self)
+	
 	Apollo.RegisterEventHandler("ResolutionChanged",					"OnResolutionChanged", self)
 	Apollo.RegisterEventHandler("ApplicationWindowSizeChanged",	"OnApplicationWindowSizeChanged", self)
 	Apollo.RegisterEventHandler("TopLevelWindowMove",				"OnTopLevelWindowMove", self)
@@ -112,9 +119,6 @@ function OptionsInterface:OnDocumentReady()
 	self.wndInterface = Apollo.LoadForm(self.xmlDoc, "OptionsInterfaceForm", nil, self)
 	self.wndInterface:Show(false, true)
 	self.wndInterface:FindChild("GeneralBtn"):SetCheck(true)
-
-	Apollo.RegisterTimerHandler("WindowManagementLoadTimer", "OnWindowManagementLoadTimer", self)
-	Apollo.CreateTimer("WindowManagementLoadTimer", 1.0, false)
 
 	self.bResizeTimerRunning = false
 	Apollo.RegisterTimerHandler("WindowManagementResizeTimer", "OnWindowManagementResizeTimer", self)
@@ -212,10 +216,19 @@ function OptionsInterface:OnDocumentReady()
 	end
 
 	self:InitializeControls()
+	
+	self:OnWindowManagementLoadComplete()
 end
 
-function OptionsInterface:OnWindowManagementLoadTimer()
-	Event_FireGenericEvent("WindowManagementReady")
+function OptionsInterface:OnWindowManagementLoadComplete()
+	if self.bLoadCalledOnce then
+		Apollo.RegisterEventHandler("WindowManagementRegister", "OnWindowManagementRegister", self)
+		Apollo.RegisterEventHandler("WindowManagementAdd", "OnWindowManagementAdd", self)
+		Apollo.RegisterEventHandler("WindowManagementRemove", "OnWindowManagementRemove", self)
+	
+		Event_FireGenericEvent("WindowManagementReady")
+	end
+	self.bLoadCalledOnce = true
 end
 
 function OptionsInterface:OnWindowManagementResizeTimer()
@@ -336,73 +349,103 @@ end
 -- Window Tracking
 -----------------------------------------------------------------------------------------------
 
-function OptionsInterface:OnWindowManagementAdd(tSettings)
-	if tSettings and tSettings.wnd and tSettings.wnd:IsValid() and tSettings.strName and string.len(tSettings.strName) > 0 then
-		tSettings.tDefaultLoc = tSettings.wnd:GetLocation():ToTable()
-		tSettings.bHasMoved = false
-		tSettings.bActiveEntry = true
-		tSettings.bRequireMetaKeyToMove = tSettings.wnd:IsStyleOn("RequireMetaKeyToMove")
-		tSettings.nSaveVersion = tSettings.nSaveVersion or 1
-
-		if not tSettings.bIsTabWindow then
-			tSettings.bMoveable = tSettings.wnd:IsStyleOn("Moveable")
-		else
-			tSettings.bMoveable = not tSettings.wnd:IsLocked()
-		end
-
-		-- Remove the entry if it already existed previously.
-		for idx, tOldSettings in pairs(self.tTrackedWindows) do
-			if tOldSettings.strName == tSettings.strName then
-				if tOldSettings.wndForm ~= nil and tOldSettings.wndForm:IsValid() then
-					tOldSettings.wndForm:Destroy()
-				end
-
-				tOldSettings.wndForm = nil
-				self.tTrackedWindows[idx] = nil
-			end
-		end
-
-		local tTrackedWindow = self.tTrackedWindowsByName[tSettings.strName]
-		if tTrackedWindow and tTrackedWindow.nSaveVersion == tSettings.nSaveVersion then
-			tSettings.bMoveable = tTrackedWindow.bMoveable
-			tSettings.bRequireMetaKeyToMove = tTrackedWindow.bRequireMetaKeyToMove
-			tSettings.tCurrentLoc = tTrackedWindow.tCurrentLoc
-
-			tSettings.wnd:SetStyle("Moveable", tSettings.bMoveable)
-			local tDisplay = Apollo.GetDisplaySize()
-			if tDisplay and tDisplay.nWidth and tDisplay.nHeight then
-				local nMaxWidth, nMaxHeight = tSettings.wnd:GetSizingMaximum()
-				
-				nMaxWidth = nMaxWidth > 0 and math.min(nMaxWidth, tDisplay.nWidth) or tDisplay.nWidth
-				nMaxHeight = nMaxHeight > 0 and math.min(nMaxHeight, tDisplay.nHeight) or tDisplay.nHeight
-				
-				tSettings.wnd:SetSizingMaximum(nMaxWidth, tDisplay.nHeight)
-
-				if tSettings.bIsTabWindow then
-					tSettings.wnd:Lock(not tSettings.bMoveable)
-				end
-
-				tSettings.wnd:SetStyle("RequireMetaKeyToMove", tSettings.bRequireMetaKeyToMove)
-				
-				if not tSettings.wnd:IsStyleOn("Sizable") then
-					if tSettings.tCurrentLoc.fPoints[1] == tSettings.tCurrentLoc.fPoints[3] then
-						tSettings.tCurrentLoc.nOffsets[3] = tSettings.tCurrentLoc.nOffsets[1] + tSettings.wnd:GetWidth()
-					end
-					
-					if tSettings.tCurrentLoc.fPoints[2] == tSettings.tCurrentLoc.fPoints[4] then
-						tSettings.tCurrentLoc.nOffsets[4] = tSettings.tCurrentLoc.nOffsets[2] + tSettings.wnd:GetHeight()
-					end
-				end
-				
-				tSettings.wnd:MoveToLocation(WindowLocation.new(tSettings.tCurrentLoc))
-			end
-		end
-
-		self.tTrackedWindows[tSettings.wnd:GetId()] = tSettings
+function OptionsInterface:OnWindowManagementRegister(tSettings)
+	if tSettings == nil or tSettings.strName == nil or string.len(tSettings.strName) == 0 then
+		return
 	end
+	
+	tSettings.bHasMoved = false
+	tSettings.bActiveEntry = false
+	tSettings.nSaveVersion = tSettings.nSaveVersion or 1
+	
+	local tSavedWindow = self.tSavedWindowsByName[tSettings.strName]
+	if tSavedWindow ~= nil and tSettings.nSaveVersion == tSavedWindow.nSaveVersion then
+		tSettings.bDefaultMoveable = tSavedWindow.bMoveable
+		tSettings.bMoveable = tSavedWindow.bMoveable
+		tSettings.bDefaultRequireMetaKeyToMove = tSavedWindow.bRequireMetaKeyToMove
+		tSettings.bRequireMetaKeyToMove = tSavedWindow.bRequireMetaKeyToMove
+		tSettings.tCurrentLoc = tSavedWindow.tCurrentLoc
+		tSettings.nPosX = tSavedWindow.nPosX
+		tSettings.nPosY = tSavedWindow.nPosY
+	end
+	
+	self.tTrackedWindowsByName[tSettings.strName] = tSettings
+	
+	Apollo.StopTimer("WindowManagementAddAllWindowsTimer")
+	Apollo.StartTimer("WindowManagementAddAllWindowsTimer")
+end
+
+function OptionsInterface:OnWindowManagementAdd(tSettings)
+	if tSettings == nil or tSettings.wnd == nil or not tSettings.wnd:IsValid() or tSettings.strName == nil or string.len(tSettings.strName) == 0 then
+		return
+	end
+	
+	local tTrackedWindow = self.tTrackedWindowsByName[tSettings.strName]
+	if tTrackedWindow == nil then
+		return
+	end
+	
+	tTrackedWindow.tDefaultLoc = tSettings.wnd:GetLocation():ToTable()
+	if tTrackedWindow.tCurrentLoc == nil then
+		tTrackedWindow.tCurrentLoc = tTrackedWindow.tDefaultLoc
+	end
+	
+	local tSavedWindow = self.tSavedWindowsByName[tSettings.strName]
+	if tTrackedWindow.bActiveEntry or tSavedWindow == nil or tTrackedWindow.nSaveVersion ~= tSavedWindow.nSaveVersion then
+		local bMetaKey = tSettings.wnd:IsStyleOn("RequireMetaKeyToMove")
+		tTrackedWindow.bDefaultRequireMetaKeyToMove = bMetaKey
+		tTrackedWindow.bRequireMetaKeyToMove = bMetaKey
+
+		local bMoveable = tSettings.wnd:IsStyleOn("Moveable")
+		if tSettings.bIsTabWindow then
+			bMoveable = not tSettings.wnd:IsLocked()
+		end
+		tTrackedWindow.bMoveable = bMoveable
+		tTrackedWindow.bDefaultMoveable = bMoveable
+	end
+
+	tSettings.wnd:SetStyle("Moveable", tTrackedWindow.bMoveable)
+	
+	local tDisplay = Apollo.GetDisplaySize()
+	if tDisplay and tDisplay.nWidth and tDisplay.nHeight then
+		local nMaxWidth, nMaxHeight = tSettings.wnd:GetSizingMaximum()
+		
+		nMaxWidth = nMaxWidth > 0 and math.min(nMaxWidth, tDisplay.nWidth) or tDisplay.nWidth
+		nMaxHeight = nMaxHeight > 0 and math.min(nMaxHeight, tDisplay.nHeight) or tDisplay.nHeight
+		
+		tSettings.wnd:SetSizingMaximum(nMaxWidth, tDisplay.nHeight)
+
+		if tTrackedWindow.bIsTabWindow then
+			tSettings.wnd:Lock(not tTrackedWindow.bMoveable)
+		end
+		
+		tSettings.wnd:SetStyle("RequireMetaKeyToMove", tTrackedWindow.bRequireMetaKeyToMove)
+		tSettings.wnd:MoveToLocation(WindowLocation.new(tTrackedWindow.tCurrentLoc))
+	end
+
+	tTrackedWindow.bActiveEntry = true
+	tTrackedWindow.wnd = tSettings.wnd
+	self.tTrackedWindows[tSettings.wnd:GetId()] = tTrackedWindow
 
 	Apollo.StopTimer("WindowManagementAddAllWindowsTimer")
 	Apollo.StartTimer("WindowManagementAddAllWindowsTimer")
+end
+
+function OptionsInterface:OnWindowManagementRemove(tSettings)
+	if tSettings == nil or tSettings.strName == nil or string.len(tSettings.strName) == 0 then
+		return
+	end
+	
+	local tTrackedWindow = self.tTrackedWindowsByName[tSettings.strName]
+	if tTrackedWindow == nil then
+		return
+	end
+	
+	if tTrackedWindow.wnd ~= nil then
+		self.tTrackedWindows[tTrackedWindow.wnd:GetId()] = nil
+	end
+	
+	tTrackedWindow.wnd = nil
 end
 
 function OptionsInterface:ReDrawTrackedWindows()
@@ -412,22 +455,27 @@ function OptionsInterface:ReDrawTrackedWindows()
 
 	wndContainer:DestroyChildren()
 
-	nIndex = 0
-	for idx, tSettings in pairs(self.tTrackedWindows) do
-		nIndex = nIndex + 1
-
-		if self.tTrackedWindows[tSettings.wnd:GetId()] and tSettings.bActiveEntry then
-			if tSettings.wndForm ~= nil and tSettings.wndForm:IsValid() then
+	for strName, tSettings in pairs(self.tTrackedWindowsByName) do
+		if tSettings.bActiveEntry then
+			if tSettings.wndForm then
 				tSettings.wndForm:Destroy()
+				tSettings.wndForm = nil
 			end
-			tSettings.wndForm = Apollo.LoadForm(self.xmlDoc, "WindowEntry", wndContainer, self)
-			self:UpdateTrackedWindow(tSettings.wnd)
-		else
-			table.remove(self.tTrackedWindowsByName, nIndex)
+
+			local wndSettings = Apollo.LoadForm(self.xmlDoc, "WindowEntry", wndContainer, self)
+			tSettings.wndForm = wndSettings
+			wndSettings:FindChild("WindowName"):SetText(tSettings.strName)
+			wndSettings:FindChild("X:EditBox"):SetData(tSettings)
+			wndSettings:FindChild("Y:EditBox"):SetData(tSettings)
+			wndSettings:FindChild("ResetBtn"):SetData(tSettings)
+			wndSettings:FindChild("Moveable"):SetData(tSettings)
+			wndSettings:FindChild("MoveableKey"):SetData(tSettings)
+		
+			self:UpdateTrackedWindow(tSettings)
 		end
 	end
 
-	wndContainer:ArrangeChildrenVert(0, function(a,b) return (a:FindChild("WindowName"):GetText() < b:FindChild("WindowName"):GetText()) end)
+	wndContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function(a,b) return (a:FindChild("WindowName"):GetText() < b:FindChild("WindowName"):GetText()) end)
 end
 
 function OptionsInterface:HasMoved(tSettings)
@@ -439,12 +487,18 @@ function OptionsInterface:HasMoved(tSettings)
 		tCurrentOffsets[2] ~= tDefaultOffsets[2]
 end
 
-function OptionsInterface:UpdateTrackedWindow(wndTracked)
-	local tSettings = self.tTrackedWindows[wndTracked:GetId()]
+function OptionsInterface:UpdateTrackedWindow(tSettings)
+	if tSettings == nil then
+		return
+	end
+	
+	local wndTracked = tSettings.wnd
+	local strX= "-"
 	local strXColor = ApolloColor.new("UI_TextHoloBody")
+	local strY = "-"
 	local strYColor = ApolloColor.new("UI_TextHoloBody")
 
-	if tSettings and tSettings.bActiveEntry then
+	if tSettings.wnd ~= nil and tSettings.wnd:IsValid() then
 		local nX, nY = wndTracked:GetPos()
 		tSettings.tCurrentLoc = wndTracked:GetLocation():ToTable()
 		local strConstrainLabelOutput = ""
@@ -470,8 +524,12 @@ function OptionsInterface:UpdateTrackedWindow(wndTracked)
 			nDeltaX = (nCurrentX + nWidth > tDisplay.nWidth + nOffsetX) and -1 * (nCurrentX + nWidth - tDisplay.nWidth - nOffsetX) or nDeltaX
 			nDeltaY = (nCurrentY + nHeight > tDisplay.nHeight + nOffsetY) and -1 * (nCurrentY + nHeight - tDisplay.nHeight - nOffsetY) or nDeltaY
 			
-			strXColor = nDeltaX == 0 and ApolloColor.new("UI_TextHoloBody") or ApolloColor.new("UI_WindowTextCraftingRedCapacitor")
-			strYColor = nDeltaY == 0 and ApolloColor.new("UI_TextHoloBody") or ApolloColor.new("UI_WindowTextCraftingRedCapacitor")
+			if nDeltaX ~= 0 then
+				strXColor = ApolloColor.new("UI_WindowTextCraftingRedCapacitor")
+			end
+			if nDeltaY ~= 0 then
+				strYColor = ApolloColor.new("UI_WindowTextCraftingRedCapacitor")
+			end
 
 			local tOffsets = tSettings.tCurrentLoc.nOffsets
 			local tPoints = tSettings.tCurrentLoc.fPoints
@@ -486,44 +544,42 @@ function OptionsInterface:UpdateTrackedWindow(wndTracked)
 			end
 		end
 
-		self.tTrackedWindowsByName[tSettings.strName] = {
-			strName							= tSettings.strName,
-			tCurrentLoc					= tSettings.tCurrentLoc,
-			bMoveable						= tSettings.bMoveable,
-			bRequireMetaKeyToMove 	= tSettings.bRequireMetaKeyToMove,
-			nSaveVersion					= tSettings.nSaveVersion
-		}
-
 		wndTracked:MoveToLocation(WindowLocation.new(tSettings.tCurrentLoc))
 
 		tSettings.bHasMoved = self:HasMoved(tSettings)
-
-		if tSettings.wndForm then
-			tSettings.wndForm:FindChild("WindowName"):SetText(tSettings.strName)
-			tSettings.wndForm:FindChild("X:EditBox"):SetText(nX)
-			tSettings.wndForm:FindChild("X:EditBox"):SetData(tSettings)
-			tSettings.wndForm:FindChild("X:EditBox"):Enable(false)
-			tSettings.wndForm:FindChild("X:EditBox"):SetTextColor(strXColor)
-			tSettings.wndForm:FindChild("Y:EditBox"):SetText(nY)
-			tSettings.wndForm:FindChild("Y:EditBox"):SetData(tSettings)
-			tSettings.wndForm:FindChild("Y:EditBox"):Enable(false)
-			tSettings.wndForm:FindChild("Y:EditBox"):SetTextColor(strYColor)
-			tSettings.wndForm:FindChild("ResetBtn"):SetData(tSettings)
-			tSettings.wndForm:FindChild("ResetBtn"):Enable(tSettings.bHasMoved)
-			tSettings.wndForm:FindChild("Moveable"):SetCheck(tSettings.bMoveable)
-			tSettings.wndForm:FindChild("Moveable"):SetData(tSettings)
-			tSettings.wndForm:FindChild("MoveableKey"):SetCheck(tSettings.bRequireMetaKeyToMove)
-			tSettings.wndForm:FindChild("MoveableKey"):SetData(tSettings)
-		end
+		tSettings.nPosX = nX
+		tSettings.nPosY = nY
+		strX = nX
+		strY = nY
 
 		self.wndInterface:FindChild("Constrain"):SetTooltip(strConstrainLabelOutput)
-
-		Event_FireGenericEvent("WindowManagementUpdate", tSettings)
+	elseif tSettings.nPosX ~= nil and tSettings.nPosY ~= nil then
+		strX = tostring(tSettings.nPosX)
+		strY = tostring(tSettings.nPosY)
 	end
+	
+	if tSettings.wndForm and tSettings.wndForm:IsValid() then
+		local wndSettings = tSettings.wndForm
+		wndSettings:FindChild("X:EditBox"):SetText(strX)
+		wndSettings:FindChild("X:EditBox"):Enable(false)
+		wndSettings:FindChild("X:EditBox"):SetTextColor(strXColor)
+		wndSettings:FindChild("Y:EditBox"):SetText(strY)
+		wndSettings:FindChild("Y:EditBox"):Enable(false)
+		wndSettings:FindChild("Y:EditBox"):SetTextColor(strYColor)
+		wndSettings:FindChild("ResetBtn"):Enable(tSettings.bHasMoved)
+		wndSettings:FindChild("Moveable"):SetCheck(tSettings.bMoveable)
+		wndSettings:FindChild("MoveableKey"):SetCheck(tSettings.bRequireMetaKeyToMove)
+	end
+	
+	Event_FireGenericEvent("WindowManagementUpdate", tSettings)
 end
 
 function OptionsInterface:OnTopLevelWindowMove(wndControl, nOldLeft, nOldTop, nOldRight, nOldBottom)
-	self:UpdateTrackedWindow(wndControl)
+	if wndControl == nil or not wndControl:IsValid() then
+		return
+	end
+
+	self:UpdateTrackedWindow(self.tTrackedWindows[wndControl:GetId()])
 end
 
 function OptionsInterface:OnApplicationWindowSizeChanged(tSize)
@@ -544,24 +600,27 @@ function OptionsInterface:OnResolutionChanged(nScreenWidth, nScreenHeight)
 	self.bResizeTimerRunning = true
 end
 
+function OptionsInterface:RestoreWindow(tSettings)
+	self.tTrackedWindowsByName[tSettings.strName].tCurrentLoc = tSettings.tDefaultLoc
+	
+	if tSettings.wnd ~= nil and tSettings.wnd:IsValid() then
+		tSettings.wnd:MoveToLocation(WindowLocation.new(tSettings.tDefaultLoc))
+		tSettings.bRequireMetaKeyToMove = tSettings.bDefaultRequireMetaKeyToMove
+		tSettings.bMoveable = tSettings.bDefaultMoveable
+		tSettings.wnd:SetStyle("Moveable", tSettings.bMoveable)
+		tSettings.wnd:SetStyle("RequireMetaKeyToMove", tSettings.bRequireMetaKeyToMove)
+	end
+	self:UpdateTrackedWindow(tSettings)
+end
+
 function OptionsInterface:OnResetAllBtn(wndHandler, wndControl)
 	for idx, tSettings in pairs(self.tTrackedWindows) do
-		self.tTrackedWindowsByName[tSettings.strName].tCurrentLoc = tSettings.tDefaultLoc
-		tSettings.wnd:MoveToLocation(WindowLocation.new(tSettings.tDefaultLoc))
-
-		self:UpdateTrackedWindow(tSettings.wnd)
+		self:RestoreWindow(tSettings)
 	end
 end
 
 function OptionsInterface:OnResetBtn(wndHandler, wndControl)
-	local tSettings = wndControl:GetData()
-
-	if tSettings then
-		self.tTrackedWindowsByName[tSettings.strName].tCurrentLoc = tSettings.tDefaultLoc
-		tSettings.wnd:MoveToLocation(WindowLocation.new(tSettings.tDefaultLoc))
-
-		self:UpdateTrackedWindow(tSettings.wnd)
-	end
+	self:RestoreWindow(wndControl:GetData())
 end
 
 function OptionsInterface:OnConstrainSliderChanged(wndHandler, wndControl, fValue)
@@ -588,12 +647,18 @@ function OptionsInterface:OnMoveableChecked(wndHandler, wndControl)
 			tSettings.wnd:Lock(not tSettings.bMoveable)
 		end
 
-		tSettings.wnd:SetStyle("Moveable", tSettings.bMoveable)
-		tSettings.wnd:SetStyle("RequireMetaKeyToMove", tSettings.bRequireMetaKeyToMove)
-
+		if tSettings.wnd ~= nil and tSettings.wnd:IsValid() then
+			tSettings.wnd:SetStyle("Moveable", tSettings.bMoveable)
+			tSettings.wnd:SetStyle("RequireMetaKeyToMove", tSettings.bRequireMetaKeyToMove)
+		end
+		
 		tSettings.wndForm:FindChild("MoveableKey"):SetCheck(tSettings.bRequireMetaKeyToMove)
-
-		self:UpdateTrackedWindow(tSettings.wnd)
+		self:UpdateTrackedWindow(tSettings)
+		
+		local tTrackedWindow = self.tTrackedWindowsByName[tSettings.strName]
+		if tTrackedWindow and tTrackedWindow.wndForm then
+			tTrackedWindow.wndForm:FindChild("ResetBtn"):Enable(true)
+		end
 	end
 end
 
@@ -603,12 +668,18 @@ function OptionsInterface:OnMoveableKeyChecked(wndHandler, wndControl)
 	if tSettings then
 		tSettings.bRequireMetaKeyToMove = not tSettings.bRequireMetaKeyToMove
 		tSettings.bMoveable = tSettings.bRequireMetaKeyToMove and true or tSettings.bMoveable
-		tSettings.wnd:SetStyle("Moveable", tSettings.bMoveable)
-		tSettings.wnd:SetStyle("RequireMetaKeyToMove", tSettings.bRequireMetaKeyToMove)
-
+		
+		if tSettings.wnd ~= nil and tSettings.wnd:IsValid() then
+			tSettings.wnd:SetStyle("Moveable", tSettings.bMoveable)
+			tSettings.wnd:SetStyle("RequireMetaKeyToMove", tSettings.bRequireMetaKeyToMove)
+		end
+		
 		tSettings.wndForm:FindChild("Moveable"):SetCheck(tSettings.bMoveable)
-
-		self:UpdateTrackedWindow(tSettings.wnd)
+		self:UpdateTrackedWindow(tSettings)
+		local tTrackedWindow = self.tTrackedWindowsByName[tSettings.strName]
+		if tTrackedWindow and tTrackedWindow.wndForm then
+			tTrackedWindow.wndForm:FindChild("ResetBtn"):Enable(true)
+		end
 	end
 end
 
@@ -723,3 +794,4 @@ end
 
 local OptionsInterfaceInst = OptionsInterface:new()
 OptionsInterfaceInst:Init()
+

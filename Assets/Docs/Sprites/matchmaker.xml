@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Sprites>
+    <Sprite Name="Matchmaker_BG_DungeonSwordmaiden" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\matchmarker_background_01.tex" x0="0" x1="0" x2="506" x3="506" x4="506" x5="506" y0="0" y1="0" y2="475" y3="475" y4="475" y5="475" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_DungeonSkullcano" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\matchmarker_background_01.tex" x0="0" x1="0" x2="506" x3="506" x4="506" x5="506" y0="476" y1="476" y2="949" y3="949" y4="949" y5="949" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_RaidDatascape" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\matchmarker_background_01.tex" x0="512" x1="512" x2="1018" x3="1018" x4="1018" x5="1018" y0="0" y1="0" y2="473" y3="473" y4="473" y5="473" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_DungeonKelVoreth" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\matchmarker_background_01.tex" x0="512" x1="512" x2="1018" x3="1018" x4="1018" x5="1018" y0="477" y1="477" y2="950" y3="950" y4="950" y5="950" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_DungeonStormtalon" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmarker_background_02.tex" x0="0" x1="0" x2="506" x3="506" x4="506" x5="506" y0="0" y1="0" y2="473" y3="473" y4="473" y5="473" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_AdventureHycrest" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmarker_background_02.tex" x0="0" x1="0" x2="506" x3="506" x4="506" x5="506" y0="477" y1="477" y2="950" y3="950" y4="950" y5="950" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_RegionNorthernWilds" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmarker_background_02.tex" x0="512" x1="512" x2="1018" x3="1018" x4="1018" x5="1018" y0="1" y1="1" y2="474" y3="474" y4="474" y5="474" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_RegionGalaras" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmarker_background_02.tex" x0="512" x1="512" x2="1018" x3="1018" x4="1018" x5="1018" y0="477" y1="477" y2="950" y3="950" y4="950" y5="950" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_ShiphandsFragmentZero" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmarker_background_04.tex" x0="0" x1="0" x2="506" x3="506" x4="506" x5="506" y0="479" y1="479" y2="952" y3="952" y4="952" y5="952" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_ShiphandsRageLogic" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmarker_background_04.tex" x0="1" x1="1" x2="507" x3="507" x4="507" x5="507" y0="1" y1="1" y2="474" y3="474" y4="474" y5="474" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_ShiphandsInfestation" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmarker_background_03.tex" x0="512" x1="512" x2="1018" x3="1018" x4="1018" x5="1018" y0="477" y1="477" y2="950" y3="950" y4="950" y5="950" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_RegionFarside" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmarker_background_03.tex" x0="512" x1="512" x2="1018" x3="1018" x4="1018" x5="1018" y0="1" y1="1" y2="474" y3="474" y4="474" y5="474" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_AdventureMalgrave" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmarker_background_03.tex" x0="2" x1="2" x2="508" x3="508" x4="508" x5="508" y0="478" y1="478" y2="951" y3="951" y4="951" y5="951" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_AdventureCrimelords" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmarker_background_03.tex" x0="1" x1="1" x2="507" x3="507" x4="507" x5="507" y0="1" y1="1" y2="474" y3="474" y4="474" y5="474" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_AdventureWaroftheWilds" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmarker_background_04.tex" x0="515" x1="515" x2="1021" x3="1021" x4="1021" x5="1021" y0="1" y1="1" y2="474" y3="474" y4="474" y5="474" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_AdventureOutpost" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmarker_background_04.tex" x0="513" x1="513" x2="1019" x3="1019" x4="1019" x5="1019" y0="475" y1="475" y2="948" y3="948" y4="948" y5="948" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_RegionEverstarGrove" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmarker_background_05.tex" x0="1" x1="1" x2="507" x3="507" x4="507" x5="507" y0="0" y1="0" y2="473" y3="473" y4="473" y5="473" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_ShiphandsSpaceMadness" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmarker_background_05.tex" x0="514" x1="514" x2="1020" x3="1020" x4="1020" x5="1020" y0="0" y1="0" y2="473" y3="473" y4="473" y5="473" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_ShiphandsDeepSpace" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmarker_background_05.tex" x0="2" x1="2" x2="508" x3="508" x4="508" x5="508" y0="475" y1="475" y2="948" y3="948" y4="948" y5="948" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_ShiphandsGauntlet" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmarker_background_05.tex" x0="512" x1="512" x2="1018" x3="1018" x4="1018" x5="1018" y0="480" y1="480" y2="953" y3="953" y4="953" y5="953" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_BattlegroundsWalatiki" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmarker_background_06.tex" x0="-1" x1="-1" x2="505" x3="505" x4="505" x5="505" y0="2" y1="2" y2="475" y3="475" y4="475" y5="475" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_BattlegroundsBloodsworn" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmarker_background_06.tex" x0="513" x1="513" x2="1019" x3="1019" x4="1019" x5="1019" y0="-3" y1="-3" y2="470" y3="470" y4="470" y5="470" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_BattlegroundsDaggerstone" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmarker_background_06.tex" x0="3" x1="3" x2="509" x3="509" x4="509" x5="509" y0="477" y1="477" y2="950" y3="950" y4="950" y5="950" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_BattlegroundsBoneshatter" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmarker_background_06.tex" x0="514" x1="514" x2="1020" x3="1020" x4="1020" x5="1020" y0="474" y1="474" y2="947" y3="947" y4="947" y5="947" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+</Sprites>

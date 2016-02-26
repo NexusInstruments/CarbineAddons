@@ -5,6 +5,8 @@
  
 require "Window"
 require "HousingLib"
+require "Residence"
+require "Decor"
  
 -----------------------------------------------------------------------------------------------
 -- HousingList Module Definition
@@ -29,7 +31,8 @@ function HousingList:new(o)
     setmetatable(o, self)
     self.__index = self 
 
-	-- initialize our variables
+	o.tWndRefs			= {}
+	o.wndCrateUnderPopup = nil
 	o.wndDecorList 		= nil
 	o.wndListView 		= nil
 	o.wndRecallButton 	= nil
@@ -48,8 +51,8 @@ end
 -- HousingList OnLoad
 -----------------------------------------------------------------------------------------------
 function HousingList:OnLoad()
-    -- Register events
 	Apollo.RegisterEventHandler("WindowManagementReady", 	"OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 	
 	Apollo.RegisterEventHandler("HousingButtonList", 				"OnHousingButtonList", self)
 	Apollo.RegisterEventHandler("HousingButtonRemodel", 			"OnHousingButtonRemodel", self)
@@ -64,35 +67,40 @@ function HousingList:OnLoad()
 	Apollo.RegisterEventHandler("HousingExitEditMode", 				"OnExitEditMode", self)
 	Apollo.RegisterEventHandler("HousingBuildStarted", 				"OnBuildStarted", self)
     
-    -- load our forms
     self.xmlDoc = XmlDoc.CreateFromFile("HousingList.xml")
-    self.wndDecorList 		= Apollo.LoadForm(self.xmlDoc, "HousingListWindow", nil, self)
-	self.wndListView 		= self.wndDecorList:FindChild("StructureList")
-	self.wndRecallButton 	= self.wndDecorList:FindChild("RecallBtn")
-	self.wndDeleteButton 	= self.wndDecorList:FindChild("DeleteBtn")
-	self.wndRecallButton:Enable(false)
-	self.wndDeleteButton:Enable(false)
-	
-	self.wndCrateUnderPopup = Apollo.LoadForm(self.xmlDoc, "PopupCrateUnder", nil, self)
-	self.wndCrateUnderPopup:Show(false, true)
 	
 	HousingLib.RefreshUI()
 end
 
 function HousingList:OnWindowManagementReady()
-	local strName = string.format("%s: %s", Apollo.GetString("CRB_Housing"), Apollo.GetString("HousingList_Header"))
-	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndDecorList, strName = strName})
+	local strName = String_GetWeaselString(Apollo.GetString("Tooltips_ItemSpellEffect"), Apollo.GetString("CRB_Housing"), Apollo.GetString("HousingList_Header"))
+
+	Event_FireGenericEvent("WindowManagementRegister", {strName = strName})
 end
 
 -----------------------------------------------------------------------------------------------
 -- HousingList Functions
 -----------------------------------------------------------------------------------------------
 
+function HousingList:BuildList()
+	local wndDecorList				= Apollo.LoadForm(self.xmlDoc, "HousingListWindow", nil, self)
+    self.tWndRefs.wndDecorList		= wndDecorList
+	self.tWndRefs.wndListView		= wndDecorList:FindChild("StructureList")
+	self.tWndRefs.wndRecallButton	= wndDecorList:FindChild("RecallBtn")
+	self.tWndRefs.wndDeleteButton	= wndDecorList:FindChild("DeleteBtn")
+	
+	self.tWndRefs.wndRecallButton:Enable(false)
+	self.tWndRefs.wndDeleteButton:Enable(false)
+	
+	local strName = string.format("%s: %s", Apollo.GetString("CRB_Housing"), Apollo.GetString("HousingList_Header"))
+	Event_FireGenericEvent("WindowManagementAdd", {wnd = wndDecorList, strName = strName})
+end
+
 function HousingList:OnHousingButtonList()
-    if not self.wndDecorList:IsVisible() then
-        self.wndDecorList:Show(true)
+    if self.tWndRefs.wndDecorList == nil or not self.tWndRefs.wndDecorList:IsValid() then
+		self:BuildList()
+        self.tWndRefs.wndDecorList:Invoke()
         self:ShowHousingListWindow()
-        self.wndDecorList:ToFront()
         
 		Event_FireGenericEvent("HousingEnterEditMode")
 		HousingLib.SetEditMode(true)		
@@ -103,35 +111,35 @@ end
 
 ---------------------------------------------------------------------------------------------------
 function HousingList:OnHousingButtonCrate()
-	if self.wndDecorList:IsVisible() or (self.wndCrateUnderPopup ~= nil and self.wndCrateUnderPopup:IsVisible()) then
+	if (self.tWndRefs.wndDecorList ~= nil and self.tWndRefs.wndDecorList:IsVisible()) or (self.wndCrateUnderPopup ~= nil and self.wndCrateUnderPopup:IsVisible()) then
 		self:OnCloseHousingListWindow()
 	end
 end	
 
 ---------------------------------------------------------------------------------------------------
 function HousingList:OnHousingButtonRemodel()
-	if self.wndDecorList:IsVisible() or (self.wndCrateUnderPopup ~= nil and self.wndCrateUnderPopup:IsVisible()) then
+	if (self.tWndRefs.wndDecorList ~= nil and self.tWndRefs.wndDecorList:IsVisible()) or (self.wndCrateUnderPopup ~= nil and self.wndCrateUnderPopup:IsVisible()) then
 		self:OnCloseHousingListWindow()
 	end
 end	
 
 ---------------------------------------------------------------------------------------------------
 function HousingList:OnHousingButtonLandscape()
-	if self.wndDecorList:IsVisible() or (self.wndCrateUnderPopup ~= nil and self.wndCrateUnderPopup:IsVisible()) then
+	if (self.tWndRefs.wndDecorList ~= nil and self.tWndRefs.wndDecorList:IsVisible()) or (self.wndCrateUnderPopup ~= nil and self.wndCrateUnderPopup:IsVisible()) then
 		self:OnCloseHousingListWindow()
 	end
 end	
 
 ---------------------------------------------------------------------------------------------------
 function HousingList:OnExitEditMode()
-	if self.wndDecorList:IsVisible() then
+	if self.tWndRefs.wndDecorList ~= nil and self.tWndRefs.wndDecorList:IsVisible() then
 		self:OnCloseHousingListWindow()
 	end
 end
 
 ---------------------------------------------------------------------------------------------------
 function HousingList:OnBuildStarted(plotIndex)
-	if plotIndex == 1 and self.wndDecorList:IsVisible() then
+	if plotIndex == 1 and self.tWndRefs.wndDecorList ~= nil and self.tWndRefs.wndDecorList:IsVisible() then
 		self:OnCloseHousingListWindow()
 	end
 end
@@ -145,7 +153,7 @@ function HousingList:OnOpenPanelControl(idPropertyInfo, idZone, bPlayerIsInside)
 	gidZone = idZone
 	self.idPropertyInfo = idPropertyInfo
 	self.bPlayerIsInside = bPlayerIsInside == true --make sure we get true/false
-	self.bIsWarplot = HousingLib.IsWarplotResidence()
+	self.bIsWarplot = HousingLib.GetResidence() and HousingLib.GetResidence():IsWarplotResidence()
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -161,67 +169,69 @@ function HousingList:OnConfirmCrateAll(wndControl, wndHandler)
     Sound.Play(Sound.PlayUIHousingCrateItem)
 	HousingLib.CrateAllDecor()
     self:CancelPreviewDecor(true)
-    Event_FireGenericEvent("HousingDeactivateDecorIcon", self.nPreviewDecorHandle)
-    Event_FireGenericEvent("HousingFreePlaceControlClose", self.nPreviewDecorHandle)
-    self:ShowHousingListWindow()
-    self:OnCloseHousingListWindow()
+    Event_FireGenericEvent("HousingDeactivateDecorIcon", self.decorSelection)
+    Event_FireGenericEvent("HousingFreePlaceControlClose", self.decorSelection)
+
+	self:BuildList()
+    self.tWndRefs.wndDecorList:Invoke()
+    self:ResetPopups()
 end
 
 ---------------------------------------------------------------------------------------------------
 function HousingList:OnCancelCrateAll(wndControl, wndHandler)
-    self.wndDecorList:Show(true)
+	self:BuildList()
+    self.tWndRefs.wndDecorList:Invoke()
     self:ResetPopups()
 end
 
 ---------------------------------------------------------------------------------------------------
 function HousingList:OnDecoratePreview(wndControl, wndHandler)
-	local nRow = self.wndListView:GetCurrentRow() 
-	local tItemData = self.wndListView:GetCellData(nRow, 1)
-	local idLow = tItemData.nDecorId
-	local idHi = tItemData.nDecorIdHi
+	local nRow = self.tWndRefs.wndListView:GetCurrentRow() 
+	local decorPreview = self.tWndRefs.wndListView:GetCellData(nRow, 1)
 	
 	-- remove any existing preview decor
-	if self.nPreviewDecorHandle ~= 0 then
-	    HousingLib.FreePlaceDecorDisplacement_Cancel(self.nPreviewDecorHandle)
+	if self.decorSelection ~= nil then
+	    self.decorSelection:CancelTransform()
 	end
 
 	self:CancelPreviewDecor(false)
-
-	local nItemHandle = HousingLib.PreviewPlacedDecor(idLow, idHi)
-	if nItemHandle ~= nil and nItemHandle ~= 0 then
-	    if self.bPlayerIsInside then
-	        Event_FireGenericEvent("HousingFreePlaceDecorQuery", nItemHandle, true, HousingLib.CodeEnumDecorHookType.FreePlace)
-		elseif self.bIsWarplot then
-	        Event_FireGenericEvent("HousingFreePlaceDecorQuery", nItemHandle, true, HousingLib.CodeEnumDecorHookType.WarplotFreePlace)
-	    else
-	        Event_FireGenericEvent("HousingFreePlaceDecorQuery", nItemHandle, false, tItemData.eHookType)
+	
+	if decorPreview ~= nil then
+		decorPreview:Select()
+	    if not self.bIsWarplot then
+	        Event_FireGenericEvent("HousingActivateDecorIcon", decorPreview)
 	    end
 		Sound.Play(Sound.PlayUIHousingHardwareAddition)
-		self.nPreviewDecorHandle = nItemHandle
-		self.wndRecallButton:Enable(true)
-		self.wndDeleteButton:Enable(HousingLib:IsOnMyResidence())
+		self.decorSelection = decorPreview
+		self.tWndRefs.wndRecallButton:Enable(true)
+		self.tWndRefs.wndDeleteButton:Enable(HousingLib:IsOnMyResidence())
 	end
 end
 
 ---------------------------------------------------------------------------------------------------
 function HousingList:CancelPreviewDecor(bRemoveFromWorld)
-	if bRemoveFromWorld and self.nPreviewDecorHandle ~= 0 then
-		HousingLib.FreePlaceDecorDisplacement_Cancel(self.nPreviewDecorHandle)
+	if bRemoveFromWorld and self.decorSelection ~= nil then
+		self.decorSelection:CancelTransform()
 	end
 	
-	self.nPreviewDecorHandle = 0
+	self.decorSelection = nil
 	
-	self.wndRecallButton:Enable(false)
-	self.wndDeleteButton:Enable(false)
+	if self.tWndRefs.wndRecallButton ~= nil then
+		self.tWndRefs.wndRecallButton:Enable(false)
+	end
+	
+	if self.tWndRefs.wndDeleteButton ~= nil then
+		self.tWndRefs.wndDeleteButton:Enable(false)
+	end
 end
 
 ---------------------------------------------------------------------------------------------------
 function HousingList:OnRecallBtn(wndControl, wndHandler)
-    if self.nPreviewDecorHandle ~= 0 then
-        self:CrateDecorItem(self.nPreviewDecorHandle)
+    if self.decorSelection ~= nil then
+        self.decorSelection:Crate()
         self:CancelPreviewDecor(true)
-        Event_FireGenericEvent("HousingDeactivateDecorIcon", self.nPreviewDecorHandle)
-        Event_FireGenericEvent("HousingFreePlaceControlClose", self.nPreviewDecorHandle)
+        Event_FireGenericEvent("HousingDeactivateDecorIcon", self.decorSelection)
+        Event_FireGenericEvent("HousingFreePlaceControlClose", self.decorSelection)
         self:ShowHousingListWindow()
 	end
 end
@@ -230,25 +240,25 @@ end
 function HousingList:OnRecallAllBtn(wndControl, wndHandler)
     self:ResetPopups()
     self.wndCrateUnderPopup = Apollo.LoadForm(self.xmlDoc, "PopupCrateUnder", nil, self)
-    self.wndCrateUnderPopup:Show(true)
-    self.wndCrateUnderPopup:ToFront()
-    self.wndDecorList:Show(false)
+    self.wndCrateUnderPopup:Invoke()
+    self.tWndRefs.wndDecorList:Close()
 end
 
 ---------------------------------------------------------------------------------------------------
 function HousingList:OnPlaceBtn(wndControl, wndHandler)
 
-	HousingLib.PlaceDecorFromCrate(self.nPreviewDecorHandle)
+	if self.decorSelection ~= nil then
+		self.decorSelection:Place()
 	Sound.Play(Sound.PlayUIHousingHardwareFinalized)
 	Sound.Play(Sound.PlayUI16BuyVirtual)
-
+	end
 	self:CancelPreviewDecor(false)
 end
 
 ---------------------------------------------------------------------------------------------------
 function HousingList:OnDeleteBtn(wndControl, wndHandler)
-	if self.nPreviewDecorHandle ~= 0 then
-	    Event_FireGenericEvent("HousingDestroyDecorControlOpen2", self.nPreviewDecorHandle)
+	if self.decorSelection ~= nil then
+	    Event_FireGenericEvent("HousingDestroyDecorControlOpen2", self.decorSelection, false)
 	end
 end
 
@@ -261,46 +271,50 @@ function HousingList:OnWindowClosed()
 	
 	-- any preview decorItems reset
 	self:CancelPreviewDecor(false)
-	self.wndRecallButton:Enable(false)
-	self.wndDeleteButton:Enable(false)
-	self.tDecorList = nil
+	self.arDecorList = nil
 	
-	Sound.Play(Sound.PlayUIWindowClose)
+	if self.tWndRefs.wndDecorList ~= nil and self.tWndRefs.wndDecorList:IsValid() then
+		self.tWndRefs.wndDecorList:Destroy()
+		self.tWndRefs = {}
+		Sound.Play(Sound.PlayUIWindowClose)
+	end
 end
 
 ---------------------------------------------------------------------------------------------------
 function HousingList:OnCloseHousingListWindow()
 	-- close the window which will trigger OnWindowClosed
+	if self.tWndRefs.wndDecorList ~= nil and self.tWndRefs.wndDecorList:IsValid() then
 	self:ResetPopups()
-	self.wndDecorList:Close()
+		self.tWndRefs.wndDecorList:Destroy()
+	end
 end
 
 ---------------------------------------------------------------------------------------------------
 function HousingList:ShowHousingListWindow()
     -- don't do any of this if the Housing List isn't visible
-	if not self.wndDecorList:IsVisible() then
+	if self.tWndRefs.wndDecorList == nil or not self.tWndRefs.wndDecorList:IsVisible() then
 		return
 	end
 	
     -- Find a list of all placed decor items
-    self.tDecorList = (self.bIsWarplot and HousingLib.GetPlacedDecorListWarplot()) or HousingLib.GetPlacedDecorList()
-    self:ShowItems(self.wndListView, self.tDecorList, 0)
+    self.arDecorList = HousingLib.GetResidence() and HousingLib.GetResidence():GetPlacedDecorList() or {}
+    self:ShowItems(self.tWndRefs.wndListView, self.arDecorList, 0)
 	
 	-- remove any existing preview decor
 	self:CancelPreviewDecor(false)
 end
 	
 ---------------------------------------------------------------------------------------------------
-function HousingList:CrateDecorItem(nDecorHandle)
-	if nDecorHandle ~= 0 then
+function HousingList:CrateDecorItem(decorSelected)
+	if decorSelected ~= nil then
 		Sound.Play(Sound.PlayUIHousingCrateItem)
-		HousingLib.CrateDecor(nDecorHandle)
+		decorSelected:Crate()
 	end
 end
 
 ---------------------------------------------------------------------------------------------------
 function HousingList:OnMyResidenceDecorChanged(eDecorType)
-	if not self.wndDecorList:IsVisible() then
+	if self.tWndRefs.wndDecorList == nil or not self.tWndRefs.wndDecorList:IsVisible() then
 		return
 	end
 	
@@ -329,28 +343,28 @@ function HousingList:OnDecorateListItemChange(wndControl, wndHandler, nX, nY)
 end
 
 ---------------------------------------------------------------------------------------------------
-function HousingList:ShowItems(wndListControl, tItemList, idPrune)
+function HousingList:ShowItems(wndListControl, arDecorList, idPrune)
 	if wndListControl ~= nil then
 		wndListControl:DeleteAll()
 	end
 
-	if tItemList ~= nil then
+	if arDecorList ~= nil then
 
 	    -- Here we have an example of a nameless function being declared within another function's parameter list!
-		table.sort(tItemList, function(a,b)	return (a.strName < b.strName)	end)
+		table.sort(arDecorList, function(a,b)	return (a:GetName() < b:GetName())	end)
 
 		-- populate the buttons with the item data
-		for idx = 1, #tItemList do
+		for idx = 1, #arDecorList do
 	
-			local tItemData = tItemList[idx]
+			local decor = arDecorList[idx]
 			--if self:SelectionMatches(item["type"]) then
 			
 				-- AddRow implicitly works on column one.  Every column can have it's own hidden data associated with it!
-				local idx = wndListControl:AddRow("  " .. tItemData.strName, "", tItemData)
+				local idx = wndListControl:AddRow("  " .. decor:GetName(), "", decor)
 				local bPruned = false
 
 				-- this pruneId means we've want to disallow this item (let's show it as a disabled row) 
-				if idPrune == tItemData.nDecorId --[[or gidZone ~= item["zoneId"]--]] then
+				if idPrune == decor:GetDecorInfoId() --[[or gidZone ~= item["zoneId"]--]] then
 					--Print("pruneId: " .. pruneId)
 					bPruned = true
 					wndListControl:EnableRow(idx, false)
@@ -361,18 +375,6 @@ function HousingList:ShowItems(wndListControl, tItemList, idPrune)
 			--end
 		end
 	end
-end
-
----------------------------------------------------------------------------------------------------
-function HousingList:GetItem(idItem, tItemList)
-  local idx, idItem
-  for idx = 1, #tItemlist do
-    tItemData = tItemList[idx]
-    if tItemData["decorId"] == idx then
-      return tItemData
-    end
-  end
-  return nil
 end
 
 -----------------------------------------------------------------------------------------------

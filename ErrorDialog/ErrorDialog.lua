@@ -29,7 +29,7 @@ end
 
 ---------------------------------------------------------------------------------------------------
 function ErrorDialog:Init()
-	Apollo.RegisterAddon(self)
+	Apollo.RegisterAddon(self, true, Apollo.GetString("InterfaceMenu_ReportBug"))
 end
 
 function ErrorDialog:OnSave(eType)
@@ -59,6 +59,10 @@ end
 ---------------------------------------------------------------------------------------------------
 -- ErrorDialog EventHandlers
 ---------------------------------------------------------------------------------------------------
+function ErrorDialog:OnConfigure() -- From ESC -> Options
+	self:ToggleWindow()
+end
+
 function ErrorDialog:OnLoad()
 	self.xmlDoc = XmlDoc.CreateFromFile("ErrorDialog.xml")
 	self.xmlDoc:RegisterCallback("OnDocumentReady", self) 
@@ -69,9 +73,6 @@ function ErrorDialog:OnDocumentReady()
 		return
 	end
 	
-	Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded", "OnInterfaceMenuListHasLoaded", self)
-	
-	Apollo.RegisterEventHandler("InterfaceMenu_ToggleReportBug", "ToggleWindow", self)
 	Apollo.RegisterEventHandler("ToggleErrorDialog", "ToggleWindow", self)
 	Apollo.RegisterEventHandler("ErrorDialogSetSelection", "SelectErrorType", self)
 	Apollo.RegisterEventHandler("GameClickUnit", "OnGameClickUnit", self)
@@ -79,12 +80,9 @@ function ErrorDialog:OnDocumentReady()
 	Apollo.RegisterEventHandler("GameClickWorld", "OnGameClickWorld", self)
 	Apollo.RegisterEventHandler("LuaError", "OnLuaError", self)
 	Apollo.RegisterEventHandler("TicketToBugDialog", "OnBugOpen", self)
-	Apollo.RegisterEventHandler("WindowManagementReady", 	"OnWindowManagementReady", self)
-
 
 	-- load our forms
 	self.wndReportBug = Apollo.LoadForm(self.xmlDoc, "ReportBugDialog", nil, self)
-	self.wndReportBug:Show(false)
 	--self.wndReportBug:FindChild("ShowQuestList"):AttachWindow(self.wndReportBug:FindChild("Flyout"))
 	if self.locReportBugLoc then
 		self.wndReportBug:MoveToLocation(self.locReportBugLoc)
@@ -103,14 +101,14 @@ function ErrorDialog:OnDocumentReady()
 	end
 	wndCatList:SetCurrentRow(1)
 	self:FillSubcategories()
+
+	Apollo.RegisterEventHandler("WindowManagementReady", 	"OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 end
 
 function ErrorDialog:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("InterfaceMenu_ReportBug")})
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndReportBug, strName = Apollo.GetString("InterfaceMenu_ReportBug")})
-end
-
-function ErrorDialog:OnInterfaceMenuListHasLoaded()
-	Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("InterfaceMenu_ReportBug"), {"InterfaceMenu_ToggleReportBug", "", "Icon_Windows32_UI_CRB_InterfaceMenu_ReportBug"})
 end
 
 function ErrorDialog:OnWindowMove()
@@ -198,10 +196,9 @@ function ErrorDialog:ShowErrorDialog(bShow)
 		self:PopulateTypeCombo()
 	end
 	--]]
-	self.wndReportBug:Show(bShow)
 
 	if bShow then
-		
+		self.wndReportBug:Invoke()
 		local wndList = self.wndReportBug:FindChild("QuestList")
 		wndList:DeleteAll()
 
@@ -235,11 +232,13 @@ function ErrorDialog:ShowErrorDialog(bShow)
 				self.wndReportBug:FindChild("Unit"):SetText("")
 			end
 		end
+	else
+		self.wndReportBug:Close()
 	end
 end
 
 function ErrorDialog:OnCancelBtn()
-	self.wndReportBug:Show(false)
+	self.wndReportBug:Close()
 end
 
 function ErrorDialog:OnBugOpen(strText)
@@ -251,7 +250,7 @@ end
 
 function ErrorDialog:ToggleWindow()
 	if self.wndReportBug:IsVisible() then
-		self.wndReportBug:Show(false)
+		self.wndReportBug:Close()
 	else
 		self:ShowErrorDialog(true)
 	end
@@ -294,7 +293,7 @@ function ErrorDialog:OnLuaError(tAddon, strError, bCanIgnore)
 
 	self.wndErrorDialog:SetData(tAddon)
 
-	self.wndErrorDialog:ToFront()
+	self.wndErrorDialog:Invoke()
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -304,6 +303,7 @@ end
 function ErrorDialog:OnSuspendAddon(wndHandler, wndControl)
 	local tAddon = self.wndErrorDialog:GetData()
 	Apollo.SuspendAddon(tAddon.strName)
+	self.wndErrorDialog:Close()
 	self.wndErrorDialog:Destroy()
 	self.wndErrorDialog = nil
 end
@@ -312,21 +312,25 @@ function ErrorDialog:OnDisableAddon(wndHandler, wndControl, eMouseButton)
 	local tAddon = self.wndErrorDialog:GetData()
 	Apollo.SuspendAddon(tAddon.strName)
 	Apollo.DisableAddon(tAddon.strName)
+	self.wndErrorDialog:Close()
 	self.wndErrorDialog:Destroy()
 	self.wndErrorDialog = nil
 end
 
 function ErrorDialog:OnIgnoreError(wndHandler, wndControl)
+	self.wndErrorDialog:Close()
 	self.wndErrorDialog:Destroy()
 	self.wndErrorDialog = nil
 end
 
 function ErrorDialog:OnCloseBtn(wndHandler, wndControl)
+	self.wndErrorDialog:Close()
 	self.wndErrorDialog:Destroy()
 	self.wndErrorDialog = nil
 end
 
 function ErrorDialog:OnCloseErrorWindow(wndHandler, wndControl)
+	self.wndErrorDialog:Close()
 	wndHandler:Destroy()
 end
 
@@ -345,7 +349,7 @@ function ErrorDialog:OnReportBug( wndHandler, wndControl, eMouseButton )
 	local tSub = wndSubcatList:GetCellData(nSubRow, 1)
 	GameLib.ReportBug(tSub.nId, self.unitSelected, self.idQuest, self.wndReportBug:FindChild("Description"):GetText())
 	self.wndReportBug:FindChild("Description"):SetText("")
-	self.wndReportBug:Show(false)
+	self.wndReportBug:Close()
 end
 
 function ErrorDialog:OnCategoryChanged()

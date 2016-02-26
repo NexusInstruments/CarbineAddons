@@ -7,6 +7,8 @@ require "Apollo"
 require "Window"
 require "CharacterScreenLib"
 require "PreGameLib"
+require "AlienFxLib"
+require "AccountItemLib"
 
 local CharacterSelection = {}
 
@@ -17,6 +19,8 @@ local knCheerAnimation = 1621
 local knDeleteModelAttachmentId = 98
 local kiCharacterScrollBarWidth = 16
 local knMaxCharacterName = 29 --TODO replace with the max length of a character name from PreGameLib once the enum has been created in PreGameLib
+local kidDominionFaction = 166
+local knAlienFxAllLightsLocation = 134217727
 
 function CharacterSelection:new(o)
 	o = o or {}
@@ -32,29 +36,32 @@ end
 function CharacterSelection:OnLoad()
 	self.xmlDoc = XmlDoc.CreateFromFile("CharacterSelection.xml")
 
-	Apollo.RegisterEventHandler("LoadFromCharacter", "OnLoadFromCharacter", self)
-	Apollo.RegisterEventHandler("ResolutionChanged",	"OnWindowResized", self)
+	Apollo.RegisterEventHandler("LoadFromCharacter",				"OnLoadFromCharacter", self)
+	Apollo.RegisterEventHandler("ResolutionChanged",				"OnWindowResized", self)
 	Apollo.RegisterEventHandler("ApplicationWindowSizeChanged", 	"OnWindowResized", self)
-	Apollo.RegisterEventHandler("CharacterDisabled", "OnCharacterDisabled", self)
-	Apollo.RegisterEventHandler("CharacterDelete", "OnCharacterDeleteResult", self)
-	Apollo.RegisterTimerHandler("DeleteFailedTimer", "OnDeleteFailedTimer", self)
-	Apollo.RegisterEventHandler("AnimationFinished", "OnAnimationFinished", self)
-	Apollo.RegisterEventHandler("CharacterSelectFail", "OnCharacterSelectResult", self)
-	Apollo.RegisterEventHandler("CharacterRename", "OnCharacterRenameResult", self)
-	Apollo.RegisterEventHandler("SelectCharacter", "OnSelectCharacter", self)
-	Apollo.RegisterTimerHandler("RemoveCountdown", "OnRemoveCountdown", self)
+	Apollo.RegisterEventHandler("CharacterDisabled", 				"OnCharacterDisabled", self)
+	Apollo.RegisterEventHandler("CharacterDelete", 					"OnCharacterDeleteResult", self)
+	Apollo.RegisterTimerHandler("DeleteFailedTimer", 				"OnDeleteFailedTimer", self)
+	Apollo.RegisterEventHandler("AnimationFinished", 				"OnAnimationFinished", self)
+	Apollo.RegisterEventHandler("CharacterSelectFail", 				"OnCharacterSelectResult", self)
+	Apollo.RegisterEventHandler("CharacterRename", 					"OnCharacterRenameResult", self)
+	Apollo.RegisterEventHandler("SelectCharacter", 					"OnSelectCharacter", self)
+	Apollo.RegisterEventHandler("CharacterEntitlementUpdate",		"OnEntitlementUpdate", self)
+	Apollo.RegisterEventHandler("AccountEntitlementUpdate",			"OnEntitlementUpdate", self)
 
 	self.wndSelectList = Apollo.LoadForm(self.xmlDoc, "LeftControlPanel", "Navigation", self)
 	self.wndTopPanel = Apollo.LoadForm(self.xmlDoc, "TopContainer", "Navigation", self)
 	self.wndDelete = Apollo.LoadForm(self.xmlDoc, "DeleteControls", "Navigation", self)
 	self.wndRename = Apollo.LoadForm(self.xmlDoc, "RenameControls", "Navigation", self)
 	self.wndDeleteError = Apollo.LoadForm(self.xmlDoc, "DeleteErrorMessage", "Navigation", self)
+	self.wndConfirmRealmPVP = Apollo.LoadForm(self.xmlDoc, "ConfirmRealmPVP", nil, self)
 
 	self.wndSelectList:Show(false)
 	self.wndTopPanel:Show(false)
 	self.wndDelete:Show(false)
 	self.wndRename:Show(false)
 	self.wndDeleteError:Show(false)
+	self.wndConfirmRealmPVP:Show(false)
 
 	self.wndCharacterDeleteBtn = self.wndSelectList:FindChild("DeleteBtn")
 	self.wndCharacterDeleteBtn:Enable(false) -- will get turned on by choosing a character through code or player input
@@ -62,24 +69,45 @@ function CharacterSelection:OnLoad()
 
 	self.nAttemptedDelete = nil
 	self.nStartingCharacterRotation = 0
+	
+	self.timerCharacterInGame = ApolloTimer.Create(0.5, true, "OnRemoveCountdown", self)
+	self.timerCharacterInGame:Stop()
+	
+	
 end
 
 function CharacterSelection:OnWindowResized()
 	if self.wndSelectList and self.wndSelectList:IsValid() and self.wndSelectList:IsShown() then
-		self:OnLoadFromCharacter()
+		--INTENTIONALY SETTING TO "SAME" LOCCATION
+		--The self.wndSelectList current window rec is based off old screen size. Need to invalidate the location so that it can recalculate its window rec.
+		local tLoc = self.wndSelectList:GetLocation()
+		self.wndSelectList:MoveToLocation(tLoc)
+		self:HelperResizeCharacterList()
 	end
 end
 
 function CharacterSelection:OnLoadFromCharacter()
-	local wndItem2 = Apollo.LoadForm(self.xmlDoc, "CharacterOption", self.wndSelectList:FindChild("CharacterList"), self) --TODO This shouldn't be here
-	local nDefaultCharacterOptionHeight = wndItem2:GetHeight()
-
+	if not g_arActors.rowsdower then
+		g_arActors.rowsdower = g_scene:AddActorByFile( 33, "Art\\Creature\\Rowsdower\\Rowsdower.m3" )
+	end
+	
+	self.bLoadFromCharacter = true
+	local wndCharacterList = self.wndSelectList:FindChild("CharacterList")
+	local wndItem2 = self.wndSelectList:FindChild("CharacterOption01")
+	local nDefaultCharacterOptionHeight = 0
+	if not wndItem2 then
+		wndItem2 = Apollo.LoadForm(self.xmlDoc, "CharacterOption", wndCharacterList, self) --TODO This shouldn't be here
+		nDefaultCharacterOptionHeight = wndItem2:GetHeight()
+		wndItem2:Destroy()
+	else
+		nDefaultCharacterOptionHeight = wndItem2:GetHeight()
+	end
+	
 	local btnSel = nil
 	self.nAttemptedDelete = nil
-	g_nState = LuaEnumState.Select
+	g_eState = LuaEnumState.Select
 
 	self.arItems = {}
-	self.wndSelectList:FindChild("CharacterList"):DestroyChildren()
 
 	self.wndTopPanel:FindChild("CharacterNameBacker"):Show(true)
 
@@ -106,30 +134,32 @@ function CharacterSelection:OnLoadFromCharacter()
 	g_controls:FindChild("ExitForm"):FindChild("BackBtnLabel"):SetText(Apollo.GetString("Command_Logout"))
 	g_controls:FindChild("OptionsContainer"):Show(true)
 
-	if not self.frameL then
-		self.frameL, self.frameT, self.frameR, self.frameB = self.wndSelectList:GetAnchorOffsets()
-		self.frameH = self.wndSelectList:GetHeight()
-	end
-
-	local nListL, nListT, nListR, nListB = self.wndSelectList:FindChild("CharacterList"):GetAnchorOffsets()
-
 	local wndSel = nil
 	local wndForcedSel = nil
 	local nCharCount = 0
 	local nEntryHeight = 0
 	local nNewHeight = 0
-	local nOnGoingListHeight = 0
 	local fLastLoggedOutDays = nil
 	local bNeedScroll = false
+	local nNumCharacterSlots = CharacterScreenLib.GetBaseCharacterSlots()
+	local nMaxSlots = AccountItemLib.GetMaxEntitlementCount(AccountItemLib.CodeEnumEntitlement.BaseCharacterSlots) + nNumCharacterSlots
+	local wndCharacterCountContainer = self.wndSelectList:FindChild("CharacterCountContainer")
+	local wndCharacterCounter = wndCharacterCountContainer:FindChild("CharacterCount")
 	
 	if g_arCharacters then 
-		bNeedScroll = ( #g_arCharacters >= g_nMaxNumCharacters and #g_arCharacters > kiCharacterMax ) or
-		( #g_arCharacters <  g_nMaxNumCharacters and #g_arCharacters + 1 > kiCharacterMax )
+		bNeedScroll = ( #g_arCharacters >= nMaxSlots and #g_arCharacters > kiCharacterMax ) or
+		( #g_arCharacters < nMaxSlots and #g_arCharacters + 1 > kiCharacterMax )
 	end
-					
+	
+	self.wndCharacterDeleteBtn:Enable(g_arCharacters and #g_arCharacters > 0 and not(g_arCharacterInWorld and #g_arCharacterInWorld > 0))
 	for idx, tChar in ipairs(g_arCharacters or {}) do
 		nCharCount = nCharCount + 1
-		local wndItem = Apollo.LoadForm(self.xmlDoc, "CharacterOption", self.wndSelectList:FindChild("CharacterList"), self)
+		local wndItem = self.wndSelectList:FindChild("CharacterOption"..(idx < 10 and ("0"..tostring(idx)) or idx))
+		if not wndItem then
+			wndItem = Apollo.LoadForm(self.xmlDoc, "CharacterOption", wndCharacterList, self)
+			wndItem:SetName("CharacterOption"..(idx < 10 and ("0"..tostring(idx)) or idx))
+		end
+		wndItem:SetData(tChar)
 		local btnItem = wndItem:FindChild("CharacterOptionFrameBtn")
 		local wndClassIconComplex = wndItem:FindChild("ClassIconComplex")
 		local wndPathIconComplex = wndItem:FindChild("PathIconComplex")
@@ -137,8 +167,8 @@ function CharacterSelection:OnLoadFromCharacter()
 		nEntryHeight = wndItem:GetHeight()
 
 		-- Faction
-		wndItem:FindChild("BGFactionFrame_Ex"):Show(tChar.idFaction ~= 166)
-		wndItem:FindChild("BGFactionFrame_Dom"):Show(tChar.idFaction == 166)
+		wndItem:FindChild("BGFactionFrame_Ex"):Show(tChar.idFaction ~= kidDominionFaction)
+		wndItem:FindChild("BGFactionFrame_Dom"):Show(tChar.idFaction == kidDominionFaction)
 
 		if tChar.fLastLoggedOutDays ~= nil and not tChar.bDisabled and ( fLastLoggedOutDays == nil or fLastLoggedOutDays < tChar.fLastLoggedOutDays ) then
 			fLastLoggedOutDays = tChar.fLastLoggedOutDays
@@ -177,10 +207,10 @@ function CharacterSelection:OnLoadFromCharacter()
 		wndItem:FindChild("Location"):SetHeightToContentHeight()
 		wndItem:FindChild("CharacterName"):SetHeightToContentHeight()
 
-		local nLeftLoc, nTopLoc, nRightLoc, nBottomLoc = wndItem:FindChild("Location"):GetAnchorOffsets()
-		local nLeftName, nTopName, nRightName, nBottomName = wndItem:FindChild("CharacterName"):GetAnchorOffsets()
+		local nLeftLoc, nTopLoc, nRightLoc, nBottomLoc = wndItem:FindChild("Location"):GetOriginalLocation():GetOffsets()
+		local nLeftName, nTopName, nRightName, nBottomName = wndItem:FindChild("CharacterName"):GetOriginalLocation():GetOffsets()
 		wndItem:FindChild("CharacterName"):SetAnchorOffsets(nLeftName, nBottomLoc, nRightName, nBottomLoc + wndItem:FindChild("CharacterName"):GetHeight())
-		wndItem:FindChild("CharacterNameLocationFrame"):ArrangeChildrenVert(1)
+		wndItem:FindChild("CharacterNameLocationFrame"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.Middle)
 		
 		if tChar.bDisabled then
 			wndItem:FindChild("CharacterOptionFrameBtn"):Show(false)
@@ -211,17 +241,23 @@ function CharacterSelection:OnLoadFromCharacter()
 		--resize the item to fit the text.
 		local nAdjustedHeight = 16 + wndItem:FindChild("CharacterName"):GetHeight() + wndItem:FindChild("Location"):GetHeight()
 		local nNewHeight = math.max(nDefaultCharacterOptionHeight, nAdjustedHeight)
-		local nLeft, nTop, nRight, nBottom = wndItem:GetAnchorOffsets()
+		local nLeft, nTop, nRight, nBottom = wndItem:GetOriginalLocation():GetOffsets()
 		wndItem:SetAnchorOffsets(nLeft, nTop, nRight, nTop+nNewHeight)
-		nOnGoingListHeight = nOnGoingListHeight + wndItem:GetHeight()
 
 		btnItem:SetData(idx)
 		self.arItems[idx] = wndItem
 	end
+	for idx = nCharCount + 1, nMaxSlots do
+		local wndDestroy = self.wndSelectList:FindChild("CharacterOption"..(idx < 10 and ("0"..tostring(idx)) or idx))
+		if wndDestroy then
+			wndDestroy:Destroy()
+		else
+			break
+		end
+	end
 	
 	if wndForcedSel ~= nil then
 		wndSel = wndForcedSel
-		self.wndCharacterDeleteBtn:Enable(false)
 	end
 
 	local tRealmInfo = CharacterScreenLib.GetRealmInfo()
@@ -239,17 +275,19 @@ function CharacterSelection:OnLoadFromCharacter()
 	self.wndTopPanel:FindChild("RealmNote"):Show(string.len(tRealmInfo.strRealmNote or "") > 0 and nCharCount == 0)
 
 	if g_arCharacterInWorld ~= nil then
-		Apollo.CreateTimer("RemoveCountdown", 0.5, true)
-		self.wndSelectList:FindChild("DisabledCountBG"):Show(true)
+		self.timerCharacterInGame:Start()
 	end
 	
+	local wndPrompt = self.wndSelectList:FindChild("CreateNewPrompt")
 	if nCharCount == 0 then
-		local wndPrompt = Apollo.LoadForm(self.xmlDoc, "CreateNewPrompt", self.wndSelectList:FindChild("CharacterList"), self)
+		if not wndPrompt then
+			wndPrompt = Apollo.LoadForm(self.xmlDoc, "CreateNewPrompt", wndCharacterList, self)
+		else
+			wndPrompt:Show(true)
+		end
 		nNewHeight = wndPrompt:GetHeight()
 		nCharCount = 1
-		nOnGoingListHeight = nOnGoingListHeight + wndPrompt:GetHeight()
 		wndPrompt:FindChild("DisabledBlocker"):Show(g_arCharacterInWorld ~= nil)
-		self.wndCharacterDeleteBtn:Enable(false)
 
 		local tRealmInfo = CharacterScreenLib.GetRealmInfo()
 		local tRealm = {}
@@ -266,24 +304,78 @@ function CharacterSelection:OnLoadFromCharacter()
 		else
 			wndPrompt:FindChild("RealmLabelCharacter"):SetAnchorOffsets(nLeft, 26, nRight, 49)
 		end
+	elseif wndPrompt and wndPrompt:IsShown() then
+		wndPrompt:Show(false)
 	end
 
-	if nCharCount < g_nMaxNumCharacters then
-		local wndCreate = Apollo.LoadForm(self.xmlDoc, "CreateNewOption", self.wndSelectList:FindChild("CharacterList"), self)
-		nNewHeight = wndCreate:GetHeight()
-		nOnGoingListHeight = nOnGoingListHeight + wndCreate:GetHeight()
-		wndCreate:FindChild("DisabledBlocker"):Show(g_arCharacterInWorld ~= nil)
-		self.wndCharacterDeleteBtn:Enable(not (g_arCharacterInWorld ~= nil))
+	local tCharSlotsEntitlement = AccountItemLib.GetAccountEntitlement(AccountItemLib.CodeEnumEntitlement.BaseCharacterSlots)
+	if tCharSlotsEntitlement then
+		nNumCharacterSlots = nNumCharacterSlots + tCharSlotsEntitlement.nCount
+	else
+		nNumCharacterSlots = math.max(nNumCharacterSlots, nCharCount)
 	end
-	  
-	nOnGoingListHeight = nOnGoingListHeight + nListT - nListB
-	local nTotalHeight = math.min(nOnGoingListHeight, self.frameH)
-	local nDelta = (self.frameH - nTotalHeight) / 2
+
+	local nCreateNewOptionCount = 0
+	local nExtraSlotMax = math.min(nCharCount + 2, nNumCharacterSlots + 1) -- one slot for create and another for upsell or only upsell
+	if nCharCount == nMaxSlots and nNumCharacterSlots == nMaxSlots then -- if at max then no need for create or upsell slots
+		nExtraSlotMax = 0
+	elseif nNumCharacterSlots == nMaxSlots then -- if all slots unlocked then no upsell slot
+		nExtraSlotMax = nCharCount + 1
+	elseif nCharCount > nNumCharacterSlots and nMaxSlots > nNumCharacterSlots then -- if characters exceed slots but still not max slots then show upsell
+		nExtraSlotMax = nCharCount + 1
+	end
+	for idx = nCharCount + 1, nExtraSlotMax do
+		nCreateNewOptionCount = nCreateNewOptionCount + 1
+		local wndCreate = self.wndSelectList:FindChild("CreateNewOption"..(nCreateNewOptionCount < 10 and ("0"..tostring(nCreateNewOptionCount)) or nCreateNewOptionCount))
+		if not wndCreate then
+			wndCreate = Apollo.LoadForm(self.xmlDoc, "CreateNewOption", wndCharacterList, self)
+			wndCreate:SetName("CreateNewOption"..(nCreateNewOptionCount < 10 and ("0"..tostring(nCreateNewOptionCount)) or nCreateNewOptionCount))
+		end
+		local wndTitleMTX = wndCreate:FindChild("TitleMTX")
+		local wndClearMTXBlocker = wndCreate:FindChild("ClearMTXBlocker")
+		local bIsEmptySlot = idx <= math.min(nCharCount + 1, nNumCharacterSlots)
+		if bIsEmptySlot then
+			wndCreate:FindChild("DisabledBlocker"):Show(g_arCharacterInWorld ~= nil)
+		else
+			local wndUnlockSlotsTooltip = Apollo.LoadForm(self.xmlDoc, "UnlockSlotsTooltip", nil, self)
+			local wndTooltipBody = wndUnlockSlotsTooltip:FindChild("Body")
+			wndTooltipBody: SetAML(string.format("<P Font=\"CRB_InterfaceSmall\" TextColor=\"FadedYellow\">%s</P>", Apollo.GetString("CharacterSelect_UnlockMoreSlotsTooltip")))
+			local nWidth, nHeight = wndTooltipBody:SetHeightToContentHeight()
+			local nHeightTotal = wndUnlockSlotsTooltip:FindChild("Spacer"):GetHeight() + nHeight
+			local nLeft, nTop, nRight, nBottom = wndUnlockSlotsTooltip:GetAnchorOffsets()
+			wndUnlockSlotsTooltip:SetAnchorOffsets(nLeft, nTop, nRight, nTop+nHeightTotal)
+			
+			wndClearMTXBlocker:SetTooltipForm(wndUnlockSlotsTooltip)
+			
+			if idx <= nCharCount + 2 then
+				wndTitleMTX:FindChild("MTXTagIcon"):Show(true)
+				wndCreate:FindChild("DisabledBlocker"):Show(false)
+			end
+		end
+		wndCreate:FindChild("Title"):Show(bIsEmptySlot)
+		wndTitleMTX:Show(not bIsEmptySlot)
+		wndClearMTXBlocker:Show(not bIsEmptySlot)
+		wndCreate:FindChild("LockIconBG"):Show(bIsEmptySlot)
+		wndCreate:FindChild("LockedIconBG"):Show(not bIsEmptySlot)
+	end
+	local tCharListChildren = wndCharacterList:GetChildren()
+	local nCharListChildrenCount = tCharListChildren and #tCharListChildren or 0
+	for idx = nCharCount + nCreateNewOptionCount, nCharListChildrenCount do
+		nCreateNewOptionCount = nCreateNewOptionCount + 1
+		local wndDestroy = self.wndSelectList:FindChild("CreateNewOption"..(nCreateNewOptionCount < 10 and ("0"..tostring(nCreateNewOptionCount)) or nCreateNewOptionCount))
+		if wndDestroy then
+			wndDestroy:Destroy()
+		end
+	end
+
+	self:HelperResizeCharacterList()
+	local strColor = "UI_TextHoloBodyHighlight"
+	if nNumCharacterSlots > CharacterScreenLib.GetBaseCharacterSlots() then
+		strColor = "UI_WindowYellow"
+	end
+	wndCharacterCounter:SetAML(string.format('<P Font="CRB_InterfaceMedium" Align="Center"><T TextColor="UI_TextHoloBodyHighlight">%s</T></P>', PreGameLib.String_GetWeaselString(Apollo.GetString("Pregame_CharacterCounter"), tostring(nCharCount),  string.format('<T TextColor="'..strColor..'">%d</T>', nNumCharacterSlots))))
+	wndCharacterCountContainer:SetTooltip(PreGameLib.String_GetWeaselString(Apollo.GetString("Pregame_CharacterSlotCountTooltip"), nNumCharacterSlots, nMaxSlots))
 	
-	self.wndSelectList:SetAnchorOffsets(self.frameL, self.frameT + nDelta, self.frameR, self.frameB - nDelta)
-	self.wndSelectList:FindChild("CharacterList"):ArrangeChildrenVert()
-	self.wndSelectList:RecalculateContentExtents()
-
 	if wndSel ~= nil then
 		local btnSel = wndSel:FindChild("CharacterOptionFrameBtn")
 		self:OnCharacterSelectCheck(btnSel, btnSel)
@@ -294,12 +386,25 @@ function CharacterSelection:OnLoadFromCharacter()
 		else
 			self.wndTopPanel:FindChild("CharacterNameBacker"):SetText(Apollo.GetString("CharacterSelect_NoCharactersFound"))
 
-			g_arActors.primary = g_scene:AddActorByFile( 1, "Art\\Creature\\Rowsdower\\Rowsdower.m3" )
-			g_arActors.primary:AttachToActor( g_arActors.characterAttach, 17 )
+			if not g_arActors.rowsdower then
+				g_arActors.rowsdower = g_scene:AddActorByFile( 33, "Art\\Creature\\Rowsdower\\Rowsdower.m3" )
+			end
+
+			if g_arActors.characterAttach then
+				g_arActors.characterAttach:FollowActor(g_arActors.pedestal, PreGameLib.CodeEnumModelAttachment.PropMisc01)
+				g_arActors.characterAttach:Animate(0, 1120, 0, true, false, 0, g_nCharCurrentRot)
+			end
+
+			if g_arActors.primary then
+				g_arActors.primary:FollowActor(g_arActors.characterAttach, PreGameLib.CodeEnumModelAttachment.PropMisc01)
+				g_arActors.primary:Animate(0, 5612, 0, true, false)
+			end
+
+			if g_arActors.soloLight then
+				g_arActors.soloLight:FollowActor( g_arActors.primary, PreGameLib.CodeEnumModelAttachment.Head)
+			end
 
 			g_nCharCurrentRot = 0
-			g_arActors.characterAttach:Animate(0, 1120, 0, true, false, 0, g_nCharCurrentRot)
-			g_arActors.primary:Animate(0, 5612, 0, true, false)
 
 			g_bReplaceActor = true
 
@@ -315,6 +420,8 @@ function CharacterSelection:OnLoadFromCharacter()
 			if g_arActors.pathIcon ~= nil then
 				g_arActors.pathIcon:Animate(0, 1109, 0, true, false)
 			end
+
+			PreGameLib.Event_FireGenericEvent("Select_SetModel", nil, nil, nil, nil, nil, nil)--Tell character to reposition model
 		end
 	end
 
@@ -334,7 +441,30 @@ function CharacterSelection:OnLoadFromCharacter()
 	end
 end
 
+function CharacterSelection:HelperResizeCharacterList()
+	if not self.wndSelectList or not self.wndSelectList:IsValid() then
+		return
+	end
+
+	local wndCharacterList = self.wndSelectList:FindChild("CharacterList")
+	local wndContainer = self.wndSelectList:FindChild("Container")
+	
+	local nParentHeight = wndContainer:GetHeight()
+	local nNeededHeight = wndCharacterList:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function (a, b) return a:GetName() < b:GetName() end)
+	local nChange = nNeededHeight - wndCharacterList:GetHeight()
+	local nNeededParentHeight = nParentHeight + nChange
+
+	local nRootHeight = self.wndSelectList:GetHeight()
+	local nHalfSpaceNeeded = math.min(nRootHeight / 2, nNeededParentHeight/2)
+
+	local nLeft, nTop, nRight, nBottom = wndContainer:GetAnchorOffsets()
+	wndContainer:SetAnchorOffsets(nLeft, -nHalfSpaceNeeded, nRight, nHalfSpaceNeeded)
+	wndContainer:RecalculateContentExtents()
+end
+
 function CharacterSelection:OnRemoveCountdown()
+	self.wndSelectList:FindChild("DisabledCountBG"):Show(true)
+	self.wndCharacterDeleteBtn:Enable(false)
 	g_arCharacterInWorld.nCharacterRemoveTime = g_arCharacterInWorld.nCharacterRemoveTime - 500
 	local nTimeLeft = g_arCharacterInWorld.nCharacterRemoveTime / 1000
 
@@ -347,20 +477,22 @@ function CharacterSelection:OnRemoveCountdown()
 
 	if nTimeLeft < 0 then
 		self.wndSelectList:FindChild("DisabledCountBG"):Show(false)
-		Apollo.StopTimer("RemoveCountdown")
-
 		for idx, wndCharacter in pairs(self.wndSelectList:FindChild("CharacterList"):GetChildren()) do
-			wndCharacter:FindChild("DisabledBlocker"):Show(false)
+			local wndTitleMTX = wndCharacter:FindChild("TitleMTX")
+			if not wndTitleMTX or not wndTitleMTX:IsShown() then
+				wndCharacter:FindChild("DisabledBlocker"):Show(false)
+			end
 		end
-		self.wndCharacterDeleteBtn:Enable(true)
+		self.timerCharacterInGame:Stop()
+		self.wndCharacterDeleteBtn:Enable(g_arCharacters and #g_arCharacters > 0)
 	end
 end
 
-function CharacterSelection:OnCharacterSelectCheck(wndHandler, wndControl, iButton)
+function CharacterSelection:OnCharacterSelectCheck(wndHandler, wndControl, iButton, bWasDoubleClick)
 	if wndHandler ~= wndControl then
 		return false
 	end
-
+	
 	local wndCharacter = wndControl:GetParent()
 	local nId = wndControl:GetData()
 
@@ -371,16 +503,9 @@ function CharacterSelection:OnCharacterSelectCheck(wndHandler, wndControl, iButt
 	if not wndControl:IsChecked() then
 		wndControl:SetCheck(true)
 	end
-
+	
 	self:SetCharacterDisplay(nId)
 	self.wndRename:Show(false)
-
-	-- TODO: double click will go here
-	if iButton == 1 then
-		--EnterGame()
-		self:OnSelectCharacter(nId)
-		return
-	end
 
 	for idx, wndItem in ipairs(self.arItems) do
 		if wndItem == wndCharacter then
@@ -389,6 +514,11 @@ function CharacterSelection:OnCharacterSelectCheck(wndHandler, wndControl, iButt
 			self:HelperFormatEntryDeselected(wndItem) -- Do stuff to the non-selected ones
 		end
 	end
+	
+	if bWasDoubleClick and iButton == 0 or iButton == 1 then
+		self:OnSelectCharacter(nId)
+		return
+	end
 end
 
 function CharacterSelection:HelperFormatEntrySelected(wnd)
@@ -396,6 +526,14 @@ function CharacterSelection:HelperFormatEntrySelected(wnd)
 	local strCharName = wnd:FindChild("CharacterName"):GetData()
 	wnd:FindChild("CharacterName"):SetAML(string.format("<P Font=\"CRB_HeaderTiny\" TextColor=\"FFFFFFFF\">%s</P>", strCharName))
 	wnd:FindChild("Level"):SetTextColor(ApolloColor.new("white"))
+	local tChar = wnd:GetData()
+	if tChar ~= nil and AlienFxLib.IsReady() and AlienFxLib.CanUse() then
+		if tChar.idFaction == kidDominionFaction then
+			AlienFxLib.SetLocationColor(knAlienFxAllLightsLocation, ApolloColor.new("Red"))
+		else
+			AlienFxLib.SetLocationColor(knAlienFxAllLightsLocation, ApolloColor.new("Blue"))
+		end
+	end
 end
 
 function CharacterSelection:HelperFormatEntryDeselected(wnd)
@@ -411,16 +549,13 @@ end
 
 function CharacterSelection:SetCharacterDisplay(tId)
 	local tSetChar = g_arCharacters[tId]
-
+	self.wndCharacterDeleteBtn:Enable((g_arCharacters and #g_arCharacters > 0) and not (g_arCharacterInWorld and #g_arCharacterInWorld > 0))
 	if tSetChar == nil then
 		g_controls:FindChild("EnterBtn"):SetData(nil)
 		g_controls:FindChild("EnterBtn"):Enable(false)
 		g_controls:FindChild("EnterForm"):FindChild("EnterLabel"):SetTextColor(ApolloColor.new("ff3c524f"))
-		self.wndCharacterDeleteBtn:Enable(false)
 		return
 	end
-
-	self.wndCharacterDeleteBtn:Enable(not (g_arCharacterInWorld ~= nil))
 
 	self:SetCharacterCreateModel(tId)
 
@@ -456,6 +591,14 @@ function CharacterSelection:OnSelectCharacter(tId)
 
 	if tSetChar == nil then
 		return
+	end
+	
+	if AlienFxLib.IsReady() and AlienFxLib.CanUse() then
+		if tSetChar.idFaction == kidDominionFaction then
+			AlienFxLib.SetLocationColor(knAlienFxAllLightsLocation, ApolloColor.new("Red"))
+		else
+			AlienFxLib.SetLocationColor(knAlienFxAllLightsLocation, ApolloColor.new("Blue"))
+		end
 	end
 
 	if tSetChar.bRequiresRename then
@@ -533,13 +676,15 @@ function CharacterSelection:OnCharacterDisabled(nCharacterIdx, bDisabled)
 	end
 end
 
-function CharacterSelection:OnCharacterDeleteResult(nDeleteResult, nData)
+function CharacterSelection:OnCharacterDeleteResult(eDeleteResult, nData)
 
-	if g_nState ~= LuaEnumState.Delete or self.nAttemptedDelete == nil then return end
+	if g_eState ~= LuaEnumState.Delete or self.nAttemptedDelete == nil then
+		return
+	end
 
 	local nCharMax = #g_arCharacters
 
-	if nDeleteResult == PreGameLib.CodeEnumCharacterModifyResults.DeleteOk then
+	if eDeleteResult == PreGameLib.CodeEnumCharacterModifyResults.DeleteOk then
 		for idx = self.nAttemptedDelete, nCharMax do
 			if g_arCharacters[idx+1] ~= nil then
 				g_arCharacters[idx] = g_arCharacters[idx+1]
@@ -559,12 +704,12 @@ function CharacterSelection:OnCharacterDeleteResult(nDeleteResult, nData)
 
 	else -- couldn't delete
 		local strResult = Apollo.GetString("CharacterSelect_DefaultDeleteError")
-		if nDeleteResult == PreGameLib.CodeEnumCharacterModifyResults.DeleteFailed then -- failed for some reason
+		if eDeleteResult == PreGameLib.CodeEnumCharacterModifyResults.DeleteFailed then -- failed for some reason
 			strResult = Apollo.GetString("CharacterSelect_DefaultDeleteError")
-		elseif nDeleteResult == PreGameLib.CodeEnumCharacterModifyResults.DeleteFailed_GuildMaster then -- failed for being a guild master
+		elseif eDeleteResult == PreGameLib.CodeEnumCharacterModifyResults.DeleteFailed_GuildMaster then -- failed for being a guild master
 
 			strResult = PreGameLib.String_GetWeaselString(Apollo.GetString("CharacterSelect_DeleteGuildMaster"), {["count"] = nData, ["name"] = Apollo.GetString("CharacterSelect_DeleteGuildMaster2")})
-		elseif nDeleteResult == PreGameLib.CodeEnumCharacterModifyResults.DeleteFailed_CharacterOnline then -- failed for character still online
+		elseif eDeleteResult == PreGameLib.CodeEnumCharacterModifyResults.DeleteFailed_CharacterOnline then -- failed for character still online
 			strResult = Apollo.GetString("CharacterSelect_DeleteErrorFailedCharacterOnline")
 		end
 
@@ -587,20 +732,17 @@ function CharacterSelection:OnDeleteFailedTimer()
 end
 
 
-function CharacterSelection:OnAnimationFinished( uActor, nLayer, nSequence )
-	if g_arActors.deleteEffect and g_arActors.deleteEffect == uActor then
-		g_arActors.deleteEffect = nil
+function CharacterSelection:OnAnimationFinished( actor, nLayer, nSequence )
+	if g_arActors.deleteEffect and g_arActors.deleteEffect == actor then
 		g_controls:FindChild("PregameControls:ExitForm:BackBtnLabel"):Enable(true)
+
+		g_arActors.primary:FollowActor( g_arActors.mainScene, PreGameLib.CodeEnumModelAttachment.FXMisc07)
+		g_arActors.primary = nil
+		g_arActors.deleteEffect = nil
 		self:OnLoadFromCharacter()
+		g_cameraSlider = 0
+		g_arActors.mainScene:Animate(0, g_cameraAnimation, 0, true, false, 0, g_cameraSlider)
 	end
-	--[[
-	elseif nSequence == knCheerAnimation and self.bDeleteError ~= nil and self.bDeleteError == true then -- error deleteing
-		self.bDeleteError = false
-		g_arActors.primary:Animate(0, 5638, 0, true, false)
-	elseif nSequence == knCheerAnimation then -- cancelled delete
-		g_arActors.primary:Animate(0, 5612, 0, true, false)
-		self:OnLoadFromCharacter()
-	end--]]
 end
 
 function CharacterSelection:OnCharacterSelectResult(nSelectResult)
@@ -667,7 +809,7 @@ end
 
 function CharacterSelection:OnDeleteBtn()
 
-	g_nState = LuaEnumState.Delete
+	g_eState = LuaEnumState.Delete
 	self.wndDelete:Show(true)
 	self.wndTopPanel:FindChild("CharacterNameBacker"):Show(false)
 	self.wndCameraToggles:Show(false)
@@ -702,9 +844,22 @@ function CharacterSelection:OnDeleteBtn()
 		g_arActors.primary:Animate(0, 5638, 0, true, false)
 		g_arActors.primary:SetWeaponSheath(false)
 	end
+	
+	PreGameLib.HideCredits() -- in case the credits is opened, hide it
 end
 
-function CharacterSelection:OnCreateBtn()
+function CharacterSelection:OnCreateBtn(wndHandler, wndControl)
+	local tRealmInfo = CharacterScreenLib.GetRealmInfo()
+	if tRealmInfo and tRealmInfo.nRealmPVPType == PreGameLib.CodeEnumRealmPVPType.PVP and CharacterScreenLib.GetGameMode() == CharacterScreenLib.CodeEnumGameMode.China then
+		self.wndConfirmRealmPVP:Invoke()
+	elseif not wndControl:GetParent():FindChild("DisabledBlocker"):IsShown() then
+		self:HelperCreateCharacter()
+	end
+	
+	PreGameLib.HideCredits()
+end
+
+function CharacterSelection:HelperCreateCharacter()
 	self.wndRename:Show(false)
 	self.wndSelectList:Show(false)
 	self.wndTopPanel:Show(false)
@@ -714,8 +869,31 @@ function CharacterSelection:OnCreateBtn()
 	PreGameLib.Event_FireGenericEvent("OpenCharacterCreateBtn")
 end
 
+function CharacterSelection:OnConfirmRealmPVPShown()
+	g_controls:FindChild("EnterBtn"):Enable(false)
+	if self.wndSelectList:FindChild("CreateNewPrompt") then
+		self.wndSelectList:FindChild("HintWindow"):Show(false)
+	end
+end
+
+function CharacterSelection:OnConfirmRealmPVPClosed()
+	g_controls:FindChild("EnterBtn"):Enable(true)
+	if self.wndSelectList:FindChild("CreateNewPrompt") then
+		self.wndSelectList:FindChild("HintWindow"):Show(true)
+	end
+end
+
+function CharacterSelection:OnConfirmPVPBtn()
+	self:HelperCreateCharacter()
+	self.wndConfirmRealmPVP:Show(false)
+end
+
+function CharacterSelection:OnCancelPVPBtn()
+	self.wndConfirmRealmPVP:Show(false)
+end
+
 function CharacterSelection:OnEnterKey()
-	if g_controls:FindChild("EnterBtn"):GetData() ~= nil then
+	if g_controls:FindChild("EnterBtn"):GetData() ~= nil and not self.wndConfirmRealmPVP:IsShown() then
 		self:OnSelectCharacter(g_controls:FindChild("EnterBtn"):GetData())
 	end
 end
@@ -791,7 +969,7 @@ function CharacterSelection:OnRenameNameChanged(wndHandler, wndControl)
 	local nLastLength = string.len(strLastName)
 	
 	local strCharacterLimit = string.format("[%s/%s]", nFirstLength+nLastLength, knMaxCharacterName)
-	local strColor = nFirstLength+nLastLength > knMaxCharacterName and "xkcdReddish" or "UI_TextHoloBodyCyan"
+	local strColor = nFirstLength+nLastLength > knMaxCharacterName and "Reddish" or "UI_TextHoloBodyCyan"
 	self.wndRename:FindChild("CharacterLimit"):SetTextColor(ApolloColor.new(strColor))
 	self.wndRename:FindChild("CharacterLimit"):SetText(strCharacterLimit)
 	self.wndRename:FindChild("RenameBodyConfirm"):SetText(PreGameLib.String_GetWeaselString(Apollo.GetString("CharacterSelection_RenameConfirmBody"), strFullName))
@@ -833,6 +1011,14 @@ function CharacterSelection:OnRandomLastName()
 	self:OnRenameNameChanged()
 end
 
+function CharacterSelection:OnEntitlementUpdate(tEntitlementInfo)
+	if not self.wndSelectList or not self.bLoadFromCharacter then
+		return
+	end
+	if tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.BaseCharacterSlots then
+		self:OnLoadFromCharacter()
+	end
+end
 
 ---------------------------------------------------------------------------------------------------
 -- CharacterSelection instance

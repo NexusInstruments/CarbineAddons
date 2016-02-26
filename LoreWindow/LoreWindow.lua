@@ -5,6 +5,7 @@
 
 require "Window"
 require "DatacubeLib"
+require "GalacticArchiveArticle"
 
 local LoreWindow = {}
 
@@ -91,8 +92,12 @@ function LoreWindow:OnDocumentReady()
 		return
 	end
 
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
+
 	Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded", 		"OnInterfaceMenuListHasLoaded", self)
 	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 		"OnTutorial_RequestUIAnchor", self)
+	Apollo.RegisterEventHandler("GalacticArchiveArticleAdded", 		"AddToInterfaceMenuList", self)
 
 	Apollo.RegisterSlashCommand("compactlore", 						"OnCompactLore", self)
 	Apollo.RegisterEventHandler("DatacubeUpdated", 					"OnDatacubeUpdated", self)
@@ -109,8 +114,44 @@ function LoreWindow:OnDocumentReady()
 	self.tNewEntries = {} -- Start tracking right away
 end
 
+function LoreWindow:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("InterfaceMenu_Lore")})
+end
+
 function LoreWindow:OnInterfaceMenuListHasLoaded()
-	Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("InterfaceMenu_Lore"), {"InterfaceMenu_ToggleLoreWindow", "Lore", "Icon_Windows32_UI_CRB_InterfaceMenu_Lore"})
+	if not self.bInterfaceMenuListLoaded then
+		local tArticles = GalacticArchiveArticle.GetArticles()
+		if tArticles and #tArticles > 0 then
+			self:AddToInterfaceMenuList()
+			return
+		end
+		local tZonesAtLoad = {}
+		for key, tCurrZone in pairs(DatacubeLib.GetZonesWithDatacubes() or {}) do
+			table.insert(tZonesAtLoad, tCurrZone)
+		end
+		for key, tCurrZone in pairs(DatacubeLib.GetZonesWithJournals() or {}) do
+			table.insert(tZonesAtLoad, tCurrZone)
+		end
+		for key, tCurrZone in pairs(DatacubeLib.GetZonesWithTales() or {}) do
+			table.insert(tZonesAtLoad, tCurrZone)
+		end
+		for key, tCurrZone in pairs(tZonesAtLoad) do
+			local tCollectables = { DatacubeLib.GetDatacubesForZone(tCurrZone.nZoneId), DatacubeLib.GetTalesForZone(tCurrZone.nZoneId), DatacubeLib.GetJournalsForZone(tCurrZone.nZoneId) }
+			for key, tCurrTable in pairs(tCollectables) do
+				for key2, tCurrEntry in pairs(tCurrTable) do
+					self:AddToInterfaceMenuList()
+					return
+				end
+			end
+		end
+	end
+end
+
+function LoreWindow:AddToInterfaceMenuList()
+	if not self.bInterfaceMenuListLoaded then
+		Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("InterfaceMenu_Lore"), {"InterfaceMenu_ToggleLoreWindow", "Lore", "Icon_Windows32_UI_CRB_InterfaceMenu_Lore"})
+		self.bInterfaceMenuListLoaded = true
+	end
 end
 
 function LoreWindow:Initialize()
@@ -142,6 +183,7 @@ function LoreWindow:Initialize()
 
 	self.wndColTopDropdownBtn:AttachWindow(self.wndMain:FindChild("ColTopDropdownBG"))
 	self:InitializeCollections() -- Replace with a Generic Event if we pull this out of this file
+	self:OnInterfaceMenuListHasLoaded()
 end
 
 function LoreWindow:OnDatacubeUpdated(idArg, bIsVolume)
@@ -155,6 +197,7 @@ function LoreWindow:OnDatacubeUpdated(idArg, bIsVolume)
 		if not bPartialTales then
 			self.tNewEntries[tDatacube.nDatacubeId] = true -- GOTCHA: tDatacube.id can be different than nArgId (when nArgId is a volume)
 		end
+		self:AddToInterfaceMenuList()
 	end
 
 	if self.wndMain and self.wndMain:IsValid() and self.wndMain:IsShown() then
@@ -306,7 +349,7 @@ function LoreWindow:InitializeCollections()
 		end
 	end
 
-	self.wndColTopDropdownScroll:ArrangeChildrenVert(0, function(a,b) return a:GetData() < b:GetData() end)
+	self.wndColTopDropdownScroll:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function(a,b) return a:GetData() < b:GetData() end)
 
 	-- Just pick the first one if we didn't match a default zone
 	if not bPickedAZone then
@@ -354,11 +397,11 @@ function LoreWindow:MainRedrawCollections()
 		end
 
 		if wndHeader and wndHeader:IsValid() then
-			wndHeader:SetAnchorOffsets(0,0,0, wndHeader:FindChild("ColHeaderItems"):ArrangeChildrenVert(0) + self.knWndHeaderDefaultHeight + 3)
+			wndHeader:SetAnchorOffsets(0,0,0, wndHeader:FindChild("ColHeaderItems"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop) + self.knWndHeaderDefaultHeight + 3)
 		end
 	end
 
-	self.wndColMainScroll:ArrangeChildrenVert(0)
+	self.wndColMainScroll:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	self.wndColMainScroll:Enable(true)
 end
 
@@ -375,7 +418,7 @@ function LoreWindow:DrawColHeaderItems(tCurrZone, wndHeader, strHeader)
 			local nComplete = tListData.bIsComplete and 1 or tListData.nNumCompleted
 			local wndCurr = self:FactoryProduce(wndHeader:FindChild("ColHeaderItems"), "ColTalesItem", "Tales"..tListData.nDatacubeId)
 			wndCurr:FindChild("NewIndicator"):Show(self.tNewEntries[tListData.nDatacubeId])
-			wndCurr:FindChild("ColTalesBtn"):SetData(tListData)
+			wndCurr:FindChild("ColTalesBtn"):SetData({ tData = tListData, wndParent = wndCurr:GetParent() })
 			wndCurr:FindChild("ColTalesBtn"):Show(tListData.bIsComplete)
 			wndCurr:FindChild("ColListItemText"):SetText(tListData.strTitle)
 			wndCurr:FindChild("ColTalesProgBar"):SetMax(nMax)
@@ -391,7 +434,7 @@ function LoreWindow:DrawColHeaderItems(tCurrZone, wndHeader, strHeader)
 			local wndCurr = self:FactoryProduce(wndHeader:FindChild("ColHeaderItems"), "ColDatacubeItem", "Datacube"..tListData.nDatacubeId)
 			wndCurr:FindChild("NewIndicator"):Show(self.tNewEntries[tListData.nDatacubeId])
 			if wndCurr:FindChild("ColListItemText"):GetText() ~= tListData.strTitle then -- To avoid constantly setting the costume
-				wndCurr:FindChild("ColDatacubeBtn"):SetData(tListData)
+				wndCurr:FindChild("ColDatacubeBtn"):SetData({ tData = tListData, wndParent = wndCurr:GetParent() })
 				wndCurr:FindChild("ColListItemText"):SetText(tListData.strTitle)
 				wndCurr:FindChild("ColDatacubePortrait"):SetCostumeToCreatureId(11098) -- TODO Hardcoded
 				wndCurr:FindChild("ColDatacubePortrait"):SetModelSequence(1120)
@@ -418,7 +461,7 @@ function LoreWindow:DrawColHeaderItems(tCurrZone, wndHeader, strHeader)
 			for idx3, tCurrArticleData in pairs(DatacubeLib.GetDatacubesForVolume(tListData.nDatacubeId)) do
 				if tCurrArticleData.bIsComplete then
 					local wndJournalChild = self:FactoryProduce(wndCurr:FindChild("ColJournalChildItems"), "ColJournalChildItem", "JournalArticle"..tCurrArticleData.nDatacubeId)
-					wndJournalChild:FindChild("ColJournalChildBtn"):SetData(tCurrArticleData)
+					wndJournalChild:FindChild("ColJournalChildBtn"):SetData({ tData = tCurrArticleData, wndParent = wndCurr:GetParent() })
 					wndJournalChild:FindChild("ColJournalChildBtnText"):SetText(tCurrArticleData.strTitle)
 					wndJournalChild:FindChild("ColJournalChildBtnText"):SetHeightToContentHeight()
 					local nLeft, nTop, nRight, nBottom = wndJournalChild:GetAnchorOffsets()
@@ -427,7 +470,7 @@ function LoreWindow:DrawColHeaderItems(tCurrZone, wndHeader, strHeader)
 				end
 			end
 			wndCurr:FindChild("NewIndicator"):Show(bShowNewIndicator)
-			wndCurr:SetAnchorOffsets(0,0,0, wndCurr:FindChild("ColJournalChildItems"):ArrangeChildrenVert(0) + self.knWndJournalItemDefaultHeight + wndCurr:FindChild("ColListItemText"):GetHeight())
+			wndCurr:SetAnchorOffsets(0,0,0, wndCurr:FindChild("ColJournalChildItems"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop) + self.knWndJournalItemDefaultHeight + wndCurr:FindChild("ColListItemText"):GetHeight())
 		end
 	end
 
@@ -480,7 +523,7 @@ function LoreWindow:SpawnAndDrawColReader(tArticleData, wndOrigin) -- wndOrigin 
 	self.wndColDisplay:FindChild("TalesLargeCover"):Show(bValidTBFAsset)
 	self.wndColDisplay:FindChild("PlayPauseButton"):Show(tArticleData.eDatacubeType == DatacubeLib.DatacubeType_Datacube)
 
-	self.wndColDisplay:FindChild("ArticleScroll"):ArrangeChildrenVert(0)
+	self.wndColDisplay:FindChild("ArticleScroll"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	self.wndColDisplay:FindChild("ArticleScroll"):RecalculateContentExtents()
 end
 
@@ -559,11 +602,11 @@ function LoreWindow:OnColHeaderToggle(wndHandler, wndControl) -- E.G. "Datacubes
 end
 
 function LoreWindow:OnColBtnToSpawnReader(wndHandler, wndControl) -- ColDatacubeBtn, ColTalesBtn, ColJournalChildBtn
-	local wndNewIndicator = wndHandler:GetParent():FindChild("NewIndicator")
+	local wndNewIndicator = wndHandler:GetData().wndParent:FindChild("NewIndicator")
 	if wndNewIndicator then
 		wndNewIndicator:Show(false)
 	end
-	self:SpawnAndDrawColReader(wndHandler:GetData(), wndHandler)
+	self:SpawnAndDrawColReader(wndHandler:GetData().tData, wndHandler)
 end
 
 function LoreWindow:OnColBtnToDespawnReader(wndHandler, wndControl) -- ColDatacubeBtn, ColTalesBtn, ColJournalChildBtn, MainColArticleDisplay
@@ -587,13 +630,23 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function LoreWindow:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
-	if eAnchor ~= GameLib.CodeEnumTutorialAnchor.GalacticArchive or not self.wndMain or not self.wndMain:IsValid() then
+	local tAnchors =
+	{
+		[GameLib.CodeEnumTutorialAnchor.GalacticArchive] = true,
+	}
+	
+	if not tAnchors[eAnchor] or not self.wndMain then
 		return
 	end
 
-	local tRect = {}
-	tRect.l, tRect.t, tRect.r, tRect.b = self.wndMain:GetRect()
-	Event_FireGenericEvent("Tutorial_RequestUIAnchorResponse", eAnchor, idTutorial, strPopupText, tRect)
+	local tAnchorMapping = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.GalacticArchive] = self.wndMain,
+	}
+	
+	if tAnchorMapping[eAnchor] then
+		Event_FireGenericEvent("Tutorial_ShowCallout", eAnchor, idTutorial, strPopupText, tAnchorMapping[eAnchor])
+	end
 end
 
 -----------------------------------------------------------------------------------------------

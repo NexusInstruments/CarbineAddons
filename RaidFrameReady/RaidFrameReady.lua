@@ -95,9 +95,14 @@ function RaidFrameReady:OnGroup_ReadyCheck(nMemberIdx, strMessage) -- This displ
 	local tMember = GroupLib.GetGroupMember(nMemberIdx)
 	local strFormatting = "<P Font=\"CRB_InterfaceMedium_B\" TextColor=\"UI_TextHoloBodyHighlight\" Align=\"Center\">"
 	local strInitiator = String_GetWeaselString(Apollo.GetString("RaidFrame_ReadyCheckStarted"), tMember and tMember.strCharacterName or Apollo.GetString("RaidFrame_TheRaid"))
+	
+	if strMessage == "" then
+		strMessage = Apollo.GetString("RaidFrame_AreYouReady")
+	end
+	
 	self.wndReadyCheckPopup:FindChild("ReadyCheckMessage"):SetAML(strFormatting..strInitiator.."<P TextColor=\"0\">.</P>"..strFormatting..strMessage.."</P></P>")
 	self.wndReadyCheckPopup:FindChild("ReadyCheckMessage"):SetHeightToContentHeight()
-	self.wndReadyCheckPopup:FindChild("ReadyCheckScroll"):ArrangeChildrenVert(1)
+	self.wndReadyCheckPopup:FindChild("ReadyCheckScroll"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.Middle)
 
 	-- Also Create the results of everyone's ready check
 	if self.wndReadyResults and self.wndReadyResults:IsValid() then

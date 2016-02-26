@@ -40,6 +40,7 @@ function Trading:OnSave(eType)
 	local tSaved =
 	{
 		bInviteShown = self.wndTradeInvite:IsShown(),
+		bInitiator = self.bInitiator,
 		bInviteAccepted = self.bTradeIsActive,
 		idPartner = self.unitTradePartner and self.unitTradePartner:GetId() or nil,
 		nSaveVersion = knSaveVersion,
@@ -57,7 +58,8 @@ function Trading:OnRestore(eType, tSavedData)
 		self.unitPartner = GameLib.GetUnitById(tSavedData.idPartner)
 	end
 
-	self.bInviteAccepted = tSavedData.bInviteAccepted;
+	self.bInviteAccepted = tSavedData.bInviteAccepted
+	self.bInitiator = tSavedData.bInitiator
 end
 
 function Trading:OnLoad()
@@ -69,8 +71,6 @@ function Trading:OnDocumentReady()
     if self.xmlDoc == nil then
         return
     end
-
-	Apollo.RegisterEventHandler("WindowManagementReady", 			"OnWindowManagementReady", self)
 
 	Apollo.RegisterEventHandler("P2PTradeInvite", 					"OnP2PTradeInvite", self)
 	Apollo.RegisterEventHandler("P2PTradeResult", 					"OnP2PTradeResult", self)
@@ -98,7 +98,8 @@ function Trading:OnDocumentReady()
 
 	self.xmlDoc = nil
 
-	self.wndConfirmBlocker:Show(false)
+	self.wndTradeForm:FindChild("AcceptBtn"):Enable(false)
+
 	local wndYourCash = self.wndTradeForm:FindChild("YourCashComplex:YourCash")
 	wndYourCash:SetData(0)
 	wndYourCash:SetAmountLimit(knMaxCopperTrade)
@@ -119,10 +120,9 @@ function Trading:OnDocumentReady()
 	end
 
 	if self.bIsTrading then
-		if self.wndTradeInvite and self.bInviteShown then
-			self.wndTradeInvite:Invoke()
+		if not self.bInitiator and not self.bInviteAccepted then
 			self:OnP2PTradeInvite(self.unitPartner)
-		elseif self.wndTradeForm then
+		else
 			self.wndTradeForm:Show(true)
 			self.unitTradePartner = self.unitPartner
 
@@ -135,9 +135,13 @@ function Trading:OnDocumentReady()
 			end
 		end
 	end
+
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 end
 
 function Trading:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {wnd = self.wndTradeForm, strName = Apollo.GetString("CRB_PlayerToPlayerTrade")})
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndTradeForm, strName = Apollo.GetString("CRB_PlayerToPlayerTrade")})
 end
 
@@ -198,9 +202,9 @@ function Trading:UpdateTrade()
 		end
 
 		wndItem:Show(true)
-		wndItem:SetData(tCurrItemData)
 		wndItem:SetSprite(tCurrItemData.strIcon)
 		wndItem:GetWindowSubclass():SetItem(tCurrItemData.itemTrading)
+		wndItem:SetData(tCurrItemData)
 		if tCurrItemData.nQuantity > 1 then
 			wndItem:SetText(tostring(tCurrItemData.nQuantity))
 		else
@@ -213,7 +217,9 @@ function Trading:UpdateTrade()
 	self.wndTradeForm:FindChild("YourCash"):SetAmount(nMyCashOffer)
 	self.wndTradeForm:FindChild("PartnerCash"):SetAmount(nPartnerCashOffer)
 
-	self.wndTradeForm:FindChild("AcceptBtn"):SetActionData(GameLib.CodeEnumConfirmButtonType.CommitTrade)
+	local wndAcceptBtn = self.wndTradeForm:FindChild("AcceptBtn")
+	wndAcceptBtn:Enable(true)
+	wndAcceptBtn:SetActionData(GameLib.CodeEnumConfirmButtonType.CommitTrade)
 end
 
 function Trading:OnItemMouseButtonDown(wndHandler, wndControl, eButton, nX, nY, bDouble)
@@ -246,10 +252,13 @@ function Trading:OnP2PTradeInvite(unitInviter)
 
 	local strInviteMsg = String_GetWeaselString(Apollo.GetString("Trading_TradeRequestText"), unitInviter:GetName())
 	self.wndTradeInvite:FindChild("TradeText"):SetText(strInviteMsg)
+
+	if self.wndDeclineNotice:IsVisible() then
+		self.wndDeclineNotice:Show(false)
+	end
 end
 
 function Trading:OnP2PTradeResult(eResult)
-
 	if eResult == P2PTrading.P2PTradeResultCode_PlayerDeclinedInvite then
 		self:OnP2PDeclineNotice()
 	end
@@ -325,6 +334,10 @@ function Trading:OnP2PTradeWithTarget(unitTarget, strType, itemData)
 			self.tPendingItems[1] = itemData
 		end
 		self.wndTradeForm:FindChild("YourCash"):Enable(false)
+	end
+
+	if self.wndDeclineNotice:IsVisible() then
+		self.wndDeclineNotice:Show(false)
 	end
 end
 
@@ -483,10 +496,12 @@ function Trading:HelperResetTrade()
 	self.bInitiator = false
 	self.tPendingItems = {}
 
+	self.wndTradeForm:FindChild("AcceptBtn"):Enable(false)
 	self.wndTradeForm:FindChild("YourCash"):SetData(0)
 	self.wndTradeForm:FindChild("CommitIndicator"):Show(false)
 	self.wndTradeInvite:Show(false)
 	self.wndTradeForm:Show(false)
+	self.wndConfirmBlocker:Show(false)
 end
 
 function Trading:HelperResetItems()

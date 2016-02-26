@@ -19,14 +19,19 @@ local LuaEnumKeybindingState =
 	AcceptingModfierInput 	= 5,
 }
 
+local knKeybindColumnCount = 3
+
 function Keybind:new(o)
 	o = o or {}
 	setmetatable(o, self)
 	self.__index = self
+	
+	o.tWndRefs = {}
 	o.tItems = {}
 	o.tCollapsedCategories = {}
 	o.nCollapsedCount = 0
 	o.bCollapseAll = false
+	
 	return o
 end
 
@@ -45,6 +50,7 @@ function Keybind:OnDocumentReady()
 	end
 
 	Apollo.RegisterEventHandler("WindowManagementReady", 	"OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 
 	Apollo.RegisterEventHandler("InterfaceMenu_Keybindings", 	"OnShow", self)
 	Apollo.RegisterEventHandler("MouseWheel", 					"OnMouseWheel", self)
@@ -57,33 +63,47 @@ function Keybind:OnDocumentReady()
 	-- dropdown button would send a "button up" message, which would trigger the dropdown list to open again
 	-- solution: add a delay to exiting modifier to delay the re-enabling of the dropdown button until after the click is done
 	self.timerModifierSelectionDelay = ApolloTimer.Create( 0.010, false, "OnExitModifierTimer", self )
-	self.timerModifierSelectionDelay:Start()
+	self.timerModifierSelectionDelay:Stop()
+end
 
+function Keybind:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("CRB_Keybindings")})
+end
+
+function Keybind:OnConfigure()
+	self:OnShow()
+end
+
+
+
+---------------------------------------------------------------------------------------------------
+-- Interface
+---------------------------------------------------------------------------------------------------
+
+function Keybind:OnShow()
+	if self.tWndRefs.wndKeybindList == nil or not self.tWndRefs.wndKeybindList:IsValid() then
 	-- Setting up the main keybind interface forms
-	self.wndKeybindForm 	= Apollo.LoadForm(self.xmlDoc, "KeybindForm", nil, self)
-	if self.locSavedWindowLoc then
-		self.wndKeybindForm:MoveToLocation(self.locSavedWindowLoc)
-	end
+		self.tWndRefs.wndKeybindForm = Apollo.LoadForm(self.xmlDoc, "KeybindForm", nil, self)
 
-	self.wndKeybindList 	= self.wndKeybindForm:FindChild("KeybindList") --this is the empty list keybinds load into
-	self.wndFeedback 		= self.wndKeybindForm:FindChild("FeedbackText")
-	self.wndDuplicateMsg 	= self.wndKeybindForm:FindChild("DuplicateMsg")
+		self.tWndRefs.wndKeybindList = self.tWndRefs.wndKeybindForm:FindChild("KeybindList") --this is the empty list keybinds load into
+		self.tWndRefs.wndFeedback = self.tWndRefs.wndKeybindForm:FindChild("FeedbackText")
+		self.tWndRefs.wndDuplicateMsg = self.tWndRefs.wndKeybindForm:FindChild("DuplicateMsg")
 
-	self.wndSetSelectionBtn	= self.wndKeybindForm:FindChild("SetSelection")
-	self.wndSetSave 		= self.wndKeybindForm:FindChild("SaveSetButton")
-	self.wndSetCancel 		= self.wndKeybindForm:FindChild("CancelSetButton")
-	self.wndBindUnbind 		= self.wndKeybindForm:FindChild("UnbindButton")
-	self.wndBindCancel 		= self.wndKeybindForm:FindChild("CancelButton")
-	self.wndUndoUnbind 		= self.wndKeybindForm:FindChild("UndoBindButton")
-	self.wndRestoreDefaultsBtn = self.wndKeybindForm:FindChild("RestoreDefaults")
+		self.tWndRefs.wndSetSelectionBtn = self.tWndRefs.wndKeybindForm:FindChild("SetSelection")
+		self.tWndRefs.wndSetSave = self.tWndRefs.wndKeybindForm:FindChild("SaveSetButton")
+		self.tWndRefs.wndSetCancel = self.tWndRefs.wndKeybindForm:FindChild("CancelSetButton")
+		self.tWndRefs.wndBindUnbind = self.tWndRefs.wndKeybindForm:FindChild("UnbindButton")
+		self.tWndRefs.wndBindCancel = self.tWndRefs.wndKeybindForm:FindChild("CancelButton")
+		self.tWndRefs.wndUndoUnbind = self.tWndRefs.wndKeybindForm:FindChild("UndoBindButton")
+		self.tWndRefs.wndRestoreDefaultsBtn = self.tWndRefs.wndKeybindForm:FindChild("RestoreDefaults")
+		self.tWndRefs.wndDefaultBtn		= self.tWndRefs.wndKeybindForm:FindChild("DefaultButton")
 
-	self.wndVerifyYes 		= self.wndKeybindForm:FindChild("ConfirmBindButton")
-	self.wndVerifyNo 		= self.wndKeybindForm:FindChild("CancelBindButton")
+		self.tWndRefs.wndCollapseAllBtn = self.tWndRefs.wndKeybindForm:FindChild("ToggleCategory")
 	
-	self.wndCollapseAllBtn 	= self.wndKeybindForm:FindChild("ToggleCategory")
+		self.tWndRefs.wndOkForm = self.tWndRefs.wndKeybindForm:FindChild("OkForm")	--this form is for displaying message
+		self.tWndRefs.wndOkForm:Show(false)
 
-	self.wndOkForm 			= self.wndKeybindForm:FindChild("OkForm")	--this form is for displaying message
-	self.wndOkForm:Show(false)
+		Event_FireGenericEvent("WindowManagementAdd", {wnd = self.tWndRefs.wndKeybindForm, strName = Apollo.GetString("CRB_Keybindings")})
 
 	self.tItems = {}
 	self.tWindowCache = {}
@@ -92,16 +112,16 @@ function Keybind:OnDocumentReady()
 	self.tMessageQueue = Queue:new()
 
 	-- setting up modifier selection stuffs for sprint
-	self.wndModifierSelection 	= self.wndKeybindForm:FindChild("SelectModifier")
+		self.tWndRefs.wndModifierSelection = self.tWndRefs.wndKeybindForm:FindChild("SelectModifier")
 	self.nReservedModifier 		= 0 -- for preventing user binding other keys with the chosen modifier for sprint
 	self.wndModifierDropdown 	= nil -- for getting the position of the selection window
 
 	-- Setting up the Set Selection interface form
-    self.wndSetSelection 		= self.wndKeybindForm:FindChild("SetSelectionWindow") --shortcut sets are selected from this list
+	    self.tWndRefs.wndSetSelection = self.tWndRefs.wndKeybindForm:FindChild("SetSelectionWindow") --shortcut sets are selected from this list
 	self.arKeySetBtns =
 	{
-		[GameLib.CodeEnumInputSets.Account] 	= self.wndSetSelection:FindChild("AccountCustom"),
-		[GameLib.CodeEnumInputSets.Character] 	= self.wndSetSelection:FindChild("CharacterCustom")
+			[GameLib.CodeEnumInputSets.Account] 	= self.tWndRefs.wndSetSelection:FindChild("AccountCustom"),
+			[GameLib.CodeEnumInputSets.Character] 	= self.tWndRefs.wndSetSelection:FindChild("CharacterCustom")
 	}
     self.arKeySetNames =
 	{
@@ -111,31 +131,18 @@ function Keybind:OnDocumentReady()
 
     self.arKeySetBtns[GameLib.CodeEnumInputSets.Account]:SetData(GameLib.CodeEnumInputSets.Account)
     self.arKeySetBtns[GameLib.CodeEnumInputSets.Character]:SetData(GameLib.CodeEnumInputSets.Character)
-    self.wndSetSelection:Show(false)
+	    self.tWndRefs.wndSetSelection:Show(false)
 
 	-- Setting up the Copy Set Confirmation interface form
-	self.wndYesNoForm = self.wndKeybindForm:FindChild("YesNoForm")	--this form is used to confirm duplicating a set
-	self.wndYesNoForm:Show(false)
-
-	self.wndKeybindForm:Show(false, true)
+		self.tWndRefs.wndYesNoForm = self.tWndRefs.wndKeybindForm:FindChild("YesNoForm")	--this form is used to confirm duplicating a set
+		self.tWndRefs.wndYesNoForm:Show(false)
+		self.tWndRefs.wndYesNoFormYesBtn = self.tWndRefs.wndYesNoForm:FindChild("YesButton")
+		self.tWndRefs.wndYesNoFormSaveBtn = self.tWndRefs.wndYesNoForm:FindChild("SaveButton")
 end
 
-function Keybind:OnWindowManagementReady()
-	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndKeybindForm, strName = Apollo.GetString("CRB_Keybindings")})
-end
-
-function Keybind:OnConfigure()
-	self:OnShow()
-end
-
----------------------------------------------------------------------------------------------------
--- Interface
----------------------------------------------------------------------------------------------------
-
-function Keybind:OnShow()
     GameLib.PauseGameActionInput(true)
 
-	self.wndKeybindForm:Invoke() -- Order matters, needs to be infront of blocker
+	self.tWndRefs.wndKeybindForm:Invoke() -- Order matters, needs to be infront of blocker
 
     -- get current key set
     self.eCurrKeySet = GameLib.GetCurrInputKeySet()
@@ -146,17 +153,24 @@ function Keybind:OnShow()
 	end
 
     self.arKeySetBtns[self.eCurrKeySet]:SetCheck(true)
-    self.wndSetSelectionBtn:SetText(self.arKeySetNames[self.eCurrKeySet])
+    self.tWndRefs.wndSetSelectionBtn:SetText(self.arKeySetNames[self.eCurrKeySet])
 
-    self.wndSetSelection:Show(false)
-    self.wndYesNoForm:Show(false)
+    self.tWndRefs.wndSetSelection:Show(false)
+    self.tWndRefs.wndYesNoForm:Show(false)
 
     self:InitializeVariables()
 	self.arKeyBindings = GameLib.GetKeyBindings()
+	self:SetActionDataToSaveConfirmButtons()
 	self:PopulateKeybindList()
 
 	self:ShowUndoUnbindMessage(false)
 end
+
+function Keybind:SetActionDataToSaveConfirmButtons()
+	self.tWndRefs.wndSetSave:SetActionData( GameLib.CodeEnumConfirmButtonType.SaveKeyBinding, self.arKeyBindings )
+	self.tWndRefs.wndYesNoFormSaveBtn:SetActionData( GameLib.CodeEnumConfirmButtonType.SaveKeyBinding, self.arKeyBindings )
+end
+
 
 function Keybind:InitializeVariables()
     self:SetState(LuaEnumKeybindingState.Idle)
@@ -172,13 +186,18 @@ function Keybind:InitializeVariables()
 end
 
 function Keybind:RefreshKeybindList()
+	if self.tWndRefs.wndKeybindForm == nil or not self.tWndRefs.wndKeybindForm:IsValid() then
+		return
+	end
+
     self.arKeyBindings = GameLib.GetKeyBindings()
+	self:SetActionDataToSaveConfirmButtons()
     self:PopulateKeybindList()
 end
 
 function Keybind:AddCategory(tCategory)
     -- add new binding into the form
-    local wndBindingItem = self:FactoryCacheProduce(self.wndKeybindList, "KeybindCategoryItem", "C"..tCategory.nCategoryId)
+    local wndBindingItem = self:FactoryCacheProduce(self.tWndRefs.wndKeybindList, "KeybindCategoryItem", "C"..tCategory.nCategoryId)
 	wndBindingItem:SetText(tCategory.strName)
 	wndBindingItem:SetData(tCategory.nCategoryId)
 end
@@ -188,16 +207,23 @@ function Keybind:IsSprintAction( tBinding )
 	return false
 end
 
-function Keybind:IsModifierKeyName( strName )
-	if strName == 'Alt' then return true end
-	if strName == 'Shift' then return true end
-	if strName == 'Ctrl' then return true end
-	return false
+function Keybind:IsModifierKey( nScanCode )
+	local tScancodes = 
+	{ 
+		[GameLib.CodeEnumInputModifierScancode.LeftCtrl] = true,
+		[GameLib.CodeEnumInputModifierScancode.LeftShift] = true,
+		[GameLib.CodeEnumInputModifierScancode.LeftAlt] = true,
+		[GameLib.CodeEnumInputModifierScancode.RightCtrl] = true,
+		[GameLib.CodeEnumInputModifierScancode.RightShift] = true,
+		[GameLib.CodeEnumInputModifierScancode.RightAlt] = true,
+	}
+		
+	return tScancodes[nScanCode]
 end
 
 function Keybind:ClearSprintIfModifier( iKeyBinding )
 	if self.arKeyBindings[iKeyBinding].strAction == "SprintModifier" then
-		if self:IsModifierKeyName(GameLib.GetInputKeyNameText(self.arKeyBindings[iKeyBinding].arInputs[1])) or self:IsModifierKeyName(GameLib.GetInputKeyNameText(self.arKeyBindings[iKeyBinding].arInputs[2])) then
+		if self:IsModifierKey(self.arKeyBindings[iKeyBinding].arInputs[1].nCode) or self:IsModifierKey(self.arKeyBindings[iKeyBinding].arInputs[2].nCode) then
 	        local tCurrInput = {}
 			tCurrInput.eDevice = GameLib.CodeEnumInputDevice.None
 	        tCurrInput.nCode = 0
@@ -211,6 +237,8 @@ function Keybind:ClearSprintIfModifier( iKeyBinding )
 			if self.wndModifierDropdown then
 				self.wndModifierDropdown:SetText("") --Apollo.GetString("Keybinding_Unbound"))
 			end
+			
+			self:SetActionDataToSaveConfirmButtons()
 		end
 	end
 end
@@ -219,10 +247,10 @@ function Keybind:AddKeyBinding(iKeyBinding, tBinding)
     -- add new binding into the form
 	local wndBindingItem
 	if self:IsSprintAction(tBinding) then
-		wndBindingItem = self:FactoryCacheProduce(self.wndKeybindList, "KeybindModifierOptKeyItem", "B"..tBinding.idAction)
+		wndBindingItem = self:FactoryCacheProduce(self.tWndRefs.wndKeybindList, "KeybindModifierOptKeyItem", "B"..tBinding.idAction)
 		wndBindingItem:FindChild("KbList_Text"):SetText(tBinding.strActionLocalized)
 
-		if self:IsModifierKeyName(GameLib.GetInputKeyNameText(tBinding.arInputs[1])) then
+		if self:IsModifierKey(tBinding.arInputs[1].nCode) then
 			wndBindingItem:FindChild("DropdownButton"):SetText(self:HelperFormatKeybind(GameLib.GetInputKeyNameText(tBinding.arInputs[1])))
 			wndBindingItem:FindChild("BindButton1"):SetText("")
 		else
@@ -233,12 +261,16 @@ function Keybind:AddKeyBinding(iKeyBinding, tBinding)
 		self.wndModifierDropdown = wndBindingItem:FindChild("DropdownButton")
 		self.nReservedModifier = tBinding.arInputs[1].nCode
 	else
-		wndBindingItem = self:FactoryCacheProduce(self.wndKeybindList, "KeybindListItem", "B"..tBinding.idAction)
+		wndBindingItem = self:FactoryCacheProduce(self.tWndRefs.wndKeybindList, "KeybindListItem", "B"..tBinding.idAction)
 		wndBindingItem:FindChild("KbList_Text"):SetText(tBinding.strActionLocalized)
-		wndBindingItem:FindChild("BindButton1"):SetText(self:HelperFormatKeybind(GameLib.GetInputKeyNameText(tBinding.arInputs[1])))
-		wndBindingItem:FindChild("BindButton2"):SetText(self:HelperFormatKeybind(GameLib.GetInputKeyNameText(tBinding.arInputs[2])))
-		wndBindingItem:FindChild("BindButton1"):SetData(1)
-		wndBindingItem:FindChild("BindButton2"):SetData(2)
+		wndBindingItem:FindChild("Bindings:BindButton1"):SetText(self:HelperFormatKeybind(GameLib.GetInputKeyNameText(tBinding.arInputs[1])))
+		wndBindingItem:FindChild("Bindings:BindButton2"):SetText(self:HelperFormatKeybind(GameLib.GetInputKeyNameText(tBinding.arInputs[2])))
+		wndBindingItem:FindChild("Bindings:BindButton3"):SetText(self:HelperFormatKeybind(GameLib.GetInputKeyNameText(tBinding.arInputs[3])))
+		wndBindingItem:FindChild("Bindings:BindButton1"):SetData(1)
+		wndBindingItem:FindChild("Bindings:BindButton2"):SetData(2)
+		wndBindingItem:FindChild("Bindings:BindButton3"):SetData(3)
+
+		wndBindingItem:FindChild("Bindings"):SetData(iKeyBinding)
 
 		if tBinding.iInputKeyLookupGroup == GameLib.CodeEnumInputKeyLookupGroup.StunBreakoutGameplay and not wndBindingItem:FindChild("MultiBindIcon") then
 			Apollo.LoadForm(self.xmlDoc, "MultiBindIcon", wndBindingItem, self)
@@ -263,6 +295,8 @@ function Keybind:PopulateKeybindList()
 	table.sort(arActionCategories, function(a,b)
 		if a.nCategoryId == 3 then -- Movement forced to the top
 			return true
+		elseif b.nCategoryId == 3 then
+			return false
 		end
 		return a.strName < b.strName
 	end)
@@ -279,21 +313,13 @@ function Keybind:PopulateKeybindList()
 		self:AddCategory(arActionCategories[iCategory])
 		for idx = 1,#self.arKeyBindings do
 			if self.arKeyBindings[idx].idCategory == arActionCategories[iCategory].nCategoryId then
-				local bSkip = false
-
-				if self.arKeyBindings[idx].arInputs[1].eDevice == GameLib.CodeEnumInputDevice.Mouse and
-				   (self.arKeyBindings[idx].arInputs[1].nCode == 0 or self.arKeyBindings[idx].arInputs[1].nCode == 1) then
-					bSkip = true
-				end
-				if not bSkip then
 					self:AddKeyBinding(idx, self.arKeyBindings[idx])
 				end
 			end
 		end
-	end
 
 	-- align the items vertically
-	self.wndKeybindList:ArrangeChildrenVert()
+	self.tWndRefs.wndKeybindList:ArrangeChildrenVert()
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -303,11 +329,11 @@ function Keybind:ShowMessage(strMessage)
 	self:EnableBindingButtons(false)
 	self:EnableSetButtons(false)
 
-	if self.wndOkForm:IsShown() then
+	if self.tWndRefs.wndOkForm:IsShown() then
 		self.tMessageQueue:Push( strMessage )
 	else
-		self.wndOkForm:FindChild("MessageText"):SetText(strMessage)
-		self.wndOkForm:Show(true)
+		self.tWndRefs.wndOkForm:FindChild("MessageText"):SetText(strMessage)
+		self.tWndRefs.wndOkForm:Show(true)
 	end
 end
 
@@ -315,10 +341,10 @@ function Keybind:OnOkFormOk(wndHandler, wndControl, eMouseButton)
 	if self.tMessageQueue:GetSize() == 0 then -- no more messages
 		self:EnableBindingButtons(true)
 		self:EnableSetButtons(true)
-		self.wndOkForm:Show(false)
+		self.tWndRefs.wndOkForm:Show(false)
 	else
 		local strMessage = self.tMessageQueue:Pop()
-		self.wndOkForm:FindChild("MessageText"):SetText(strMessage)
+		self.tWndRefs.wndOkForm:FindChild("MessageText"):SetText(strMessage)
 	end
 end
 
@@ -334,17 +360,23 @@ function Keybind:ShowYesNoDialog(strMsg, fnContinue, oContinue, fnYes, oYes, fnN
     self.fnNo = fnNo
     self.oNo = oNo
     self.bShowingYesNoDialog = true
-    self.wndYesNoForm:Show(true)
-    self.wndYesNoForm:FindChild("QuestionText"):SetText(strMsg)
+    self.tWndRefs.wndYesNoForm:Show(true)
+	self.tWndRefs.wndYesNoFormYesBtn:Show(true)
+	self.tWndRefs.wndYesNoFormSaveBtn:Show(false)
+    self.tWndRefs.wndYesNoForm:FindChild("QuestionText"):SetText(strMsg)
 	self:ShowBindingInterface(false)
     self:EnableBindingButtons(false)
     self:EnableSetButtons(false)
-    self.wndSetSave:Enable(false)
-	self.wndSetCancel:Enable(false)
+    self.tWndRefs.wndSetSave:Enable(false)
+	self.tWndRefs.wndSetCancel:Enable(false)
 	self:ShowUndoUnbindMessage(false)
 end
 function Keybind:ExitYesNoDialog(bYesNo)
     self.bShowingYesNoDialog = false
+    self:SetState(self.eState) -- update enable/disable windows
+    self.tWndRefs.wndYesNoForm:Show(false)
+    self.tWndRefs.wndSetSave:Enable(true)
+	self.tWndRefs.wndSetCancel:Enable(true)
     if bYesNo == true then
         if self.fnYes ~= nil then
             self:fnYes(self.oYes)
@@ -357,14 +389,10 @@ function Keybind:ExitYesNoDialog(bYesNo)
     if self.fnContinue ~= nil then
         self:fnContinue(self.oContinue)
     end
-    self:SetState(self.eState) -- update enable/disable windows
-    self.wndYesNoForm:Show(false)
     self.wndBeforeYesNoDialog = nil
     self.fnContinue = nil
     self.fnYes = nil
     self.fnNo = nil
-    self.wndSetSave:Enable(true)
-	self.wndSetCancel:Enable(true)
 end
 function Keybind:OnEscapeYesNoDialog()
     self:ExitYesNoDialog(false)
@@ -380,22 +408,30 @@ function Keybind:OnYesNoFormNo()
         self:ExitYesNoDialog(false)
         return
     end
-    self.wndYesNoForm:Show(false)
+    self.tWndRefs.wndYesNoForm:Show(false)
 end
 
+---------------------------------------------------------------------------------------------------
+-- Confirm save dialog
+---------------------------------------------------------------------------------------------------
+function Keybind:ShowConfirmSaveDialog(fnContinue, oContinue)
+	self:ShowYesNoDialog(Apollo.GetString("CRB_Would_you_like_to_save_the_current_s"), fnContinue, oContinue, self.SetSaved)
+	self.tWndRefs.wndYesNoFormSaveBtn:Show(true)
+	self.tWndRefs.wndYesNoFormYesBtn:Show(false)
+end
 ---------------------------------------------------------------------------------------------------
 -- Select set
 ---------------------------------------------------------------------------------------------------
 
 function Keybind:OnToggleSetSelect() --this opens the set-selection dialog
 	self:ShowUndoUnbindMessage(false)
-	if self.wndSetSelection:IsVisible() then
+	if self.tWndRefs.wndSetSelection:IsVisible() then
 		self:SetState(LuaEnumKeybindingState.Idle)
-		self.wndSetSelection:Show(false)
+		self.tWndRefs.wndSetSelection:Show(false)
 	else
 	    self:SetState(LuaEnumKeybindingState.SelectingSet)
-	    self.wndSetSelection:Show(true)
-	    self.wndSetSelectionBtn:Enable(true)
+	    self.tWndRefs.wndSetSelection:Show(true)
+	    self.tWndRefs.wndSetSelectionBtn:Enable(true)
 	end
 end
 
@@ -410,7 +446,7 @@ function Keybind:OnSetSelected(wndHandler, wndControl) --this function covers th
     self:OnToggleSetSelect()
 
     if self.bNeedSave then
-        self:ShowYesNoDialog(Apollo.GetString("CRB_Would_you_like_to_save_the_current_s"), self.ContinueSetSelected, wndControl, self.Save)
+        self:ShowConfirmSaveDialog(self.ContinueSetSelected, wndControl)
     else
         self:ContinueSetSelected(wndControl)
     end
@@ -424,12 +460,13 @@ function Keybind:ContinueSetSelected(wndControl)
         self.eCurrKeySet = eCurrKeySet
         local bCompleted = GameLib.SetCurrInputKeySet(self.eCurrKeySet) -- SetCurrInputKeySet return FALSE if still need to wait for server to send client the keybindings
                                                                           -- when client received the keybinding from server, it will trigger the KeyBindingUpdated event
-        self.wndSetSelectionBtn:SetText(self.arKeySetNames[self.eCurrKeySet])
+        self.tWndRefs.wndSetSelectionBtn:SetText(self.arKeySetNames[self.eCurrKeySet])
 
         self:InitializeVariables()
         self.bNeedSaveSet = true
 	    if bCompleted then -- if not completed, then delay refresh until receiving a KeyBindingUpdated event
 	        self.arKeyBindings = GameLib.GetKeyBindings()
+			self:SetActionDataToSaveConfirmButtons()
             self:PopulateKeybindList() -- refresh list
         end
     end
@@ -453,20 +490,24 @@ end
 
 -- enable all set select/save/cancel/copy buttons
 function Keybind:EnableSetButtons(bEnable)
-	self.wndSetSelectionBtn:Enable(bEnable)
-	self.wndRestoreDefaultsBtn:Enable(bEnable)
+	self.tWndRefs.wndSetSelectionBtn:Enable(bEnable)
+	self.tWndRefs.wndRestoreDefaultsBtn:Enable(bEnable)
 end
 
 -- enable binding buttons
 function Keybind:EnableBindingButtons(bEnable)
-    self.wndKeybindList:Enable(bEnable)
-	self.wndCollapseAllBtn:Enable(bEnable) 
+    self.tWndRefs.wndKeybindList:Enable(bEnable)
+	self.tWndRefs.wndCollapseAllBtn:Enable(bEnable) 
+end
+
+function Keybind:IsBindingEnabled()
+	return self.tWndRefs.wndKeybindList:IsEnabled()
 end
 
 -- enable save/cancel buttons
 function Keybind:EnableSaveCancelButtons(bEnable)
-   self.wndSetSave:Enable(bEnable)
-   self.wndSetCancel:Enable(bEnable)
+   self.tWndRefs.wndSetSave:Enable(bEnable)
+   self.tWndRefs.wndSetCancel:Enable(bEnable)
 end
 
 -- set state and show/hide buttons according to the state
@@ -531,15 +572,15 @@ function Keybind:ShowBindingInterface(bShow)
 
 	if bShowSelectModifier then
 		-- reset the buttons to be unchecked for the select modifier window
-		self.wndModifierSelection:FindChild("Shift"):SetCheck(false)
-		self.wndModifierSelection:FindChild("Ctrl"):SetCheck(false)
-		self.wndModifierSelection:FindChild("Alt"):SetCheck(false)
+		self.tWndRefs.wndModifierSelection:FindChild("Shift"):SetCheck(false)
+		self.tWndRefs.wndModifierSelection:FindChild("Ctrl"):SetCheck(false)
+		self.tWndRefs.wndModifierSelection:FindChild("Alt"):SetCheck(false)
 
 		-- set the position of the modifier selection window to be below the modifier dropdown button
 		local nLeft, nTop, nRight, nBottom = self.wndModifierDropdown:GetRect()
 		local nLeftP1, nTopP1, nRightP1, nBottomP1 = self.wndModifierDropdown:GetParent():GetRect()
 		local nLeftP2, nTopP2, nRightP2, nBottomP2 = self.wndModifierDropdown:GetParent():GetParent():GetRect()
-		local nLeftSelect, nTopSelect, nRightSelect, nBottomSelect = self.wndModifierSelection:GetRect()
+		local nLeftSelect, nTopSelect, nRightSelect, nBottomSelect = self.tWndRefs.wndModifierSelection:GetRect()
 		local nWidthSelect = nRightSelect - nLeftSelect
 		local nHeightSelect = nBottomSelect - nTopSelect
 
@@ -550,20 +591,23 @@ function Keybind:ShowBindingInterface(bShow)
 		nBottom = nBottom + nTopP1 + nTopP2
 
 		-- move the selection window to be right below the dropdown button
-		self.wndModifierSelection:Move( nLeft + ((nRight - nLeft-nWidthSelect) / 2), nBottom + 2, nWidthSelect, nHeightSelect )
+		self.tWndRefs.wndModifierSelection:Move( nLeft + ((nRight - nLeft-nWidthSelect) / 2), nBottom + 2, nWidthSelect, nHeightSelect )
 
 
 	end
-	self.wndModifierSelection:Show(bShowSelectModifier)
-	self:EnableBindingButtons(not bShowSelectModifier) -- disable keybind list if picking modifier
-	self.wndBindUnbind:Show(bShowSelectBinding)
-	self.wndBindCancel:Show(bShowSelectBinding)
-	if bShowSelectBinding then
-	    self.wndFeedback:SetText(String_GetWeaselString(Apollo.GetString("Keybinding_PickKey"), self.arKeyBindings[self.wndCurrBind:GetParent():GetData()].strActionLocalized ))
-	else
-	    self.wndFeedback:SetText("")
+	
+	if self.tWndRefs.wndModifierSelection then
+		self.tWndRefs.wndModifierSelection:Show(bShowSelectModifier)
+		self:EnableBindingButtons(not bShowSelectModifier) -- disable keybind list if picking modifier
+		self.tWndRefs.wndBindUnbind:Show(bShowSelectBinding)
+		self.tWndRefs.wndBindCancel:Show(bShowSelectBinding)
+		self.tWndRefs.wndDefaultBtn:Show(bShowSelectBinding)
+		if bShowSelectBinding then
+		    self.tWndRefs.wndFeedback:SetText(String_GetWeaselString(Apollo.GetString("Keybinding_PickKey"), self.arKeyBindings[self.wndCurrBind:GetParent():GetData()].strActionLocalized ))
+		else
+		    self.tWndRefs.wndFeedback:SetText("")
+		end
 	end
-
 end
 
 function Keybind:OnRestoreDefaults( wndHandler, wndControl, eMouseButton )
@@ -575,6 +619,7 @@ function Keybind:RestoreDefaults()
 
 	-- overwrite the key set
 	self.arKeyBindings = GameLib.GetInputKeySet(GameLib.CodeEnumInputSets.Default1)
+	self:SetActionDataToSaveConfirmButtons()
 
 	self:PopulateKeybindList() -- refresh list
    	self:InitializeVariables()
@@ -592,8 +637,8 @@ function Keybind:ShowUndoUnbindMessage(bShow, strOptionalMessage, bAppendMsg)
 -- unless bAppendMsg is true. both default message and strOptionalMessagewill be shown in this case
 
 	if not bShow or self.iUndoUnbindKeybind == nil or self.iUndoKeybind == nil then
-		self.wndDuplicateMsg:Show(false)
-		self.wndUndoUnbind:Show(false)
+		self.tWndRefs.wndDuplicateMsg:Show(false)
+		self.tWndRefs.wndUndoUnbind:Show(false)
 		self.iUndoUnbindKeybind = nil
 		self.iUndoKeybind = nil
 		return
@@ -610,9 +655,9 @@ function Keybind:ShowUndoUnbindMessage(bShow, strOptionalMessage, bAppendMsg)
 		strTextToBeShown = strTextToBeShown .. "\n" .. strOptionalMessage
 	end
 
-	self.wndDuplicateMsg:SetText(strTextToBeShown)
-	self.wndDuplicateMsg:Show(true)
-	self.wndUndoUnbind:Show(true)
+	self.tWndRefs.wndDuplicateMsg:SetText(strTextToBeShown)
+	self.tWndRefs.wndDuplicateMsg:Show(true)
+	self.tWndRefs.wndUndoUnbind:Show(true)
 end
 
 function Keybind:OnUndoUnbind( wndHandler, wndControl, eMouseButton )
@@ -635,7 +680,8 @@ function Keybind:OnUndoUnbind( wndHandler, wndControl, eMouseButton )
 		local wndBindButton = wndUpdate:FindChild("BindButton".. self.iUndoSlot)
 		wndBindButton:SetText(self:HelperFormatKeybind(GameLib.GetInputKeyNameText(tNewInput)))
 	end
-
+	
+	self:SetActionDataToSaveConfirmButtons()
 	self:ShowUndoUnbindMessage(false)
 
 end
@@ -643,39 +689,40 @@ end
 function Keybind:OverwriteDuplicates(iKeybind, tInput)
 	self.iUndoUnbindKeybind = nil -- the keybind that's being overwritten/unbound
 	self.iUndoUnbindSlot = nil -- the slot of the keybind that being unbound
+	
+	local tBindingIndexes = self:GetSiblingIndexs(self.iUndoSlot)
+	
     for idx = 1,#self.arKeyBindings do
-        if idx ~= iKeybind then
-			if self.arKeyBindings[iKeybind].iInputKeyLookupGroup == self.arKeyBindings[idx].iInputKeyLookupGroup then
-				for iBinding = 1, 2 do
-	                if self.arKeyBindings[idx].arInputs[iBinding].eDevice ~= GameLib.CodeEnumInputDevice.None and
-					   self.arKeyBindings[idx].arInputs[iBinding].nCode == tInput.nCode and
-					   self.arKeyBindings[idx].arInputs[iBinding].eDevice == tInput.eDevice and
-					   self.arKeyBindings[idx].arInputs[iBinding].eModifier == tInput.eModifier
-	                then
-						-- keep track of what is unmapped so that user can undo
-						self.iUndoUnbindKeybind = idx
-						self.iUndoUnbindSlot = iBinding
+		if self.arKeyBindings[iKeybind].iInputKeyLookupGroup == self.arKeyBindings[idx].iInputKeyLookupGroup then
+			for _, iBinding in pairs(tBindingIndexes) do
+                if self.arKeyBindings[idx].arInputs[iBinding].eDevice ~= GameLib.CodeEnumInputDevice.None and
+				   self.arKeyBindings[idx].arInputs[iBinding].nCode == tInput.nCode and
+				   self.arKeyBindings[idx].arInputs[iBinding].eDevice == tInput.eDevice and
+				   self.arKeyBindings[idx].arInputs[iBinding].eModifier == tInput.eModifier
+                then
+					-- keep track of what is unmapped so that user can undo
+					self.iUndoUnbindKeybind = idx
+					self.iUndoUnbindSlot = iBinding
 
-						-- unmap the duplicate
-						local wndDuplicate = self.tItems[self.arKeyBindings[idx].idAction]
-						if wndDuplicate then
-							local wndBindButton = wndDuplicate:FindChild("BindButton"..iBinding)
-							if wndBindButton then
-								wndBindButton:SetText(self:HelperFormatKeybind(GameLib.GetInputKeyNameText({eDevice = GameLib.CodeEnumInputDevice.None})))
-							end
+					-- unmap the duplicate
+					local wndDuplicate = self.tItems[self.arKeyBindings[idx].idAction]
+					if wndDuplicate then
+						local wndBindButton = wndDuplicate:FindChild("BindButton"..iBinding)
+						if wndBindButton then
+							wndBindButton:SetText(self:HelperFormatKeybind(GameLib.GetInputKeyNameText({eDevice = GameLib.CodeEnumInputDevice.None})))
 						end
-						self.arKeyBindings[idx].arInputs[iBinding] = {eDevice = GameLib.CodeEnumInputDevice.None}
+					end
+					self.arKeyBindings[idx].arInputs[iBinding] = {eDevice = GameLib.CodeEnumInputDevice.None}
 
-						if self:DoesUnbindKeyBreakBreakoutGameplay(idx, iBinding) then
-							-- "You've unmapped blah blah blah. Warning: This key is used in breakout gameplay" [undo]
-							self:ShowUndoUnbindMessage(true, Apollo.GetString("Keybinding_UnbindStrafeWarning"), true )
-						else
-							-- "You've unmapped blah blah blah" [undo]
-							self:ShowUndoUnbindMessage(true)
-						end
-	                end
-	            end
-			end
+					if self:DoesUnbindKeyBreakBreakoutGameplay(idx, iBinding) then
+						-- "You've unmapped blah blah blah. Warning: This key is used in breakout gameplay" [undo]
+						self:ShowUndoUnbindMessage(true, Apollo.GetString("Keybinding_UnbindStrafeWarning"), true )
+					else
+						-- "You've unmapped blah blah blah" [undo]
+						self:ShowUndoUnbindMessage(true)
+					end
+                end
+            end
 		end
     end
 end
@@ -723,6 +770,16 @@ function Keybind:GetModifierString(nModifierScancode)
 	end
 end
 
+function Keybind:GetSiblingIndexs(iCurrentInput)
+	if iCurrentInput == 1 then
+		return { 1, 2, 3 }
+	elseif iCurrentInput == 2 then
+		return { 1, 2 }
+	elseif iCurrentInput == 3 then
+		return { 1, 3 }
+	end
+end
+
 function Keybind:OnKeyDown(wndHandler, wndControl, strKeyName, nCode, eModifier)
 
     if wndHandler ~= wndControl then
@@ -734,22 +791,16 @@ function Keybind:OnKeyDown(wndHandler, wndControl, strKeyName, nCode, eModifier)
 		return false
 	end
 
-	if not self.wndCurrBind then
+	if not self.wndCurrBind or not self:IsBindingEnabled() then
 		return false
 	end
 
+	local iKeybind = self.wndCurrBind:GetParent():GetData()
+	local iCurrentInput = self.wndCurrBind:GetData()
 	-- ignore if it's the same as its sibling input
-	local iSiblingInput = 1
-	if self.wndCurrBind:GetData() == 1 then
-	    iSiblingInput = 2
-	end
-	local iKeybind = self.wndCurrBind:GetParent():GetData();
-	if self.arKeyBindings[iKeybind].arInputs[iSiblingInput].nCode == nCode and self.arKeyBindings[iKeybind].arInputs[iSiblingInput].eModifier == eModifier then
-	    return false
-    end
 
     if self.eState == LuaEnumKeybindingState.AcceptingInput then
-
+		
 		-- error out if using the modifier that is assigned to sprint
 		local nModifierFlag = self:GetModifierFlag(self.nReservedModifier)
 		if bit32.band(eModifier, nModifierFlag) > 0 then -- player is trying to bind a key with the reserved modifier flag
@@ -757,7 +808,12 @@ function Keybind:OnKeyDown(wndHandler, wndControl, strKeyName, nCode, eModifier)
 			return false
 		end
 
-		self:ClearSprintIfModifier(iKeybind, self.wndCurrBind:GetData(), iSiblingInput)
+		local tBindingIndexes = self:GetSiblingIndexs(iCurrentInput)
+		for idx, iSiblingInput in pairs(tBindingIndexes) do
+			if iCurrentInput ~= iSiblingInput then
+				self:ClearSprintIfModifier(iKeybind, iCurrentInput, iSiblingInput)
+			end
+		end
 
         -- set the currently selected input binding
         local tCurrInput = {}
@@ -785,6 +841,11 @@ end
 function Keybind:OnMouseWheel(nX, nY, nDelta, eModifier)
     -- only process the wheel signal when accepting input
     if self.eState == LuaEnumKeybindingState.AcceptingInput then
+
+		if not self:IsBindingEnabled() then
+			return false
+		end
+		
         local nCode = GameLib.CodeEnumInputMouse.WheelUp
         if  nDelta < 0 then
             nCode = GameLib.CodeEnumInputMouse.WheelDown
@@ -797,18 +858,8 @@ function Keybind:OnMouseWheel(nX, nY, nDelta, eModifier)
 			return false
 		end
 
-        -- ignore if it's the same as its sibling input
-        local iSiblingInput = 1
-        if self.wndCurrBind:GetData() == 1 then
-            iSiblingInput = 2
-        end
-
-        local iKeybind = self.wndCurrBind:GetParent():GetData();
-        if self.arKeyBindings[iKeybind].arInputs[iSiblingInput].nCode == nCode and
-           self.arKeyBindings[iKeybind].arInputs[iSiblingInput].eDevice == GameLib.CodeEnumInputDevice.Mouse and
-		   self.arKeyBindings[iKeybind].arInputs[iSiblingInput].eModifier == eModifier then
-           return true
-        end
+		local iKeybind = self.wndCurrBind:GetParent():GetData()
+		local iCurrentInput = self.wndCurrBind:GetData()
 
         -- assign the new binding
 		local tCurrInput = {}
@@ -836,8 +887,7 @@ end
 function Keybind:OnMouseButtonUp( eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY )
 	-- capturing mouse input change
 	if self.eState == LuaEnumKeybindingState.AcceptingInput then
-	    if eMouseButton == GameLib.CodeEnumInputMouse.Left or eMouseButton == GameLib.CodeEnumInputMouse.Right then
-            -- left mouse and right mouse cannot be selected
+		if Apollo.GetMouseTargetWindow() ~= self.wndCurrBind or not self:IsBindingEnabled()then
              return false
         end
 
@@ -849,17 +899,11 @@ function Keybind:OnMouseButtonUp( eMouseButton, nLastRelativeMouseX, nLastRelati
 			return false
 		end
 
-        -- ignore if it's the same as its sibling input
-        local iSiblingInput = 1
-        if self.wndCurrBind:GetData() == 1 then
-            iSiblingInput = 2
-        end
-        local iKeybind = self.wndCurrBind:GetParent():GetData()
-        if self.arKeyBindings[iKeybind].arInputs[iSiblingInput].nCode == eMouseButton and
-		   self.arKeyBindings[iKeybind].arInputs[iSiblingInput].eDevice == GameLib.CodeEnumInputDevice.Mouse and
-		   self.arKeyBindings[iKeybind].arInputs[iSiblingInput].eModifier == eModifier then
+		local iKeybind = self.wndCurrBind:GetParent():GetData()
+		local iCurrentInput = self.wndCurrBind:GetData()
+		if iCurrentInput ~= 3 and (eMouseButton == GameLib.CodeEnumInputMouse.Left or eMouseButton == GameLib.CodeEnumInputMouse.Right) then
 			return false
-        end
+		end
 
 		self:ClearSprintIfModifier(iKeybind, self.wndCurrBind:GetData(), iSiblingInput)
 
@@ -899,6 +943,8 @@ function Keybind:AcceptCurrInput(iKeybind, tCurrInput)
     self.wndCurrBind:SetCheck(false)
     self.arKeyBindings[iKeybind].arInputs[self.wndCurrBind:GetData()] = TableUtil:Copy(tCurrInput)
     self.wndCurrBind:SetText(self:HelperFormatKeybind(GameLib.GetInputKeyNameText(tCurrInput)))
+
+	self:SetActionDataToSaveConfirmButtons()
 end
 
 function Keybind:OnClick( wndHandler, wndControl )
@@ -925,7 +971,7 @@ function Keybind:OnBindButton(wndHandler, wndControl, eMouseButton)
 
 	-- if current key set is the preset default set, then disable editing
     if not GameLib.CanEditKeySet(self.eCurrKeySet) then
-        self.wndFeedback:SetText(Apollo.GetString("CRB_Default_key_sets_cannot_be_edited"))
+        self.tWndRefs.wndFeedback:SetText(Apollo.GetString("CRB_Default_key_sets_cannot_be_edited"))
         return false
     end
 
@@ -968,20 +1014,40 @@ function Keybind:OnUnbindButton()
 	end
 end
 
+function Keybind:OnDefaultButton(wndHandler, wndControl, eMouseButton)
+	if self.eState == LuaEnumKeybindingState.AcceptingInput then
+		local arDefaultKeyBindings = GameLib.GetInputKeySet(GameLib.CodeEnumInputSets.Default1)
+		local nCurrentBindingIdx = self.wndCurrBind:GetParent():GetData()
+		
+		-- map current index to default index
+		local nNewBindingIdx = nil
+		for idx, tBinding in pairs(arDefaultKeyBindings) do
+			if tBinding.idAction == self.arKeyBindings[nCurrentBindingIdx].idAction then
+				nNewBindingIdx = idx
+				break
+			end
+		end
+
+	    -- set the binding
+		if nNewBindingIdx ~= nil then
+		    self:AcceptCurrInput(nCurrentBindingIdx, arDefaultKeyBindings[nNewBindingIdx].arInputs[self.wndCurrBind:GetData()])
+		    self:SetState(LuaEnumKeybindingState.Idle)
+		end
+	end
+end
+
 ---------------------------------------------------------------------------------------------------
 -- Applying Changes
 ---------------------------------------------------------------------------------------------------
-function Keybind:Save()
-    GameLib.SetKeyBindings(self.arKeyBindings) -- save the key bindings, will do nothing if it's default settings
-
+function Keybind:SetSaved()
 	self.eOriginalKeySet = self.eCurrKeySet
 	self.bNeedSaveSet = false
 	self.bNeedSave = false
 end
 
-function Keybind:OnSaveBtn() --the bottom "Save" button
-    self:Save()
-	self:OnClose()
+function Keybind:OnSaveBtn() --the bottom "Save" button (ActionConfirmButton)
+	self:SetSaved()
+	self.tWndRefs.wndKeybindForm:Close()
 end
 
 function Keybind:OnCancelBtn() --the bottom "Cancel" button
@@ -991,30 +1057,40 @@ function Keybind:OnCancelBtn() --the bottom "Cancel" button
     end
 
     if self.bNeedSave or self.bNeedSaveSet then
-       self:ShowYesNoDialog(Apollo.GetString("CRB_Would_you_like_to_save_the_current_s_1"), self.OnClose, nil, self.Save)
+       self:ShowConfirmSaveDialog(self.OnClose, nil)
     else
-       self:OnClose()
+       self.tWndRefs.wndKeybindForm:Close()
     end
 
 end
 
 function Keybind:OnClose()
+	if self.tWndRefs.wndKeybindForm ~= nil and self.tWndRefs.wndKeybindForm:IsValid() then
     GameLib.PauseGameActionInput(false)
     self.wndCurrBind = nil
 	self.wndCurrModifierBind = nil
     self.eState = LuaEnumKeybindingState.Idle
-    self.wndKeybindForm:Close()
 
+	    self.arKeyBindings = {}
+		self.arKeySetBtns = {}
+		self.arKeySetNames = {}
 	self.tItems = {}
-	self.wndKeybindList:DestroyChildren()
+		self.tWindowCache = {}
+		self.tCollapsedCategories = {}
 
-    self.arKeyBindings = {}
+		self.tWndRefs.wndKeybindForm:Close()
+		if self.tWndRefs.wndKeybindForm ~= nil then
+			self.tWndRefs.wndKeybindForm:Destroy()
+		end
+		self.tWndRefs = {}
 
     if self.eOriginalKeySet ~= self.eCurrKeySet then
         GameLib.SetCurrInputKeySet(self.eOriginalKeySet) -- revert back to original key set
     end
 
 	Event_FireGenericEvent("KeybindInterfaceClosed") --The Options UI should listen for this and re-enable.
+		Event_FireGenericEvent("WindowManagementRemove", {strName = Apollo.GetString("CRB_Keybindings")})
+	end
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -1094,7 +1170,7 @@ function Keybind:FinalizeModifierSelected(tModifierSelectedState)
 	local nOldModifierFlag = self:GetModifierFlag(tModifierSelectedState.nOldCode)
 	local nNewModifierFlag = self:GetModifierFlag(tModifierSelectedState.nNewCode)
 	for idx = 1,#self.arKeyBindings do
-    	for iBinding = 1, 2 do
+    	for iBinding = 1, knKeybindColumnCount do
     		if self.arKeyBindings[idx].arInputs[iBinding].eDevice ~= GameLib.CodeEnumInputDevice.None and -- if new modifer is used
     			bit32.band(self.arKeyBindings[idx].arInputs[iBinding].eModifier, nNewModifierFlag) > 0
    			then -- change it to use old modifer instead
@@ -1129,8 +1205,9 @@ function Keybind:FinalizeModifierSelected(tModifierSelectedState)
 		end
 	end
 	
-	self.wndModifierSelection:Show(false)
-
+	self:SetActionDataToSaveConfirmButtons()
+	self.tWndRefs.wndModifierSelection:Show(false)
+	self:SetState(LuaEnumKeybindingState.Idle)
 	return true
 end
 
@@ -1139,7 +1216,7 @@ function Keybind:IsModifierInUse(newCode)
 	local nNewModifierFlag = self:GetModifierFlag(newCode)
 
 	for idx = 1,#self.arKeyBindings do
-    	for iBinding = 1, 2 do
+    	for iBinding = 1, knKeybindColumnCount do
     		if self.arKeyBindings[idx].arInputs[iBinding].eDevice ~= GameLib.CodeEnumInputDevice.None and
     			bit32.band(self.arKeyBindings[idx].arInputs[iBinding].eModifier, nNewModifierFlag) > 0
    			then
@@ -1173,7 +1250,7 @@ end
 
 function Keybind:OnCategoryClick(wndHandler, wndControl)
 	if self.bCollapseAll then
-		self.wndCollapseAllBtn:SetText(Apollo.GetString("CRB_Collapse_All"))
+		self.tWndRefs.wndCollapseAllBtn:SetText(Apollo.GetString("CRB_Collapse_All"))
 		self.bCollapseAll = false
 	end
 
@@ -1187,22 +1264,22 @@ function Keybind:OnCategoryClick(wndHandler, wndControl)
 	end
 
 	if self.nCollapsedCount == self.nCategoryCount then
-		self.wndCollapseAllBtn:SetText(Apollo.GetString("CRB_Expand_All"))
+		self.tWndRefs.wndCollapseAllBtn:SetText(Apollo.GetString("CRB_Expand_All"))
 		self.bCollapseAll = true
 	end
 
 	self:PopulateKeybindList()
 
-	self.wndKeybindForm:EnsureChildVisible(wndControl)
+	self.tWndRefs.wndKeybindForm:EnsureChildVisible(wndControl)
 end
 
 function Keybind:OnToggleCategories(wndHandler, wndControl)
 	if self.bCollapseAll then
-		self.wndCollapseAllBtn:SetText(Apollo.GetString("CRB_Collapse_All"))
+		self.tWndRefs.wndCollapseAllBtn:SetText(Apollo.GetString("CRB_Collapse_All"))
 		self.tCollapsedCategories = {}
 		self.nCollapsedCount = 0
 	else
-		self.wndCollapseAllBtn:SetText(Apollo.GetString("CRB_Expand_All"))
+		self.tWndRefs.wndCollapseAllBtn:SetText(Apollo.GetString("CRB_Expand_All"))
 
 		local arActionCategories = GameLib.GetInputActionCategories()
 		for iCategory = 1, self.nCategoryCount do

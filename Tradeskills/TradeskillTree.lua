@@ -116,7 +116,7 @@ function TradeskillTree:FullRedraw(achievementData)
 			wndCurr:SetData(nY * knMaxCols + nX)
 		end
 	end
-	self.wndGrid:ArrangeChildrenTiles(1)
+	self.wndGrid:ArrangeChildrenTiles(Window.CodeEnumArrangeOrigin.Middle)
 
 	self:SlotHAMs(nCurrentSelection, achievementData)
 	self:PickAllArrowGraphics(nRows)
@@ -164,7 +164,7 @@ function TradeskillTree:DrawDropdownPicker(achievementData)
 			end
 		end
 	end
-	self.wndMain:FindChild("OriginPieceDropdownContainer"):ArrangeChildrenVert(0)
+	self.wndMain:FindChild("OriginPieceDropdownContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 	-- Default pick the one we're told to show, else the 2nd item in the list if nothing has been selected yet
 	local wndFirstItem = nil
@@ -415,7 +415,7 @@ function TradeskillTree:OnHAMItemBtnShowExtraInfo(wndHandler, wndControl) -- Not
 		end
 	end
 
-	wndCurr:FindChild("ExtraInfoSchemContainer"):ArrangeChildrenVert(0)
+	wndCurr:FindChild("ExtraInfoSchemContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 	-- Rewards
 	local tRewards = achCurr:GetTradeskillRewards()
@@ -465,7 +465,7 @@ function TradeskillTree:OnHAMItemBtnShowExtraInfo(wndHandler, wndControl) -- Not
 			wndReward:SetTooltip(string.format("<P Font=\"CRB_InterfaceSmall_O\" TextColor=\"ff9aaea3\">%s</P><P Font=\"CRB_InterfaceSmall_O\">%s</P>", strName, tBonus.strTooltip))
 		end
 
-		wndCurr:FindChild("ExtraInfoRewardContainer"):ArrangeChildrenHorz(0)
+		wndCurr:FindChild("ExtraInfoRewardContainer"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	end
 
 	-- Resize
@@ -480,7 +480,7 @@ function TradeskillTree:OnHAMItemBtnShowExtraInfo(wndHandler, wndControl) -- Not
 	if wndCurr:FindChild("ExtraInfoRewardArt"):IsShown() then
 		nHeight = nHeight + self.knExtraInfoRewardHeight
 	end
-	wndCurr:FindChild("ExtraInfoArrangeVert"):ArrangeChildrenVert(0)
+	wndCurr:FindChild("ExtraInfoArrangeVert"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 	-- If too nHeight is too low, use the smaller version and align it
 	if nHeight > 100 then

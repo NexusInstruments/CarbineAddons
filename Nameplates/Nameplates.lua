@@ -68,17 +68,19 @@ local karDisposition =
 local knHealthRed = 0.3
 local knHealthYellow = 0.5
 
+local knConMin = -4
+local knConMax = 4
 local karConColors =  -- differential value, color
 {
-	{-4, ApolloColor.new("ConTrivial")},
-	{-3, ApolloColor.new("ConInferior")},
-	{-2, ApolloColor.new("ConMinor")},
-	{-1, ApolloColor.new("ConEasy")},
-	{0, ApolloColor.new("ConAverage")},
-	{1, ApolloColor.new("ConModerate")},
-	{2, ApolloColor.new("ConTough")},
-	{3, ApolloColor.new("ConHard")},
-	{4, ApolloColor.new("ConImpossible")}
+	[-4] = ApolloColor.new("ConTrivial"),
+	[-3] = ApolloColor.new("ConInferior"),
+	[-2] = ApolloColor.new("ConMinor"),
+	[-1] = ApolloColor.new("ConEasy"),
+	[0] = ApolloColor.new("ConAverage"),
+	[1] = ApolloColor.new("ConModerate"),
+	[2] = ApolloColor.new("ConTough"),
+	[3] = ApolloColor.new("ConHard"),
+	[4] = ApolloColor.new("ConImpossible"),
 }
 
 local kcrScalingHex 	= "ffffbf80"
@@ -101,7 +103,7 @@ local knTextHeight 			= 15 -- text window height
 local knNameRewardWidth 	= 400 -- the width of the name/reward container
 local knNameRewardHeight 	= 20 -- the width of the name/reward container
 local knTargetRange 		= 40000 -- the distance^2 that normal nameplates should draw within (max targeting range)
-local knNameplatePoolLimit	= 500 -- the window pool max size
+local knNameplatePoolLimit	= 100 -- the window pool max size
 
 -- Todo: break these out onto options
 local kcrUnflaggedGroupmate				= ApolloColor.new("DispositionFriendlyUnflaggedDull")
@@ -112,9 +114,9 @@ local kcrUnflaggedEnemyWhenUnflagged 	= ApolloColor.new("DispositionNeutral")
 local kcrFlaggedEnemyWhenUnflagged		= ApolloColor.new("DispositionPvPFlagMismatch")
 local kcrUnflaggedEnemyWhenFlagged		= ApolloColor.new("DispositionPvPFlagMismatch")
 local kcrFlaggedEnemyWhenFlagged		= ApolloColor.new("DispositionHostile")
-local kcrDeadColor 						= ApolloColor.new("crayGray")
+local kcrDeadColor 						= ApolloColor.new("DeathGrey")
 
-local kcrDefaultTaggedColor = ApolloColor.new("crayGray")
+local kcrDefaultTaggedColor = ApolloColor.new("DeathGrey")
 
 -- Control types
 -- 0 - custom
@@ -227,11 +229,12 @@ function Nameplates:OnDocumentReady()
 		return
 	end
 
-	Apollo.RegisterEventHandler("WindowManagementReady", 	"OnWindowManagementReady", self)
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 
 	Apollo.RegisterEventHandler("UnitCreated", 					"OnUnitCreated", self)
 	Apollo.RegisterEventHandler("UnitDestroyed", 				"OnUnitDestroyed", self)
-	Apollo.RegisterEventHandler("VarChange_FrameCount", 		"OnFrame", self)
+	Apollo.RegisterEventHandler("NextFrame", 					"OnFrame", self)
 
 	Apollo.RegisterEventHandler("UnitTextBubbleCreate", 		"OnUnitTextBubbleToggled", self)
 	Apollo.RegisterEventHandler("UnitTextBubblesDestroyed", 	"OnUnitTextBubbleToggled", self)
@@ -245,7 +248,7 @@ function Nameplates:OnDocumentReady()
 	Apollo.RegisterEventHandler("UnitMemberOfGuildChange", 		"OnUnitMemberOfGuildChange", self)
 	Apollo.RegisterEventHandler("GuildChange", 					"OnGuildChange", self)
 	Apollo.RegisterEventHandler("UnitGibbed",					"OnUnitGibbed", self)
-	
+
 	local tRewardUpdateEvents = {
 		"QuestObjectiveUpdated", "QuestStateChanged", "ChallengeAbandon", "ChallengeLeftArea",
 		"ChallengeFailTime", "ChallengeFailArea", "ChallengeActivate", "ChallengeCompleted",
@@ -258,17 +261,8 @@ function Nameplates:OnDocumentReady()
 		Apollo.RegisterEventHandler(str, "RequestUpdateAllNameplateRewards", self)
 	end
 
-	self.wndMain = Apollo.LoadForm(self.xmlDoc, "NameplatesForm", nil, self)
-
 	Apollo.RegisterTimerHandler("VisibilityTimer", "OnVisibilityTimer", self)
 	Apollo.CreateTimer("VisibilityTimer", 0.5, true)
-
-	self.wndOptionsMain = Apollo.LoadForm(self.xmlDoc, "StandardModule", self.wndMain:FindChild("ContentMain"), self)
-	self.wndOptionsTargeted = Apollo.LoadForm(self.xmlDoc, "TargetedModule", self.wndMain:FindChild("ContentTarget"), self)
-	self.wndMain:Show(false)
-	self.wndMain:FindChild("ContentMain"):Show(true)
-	self.wndMain:FindChild("ContentTarget"):Show(false)
-	self.wndMain:FindChild("ContentToggleContainer:NormalViewCheck"):SetCheck(true)
 
 	self.arUnit2Nameplate = {}
 	self.arWnd2Nameplate = {}
@@ -276,12 +270,6 @@ function Nameplates:OnDocumentReady()
 	for property,tData in pairs(karSavedProperties) do
 		if self[property] == nil then
 			self[property] = tData.default
-		end
-		if tData.nControlType == 1 then
-			local wndControl = self.wndMain:FindChild(tData.strControlName)
-			if wndControl ~= nil then
-				wndControl:SetData(property)
-			end
 		end
 	end
 	self.bUseOcclusion = Apollo.GetConsoleVariable("ui.occludeNameplatePositions")
@@ -333,7 +321,7 @@ function Nameplates:OnRestore(eType, tSavedData)
 end
 
 function Nameplates:OnWindowManagementReady()
-	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("Nameplates_Options")})
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("Nameplates_Options")})
 end
 
 function Nameplates:CreateUnitsFromPreload()
@@ -349,18 +337,18 @@ end
 
 function Nameplates:OnPreloadUnitCreateTimer()
 	local nCurrentTime = GameLib.GetTickCount()
-	
+
 	while #self.arPreloadUnits > 0 do
 		local unit = table.remove(self.arPreloadUnits, #self.arPreloadUnits)
 		if unit:IsValid() then
 			self:OnUnitCreated(unit)
 		end
-		
+
 		if GameLib.GetTickCount() - nCurrentTime > 250 then
 			return
 		end
 	end
-	
+
 	self.timerPreloadUnitCreateDelay:Stop()
 	self.arPreloadUnits = nil
 	self.timerPreloadUnitCreateDelay = nil
@@ -392,12 +380,9 @@ function Nameplates:UpdateNameplateRewardInfo(tNameplate)
 end
 
 function Nameplates:UpdateAllNameplateVisibility()
-	
+
 	for idx, tNameplate in pairs(self.arUnit2Nameplate) do
 		self:UpdateNameplateVisibility(tNameplate)
-		if self.bRedrawRewardIcons then
-			self:UpdateNameplateRewardInfo(tNameplate)
-		end
 	end
 
 	self.bRedrawRewardIcons = false
@@ -423,47 +408,52 @@ function Nameplates:UpdateNameplateVisibility(tNameplate)
 
 	local eDisposition = unitOwner:GetDispositionTo(self.unitPlayer)
 	local nCon = self:HelperCalculateConValue(unitOwner)
-	
+
 	tNameplate.bOnScreen = wndNameplate:IsOnScreen()
 	tNameplate.bOccluded = wndNameplate:IsOccluded()
-	
+	tNameplate.tActivation = unitOwner:GetActivationState()
+	tNameplate.tRewardInfo = unitOwner:GetRewardInfo()
+
 	local bNewShow = self:HelperVerifyVisibilityOptions(tNameplate) and self:CheckDrawDistance(tNameplate)
 	if bNewShow ~= tNameplate.bShow then
 		wndNameplate:Show(bNewShow)
 		tNameplate.bShow = bNewShow
 	end
-	
-	if bNewShow then
+
+	if bNewShow or self.bRedrawRewardIcons or tNameplate.eDisposition ~= eDisposition then
 		-- Disposition based update
 		if eDisposition ~= tNameplate.eDisposition then
 			tNameplate.wnd.targetMarkerArrow:SetSprite(karDisposition.tTargetSecondary[tNameplate.eDisposition])
 			tNameplate.wnd.targetMarker:SetSprite(karDisposition.tTargetPrimary[tNameplate.eDisposition])
 		end
-		
-		local bShowCertainDeath = self.bShowCertainDeathMain
-			and (tNameplate.bShowPvpMatch or nCon == #karConColors)
-			and tNameplate.eDisposition ~= Unit.CodeEnumDisposition.Friendly
-			and unitOwner:GetHealth()
-			and unitOwner:ShouldShowNamePlate()
-			and not unitOwner:IsDead()
+
+		-- Handle Certain Death icon
+		local bShowCertainDeath = self.bShowCertainDeathMain -- Display if user preference is to display
+			and tNameplate.eDisposition ~= Unit.CodeEnumDisposition.Friendly -- Display for hostile/neutral units
+			and (tNameplate.bShowPvpMatch or unitOwner:IsCertainDeath()) -- Always show in PVP, or if Certain Death
+			and unitOwner:ShouldShowNamePlate() -- Display if unit flagged to display
+			and unitOwner:GetHealth() -- Display if unit has health value
+			and not unitOwner:IsDead() -- Display if unit is not dead
+
+		-- Only show/hide certain death icon if the state has changed
 		if bShowCertainDeath ~= tNameplate.wnd.certainDeath:IsShown() then
 			tNameplate.wnd.certainDeath:Show(bShowCertainDeath)
 		end
-		
+
 		-- Does not need to update every frame
 		local bShowScaled = unitOwner:IsScaled()
 		if bShowScaled ~= tNameplate.wnd.targetScalingMark:IsShown() then
 			tNameplate.wnd.targetScalingMark:Show(bShowScaled)
 		end
-		
+
 		fnColorNameplate(self, tNameplate)
-		
+
 		fnDrawHealth(self, tNameplate)
 		fnDrawTargeting(self, tNameplate)
-		
+
 		fnDrawRewards(self, tNameplate)
 	end
-	
+
 	tNameplate.eDisposition = eDisposition
 	tNameplate.nCon = nCon
 end
@@ -521,6 +511,7 @@ function Nameplates:OnUnitCreated(unitNew) -- build main options here
 		eDisposition	= unitNew:GetDispositionTo(self.unitPlayer),
 		strUnitType		= strNewUnitType,
 		tActivation		= unitNew:GetActivationState(),
+		tRewardInfo		= unitNew:GetRewardInfo(),
 		bShow			= false,
 		wnd				= wndReferences,
 		-- Window visibility
@@ -553,7 +544,7 @@ function Nameplates:OnUnitCreated(unitNew) -- build main options here
 			targetMarker = wnd:FindChild("Container:TargetMarker"),
 		}
 	end
-	
+
 	if tNameplate.bShowPvpMatch then
 		tNameplate.wnd.certainDeath:SetSprite(ksprPvpTarget)
 	else
@@ -596,12 +587,12 @@ function Nameplates:OnFrame()
 	self.unitPlayer = GameLib.GetPlayerUnit()
 
 	local fnHealth = Nameplates.DrawHealthShieldBar
-	
+
 	for idx, tNameplate in pairs(self.arUnit2Nameplate) do
 		if tNameplate.bShow then
 			fnDrawCastBar(self, tNameplate)
 			fnDrawVulnerable(self, tNameplate)
-			
+
 			if tNameplate.bShowHealth then
 				fnHealth(self, tNameplate.wnd.health, tNameplate.unitOwner, tNameplate.eDisposition, tNameplate)
 			end
@@ -615,13 +606,13 @@ function Nameplates:ColorNameplate(tNameplate) -- Every frame
 	local wndNameplate = tNameplate.wndNameplate
 
 	local eDisposition = tNameplate.eDisposition
-	local nCon = self:HelperCalculateConValue(unitOwner)
+	local nCon = tNameplate.nCon
 
-	local crLevelColorToUse = karConColors[nCon][2]
+	local crLevelColorToUse = karConColors[nCon]
 	if tNameplate.wnd.targetScalingMark:IsShown() then
 		crLevelColorToUse = kcrScalingCColor
 	elseif unitOwner:GetLevel() == nil then
-		crLevelColorToUse = karConColors[1][2]
+		crLevelColorToUse = karConColors[knConMin]
 	end
 
 	local crColorToUse = karDisposition.tTextColors[eDisposition]
@@ -707,7 +698,7 @@ function Nameplates:DrawName(tNameplate)
 			local nHalfNameWidth = math.ceil(math.max(Apollo.GetTextWidth("Nameplates", strNewName), Apollo.GetTextWidth("CRB_Interface9_BO", strNewGuild)) / 2)
 			nHalfNameWidth = math.max(nHalfNameWidth, math.ceil(self.nHealthWidth / 2))
 			tNameplate.nHalfNameWidth = nHalfNameWidth
-			wndNameplate:SetAnchorOffsets(-nHalfNameWidth - 17, nTop, nHalfNameWidth + tNameplate.wnd.nameRewardContainer:ArrangeChildrenHorz(0) + 17, nBottom)
+			wndNameplate:SetAnchorOffsets(-nHalfNameWidth - 17, nTop, nHalfNameWidth + tNameplate.wnd.nameRewardContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop) + 17, nBottom)
 		end
 	end
 end
@@ -743,11 +734,11 @@ function Nameplates:DrawGuild(tNameplate)
 		local nLeft, nTop, nRight, nBottom = wndNameplate:GetAnchorOffsets()
 		local nHalfNameWidth = math.ceil(math.max(Apollo.GetTextWidth("Nameplates", strNewName), Apollo.GetTextWidth("CRB_Interface9_BO", strNewGuild)) / 2)
 		nHalfNameWidth = math.max(nHalfNameWidth, math.ceil(self.nHealthWidth / 2))
-		wndNameplate:SetAnchorOffsets(-nHalfNameWidth - 17, nTop, nHalfNameWidth + tNameplate.wnd.nameRewardContainer:ArrangeChildrenHorz(0) + 17, nBottom)
+		wndNameplate:SetAnchorOffsets(-nHalfNameWidth - 17, nTop, nHalfNameWidth + tNameplate.wnd.nameRewardContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop) + 17, nBottom)
 	end
 
 	wndGuild:Show(bShow and strNewGuild ~= nil and strNewGuild ~= "")
-	wndNameplate:ArrangeChildrenVert(2) -- Must be run if bShow is false as well
+	wndNameplate:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.RightOrBottom) -- Must be run if bShow is false as well
 end
 
 function Nameplates:DrawLevel(tNameplate)
@@ -760,7 +751,7 @@ function Nameplates:DrawHealth(tNameplate)
 	local unitOwner = tNameplate.unitOwner
 
 	local bShow = unitOwner:GetHealth() ~= nil and not unitOwner:IsDead()
-	
+
 	if bShow then
 		local bUseTarget = tNameplate.bIsTarget
 		if bUseTarget then
@@ -775,7 +766,7 @@ function Nameplates:DrawHealth(tNameplate)
 			end
 		end
 	end
-	
+
 	if bShow ~= tNameplate.wnd.health:IsShown() then
 		tNameplate.wnd.health:Show(bShow)
 		tNameplate.bShowHealth = bShow
@@ -790,7 +781,7 @@ function Nameplates:DrawCastBar(tNameplate) -- Every frame
 	tNameplate.bIsCasting = unitOwner:ShouldShowCastBar()
 
 	local bShowTarget = tNameplate.bIsTarget
-	
+
 	local bShow = tNameplate.bIsCasting and self.bShowCastBarMain
 	if tNameplate.bIsCasting and bShowTarget then
 		bShow = self.bShowCastBarTarget
@@ -800,20 +791,20 @@ function Nameplates:DrawCastBar(tNameplate) -- Every frame
 	if bShow ~= wndCastBar:IsShown() then
 		wndCastBar:Show(bShow)
 	end
-	
+
 	if bShow then
 		local strCastName = unitOwner:GetCastName()
 		if strCastName ~= tNameplate.strCastName then
 			tNameplate.wnd.castBarLabel:SetText(strCastName)
 			tNameplate.strCastName = strCastName
 		end
-		
+
 		local nCastDuration = unitOwner:GetCastDuration()
 		if nCastDuration ~= tNameplate.nCastDuration then
 			tNameplate.wnd.castBarCastFill:SetMax(nCastDuration)
 			tNameplate.nCastDuration = nCastDuration
 		end
-		
+
 		local nCastElapsed = unitOwner:GetCastElapsed()
 		if nCastElapsed ~= tNameplate.nCastElapsed then
 			tNameplate.wnd.castBarCastFill:SetProgress(nCastElapsed)
@@ -829,9 +820,9 @@ function Nameplates:DrawVulnerable(tNameplate) -- Every frame
 	local bUseTarget = tNameplate.bIsTarget
 	local wndVulnerable = tNameplate.wnd.vulnerable
 	local bShow = false
-	
+
 	local nNewVulnerabilityTime = tNameplate.nVulnerabilityTime
-	
+
 	if (not bUseTarget and (self.bShowHealthMain or self.bShowHealthMainDamaged)) or (bUseTarget and self.bShowHealthTarget) then
 		local nVulnerable = unitOwner:GetCCStateTimeRemaining(Unit.CodeEnumCCState.Vulnerability)
 		if nVulnerable == nil then
@@ -845,7 +836,7 @@ function Nameplates:DrawVulnerable(tNameplate) -- Every frame
 			bShow = true
 		end
 	end
-	
+
 	if bShow ~= wndVulnerable:IsShown() then
 		wndVulnerable:Show(bShow)
 	end
@@ -864,12 +855,20 @@ function Nameplates:DrawRewards(tNameplate)
 	if bShow ~= tNameplate.wnd.questRewards:IsShown() then
 		tNameplate.wnd.questRewards:Show(bShow)
 	end
-	
+
+	local nIcons = 0
+	if tNameplate.wnd.questRewards:GetData() ~= nil then
+		nIcons = tNameplate.wnd.questRewards:GetData().nIcons
+	end
+	if self.bRedrawRewardIcons then
+		self:UpdateNameplateRewardInfo(tNameplate)
+	end
+
 	local tRewardsData = tNameplate.wnd.questRewards:GetData()
 	if bShow and tRewardsData ~= nil and tRewardsData.nIcons ~= nil and tRewardsData.nIcons > 0 and tNameplate.nHalfNameWidth ~= nil then
 		local wndnameRewardContainer = tNameplate.wnd.nameRewardContainer
 		local nLeft, nTop, nRight, nBottom = wndnameRewardContainer:GetAnchorOffsets()
-		wndnameRewardContainer:SetAnchorOffsets(tNameplate.nHalfNameWidth, nTop, tNameplate.nHalfNameWidth + wndnameRewardContainer:ArrangeChildrenHorz(0), nBottom)
+		wndnameRewardContainer:SetAnchorOffsets(tNameplate.nHalfNameWidth, nTop, tNameplate.nHalfNameWidth + wndnameRewardContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop), nBottom)
 	end
 end
 
@@ -923,24 +922,22 @@ end
 function Nameplates:HelperVerifyVisibilityOptions(tNameplate)
 	local unitPlayer = self.unitPlayer
 	local unitOwner = tNameplate.unitOwner
-	
-	local bDontShowNameplate = (not unitOwner:ShouldShowNamePlate() and not tNameplate.bIsTarget)
+
+	if (not unitOwner:ShouldShowNamePlate() and not tNameplate.bIsTarget)
 		or ((self.bUseOcclusion and tNameplate.bOccluded) or not tNameplate.bOnScreen)
-		or (tNameplate.bGibbed or (tNameplate.bSpeechBubble and not self.bShowDuringSpeech))
-	
-	if bDontShowNameplate then
+		or (tNameplate.bGibbed or (tNameplate.bSpeechBubble and not self.bShowDuringSpeech)) then
 		return false
 	end
-	
+
 	if unitOwner == self.unitPlayer then
 		return tNameplate.bIsTarget or (self.bShowMyNameplate and not unitOwner:IsDead())
 	end
-	
+
 	local eDisposition = tNameplate.eDisposition
 	local tActivation = tNameplate.tActivation
 
 	-- if you stare into the abyss the abyss stares back into you
-	local bShowNameplate = tNameplate.bIsTarget
+	if tNameplate.bIsTarget
 		or (not (self.bPlayerInCombat and self.bHideInCombat)
 			and ((self.bShowMainObjectiveOnly and tNameplate.bIsObjective)
 				or (self.bShowMainGroupOnly and unitOwner:IsInYourGroup())
@@ -957,34 +954,37 @@ function Nameplates:HelperVerifyVisibilityOptions(tNameplate)
 					or (tActivation.TalkTo ~= nil))
 				)
 			)
-		)
+		) then
 
-	if self.bShowMainObjectiveOnly and not bShowNameplate then
-		local tRewardInfo = unitOwner:GetRewardInfo() or {}
-		for idx, tReward in pairs(tRewardInfo) do
-			if tReward.eType == Unit.CodeEnumRewardInfoType.Quest or tReward.eType == Unit.CodeEnumRewardInfoType.Contract then
-				bShowNameplate = true
-				break
+		return true
+	end
+
+	if self.bShowMainObjectiveOnly and tNameplate.tRewardInfo ~= nil then
+		for idx, tReward in pairs(tNameplate.tRewardInfo) do
+			if tReward.eType == Unit.CodeEnumRewardInfoType.Quest
+				or tReward.eType == Unit.CodeEnumRewardInfoType.Contract
+				or tReward.eType == Unit.CodeEnumRewardInfoType.PublicEvent then
+				return true
 			end
 		end
 	end
 
-	return bShowNameplate
+	return false
 end
 
 function Nameplates:DrawHealthShieldBar(wndHealth, unitOwner, eDisposition, tNameplate) -- Every frame
 	local nHealthCurr = unitOwner:GetHealth()
-	
+
 	if tNameplate.strUnitType == "Simple" or nHealthCurr == nil then
 		if nHealthCurr ~= tNameplate.nHealthCurr then
 			tNameplate.wnd.healthMaxHealth:SetAnchorOffsets(self.nFrameLeft, self.nFrameTop, self.nFrameRight, self.nFrameBottom)
 			tNameplate.wnd.healthHealthLabel:SetText("")
 		end
-		
+
 		tNameplate.nHealthCurr = nHealthCurr
 		return
 	end
-	
+
 	local nHealthMax 	= unitOwner:GetMaxHealth()
 	local nShieldCurr 	= unitOwner:GetShieldCapacity()
 	local nShieldMax 	= unitOwner:GetShieldCapacityMax()
@@ -1000,7 +1000,7 @@ function Nameplates:DrawHealthShieldBar(wndHealth, unitOwner, eDisposition, tNam
 	end
 
 	local nHealthTintType = 0
-	
+
 	if unitOwner:IsInCCState(Unit.CodeEnumCCState.Vulnerability) then
 		nHealthTintType = 3
 	elseif nHealthCurr / nHealthMax <= knHealthRed then
@@ -1008,13 +1008,13 @@ function Nameplates:DrawHealthShieldBar(wndHealth, unitOwner, eDisposition, tNam
 	elseif nHealthCurr / nHealthMax <= knHealthYellow then
 		nHealthTintType = 1
 	end
-	
+
 	if nHealthTintType ~= tNameplate.nHealthTintType then
 		tNameplate.wnd.healthMaxHealth:SetSprite(nHealthTintType == 3 and "CRB_Nameplates:sprNP_PurpleProg" or karDisposition.tHealthBar[tNameplate.eDisposition])
 		tNameplate.wnd.targetMarker:SetSprite(nHealthTintType == 3 and "CRB_Nameplates:sprNP_BaseSelectedPurple" or karDisposition.tTargetPrimary[tNameplate.eDisposition])
 		tNameplate.nHealthTintType = nHealthTintType
 	end
-	
+
 	local nPointHealthRight = self.nFrameLeft + (self.nHealthWidth * (nHealthCurr / nTotalMax)) -- applied to the difference between L and R
 	local nPointShieldRight = self.nFrameLeft + (self.nHealthWidth * ((nHealthCurr + nShieldMax) / nTotalMax))
 	local nPointAbsorbRight = self.nFrameLeft + (self.nHealthWidth * ((nHealthCurr + nShieldMax + nAbsorbMax) / nTotalMax))
@@ -1033,7 +1033,7 @@ function Nameplates:DrawHealthShieldBar(wndHealth, unitOwner, eDisposition, tNam
 	if nAbsorbCurr ~= tNameplate.nAbsorbCurr or nAbsorbMax ~= tNameplate.nAbsorbMax then
 		self:SetBarValue(tNameplate.wnd.healthAbsorbFill, 0, nAbsorbCurr, nAbsorbMax)
 	end
-	
+
 	local bHealthSizeChanged = nHealthCurr ~= tNameplate.nHealthCurr or nTotalMax ~= tNameplate.nTotalMax
 	if bHealthSizeChanged then
 		tNameplate.wnd.healthMaxHealth:SetAnchorOffsets(self.nFrameLeft, self.nFrameTop, nPointHealthRight, self.nFrameBottom)
@@ -1049,12 +1049,12 @@ function Nameplates:DrawHealthShieldBar(wndHealth, unitOwner, eDisposition, tNam
 	if bHasHealth ~= tNameplate.wnd.healthMaxHealth:IsShown() then
 		tNameplate.wnd.healthMaxHealth:Show(bHasHealth)
 	end
-	
+
 	local bHasShield = bHasHealth and nShieldMax > 0
 	if bHasShield ~= tNameplate.wnd.healthMaxShield:IsShown() then
 		tNameplate.wnd.healthMaxShield:Show(bHasShield)
 	end
-	
+
 	local bHasAbsorb = bHasHealth and nAbsorbMax > 0
 	if bHasAbsorb ~= tNameplate.wnd.healthMaxAbsorb:IsShown() then
 		tNameplate.wnd.healthMaxAbsorb:Show(bHasAbsorb)
@@ -1065,7 +1065,7 @@ function Nameplates:DrawHealthShieldBar(wndHealth, unitOwner, eDisposition, tNam
 		local strHealthMax = self:HelperFormatBigNumber(nHealthMax)
 		local strHealthCurr = self:HelperFormatBigNumber(nHealthCurr)
 		local strShieldCurr = self:HelperFormatBigNumber(nShieldCurr)
-	
+
 		local strText = nHealthMax == nHealthCurr and strHealthMax or String_GetWeaselString(Apollo.GetString("TargetFrame_HealthText"), strHealthCurr, strHealthMax)
 		if nShieldMax > 0 and nShieldCurr > 0 then
 			strText = String_GetWeaselString(Apollo.GetString("TargetFrame_HealthShieldText"), strText, strShieldCurr)
@@ -1117,26 +1117,11 @@ end
 
 function Nameplates:HelperCalculateConValue(unitTarget)
 	if unitTarget == nil or not unitTarget:IsValid() or self.unitPlayer == nil or not self.unitPlayer:IsValid() then
-		return 1
+		return knConMin
 	end
 
 	local nUnitCon = self.unitPlayer:GetLevelDifferential(unitTarget)
-
-	local nCon = 1 --default setting
-
-	if nUnitCon <= karConColors[1][1] then -- lower bound
-		nCon = 1
-	elseif nUnitCon >= karConColors[#karConColors][1] then -- upper bound
-		nCon = #karConColors
-	else
-		for idx = 2, (#karConColors - 1) do -- everything in between
-			if nUnitCon == karConColors[idx][1] then
-				nCon = idx
-			end
-		end
-	end
-
-	return nCon
+	return math.min(math.max(knConMin, nUnitCon), knConMax)
 end
 
 -----------------------------------------------------------------------------------------------
@@ -1319,11 +1304,41 @@ function Nameplates:OnConfigure()
 end
 
 function Nameplates:OnNameplatesOn()
+	self.wndMain = Apollo.LoadForm(self.xmlDoc, "NameplatesForm", nil, self)
+	self.wndOptionsMain = Apollo.LoadForm(self.xmlDoc, "StandardModule", self.wndMain:FindChild("ContentMain"), self)
+	self.wndOptionsTargeted = Apollo.LoadForm(self.xmlDoc, "TargetedModule", self.wndMain:FindChild("ContentTarget"), self)
+	self.wndMain:FindChild("ContentMain"):Show(true)
+	self.wndMain:FindChild("ContentTarget"):Show(false)
+	self.wndMain:FindChild("ContentToggleContainer:NormalViewCheck"):SetCheck(true)
+
+	for property,tData in pairs(karSavedProperties) do
+		if tData.nControlType == 1 then
+			local wndControl = self.wndMain:FindChild(tData.strControlName)
+			if wndControl ~= nil then
+				wndControl:SetData(property)
+			end
+		end
+	end
+
 	local ePath = PlayerPathLib.GetPlayerPathType()
 	self.wndOptionsMain:FindChild("ShowRewardTypeMission"):FindChild("Icon"):SetSprite(karPathSprite[ePath])
-	self.wndMain:Show(true)
-	self.wndMain:ToFront()
+
 	self:RefreshNameplatesConfigure()
+	self.wndMain:Invoke()
+
+	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("Nameplates_Options")})
+end
+
+function Nameplates:OnOptionsClosed(wndHandler, wndControl)
+	if self.wndMain ~= nil and self.wndMain:IsValid() then
+		self.wndMain:Close()
+		self.wndMain:Destroy()
+		self.wndMain = nil
+		self.wndOptionsMain = nil
+		self.wndOptionsTargeted = nil
+
+		Event_FireGenericEvent("WindowManagementRemove", {strName = Apollo.GetString("Nameplates_Options")})
+	end
 end
 
 function Nameplates:RefreshNameplatesConfigure()
@@ -1361,14 +1376,12 @@ function Nameplates:OnTargetViewCheck(wndHandler, wndCtrl)
 	self.wndMain:FindChild("ContentTarget"):Show(true)
 end
 
--- when the OK button is clicked
 function Nameplates:OnOK()
-	self.wndMain:Show(false) -- hide the window
+	self.wndMain:Close()
 end
 
--- when the Cancel button is clicked
 function Nameplates:OnCancel()
-	self.wndMain:Show(false) -- hide the window
+	self.wndMain:Close()
 end
 
 function Nameplates:OnDrawDistanceSlider(wndNameplate, wndHandler, nValue, nOldvalue)

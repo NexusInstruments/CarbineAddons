@@ -16,7 +16,7 @@ local kstrNPCIcon 		= "Icon_Windows_UI_NPCIcon"
 local kstrInvalidAttachmentIcon = "ClientSprites:WhiteFlash"
 
 local kcrAttachmentIconValidColor 	= ApolloColor.new("UI_TextHoloBodyCyan")
-local kcrAttachmentIconInvalidColor = ApolloColor.new("xkcdReddish")
+local kcrAttachmentIconInvalidColor = ApolloColor.new("Reddish")
 
 local kcrTextDefaultColor 	= CColor.new(0.7, 0.7, 0.7, 1.0)
 local kcrTextWarningColor 	= CColor.new(0.7, 0.7, 0.0, 1.0)
@@ -74,7 +74,6 @@ function Mail:OnDocumentReady()
 	end
 
 	Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded", "OnInterfaceMenuListHasLoaded", self)
-	Apollo.RegisterEventHandler("WindowManagementReady", 	"OnWindowManagementReady", self)
 
 	Apollo.RegisterEventHandler("SubZoneChanged", 			"CalculateMailAlert", self)
 	Apollo.RegisterEventHandler("AvailableMail", 			"OnAvailableMail", self)
@@ -121,6 +120,9 @@ function Mail:OnDocumentReady()
 	self.timerMailUpdateDelay = ApolloTimer.Create(0.5, true, "UpdateMailItemsTimer", self)
 
 	self:CalculateMailAlert()
+
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 end
 
 function Mail:OnInterfaceMenuListHasLoaded()
@@ -129,6 +131,8 @@ function Mail:OnInterfaceMenuListHasLoaded()
 end
 
 function Mail:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("Mail_ComposeLabel"), nSaveVersion=2})
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("InterfaceMenu_Mail")})
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("InterfaceMenu_Mail")})
 end
 
@@ -288,7 +292,7 @@ function Mail:PopulateList()
 		end
 	end
 
-	self.wndMailList:ArrangeChildrenVert(0, Mail.SortMailWindows)
+	self.wndMailList:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, Mail.SortMailWindows)
 	self:CalculateMailAlert()
 	
 	self:RefreshActionsButton()
@@ -336,12 +340,12 @@ function Mail:UpdateMailItemsTimer()
 			self.arMailToUpdate[strId] = nil
 			
 			if GameLib.GetTickCount() - nCurrentTime > 100 then
-				self.wndMailList:ArrangeChildrenVert(0, Mail.SortMailWindows)
+				self.wndMailList:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, Mail.SortMailWindows)
 				return
 			end
 		end
 		
-		self.wndMailList:ArrangeChildrenVert(0, Mail.SortMailWindows)
+		self.wndMailList:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, Mail.SortMailWindows)
 	end
 	
 	local arMailOpened = {}
@@ -667,6 +671,7 @@ function Mail:OnMailItemClick(wndHandler, wndControl)
 	tMessageInfo = msgMail:GetMessageInfo()
 	if tMessageInfo ~= nil then
 		self:AddMailToOpenTimer(msgMail)
+		wndItem:FindChild("Icon"):SetSprite(kstrReadMailIcon)
 	end
 end
 
@@ -719,7 +724,7 @@ function Mail:OpenSelectedMail(bConfirmed)
 	self.wndActionPopout:Close()
 	
 	if not bConfirmed and nCount > knOpenMailThreshold then
-		self.wndConfirmOpenBlocker:FindChild("MessageBody"):SetText(String_GetWeaselString(Apollo.GetString("Mail_ActionConfirmDelete"), tostring(nCount)))
+		self.wndConfirmOpenBlocker:FindChild("MessageBody"):SetText(String_GetWeaselString(Apollo.GetString("Mail_ActionConfirmOpen"), tostring(nCount)))
 		self.wndConfirmOpenBlocker:Invoke()
 		return
 	end
@@ -825,12 +830,23 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function Mail:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
-	if eAnchor ~= GameLib.CodeEnumTutorialAnchor.Mail then return end
-
-	local tRect = {}
-	tRect.l, tRect.t, tRect.r, tRect.b = self.wndMain:GetRect()
-
-	Event_FireGenericEvent("Tutorial_RequestUIAnchorResponse", eAnchor, idTutorial, strPopupText, tRect)
+	local tAnchors =
+	{
+		[GameLib.CodeEnumTutorialAnchor.Mail] = true,
+	}
+	
+	if not tAnchors[eAnchor] then 
+		return 
+	end
+	
+	local tAnchorMapping = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.Mail] = self.wndMailList:GetChildren()[1],
+	}
+	
+	if tAnchorMapping[eAnchor] then
+		Event_FireGenericEvent("Tutorial_ShowCallout", eAnchor, idTutorial, strPopupText, tAnchorMapping[eAnchor])
+	end
 end
 
 
@@ -855,6 +871,7 @@ function MailCompose:Init(luaMailSystem)
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("Mail_ComposeLabel"), nSaveVersion=2})
 	
 	Apollo.RegisterEventHandler("SuggestedMenuResult",					"OnSuggestedMenuResult", self)
+	Apollo.RegisterEventHandler("AccountPrivilegeRestrictionUpdate", 		"OnAccountPrivilegeRestrictionUpdate", self)
 
 	self.wndNameEntry 			= self.wndMain:FindChild("NameEntryText")  --The player inputs the recipient here
 	self.wndRealmEntry 			= self.wndMain:FindChild("RealmEntryText")  --The player inputs the recipient here
@@ -872,6 +889,8 @@ function MailCompose:Init(luaMailSystem)
 	self.wndInstantDelivery 	= self.wndMain:FindChild("InstantDeliveryBtn")
 	self.wndHourDelivery		= self.wndMain:FindChild("HourDeliveryBtn")
 	self.wndDayDelivery			= self.wndMain:FindChild("DayDeliveryBtn")
+	
+	self.wndPreviousFocus		= self.wndMain:FindChild("NameEntryText")  --default focus to recipient
 	
 	local luaSubclass = self.wndNameEntry:GetWindowSubclass()
 	if luaSubclass then
@@ -911,6 +930,16 @@ function MailCompose:Init(luaMailSystem)
 	self:WindowToFront()
 end
 
+function MailCompose:OnGainedFocus()
+	self.wndPreviousFocus:SetFocus()
+end
+
+function MailCompose:EntryTextHasFocus(wndHandler, wndEvent)
+	if (wndHandler == wndEvent) then
+		self.wndPreviousFocus = wndHandler
+	end
+end
+
 function MailCompose:SetFields(strTo, strRealm, strSubject, strBody)
 	if strTo ~= nil then
 		self.wndNameEntry:SetText(strTo)
@@ -938,11 +967,10 @@ end
 function MailCompose:WindowToFront()
 	self.wndMain:Show(true)
 	self.wndMain:ToFront()
-	self.wndNameEntry:SetFocus()
+	self:OnGainedFocus()
 end
 
 function MailCompose:OnQueryDragDrop(wndHandler, wndControl, nX, nY, wndSource, strType, nValue)
-
 	if self.wndMain ~= wndHandler then
 		return Apollo.DragDropQueryResult.PassOn
 	end
@@ -958,12 +986,12 @@ function MailCompose:OnQueryDragDrop(wndHandler, wndControl, nX, nY, wndSource, 
 end
 
 function MailCompose:OnDragDrop(wndHandler, wndControl, nX, nY, wndSource, strType, nValue)
-
 	if self.wndMain ~= wndHandler or strType ~= "DDBagItem" then
 		return
 	end
 
 	self:AppendAttachment(nValue)
+	self:OnGainedFocus()
 end
 
 function MailCompose:OnMailAddAttachment(nValue)
@@ -1087,7 +1115,18 @@ function MailCompose:UpdateControls()
 	self.wndMain:FindChild("InvalidBodyInputWarning"):Show(string.len(strMessage) > 0 and not bBodyValid)
 
 	local bCanSend = strTo ~= "" and strRealm ~= "" and strSubject ~= "" and strMessage ~= "" and (not bHasAttachments or bAtMailbox)
-	self.wndSendBtn:Enable(bCanSend and bSubjectValid and bBodyValid)
+	local bRestricted = GameLib.IsPrivilegeRestricted(GameLib.CodeEnumAccountPrivilegeRestriction.Chat)
+
+	local nSendCost = MailSystemLib.GetSendCost(self.nDeliverySpeed, self.arAttachments):GetAmount()
+	local bEnoughMoney = GameLib.GetPlayerCurrency():GetAmount() >= nSendCost
+	if bEnoughMoney then
+		self.wndCostWindow:SetTextColor(kcrAttachmentIconValidColor)
+	else
+		self.wndCostWindow:SetTextColor(kcrAttachmentIconInvalidColor)
+	end
+
+	self.wndSendBtn:Enable(bCanSend and bSubjectValid and bBodyValid and not bRestricted and bEnoughMoney)
+	self.wndMain:FindChild("SendMailSymbol"):Show(bRestricted)
 
 	-- Limit entry
 	MailCompose.LimitTextEntry(self.wndNameEntry, MailSystemLib.GetNameCharacterLimit())
@@ -1095,7 +1134,7 @@ function MailCompose:UpdateControls()
 	MailCompose.LimitTextEntry(self.wndSubjectEntry, MailSystemLib.GetSubjectCharacterLimit())
 	MailCompose.LimitTextEntry(self.wndMessageEntryText, MailSystemLib.GetMessageCharacterLimit() - 1)
 
-	self.wndCostWindow:SetAmount(MailSystemLib.GetSendCost(self.nDeliverySpeed, self.arAttachments))
+	self.wndCostWindow:SetAmount(nSendCost)
 
 	strTo = self.wndNameEntry:GetText()
 	strRealm = self.wndRealmEntry:GetText()
@@ -1146,6 +1185,14 @@ function MailCompose:OnClosed(wndHandler)
 	end
 
 	Apollo.UnlinkAddon(self.luaMailSystem, self)
+end
+
+function MailCompose:OnAccountPrivilegeRestrictionUpdate(ePrivilege, fPenaltySecs, bIsRestricted)
+	if ePrivilege ~= GameLib.CodeEnumAccountPrivilegeRestriction.Chat then
+		return
+	end
+
+	self:UpdateControls()
 end
 
 function MailCompose:OnSuggestedMenuResult(tInfo, nTextBoxId)
@@ -1245,6 +1292,7 @@ end
 
 function MailCompose:OnPlayerCurrencyChanged()
 	self.wndCashWindow:SetAmountLimit(GameLib.GetPlayerCurrency())
+	self:UpdateControls()
 end
 
 
@@ -1360,13 +1408,19 @@ function MailReceived:WindowToFront()
 end
 
 function MailReceived:UpdateControls()
-	local bAtMailbox = MailSystemLib.AtMailbox()
+	if self.msgMail == nil then
+		self.wndMain:Close()
+		return
+	end
+	
 	local tMessageInfo = self.msgMail:GetMessageInfo()
 	if tMessageInfo == nil then
 		self.wndMain:Close()
 		return
 	end
 
+	local bAtMailbox = MailSystemLib.AtMailbox()
+	
 	self.wndMain:FindChild("ReceiveReturnBtn"):Enable(tMessageInfo.bIsReturnable)
 	self.wndMain:FindChild("ReportSpam"):Enable(tMessageInfo.bIsReturnable)
 
@@ -1452,9 +1506,10 @@ function MailReceived:OnCloseBtn(wndHandler, wndControl)
 end
 
 function MailReceived:OnClosed(wndHandler)
-	local strId = self.msgMail:GetIdStr()
 	Apollo.UnlinkAddon(self.luaMailSystem, self)
-	self.luaMailSystem.tOpenMailMessages[self.msgMail:GetIdStr()] = nil
+	if self.msgMail ~= nil then
+		self.luaMailSystem.tOpenMailMessages[self.msgMail:GetIdStr()] = nil
+	end
 end
 
 function MailReceived:OnClickAttachment(wndHandler, wndControl)

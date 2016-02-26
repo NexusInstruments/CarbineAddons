@@ -44,7 +44,10 @@ function TutorialMenu:new(o)
     setmetatable(o, self)
     self.__index = self 
 
-    -- initialize variables here
+    o.tWndRefs = {}
+	self.tCategoryBtns = {} -- this will be the ordered category toggles
+	self.tTutorialBtns = {} -- this will be the ordered category toggles
+    self.tFilteredList = nil
 
     return o
 end
@@ -66,38 +69,18 @@ function TutorialMenu:OnDocumentReady()
 		return
 	end
 	
-	Apollo.RegisterEventHandler("WindowManagementReady", 			"OnWindowManagementReady",	self)
-	Apollo.RegisterEventHandler("GenericEvent_OpenTutorialMenu",	"OnTutorialMenuOn",			self)
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady",	self)
+	self:OnWindowManagementReady()
 
-    -- Register handlers for events, slash commands and timer, etc.
-    -- e.g. Apollo.RegisterEventHandler("KeyDown", "OnKeyDown", self)
+	Apollo.RegisterEventHandler("GenericEvent_OpenTutorialMenu",	"OnTutorialMenuOn",			self)
+	
     Apollo.RegisterEventHandler("HideAllTutorials", "OnHideAllTutorials", self)
 	Apollo.RegisterSlashCommand("Tutorials", "OnTutorialMenuOn", self)
-    Apollo.RegisterSlashCommand("tutorials", "OnTutorialMenuOn", self) 
- 
-    -- load our forms
-    self.wndMain = Apollo.LoadForm(self.xmlDoc, "TutorialMenuForm", nil, self)
-    self.wndMain:Show(false)
-	self.wndControls = self.wndMain:FindChild("ControlContainer")
-	self.wndEnableAllBtn = self.wndMain:FindChild("EnableAllBtn")
-	self.wndResetBlocker = self.wndMain:FindChild("ResetAllConfirmBlocker")
-	self.wndSearch = self.wndMain:FindChild("SearchTopLeftContainer")
-	self.wndSearch:FindChild("SearchTopLeftInputBox"):SetMaxTextLength(30)
-	self.tCategoryBtns = {} -- this will be the ordered category toggles
-	self.tTutorialBtns = {} -- this will be the ordered category toggles
-    self.tFilteredList = nil
-	self:BuildFullList()
-	
-	self.tFullList = GameLib.GetAllTutorials() 
-
-
-	if self.wndMain and self.locSavedWindowLoc then
-		self.wndMain:MoveToLocation(self.locSavedWindowLoc)
-	end
+    Apollo.RegisterSlashCommand("tutorials", "OnTutorialMenuOn", self)
 end
 
 function TutorialMenu:OnWindowManagementReady()
-	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("CRB_Tutorials")})
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("CRB_Tutorials")})
 end
 
 -----------------------------------------------------------------------------------------------
@@ -107,14 +90,26 @@ function TutorialMenu:OnConfigure()
 	self:OnTutorialMenuOn()
 end
 
-
--- on SlashCommand "/TutorialMenu"
 function TutorialMenu:OnTutorialMenuOn()
+	self.tFullList = GameLib.GetAllTutorials() 
+
+	local wndMain = Apollo.LoadForm(self.xmlDoc, "TutorialMenuForm", nil, self)
+	self.tWndRefs.wndMain = wndMain
+	self.tWndRefs.wndControls = wndMain:FindChild("ControlContainer")
+	self.tWndRefs.wndEnableAllBtn = wndMain:FindChild("EnableAllBtn")
+	self.tWndRefs.wndResetBlocker = wndMain:FindChild("ResetAllConfirmBlocker")
+	self.tWndRefs.wndSearch = wndMain:FindChild("SearchTopLeftContainer")
+	
+	self.tWndRefs.wndSearch:FindChild("SearchTopLeftInputBox"):SetMaxTextLength(30)
+
+	self:BuildFullList()
+	
 	self:UpdateVisibilityFlags()
-	self.wndResetBlocker:Show(false)
-	self.wndMain:FindChild("ShowTutorialsBtn"):SetCheck(g_InterfaceOptions.Carbine.bShowTutorials)
-	self.wndMain:Show(true) -- show the window
-	self.wndMain:ToFront()
+	self.tWndRefs.wndResetBlocker:Show(false)
+	self.tWndRefs.wndMain:FindChild("ShowTutorialsBtn"):SetCheck(g_InterfaceOptions.Carbine.bShowTutorials)
+	self.tWndRefs.wndMain:Invoke()
+	
+	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.tWndRefs.wndMain, strName = Apollo.GetString("CRB_Tutorials")})
 end
 
 function TutorialMenu:BuildFullList()
@@ -131,15 +126,15 @@ function TutorialMenu:BuildFullList()
 end
 
 function TutorialMenu:BuildCategoryWindows(tCategories)
-	self.wndMain:FindChild("LeftSideScroll"):DestroyChildren()
-	self.wndMain:FindChild("LeftSideScroll"):RecalculateContentExtents()
+	self.tWndRefs.wndMain:FindChild("LeftSideScroll"):DestroyChildren()
+	self.tWndRefs.wndMain:FindChild("LeftSideScroll"):RecalculateContentExtents()
 	self.tCategoryBtns = {} -- resetting
 
 	if tCategories ~= nil and #tCategories > 0 then
-		self.wndMain:FindChild("LeftSideScrollPrompt"):Show(false)
+		self.tWndRefs.wndMain:FindChild("LeftSideScrollPrompt"):Show(false)
 		local nDefault = 1 -- what button to check; default to 1 unless "general" is in the list
 		for idx, entry in pairs(tCategories) do
-			local wnd = Apollo.LoadForm(self.xmlDoc, "MiddleLevel", self.wndMain:FindChild("LeftSideScroll"), self)
+			local wnd = Apollo.LoadForm(self.xmlDoc, "MiddleLevel", self.tWndRefs.wndMain:FindChild("LeftSideScroll"), self)
 			wnd:FindChild("MiddleLevelBtnText"):SetText(entry.title)
 			wnd:FindChild("MiddleLevelBtnText"):SetTextColor(ApolloColor.new("UI_TextMetalGoldHighlight"))
 			wnd:FindChild("MiddleLevelBtn"):SetData(entry.nCatEnum)
@@ -152,7 +147,7 @@ function TutorialMenu:BuildCategoryWindows(tCategories)
 			end	
 		end
 	
-		self.wndMain:FindChild("LeftSideScroll"):ArrangeChildrenVert()
+		self.tWndRefs.wndMain:FindChild("LeftSideScroll"):ArrangeChildrenVert()
 		self:UpdateVisibilityFlags()
 		
 		-- grab general or our our first one
@@ -173,9 +168,9 @@ function TutorialMenu:BuildCategoryWindows(tCategories)
 
 		self:BuildTutorialWindows(self:HelperSortByName(tTutorialList))
 	else
-		self.wndMain:FindChild("LeftSideScrollPrompt"):Show(true)
-		self.wndMain:FindChild("RightSideScroll"):DestroyChildren()
-		self.wndMain:FindChild("RightSideScroll"):RecalculateContentExtents()
+		self.tWndRefs.wndMain:FindChild("LeftSideScrollPrompt"):Show(true)
+		self.tWndRefs.wndMain:FindChild("RightSideScroll"):DestroyChildren()
+		self.tWndRefs.wndMain:FindChild("RightSideScroll"):RecalculateContentExtents()
 	end
 end
 
@@ -192,21 +187,21 @@ function TutorialMenu:UpdateVisibilityFlags()
 		entry.wnd:FindChild("MiddleLevelViewBtn"):SetCheck(bViewed)
 		nTotalCount = nTotalCount+1
 	end
-	self.wndEnableAllBtn:Enable(nTotalCount ~= 0) 
-	self.wndEnableAllBtn:SetCheck(nEnabledCount == nTotalCount)
+	self.tWndRefs.wndEnableAllBtn:Enable(nTotalCount ~= 0) 
+	self.tWndRefs.wndEnableAllBtn:SetCheck(nEnabledCount == nTotalCount)
 end
 
 function TutorialMenu:BuildTutorialWindows(tTutorials)
-	self.wndMain:FindChild("RightSideScroll"):DestroyChildren()
-	self.wndMain:FindChild("RightSideScroll"):RecalculateContentExtents()
-	self.wndMain:FindChild("RightSideScrollPrompt"):Show(true)
+	self.tWndRefs.wndMain:FindChild("RightSideScroll"):DestroyChildren()
+	self.tWndRefs.wndMain:FindChild("RightSideScroll"):RecalculateContentExtents()
+	self.tWndRefs.wndMain:FindChild("RightSideScrollPrompt"):Show(true)
 	self.tTutorialBtns = {}
 	
 	if tTutorials ~= nil and #tTutorials > 0 then -- no tutorials
-		self.wndMain:FindChild("RightSideScrollPrompt"):Show(false)
+		self.tWndRefs.wndMain:FindChild("RightSideScrollPrompt"):Show(false)
 		for idx, entry in pairs(tTutorials) do
 			if entry.title ~= nil and entry.title ~= "" then -- no title means just a prompt
-				local wnd = Apollo.LoadForm(self.xmlDoc, "TutorialItem", self.wndMain:FindChild("RightSideScroll"), self)
+				local wnd = Apollo.LoadForm(self.xmlDoc, "TutorialItem", self.tWndRefs.wndMain:FindChild("RightSideScroll"), self)
 				local wndText = wnd:FindChild("TutorialLabelNormal")
 				if entry.viewed == true then
 					wndText = wnd:FindChild("TutorialLabelRead")
@@ -222,7 +217,7 @@ function TutorialMenu:BuildTutorialWindows(tTutorials)
 			end
 		end
 		
-		self.wndMain:FindChild("RightSideScroll"):ArrangeChildrenVert()
+		self.tWndRefs.wndMain:FindChild("RightSideScroll"):ArrangeChildrenVert()
 	end
 	
 	self:EnableControls()
@@ -230,21 +225,21 @@ end
 
 function TutorialMenu:EnableControls(tEntry)
 	if tEntry == nil then
-		self.wndControls:FindChild("ViewBtn"):Enable(false)
-		self.wndControls:FindChild("ResetBtn"):Enable(false)
-		self.wndControls:FindChild("ViewBtn"):SetData(nil)
-		self.wndControls:FindChild("ResetBtn"):SetData(nil)	
-		self.wndControls:FindChild("ResetBtn"):SetText(Apollo.GetString("Tutorials_MarkAsRead"))
+		self.tWndRefs.wndControls:FindChild("ViewBtn"):Enable(false)
+		self.tWndRefs.wndControls:FindChild("ResetBtn"):Enable(false)
+		self.tWndRefs.wndControls:FindChild("ViewBtn"):SetData(nil)
+		self.tWndRefs.wndControls:FindChild("ResetBtn"):SetData(nil)	
+		self.tWndRefs.wndControls:FindChild("ResetBtn"):SetText(Apollo.GetString("Tutorials_MarkAsRead"))
 	else
-		self.wndControls:FindChild("ViewBtn"):Enable(true)
-		self.wndControls:FindChild("ResetBtn"):Enable(true)
-		self.wndControls:FindChild("ViewBtn"):SetData(tEntry)
-		self.wndControls:FindChild("ResetBtn"):SetData(tEntry)	
+		self.tWndRefs.wndControls:FindChild("ViewBtn"):Enable(true)
+		self.tWndRefs.wndControls:FindChild("ResetBtn"):Enable(true)
+		self.tWndRefs.wndControls:FindChild("ViewBtn"):SetData(tEntry)
+		self.tWndRefs.wndControls:FindChild("ResetBtn"):SetData(tEntry)	
 
 		if tEntry.viewed == true then
-			self.wndControls:FindChild("ResetBtn"):SetText(Apollo.GetString("Tutorials_Reset"))	
+			self.tWndRefs.wndControls:FindChild("ResetBtn"):SetText(Apollo.GetString("Tutorials_Reset"))	
 		else
-			self.wndControls:FindChild("ResetBtn"):SetText(Apollo.GetString("Tutorials_MarkAsRead"))	
+			self.tWndRefs.wndControls:FindChild("ResetBtn"):SetText(Apollo.GetString("Tutorials_MarkAsRead"))	
 		end
 	end
 end
@@ -253,12 +248,25 @@ end
 -- TutorialMenuForm Functions
 -----------------------------------------------------------------------------------------------
 function TutorialMenu:OnClose()
-	self.wndMain:Show(false) -- hide the window
-	self:OnSearchClearBtn()
+	if self.tWndRefs.wndMain ~= nil and self.tWndRefs.wndMain:IsValid() then
+		local wndMain = self.tWndRefs.wndMain
+		self.tWndRefs = {}
+		self.tCategoryBtns = {}
+		self.tTutorialBtns = {}
+	    self.tFilteredList = nil
+		
+		wndMain:Close()
+		wndMain:Destroy()
+		Event_FireGenericEvent("WindowManagementRemove", {strName = Apollo.GetString("CRB_Tutorials")})
+	end	
+end
+
+function TutorialMenu:OnCloseBtn()
+	self.tWndRefs.wndMain:Close()
 end
 
 function TutorialMenu:OnCategoryBtn(wndHandler, wndControl)
-	self.wndSearch:FindChild("SearchTopLeftInputBox"):ClearFocus()
+	self.tWndRefs.wndSearch:FindChild("SearchTopLeftInputBox"):ClearFocus()
 	if wndHandler ~= wndControl then return false end
 	local nCategory = wndControl:GetData()
 	
@@ -289,7 +297,7 @@ function TutorialMenu:OnCategoryBtn(wndHandler, wndControl)
 end
 
 function TutorialMenu:OnTutorialItemBtn(wndHandler, wndControl)
-	self.wndSearch:FindChild("SearchTopLeftInputBox"):ClearFocus()
+	self.tWndRefs.wndSearch:FindChild("SearchTopLeftInputBox"):ClearFocus()
 	if wndHandler ~= wndControl then return false end
 	local nTutorialId = wndControl:GetData()
 	local tChosen = nil
@@ -310,7 +318,7 @@ function TutorialMenu:OnTutorialItemBtn(wndHandler, wndControl)
 end
 
 function TutorialMenu:OnTutorialItemBtnUncheck(wndHandler, wndControl)
-	self.wndSearch:FindChild("SearchTopLeftInputBox"):ClearFocus()
+	self.tWndRefs.wndSearch:FindChild("SearchTopLeftInputBox"):ClearFocus()
 	self:EnableControls()
 end
 
@@ -338,7 +346,7 @@ function TutorialMenu:OnResetBtn(wndHandler, wndControl)
 end
 
 function TutorialMenu:OnViewBtn(wndHandler, wndControl)
-	self.wndSearch:FindChild("SearchTopLeftInputBox"):ClearFocus()
+	self.tWndRefs.wndSearch:FindChild("SearchTopLeftInputBox"):ClearFocus()
 	local tEntry = wndControl:GetData()
 	if tEntry == nil then return end
 	tEntry.wnd:FindChild("ReadTutorialNew"):Show(false)
@@ -347,7 +355,7 @@ function TutorialMenu:OnViewBtn(wndHandler, wndControl)
 end
 
 function TutorialMenu:OnMiddleLevelViewBtn(wndHandler, wndControl)
-	self.wndSearch:FindChild("SearchTopLeftInputBox"):ClearFocus()
+	self.tWndRefs.wndSearch:FindChild("SearchTopLeftInputBox"):ClearFocus()
 	if wndHandler ~= wndControl then return false end
 	local nFlagId = wndControl:GetData()
 	
@@ -386,31 +394,31 @@ function TutorialMenu:OnHideAllTutorials()
 			entry.wnd:FindChild("MiddleLevelViewBtn"):SetCheck(bSetting)
 		end
 	end
-	self.wndMain:FindChild("EnableAllBtn"):SetCheck(false)
+	self.tWndRefs.wndMain:FindChild("EnableAllBtn"):SetCheck(false)
 	--self:UpdateVisibilityFlags()
 end
 
 function TutorialMenu:OnResetAllBtn(wndHandler, wndControl)
-	self.wndSearch:FindChild("SearchTopLeftInputBox"):ClearFocus()
-	self.wndResetBlocker:Show(true)
+	self.tWndRefs.wndSearch:FindChild("SearchTopLeftInputBox"):ClearFocus()
+	self.tWndRefs.wndResetBlocker:Show(true)
 end
 
 function TutorialMenu:OnConfirmResetBtn(wndHandler, wndControl)
 	-- do a full redraw, then show
 	GameLib.ResetTutorials()
 	self:BuildFullList()
-	self:OnTutorialMenuOn()
+	self.tWndRefs.wndResetBlocker:Show(false)
 end
 
 function TutorialMenu:OnCancelResetBtn(wndHandler, wndControl)
-	self.wndResetBlocker:Show(false)
+	self.tWndRefs.wndResetBlocker:Show(false)
 end
 
 function TutorialMenu:OnSearchTopLeftInputBoxChanged(wndHandler, wndControl)
 	local strInput = Apollo.StringToLower(wndHandler:GetText())
 	local bInputExists = string.len(strInput) > 0
 
-	self.wndSearch:FindChild("SearchTopLeftClearBtn"):Show(bInputExists)
+	self.tWndRefs.wndSearch:FindChild("SearchTopLeftClearBtn"):Show(bInputExists)
 	
 	if not bInputExists then
 		-- TODO: get current selection, reset the UI to that if it exists (probably store it on the right scroll container)
@@ -447,10 +455,10 @@ function TutorialMenu:OnSearchTopLeftInputBoxChanged(wndHandler, wndControl)
 end
 
 function TutorialMenu:OnSearchClearBtn(wndHandler, wndControl)
-	self.wndSearch:FindChild("SearchTopLeftInputBox"):SetText("")
-	self.wndSearch:FindChild("SearchTopLeftInputBox"):ClearFocus()
+	self.tWndRefs.wndSearch:FindChild("SearchTopLeftInputBox"):SetText("")
+	self.tWndRefs.wndSearch:FindChild("SearchTopLeftInputBox"):ClearFocus()
 	self.tFilteredList = nil
-	self:OnSearchTopLeftInputBoxChanged(self.wndSearch:FindChild("SearchTopLeftInputBox"), self.wndSearch:FindChild("SearchTopLeftInputBox"))
+	self:OnSearchTopLeftInputBoxChanged(self.tWndRefs.wndSearch:FindChild("SearchTopLeftInputBox"), self.tWndRefs.wndSearch:FindChild("SearchTopLeftInputBox"))
 end
 
 ---------------------------------------------------------------------------------------------------

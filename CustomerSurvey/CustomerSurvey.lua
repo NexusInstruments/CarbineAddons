@@ -77,7 +77,7 @@ function CustomerSurvey:UpdateAlert()
 		end
 	end
 
-	self.wndAlertContainer:FindChild("List"):ArrangeChildrenHorz(0)
+	self.wndAlertContainer:FindChild("List"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	self.wndAlertContainer:FindChild("List"):SetText(CustomerSurveyLib.GetPendingCount() > 3 and Apollo.GetString("CRB_Elipsis") or "")
 	if #self.wndAlertContainer:FindChild("List"):GetChildren() <= 1 then
 		self.wndAlertContainer:Destroy()
@@ -120,7 +120,7 @@ function CustomerSurvey:UpdateSurvey()
 			end
 			self.wndCommentEntry:FindChild("BottomForm"):FindChild("CommentTextBox"):SetText(self.csActiveSurvey:GetComment() or "")
 
-			self.wndMain:FindChild("QuestionsForm"):ArrangeChildrenVert(0)
+			self.wndMain:FindChild("QuestionsForm"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 		end
 	end
 	

@@ -9,13 +9,6 @@ require "LiveEvent"
 
 local LiveEvent = {}
 
-local tSpecificEventData =
-{
-	eCurrency 			= Money.CodeEnumCurrencyType.ShadeSilver,
-	strCurrencyTitle	= Apollo.GetString("LiveEvent_YourShadeSilver"),
-	strCurrencyTooltip	= Apollo.GetString("LiveEvent_ShadeSilverTooltip"),
-}
-
 function LiveEvent:new(o)
     o = o or {}
     setmetatable(o, self)
@@ -35,6 +28,8 @@ end
 function LiveEvent:OnDocLoaded()
 	Apollo.RegisterEventHandler("PlayerCurrencyChanged",  	"OnPlayerCurrencyChanged", self)
 	Apollo.RegisterEventHandler("LiveEvent_ToggleWindow", 	"OnLiveEvent_ToggleWindow", self)
+	Apollo.RegisterEventHandler("LiveEvent_OpenWindow", 	"OnLiveEvent_OpenWindow", self)
+	Apollo.RegisterEventHandler("LiveEvent_CloseWindow", 	"OnLiveEvent_CloseWindow", self)
 	Apollo.RegisterTimerHandler("LiveEvent_UpdateTimer", 	"UpdateList", self)
 	Apollo.CreateTimer("LiveEvent_UpdateTimer", 10, true)
 	Apollo.StopTimer("LiveEvent_UpdateTimer")
@@ -44,26 +39,68 @@ end
 
 function LiveEvent:OnLiveEvent_ToggleWindow()
 	if self.wndMain and self.wndMain:IsValid() then
-		Apollo.StopTimer("LiveEvent_UpdateTimer")
-		self.wndMain:Destroy()
-		self.wndMain = nil
+		self:OnLiveEvent_CloseWindow()
 	else
-		local tEventData = LiveEventsLib.GetLiveEvent(8) -- TODO: Hardcoded for Shade's Eve
-		if not tEventData or not tEventData:GetId() then
+		self:OnLiveEvent_OpenWindow()
+	end
+end
+
+function LiveEvent:OnLiveEvent_OpenWindow()
+	if not self.wndMain or not self.wndMain:IsValid() then
+		local tEventData = LiveEventsLib.GetActiveLiveEvents()[1]
+		local tLiveEventData = nil
+		if tEventData then
+			tLiveEventData = tEventData:GetLiveEvent()
+		end
+		if not tLiveEventData or not tLiveEventData:GetId() then
 			return
 		end
 
 		Apollo.StartTimer("LiveEvent_UpdateTimer")
 
 		self.wndMain = Apollo.LoadForm(self.xmlDoc , "LiveEventMain", nil, self)
+		self.wndMain:Invoke()
 		self.wndMain:FindChild("LiveTabProgressBtn"):AttachWindow(self.wndMain:FindChild("LiveEventProgressScroll"))
 		self.wndMain:FindChild("LiveTabSummaryBtn"):AttachWindow(self.wndMain:FindChild("LiveEventSummaryScroll"))
 
-		self.wndMain:FindChild("LiveEventSummaryText"):SetAML("<P Font=\"CRB_InterfaceMedium\" TextColor=\"ff56b381\">"..tEventData:GetSummary().."</P>")
-		self.wndMain:FindChild("LiveEventSummaryText"):SetHeightToContentHeight()
-		self.wndMain:FindChild("LiveEventSummaryScroll"):ArrangeChildrenVert(0)
+		-- Set summary
+		local wndLiveEventSummaryText = self.wndMain:FindChild("LiveEventSummaryText")
+		wndLiveEventSummaryText:SetAML("<P Font=\"CRB_InterfaceMedium\" TextColor=\"ff56b381\">"..tLiveEventData:GetSummary().."</P>")
+		wndLiveEventSummaryText:SetHeightToContentHeight()
+		self.wndMain:FindChild("LiveEventSummaryScroll"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+
+		-- Set background
+		local tPixieBackground = self.wndMain:GetPixieInfo(1)
+		tPixieBackground.strSprite = tLiveEventData:GetBackgroundSprite()
+		self.wndMain:UpdatePixie(1, tPixieBackground)
+		
+		-- Set event title
+		local wndLiveEventTitle = self.wndMain:FindChild("LiveEventTitle")
+		local strTitleSprite = tLiveEventData:GetTitleSprite()
+		if strTitleSprite ~= "" then
+			wndLiveEventTitle:Show(true)
+			wndLiveEventTitle:SetSprite(strTitleSprite)
+		else
+			wndLiveEventTitle:Show(false)
+		end
+		
+		-- Build cash window
+		self.eCurrency = tLiveEventData:GetEarnedCurrencyType()
+		local monPlayer = GameLib.GetPlayerCurrency(self.eCurrency)
+		self.wndLiveEventCashWindow = self.wndMain:FindChild("LiveEventCashWindow")
+		self.wndLiveEventCashWindow:SetMoneySystem(self.eCurrency)
+		self.wndLiveEventCashWindow:SetTooltip(Apollo.GetString(tLiveEventData:GetEarnedCurrencyTooltip()))
+		self.wndMain:FindChild("LiveEventCashTitle"):SetText(String_GetWeaselString(Apollo.GetString("LiveEvent_YourCurrency"), monPlayer:GetTypeString()))
 
 		self:UpdateList()
+	end
+end
+
+function LiveEvent:OnLiveEvent_CloseWindow()
+	if self.wndMain and self.wndMain:IsValid() then
+		Apollo.StopTimer("LiveEvent_UpdateTimer")
+		self.wndMain:Close()
+		self.wndMain = nil
 	end
 end
 
@@ -77,8 +114,8 @@ function LiveEvent:UpdateList() -- Also from one second timer
 	local nScrollPos = wndScroll:GetVScrollPos()
 	wndScroll:DestroyChildren()
 
-	for idx, peEvent in pairs(PublicEvent.GetActiveEvents() or {}) do
-		if peEvent and peEvent:GetEventType() == PublicEvent.PublicEventType_LiveEvent then
+	for idx, peEvent in pairs(LiveEventsLib.GetActiveLiveEvents() or {}) do
+		if peEvent then
 			local wndCurr = Apollo.LoadForm(self.xmlDoc, "LiveEventItem", wndScroll, self)
 			wndCurr:FindChild("LiveEventTitle"):SetAML("<P Font=\"CRB_HeaderSmall\" TextColor=\"UI_WindowTitleYellow\">"..peEvent:GetName().."</P>")
 			wndCurr:FindChild("LiveEventHintBtn"):SetData(peEvent)
@@ -96,13 +133,13 @@ function LiveEvent:UpdateList() -- Also from one second timer
 				end
 			end
 
-			local nObjectiveContainerHeight = wndCurr:FindChild("LiveObjectiveContainer"):ArrangeChildrenVert(0)
+			local nObjectiveContainerHeight = wndCurr:FindChild("LiveObjectiveContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 			local nLeft, nTop, nRight, nBottom = wndCurr:GetAnchorOffsets()
 			wndCurr:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nObjectiveContainerHeight + 35)
 		end
 	end
 	
-	wndScroll:ArrangeChildrenVert(0)
+	wndScroll:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	wndScroll:SetVScrollPos(nScrollPos)
 
 	self:OnPlayerCurrencyChanged()
@@ -113,11 +150,7 @@ function LiveEvent:OnPlayerCurrencyChanged()
 		return
 	end
 
-	-- Build Currency
-	self.wndMain:FindChild("LiveEventCashWindow"):SetMoneySystem(tSpecificEventData.eCurrency)
-	self.wndMain:FindChild("LiveEventCashWindow"):SetAmount(GameLib.GetPlayerCurrency(tSpecificEventData.eCurrency):GetAmount())
-	self.wndMain:FindChild("LiveEventCashWindow"):SetTooltip(tSpecificEventData.strCurrencyTooltip)
-	self.wndMain:FindChild("LiveEventCashTitle"):SetText(tSpecificEventData.strCurrencyTitle)
+	self.wndLiveEventCashWindow:SetAmount(GameLib.GetPlayerCurrency(self.eCurrency))
 end
 
 function LiveEvent:OnLiveEventHintBtn(wndHandler, wndControl)

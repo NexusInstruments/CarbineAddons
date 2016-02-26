@@ -19,8 +19,8 @@ local PathFrame = {}
 -- Constants
 -----------------------------------------------------------------------------------------------
 -- e.g. local kiExampleVariableMax = 999
-local knBottomPadding = 48 -- MUST MATCH XML
-local knTopPadding = 48 -- MUST MATCH XML
+local knBottomPadding = 36 -- MUST MATCH XML
+local knTopPadding = 36 -- MUST MATCH XML
 local knPathLASIndex = 10
 
 local knSaveVersion = 1
@@ -109,13 +109,13 @@ function PathFrame:OnAsyncLoad()
 	Apollo.RegisterEventHandler("CharacterCreated", 						"DrawPathAbilityList", self)
 	Apollo.RegisterEventHandler("UpdatePathXp", 							"DrawPathAbilityList", self)
 	Apollo.RegisterEventHandler("AbilityBookChange", 						"DrawPathAbilityList", self)
-	Apollo.RegisterEventHandler("OptionsUpdated_HUDPreferences",	"DrawPathAbilityList", self)
-	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 			"OnTutorial_RequestUIAnchor", self)
+	Apollo.RegisterEventHandler("OptionsUpdated_HUDPreferences",			"DrawPathAbilityList", self)
+	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 				"OnTutorial_RequestUIAnchor", self)
 
 	Apollo.RegisterTimerHandler("RefreshPathTimer", 						"DrawPathAbilityList", self)
 	
 	--Load Forms
-	self.wndMain = Apollo.LoadForm(self.xmlDoc, "PathFrameForm", "FixedHudStratum", self)
+	self.wndMain = Apollo.LoadForm(self.xmlDoc, "PathFrameForm", "FixedHudStratumHigh", self)
 	
 	self.wndMenu = Apollo.LoadForm(self.xmlDoc, "PathSelectionMenu", nil, self)
 	self.wndMain:FindChild("PathOptionToggle"):AttachWindow(self.wndMenu)
@@ -200,7 +200,7 @@ function PathFrame:DrawPathAbilityList()
 		self.wndMain:Show(false)
 	end
 	
-	local nHeight = wndList:ArrangeChildrenVert(0)
+	local nHeight = wndList:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	local nLeft, nTop, nRight, nBottom = self.wndMenu:GetAnchorOffsets()
 	self.wndMenu:SetAnchorOffsets(nLeft, nBottom - (nListHeight + knBottomPadding+knTopPadding), nRight, nBottom)
 end
@@ -225,10 +225,34 @@ function PathFrame:HelperSetPathAbility(nAbilityId)
 	return true
 end
 
+function PathFrame:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
+	local tAnchors = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.PathAbility]	= true,
+	}
+	
+	if not tAnchors[eAnchor] or not self.wndMain or not self.wndMain:IsVisible() then
+		return
+	end
+	
+	local tAnchorMapping = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.PathAbility] 	= self.wndMain,
+	}
+	
+	if tAnchorMapping[eAnchor] then
+		Event_FireGenericEvent("Tutorial_ShowCallout", eAnchor, idTutorial, strPopupText, tAnchorMapping[eAnchor])
+	end
+end
+
 -----------------------------------------------------------------------------------------------
 -- PathFrameForm Functions
 -----------------------------------------------------------------------------------------------
-function PathFrame:OnGenerateTooltip(wndControl, wndHandler, tType, arg1, arg2)
+function PathFrame:OnGenerateTooltip(wndControl, wndHandler, eType, arg1, arg2)
+	if eType ~= Tooltip.TooltipGenerateType_Spell then
+		return
+	end
+		
 	if Tooltip ~= nil and Tooltip.GetSpellTooltipForm ~= nil then
 		Tooltip.GetSpellTooltipForm(self, wndControl, arg1)
 	end
@@ -265,15 +289,6 @@ function PathFrame:OnUnitEnteredCombat(unit, bIsInCombat)
 	end
 	
 	self.wndMain:FindChild("PathOptionToggle"):Enable(not bIsInCombat and self.bHasPathAbilities)
-end
-
-function PathFrame:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
-	if eAnchor == GameLib.CodeEnumTutorialAnchor.Path then
-		local tRect = {}
-		tRect.l, tRect.t, tRect.r, tRect.b = self.wndMain:GetRect()
-		
-		Event_FireGenericEvent("Tutorial_RequestUIAnchorResponse", eAnchor, idTutorial, strPopupText, tRect)
-	end
 end
 
 -----------------------------------------------------------------------------------------------

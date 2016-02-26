@@ -39,8 +39,8 @@ local ktRaceStrings =
 
 local ktGenderStrings =
 {
-	[Unit.CodeEnumGender.Male] = Apollo.GetString("CRB_Male"),
-	[Unit.CodeEnumGender.Female] = Apollo.GetString("CRB_Female"),
+	[Unit.CodeEnumGender.Male] 		= Apollo.GetString("CRB_Male"),
+	[Unit.CodeEnumGender.Female] 	= Apollo.GetString("CRB_Female"),
 }
 
 local ktFactionStrings =
@@ -51,12 +51,16 @@ local ktFactionStrings =
 
 local ktFaceSliderIds =
 {
-	[1] = true,
-	[21] = true,
-	[22] = true,
+	[1] 	= true,
+	[21] 	= true,
+	[22] 	= true,
 }
 
-local knBodyTypeId = 25
+local ktCustomizeBodyType = 
+{
+	[2] 	= true,
+	[25] 	= true,
+}
  
 -----------------------------------------------------------------------------------------------
 -- Initialization
@@ -95,9 +99,13 @@ function CharacterCustomization:OnDocLoaded()
 	end
 	
 	Apollo.RegisterEventHandler("ShowDye", "OnInit", self)
-	Apollo.RegisterEventHandler("HideDye", "OnClose", self)
-	Apollo.RegisterEventHandler("UpdateInventory", "CheckForTokens", self)
-	Apollo.RegisterEventHandler("PlayerCurrencyChanged", "CalculateTotalCost", self)
+	Apollo.RegisterEventHandler("HideDye", "OnHideDye", self)
+	Apollo.RegisterEventHandler("PlayerCurrencyChanged", "UpdateCost", self)
+	Apollo.RegisterEventHandler("AccountCurrencyChanged", "UpdateCost", self)
+
+	--ServiceTokenPrompt
+	Apollo.RegisterEventHandler("ServiceTokenClosed_CharacterCustomization", "OnServiceTokenClosed_CharacterCustomization", self)
+
 	
 	-- by sequential index
 	self.arCharacterBones = {}
@@ -117,10 +125,7 @@ function CharacterCustomization:OnDocLoaded()
 	
 	self.wndBonePreviewItem = nil
 	self.idSelectedCategory = nil
-	
-	self.bUseToken = false
-	self.bHasToken = false
-	
+
 	self.bHideHelm = true
 end
 
@@ -131,10 +136,7 @@ function CharacterCustomization:OnInit()
 	end
 
 	self.wndMain = Apollo.LoadForm(self.xmlDoc, "CharacterCustomization", nil, self)
-	self.wndPreview = self.wndMain:FindChild("RightContent:Costume")
-	
-	self.wndMain:FindChild("Footer:BuyBtn"):Enable(false)		
-	self.wndMain:FindChild("RightContent:SetSheatheBtn"):SetCheck(true)
+	self.wndPreview = self.wndMain:FindChild("RightContent:Costume")	
 	
 	local unitPlayer = GameLib.GetPlayerUnit()	
 	self.wndMain:FindChild("ToggleFlyout"):AttachWindow(self.wndMain:FindChild("PreviewChangesFlyout"))
@@ -174,8 +176,8 @@ function CharacterCustomization:OnInit()
 	
 	--Loads headers, followed by options within the headers
 	self:LoadCustomizationHeaders()
-	self:CheckForTokens()
 	self:ResizePreview()
+	self:UpdateCost()
 	self.wndMain:Invoke()
 end
 
@@ -265,12 +267,8 @@ function CharacterCustomization:LoadCustomizationOptions(wndCategoryHeader, tCat
 			
 			wndOptionPreview:SetLook(tOptions.sliderId, nValue)
 		end
-		
-		if tCategory.sliderId ~= knBodyTypeId then
-			wndOptionPreview:SetCamera("Portrait")
-		else
-			wndOptionPreview:SetCamera("Paperdoll")
-		end
+
+		wndOptionPreview:SetCamera(ktCustomizeBodyType[tCategory.sliderId] and "Paperdoll" or "Portrait")
 		
 		wndOption:SetData(tCategory.values[idx])
 		wndOption:FindChild("OptionBtn"):SetData(idx)
@@ -290,6 +288,18 @@ function CharacterCustomization:LoadCustomizationOptions(wndCategoryHeader, tCat
 			wndOptionPreview:AddPixie(tPixieOverlay)
 		end
 		
+		local nOptionIdx = nil
+		for idx, tOption in pairs(self.arCurrentCustomizationOptions) do
+			if tOption.sliderId == tCategory.sliderId then
+				nOptionIdx = idx
+				break
+			end
+		end
+		
+		if nOptionIdx ~= nil and idx == self.arCurrentCustomizationOptions[nOptionIdx].valueIdx then
+			wndOption:FindChild("OptionBtn"):SetCheck(true)
+		end
+		
 		self.tOptionWindows[tCategory.sliderId].tOptions[idx] = wndOption
 	end
 	
@@ -303,11 +313,7 @@ function CharacterCustomization:OnCategoryCheck(wndHandler, wndControl)
 	
 	self.idSelectedCategory = wndControl:GetData()
 	
-	if tCategory.sliderId ~= knBodyTypeId then
-		self.wndPreview:SetCamera("Portrait")
-	else
-		self.wndPreview:SetCamera("Paperdoll")
-	end
+	self.wndPreview:SetCamera(ktCustomizeBodyType[tCategory.sliderId] and "Paperdoll" or "Portrait")
 
 	self:LoadCustomizationOptions(wndParent, tCategory)
 	
@@ -359,7 +365,9 @@ function CharacterCustomization:OnOptionCheck(wndHandler, wndControl)
 		
 		if ktFaceSliderIds[tOptions.sliderId] then
 			for idBone, nBoneValue in pairs(self.tPreviousBones) do
-				self.tPreviousBonesHolder[idBone] = self.tPreviousBones[idBone]
+				if self.tPreviousBones[idBone] ~= 0 then
+					self.tPreviousBonesHolder[idBone] = self.tPreviousBones[idBone]
+				end
 				self.tPreviousBones[idBone] = 0
 				self.wndPreview:SetBone(idBone, 0)
 			end
@@ -368,6 +376,15 @@ function CharacterCustomization:OnOptionCheck(wndHandler, wndControl)
 				self.tChangedBones[idBone] = false
 			end
 		end
+
+		--If a new face style was selected, bones will be reset so clear bone preview entry.
+		if ktFaceSliderIds[self.idSelectedCategory] and self.wndBonePreviewItem then
+			self.wndBonePreviewItem:Destroy()
+			self.wndBonePreviewItem = nil
+			self.wndMain:FindChild("PreviewChangesFlyout:CostPreviewContainer"):ArrangeChildrenVert()
+			self:CheckForBoneChanges()
+		end
+
 	elseif self.tCustomizationCosts[tOptions.sliderId] then
 		if self.tCustomizationCosts[tOptions.sliderId].wndPreview then
 			self.tCustomizationCosts[tOptions.sliderId].wndPreview:Destroy()
@@ -394,7 +411,7 @@ function CharacterCustomization:OnOptionCheck(wndHandler, wndControl)
 	end
 
 	self:ResizePreview()
-	self:CalculateTotalCost()
+	self:UpdateCost()
 	self.arCurrentCustomizationOptions = self.wndPreview:GetLooks()
 end
 
@@ -424,15 +441,25 @@ function CharacterCustomization:OnOptionUndo(wndHandler, wndControl)
 		
 		wndHandler:GetParent():Destroy()
 		self.wndMain:FindChild("PreviewChangesFlyout:CostPreviewContainer"):ArrangeChildrenVert()
-	else		
+	else
 		for idx, tInfo in pairs(self.arCharacterBones) do
-			self:ResetBone(tInfo.sliderId)
+			if self.tChangedBones[tInfo.sliderId] then
+				local wndUndoBtn = nil 
+				if self.tBoneWindows.tSliders[tInfo.sliderId] then
+					wndUndoBtn = self.tBoneWindows.tSliders[tInfo.sliderId]:FindChild("UndoBtn")
+				end
+				if wndUndoBtn then
+					self:OnUndoBone(wndUndoBtn, wndUndoBtn)
+				else
+					self:ResetBone(tInfo.sliderId)
+				end
+			end
 		end
 		wndHeader = self.tBoneWindows.wndHeader
 	end
 	
 	wndHeader:FindChild("CategorySelectBtn:ElementChangedIcon"):Show(false)
-	self:CalculateTotalCost()
+	self:UpdateCost()
 	self:ResizePreview()
 	
 	self.arCurrentCustomizationOptions = self.wndPreview:GetLooks()
@@ -453,7 +480,7 @@ function CharacterCustomization:LoadBoneCustomizationOption(wndCategoryHeader, s
 	wndSlider:SetData(tBone.sliderId)
 	wndSlider:SetMinMax(-1, 1)
 	
-	wndOption:FindChild("UndoBtn"):Enable(false)
+	wndOption:FindChild("UndoBtn"):Enable(self.tChangedBones[tBone.sliderId])
 	
 	self.tBoneWindows.tSliders[tBone.sliderId] = wndOption
 	
@@ -494,9 +521,9 @@ function CharacterCustomization:OnBoneChanged(wndHandler, wndControl)
 	self.arCharacterBones = self.wndPreview:GetBones()
 	
 	self.tChangedBones[idBone] = self.tPreviousBones[idBone] ~= nValue
-	
+
 	self:SetBoneCostPreview()
-	self:CalculateTotalCost()
+	self:UpdateCost()
 end
 
 function CharacterCustomization:SetBoneCostPreview()
@@ -518,10 +545,10 @@ function CharacterCustomization:SetBoneCostPreview()
 end
 
 function CharacterCustomization:OnUndoBone(wndHandler, wndControl)
-	if not wndHandler ~= wndControl then
+	if wndHandler ~= wndControl then
 		return
 	end
-	
+
 	local wndParent = wndHandler:GetParent()
 	local wndContainer = wndParent:FindChild("SliderContainer")
 	local tBone = wndParent:GetData()
@@ -548,7 +575,7 @@ function CharacterCustomization:ResetBone(idSlider)
 	self.tChangedBones[idSlider] = false
 	
 	self:SetBoneCostPreview()	
-	self:CalculateTotalCost()
+	self:UpdateCost()
 end
 
 -----------------------------------------------------------------------------------------------
@@ -595,30 +622,60 @@ end
 -- Buy Confirmation
 -----------------------------------------------------------------------------------------------
 
+function CharacterCustomization:OnPurchaseWithServiceTokens(wndHandler, wndControl)
+	local wndConfirmationOverlay = self.wndMain:FindChild("ConfirmationOverlay")
+	for idx, wndChild in pairs(wndConfirmationOverlay:GetChildren()) do
+		wndChild:Show(false)
+	end
+	
+	local tData = 
+	{	
+		wndParent = self.wndMain:FindChild("ConfirmationOverlay"),
+		strEventName = "ServiceTokenClosed_CharacterCustomization",
+		monCost = wndControl:GetData(),
+		strConfirmation = String_GetWeaselString(Apollo.GetString("ServiceToken_Confirm"), Apollo.GetString("Costumes_CharacterChopShop")),
+		tActionData =
+		{
+			GameLib.CodeEnumConfirmButtonType.CommitCustomizationChanges,
+			self.wndPreview,
+			true
+		}
+	}
+
+	wndConfirmationOverlay:Show(true)
+	Event_FireGenericEvent("GenericEvent_ServiceTokenPrompt", tData)
+end
+
+function CharacterCustomization:OnServiceTokenClosed_CharacterCustomization(strParent)
+	if not self.wndMain then
+		return
+	end
+
+	local wndServiceTokenParent = self.wndMain:FindChild(strParent)
+	if wndServiceTokenParent then
+		wndServiceTokenParent:Show(false)
+	end
+	
+	self:OnPurchaseConfirm()
+end
+
 function CharacterCustomization:OnBuyBtn(wndHandler, wndControl)
+	local tData = wndControl:GetData()
 	local wndPurchaseConfirm = self.wndMain:FindChild("ConfirmationOverlay:PurchaseConfirmation")
 	local wndPriceContainer = wndPurchaseConfirm:FindChild("LineItemContainer")
 	wndPriceContainer:DestroyChildren()
 	
-	local monTotalCost = Money.new()
-	
 	for idSlider, tCost in pairs(self.tCustomizationCosts) do
 		local wndCostItem = Apollo.LoadForm(self.xmlDoc, "ConfirmationLineItem", wndPriceContainer, self)
 		wndCostItem:FindChild("ListItemName"):SetText(tCost.strName)
-		wndCostItem:FindChild("CashWindow"):Show(not self.bUseToken)
 		wndCostItem:FindChild("CashWindow"):SetAmount(tCost.monCost, true)
-		
-		monTotalCost:SetAmount(monTotalCost:GetAmount() + tCost.monCost:GetAmount())
 	end
 	
 	if self.wndBonePreviewItem then
 		local wndCostItem = Apollo.LoadForm(self.xmlDoc, "ConfirmationLineItem", wndPriceContainer, self)
 		local monCost = self.wndPreview:GetCostForBoneChanges()
 		wndCostItem:FindChild("ListItemName"):SetText(Apollo.GetString("CharacterCustomize_Bones"))
-		wndCostItem:FindChild("CashWindow"):Show(not self.bUseToken)
 		wndCostItem:FindChild("CashWindow"):SetAmount(monCost, true)
-		
-		monTotalCost:SetAmount(monTotalCost:GetAmount() + monCost:GetAmount())
 	end
 
 	wndPriceContainer:ArrangeChildrenVert()
@@ -632,34 +689,16 @@ function CharacterCustomization:OnBuyBtn(wndHandler, wndControl)
 		
 		wndPurchaseConfirm:SetAnchorOffsets(tOffsets[1], tOffsets[2] - (nTotalLineItemHeight / 2), tOffsets[3], tOffsets[4] + (nTotalLineItemHeight / 2))
 	end
-	
-	
+		
 	local wndSubtotal = wndPurchaseConfirm:FindChild("TotalCost")
-	wndSubtotal:Show(not self.bUseToken)
-	wndSubtotal:SetAmount(monTotalCost, true)
-	
-	
-	local wndTokenIcon = wndPurchaseConfirm:FindChild("TokenIcon")
-	local wndTokenLabel = wndPurchaseConfirm:FindChild("TokenLabel")
-	local luaSubclass = wndTokenIcon:GetWindowSubclass()
-	local itemToken = Item.GetDataFromId(knTokenItemId)
-	luaSubclass:SetItem(itemToken)
-	
-	-- things only cost 1 token at the moment
-	wndTokenLabel:SetText(String_GetWeaselString(Apollo.GetString("ChallengeReward_Multiplier"), 1))
-	
-	wndTokenIcon:Show(self.bUseToken)
-	wndTokenLabel:Show(self.bUseToken)
+	wndSubtotal:SetAmount(tData.monCost, true)
 	
 	self:ToggleOverlay(ktOverlayTypes.Purchase, true)
 end
 
 function CharacterCustomization:OnPurchaseConfirm(wndHandler, wndControl)
-	self.wndPreview:CommitCustomizationChanges(self.bUseToken)
 	local wndFooterContainer = self.wndMain:FindChild("Footer")
-	wndFooterContainer:FindChild("CostPreview:TotalCost"):SetAmount(0, true)
-	wndFooterContainer:FindChild("BuyBtn"):Enable(false)
-	
+
 	self.wndMain:FindChild("PreviewChangesFlyout:CostPreviewContainer"):DestroyChildren()
 	self.wndBonePreviewItem = nil
 	self.tCustomizationCosts = {}
@@ -686,23 +725,23 @@ function CharacterCustomization:OnPurchaseConfirm(wndHandler, wndControl)
 	
 	self.wndMain:FindChild("RightContent:PurchaseConfirmFlash"):SetSprite("CRB_WindowAnimationSprites:sprWinAnim_BirthSmallTemp")
 	self:ToggleOverlay(ktOverlayTypes.Purchase, false)
-	
-	self:OnClose()
+
+	self:UpdateCost()
+	self.wndMain:Close()
 end
 
 function CharacterCustomization:OnPurchaseCancel(wndHandler, wndControl)
 	self:ToggleOverlay(ktOverlayTypes.Purchase, false)
 end
 
-function CharacterCustomization:OnUseTokenToggle(wndHandler, wndControl)
-	self.bUseToken = wndHandler:IsChecked()
-	self:CalculateTotalCost()
-end
-
 -----------------------------------------------------------------------------------------------
 -- Close Confirmation
 -----------------------------------------------------------------------------------------------
-function CharacterCustomization:OnClose()
+function CharacterCustomization:OnWindowClosed(wndHandler, wndControl)
+	if wndHandler ~= wndControl then
+		return
+	end
+	
 	self.arCharacterBones = {}
 	self.arCurrentCustomizationOptions = {}
 	
@@ -729,7 +768,7 @@ function CharacterCustomization:OnClose()
 	for idx, tCategory in pairs(self.arCurrentCustomizationOptions) do
 		tCategory.valueIdx = self.tPreviousOptions[tCategory.sliderId]
 	end
-	
+
 	Event_CancelDyeWindow()
 end
 
@@ -743,37 +782,28 @@ function CharacterCustomization:OnCancel(wndHandler, wndControl)
 	if self.wndMain and not self.wndMain:FindChild("ConfirmationOverlay"):IsShown() and (arChanges and #arChanges > 0 or self:CheckForBoneChanges()) then
 		self:ToggleOverlay(ktOverlayTypes.Cancel, true)
 	else
-		self:OnClose()
+		self.wndMain:Close()
 	end
 end
 
 function CharacterCustomization:OnCloseConfirm(wndHandler, wndControl)
 	self:ToggleOverlay(ktOverlayTypes.Cancel, false)
-	self:OnClose()
+	self.wndMain:Close()
 end
 
 function CharacterCustomization:OnCloseCancel(wndHandler, wndControl)
 	self:ToggleOverlay(ktOverlayTypes.Cancel, false)
 end
 
+function CharacterCustomization:OnHideDye()
+	if self.wndMain ~= nil then
+		self.wndMain:Close()
+	end
+end
+
 -----------------------------------------------------------------------------------------------
 -- Costume Window Controls
 -----------------------------------------------------------------------------------------------
-function CharacterCustomization:OnRotateRight()
-	self.wndPreview:ToggleLeftSpin(true)
-end
-
-function CharacterCustomization:OnRotateRightCancel()
-	self.wndPreview:ToggleLeftSpin(false)
-end
-
-function CharacterCustomization:OnRotateLeft()
-	self.wndPreview:ToggleRightSpin(true)
-end
-
-function CharacterCustomization:OnRotateLeftCancel()
-	self.wndPreview:ToggleRightSpin(false)
-end
 
 function CharacterCustomization:OnSheatheCheck(wndHandler, wndControl)
 	self.wndPreview:SetSheathed(wndHandler:IsChecked())
@@ -869,7 +899,7 @@ function CharacterCustomization:OnLoadCode(wndHandler, wndControl)
 		self.tBoneWindows.wndHeader:FindChild("CategorySelectBtn:ElementChangedIcon"):Show(bBonesChanged)
 		self:ReloadOpenCategory()
 		self.wndMain:FindChild("PreviewChangesFlyout:CostPreviewContainer"):ArrangeChildrenVert()
-		self:CalculateTotalCost()
+		self:UpdateCost()
 		self:ResizePreview()
 	else
 		wndSaveLoadForm:FindChild("CodeErrorText"):SetText(strErrorText)
@@ -893,76 +923,57 @@ function CharacterCustomization:ToggleOverlay(eConfirmationType, bShow)
 	wndOverlay:FindChild("CharacterCode"):Show(eConfirmationType == ktOverlayTypes.Code and bShow)
 	
 	local wndFooter = self.wndMain:FindChild("Footer")
-	wndFooter:FindChild("BuyBtn"):Enable(not bShow)
+	wndFooter:FindChild("CashBuyBtn"):Enable(not bShow)
+	wndFooter:FindChild("PurchaseServiceTokens"):Enable(not bShow)
 	
 	wndFooter:FindChild("UndoAllBtn"):Enable(not bShow)
 	wndFooter:FindChild("CostPreview:ToggleFlyout"):Enable(not bShow)
-	wndFooter:FindChild("UseTokenBtn"):Enable(not bShow and self.bHasToken)
 	self.wndMain:FindChild("PreviewChangesFlyout"):Show(false)
+	
+	if bShow and eConfirmationType == ktOverlayTypes.Purchase then
+		wndOverlay:FindChild("ConfirmPurchaseBtn"):SetActionData(GameLib.CodeEnumConfirmButtonType.CommitCustomizationChanges, self.wndPreview, false)
+	end
 end
 
-function CharacterCustomization:CalculateTotalCost()
-	if self.wndMain and self.wndMain:IsValid() then
-		local wndCostPreviewContainer = self.wndMain:FindChild("Footer:CostPreview")
-		local wndTotalCost = wndCostPreviewContainer:FindChild("TotalCost")
-		local wndTokenLabel = wndCostPreviewContainer:FindChild("TokenLabel")
-		local wndTokenIcon = wndCostPreviewContainer:FindChild("TokenIcon")
-		
-		if not self.bUseToken then
-			wndTokenIcon:Show(false)
-			wndTokenLabel:Show(false)
-			wndTotalCost:Show(true)
-			
-			local monTotal = Money.new()
-			
-			for idx, tCost in pairs(self.tCustomizationCosts) do
-				monTotal:SetAmount(monTotal:GetAmount() + tCost.monCost:GetAmount())
-			end
-			
-			if self:CheckForBoneChanges() then
-				local monBoneCost = self.wndPreview:GetCostForBoneChanges()
-				
-				if monTotal then
-					monTotal:SetAmount(monTotal:GetAmount() + monBoneCost:GetAmount())
-				else
-					monTotal = monBoneCost
-				end
-			end
-
-			local unitPlayer = GameLib.GetPlayerUnit()
-			local monPlayerCurrency = GameLib.GetPlayerCurrency(Money.CodeEnumCurrencyType.Credits)
-			
-			self.wndMain:FindChild("Footer:BuyBtn"):Enable(monTotal and monTotal:GetAmount() > 0 and monPlayerCurrency:GetAmount() >= monTotal:GetAmount())
-				
-			if monTotal and monPlayerCurrency:GetAmount() < (monTotal:GetAmount()) then
-				wndTotalCost:SetTextColor(ApolloColor.new("xkcdReddish"))
-			else
-				wndTotalCost:SetTextColor(ApolloColor.new("UI_TextMetalBodyHighlight"))
-			end
-				
-			wndTotalCost:SetAmount(monTotal or 0, true)
-		else
-			wndTokenIcon:Show(true)
-			wndTokenLabel:Show(true)
-			wndTotalCost:Show(false)
-			
-			local nCostCount = 0
-			for idx, value in pairs(self.tCustomizationCosts or {}) do
-				nCostCount = nCostCount + 1
-			end
-			
-			self.wndMain:FindChild("Footer:BuyBtn"):Enable(nCostCount > 0 or self:CheckForBoneChanges())
-			
-			local luaSubclass = wndTokenIcon:GetWindowSubclass()
-			local itemToken = Item.GetDataFromId(knTokenItemId)
-			luaSubclass:SetItem(itemToken)
-		end
-		
-		local arPreviewWindows = self.wndMain:FindChild("PreviewChangesFlyout:CostPreviewContainer"):GetChildren()
-		for idx, wndPreview in pairs(arPreviewWindows) do
-			wndPreview:FindChild("CashWindow"):Show(not self.bUseToken)
-		end
+function CharacterCustomization:UpdateCost()
+	if not self.wndMain or not self.wndMain:IsValid() then
+		return
 	end
+
+	local monCostServiceTokens = self.wndPreview:GetTotalCustomizationCost(true)
+	local wndFooter = self.wndMain:FindChild("Footer")
+	local wndPurchaseServiceTokens = wndFooter:FindChild("PurchaseServiceTokens")
+	self:HelperDrawCostBtn(wndPurchaseServiceTokens, monCostServiceTokens)
+	
+	wndPurchaseServiceTokens:SetData(monCostServiceTokens)
+
+	local wndSubmit = wndFooter:FindChild("CashBuyBtn")
+	local monCost = self.wndPreview:GetTotalCustomizationCost(false)
+	self:HelperDrawCostBtn(wndSubmit, monCost)
+	wndSubmit:SetData({monCost = monCost})
+end
+
+function CharacterCustomization:HelperDrawCostBtn(wndBtn, monCost)
+	local wndCash = wndBtn:FindChild("TotalCost")
+	wndCash:SetAmount(monCost)
+
+	local bServiceToken = monCost:GetAccountCurrencyType() ~= 0
+	local bHasChanges = monCost:GetAmount() > 0
+	local bCanBuy = self.wndPreview and bHasChanges and 
+		(monCost:GetMoneyType() == Money.CodeEnumCurrencyType.Credits and monCost:GetAmount() <= GameLib.GetPlayerCurrency():GetAmount() or monCost:GetAmount() <= AccountItemLib.GetAccountCurrency(AccountItemLib.CodeEnumAccountCurrency.ServiceToken):GetAmount())
+
+	local strColor = "UI_WindowTextDefault"
+	if not bHasChanges then
+		strColor = "ConTrivial"
+	elseif not bCanBuy then
+		strColor = "UI_WindowTextRed"
+	end
+	wndCash:SetTextColor(strColor)
+
+	local nHalfDisplayWidth = wndCash:GetDisplayWidth() / 2
+	local nLeft, nTop, nRight, nBottom = wndCash:GetAnchorOffsets()
+	wndCash:SetAnchorOffsets(-nHalfDisplayWidth, nTop, nHalfDisplayWidth, nBottom)
+	wndBtn:Enable(bHasChanges and (bCanBuy or bServiceToken))
 end
 
 function CharacterCustomization:ResizeTree()
@@ -998,14 +1009,14 @@ function CharacterCustomization:ResizeTree()
 
 			local nLeft, nTop, nRight, nBottom = wndOptionContainer:GetAnchorOffsets()
 			wndOptionContainer:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nCurrentCategoryOffset)
-			wndOptionContainer:ArrangeChildrenTiles(0)
+			wndOptionContainer:ArrangeChildrenTiles(Window.CodeEnumArrangeOrigin.LeftOrTop)
 			
 			local tOffset = wndCategory:GetOriginalLocation():ToTable().nOffsets
 			wndCategory:SetAnchorOffsets(tOffset[1], tOffset[2], tOffset[3], tOffset[4] + nCurrentCategoryOffset)
 		end
 	end
 
-	wndLeftScroll:ArrangeChildrenVert(0)
+	wndLeftScroll:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	
 	if nOpenIndex then
 		local nVScrollRange = wndLeftScroll:GetVScrollRange()
@@ -1024,28 +1035,17 @@ function CharacterCustomization:CheckForBoneChanges()
 	
 	if self.tBoneWindows.wndHeader then
 		self.tBoneWindows.wndHeader:FindChild("CategorySelectBtn:ElementChangedIcon"):Show(bBonesChanged)
+
+		--Find the Face Style Header and show or hide the Bone clear Icon.
+		for nIdCategory, bValue  in pairs (ktFaceSliderIds) do
+			local tHeaderData = self.tOptionWindows[nIdCategory]
+			if tHeaderData then
+				tHeaderData.wndHeader:FindChild("BoneClearIcon"):Show(bBonesChanged)
+			end
+		end
 	end
 	
 	return bBonesChanged
-end
-
-function CharacterCustomization:CheckForTokens()
-	if self.wndMain and self.wndMain:IsValid() then
-		local unitPlayer = GameLib.GetPlayerUnit()
-		local tInventory = unitPlayer:GetInventoryItems()
-		self.bHasToken = false
-		for idx, tInventoryInfo in pairs(tInventory) do
-			if not self.bHasToken and tInventoryInfo.itemInBag:GetItemId() == knTokenItemId then
-				self.bHasToken = true
-			end
-		end
-		
-		local wndUseTokenBtn = self.wndMain:FindChild("Footer:UseTokenBtn")
-		wndUseTokenBtn:Enable(self.bHasToken)
-		wndUseTokenBtn:SetCheck(self.bHasToken and wndUseTokenBtn:IsChecked())
-		
-		self:OnUseTokenToggle(wndUseTokenBtn, wndUseTokenBtn)
-	end
 end
 
 function CharacterCustomization:ReloadOpenCategory()
@@ -1074,7 +1074,7 @@ function CharacterCustomization:UndoAll()
 	if not self.wndMain then
 		return
 	end
-	
+
 	for idx, tInfo in pairs(self.tCustomizationCosts) do
 		local wndOptionUndo = tInfo.wndPreview:FindChild("UndoBtn")
 		self:OnOptionUndo(wndOptionUndo, wndOptionUndo)

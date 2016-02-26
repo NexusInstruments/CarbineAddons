@@ -54,7 +54,7 @@ end
 function Credits:OnDocLoaded()
 
 	if self.xmlDoc ~= nil and self.xmlDoc:IsLoaded() then
-	    self.wndMain = Apollo.LoadForm(self.xmlDoc, "CreditsHolder", nil, self)
+	    self.wndMain = Apollo.LoadForm(self.xmlDoc, "CreditsHolder", "Top", self)
 		if self.wndMain == nil then
 			Apollo.AddAddonErrorText(self, "Could not load the main window for some reason.")
 			return
@@ -69,6 +69,7 @@ function Credits:OnDocLoaded()
 		-- Register handlers for events, slash commands and timer, etc.
 		-- e.g. Apollo.RegisterEventHandler("KeyDown", "OnKeyDown", self)
 		Apollo.RegisterEventHandler("ShowCredits", "OnCreditsOn", self)
+		Apollo.RegisterEventHandler("HideCredits", "HideCredits", self)
 
 		-- Do additional Addon initialization here
 	end
@@ -214,6 +215,10 @@ end
 
 function Credits:CloseCredits()
 	self.wndMain:DestroyChildren()
+	self.wndMain:Show(false)
+end
+
+function Credits:HideCredits()
 	self.wndMain:Show(false)
 end
 

@@ -8,87 +8,83 @@ require "CraftingLib"
 require "GameLib"
 require "Item"
 
-local knNumRandomRerollFlavor = 4
-local knLevelRequirement = 15
-
-local karElementsToSprite =
+local karElementsToRuneSprite =
 {
-	[Item.CodeEnumRuneType.Air]		= { strBtn = "sprRunecrafting_Btn_Air", 	strBright = "Icon_Windows_UI_RuneSlot_Air_Used",	strFade = "Icon_Windows_UI_RuneSlot_Air_Empty" },
-	[Item.CodeEnumRuneType.Fire]	= { strBtn = "sprRunecrafting_Btn_Fire", 	strBright = "Icon_Windows_UI_RuneSlot_Fire_Used",	strFade = "Icon_Windows_UI_RuneSlot_Fire_Empty" },
-	[Item.CodeEnumRuneType.Water]	= { strBtn = "sprRunecrafting_Btn_Water", 	strBright = "Icon_Windows_UI_RuneSlot_Water_Used",	strFade = "Icon_Windows_UI_RuneSlot_Water_Empty" },
-	[Item.CodeEnumRuneType.Earth]	= { strBtn = "sprRunecrafting_Btn_Earth", 	strBright = "Icon_Windows_UI_RuneSlot_Earth_Used",	strFade = "Icon_Windows_UI_RuneSlot_Earth_Empty" },
-	[Item.CodeEnumRuneType.Logic]	= { strBtn = "sprRunecrafting_Btn_Logic", 	strBright = "Icon_Windows_UI_RuneSlot_Logic_Used",	strFade = "Icon_Windows_UI_RuneSlot_Logic_Empty" },
-	[Item.CodeEnumRuneType.Life]	= { strBtn = "sprRunecrafting_Btn_Life", 	strBright = "Icon_Windows_UI_RuneSlot_Life_Used",	strFade = "Icon_Windows_UI_RuneSlot_Life_Empty" },
-	[Item.CodeEnumRuneType.Fusion]	= { strBtn = "sprRunecrafting_Btn_Fusion", 	strBright = "Icon_Windows_UI_RuneSlot_Fusion_Used",	strFade = "Icon_Windows_UI_RuneSlot_Fusion_Empty" },
-	[Item.CodeEnumRuneType.Omni]	= { strBtn = "sprRunecrafting_Btn_Omni", 	strBright = "Icon_Windows_UI_RuneSlot_Omni_Used",	strFade = "Icon_Windows_UI_RuneSlot_Omni_Empty" },
+	[Item.CodeEnumRuneType.Air]		= { strBright = "IconSprites:Icon_RuneSocket_Icon_Windows_UI_RuneSocket_Air_Used",		strFade = "IconSprites:Icon_RuneSocket_Icon_Windows_UI_RuneSocket_Air_Empty" },
+	[Item.CodeEnumRuneType.Fire]	= { strBright = "IconSprites:Icon_RuneSocket_Icon_Windows_UI_RuneSocket_Fire_Used",		strFade = "IconSprites:Icon_RuneSocket_Icon_Windows_UI_RuneSocket_Fire_Empty" },
+	[Item.CodeEnumRuneType.Water]	= { strBright = "IconSprites:Icon_RuneSocket_Icon_Windows_UI_RuneSocket_Water_Used",	strFade = "IconSprites:Icon_RuneSocket_Icon_Windows_UI_RuneSocket_Water_Empty" },
+	[Item.CodeEnumRuneType.Earth]	= { strBright = "IconSprites:Icon_RuneSocket_Icon_Windows_UI_RuneSocket_Earth_Used",	strFade = "IconSprites:Icon_RuneSocket_Icon_Windows_UI_RuneSocket_Earth_Empty" },
+	[Item.CodeEnumRuneType.Logic]	= { strBright = "IconSprites:Icon_RuneSocket_Icon_Windows_UI_RuneSocket_Logic_Used",	strFade = "IconSprites:Icon_RuneSocket_Icon_Windows_UI_RuneSocket_Logic_Empty" },
+	[Item.CodeEnumRuneType.Life]	= { strBright = "IconSprites:Icon_RuneSocket_Icon_Windows_UI_RuneSocket_Life_Used",		strFade = "IconSprites:Icon_RuneSocket_Icon_Windows_UI_RuneSocket_Life_Empty" },
+	[Item.CodeEnumRuneType.Fusion]	= { strBright = "IconSprites:Icon_RuneSocket_Icon_Windows_UI_RuneSocket_Fusion_Used",	strFade = "IconSprites:Icon_RuneSocket_Icon_Windows_UI_RuneSocket_Fusion_Empty" },
 }
 
-local karElementalsToMetal =
+local karElementsToCategorySprite =
 {
-	[Item.CodeEnumRuneType.Air]		= { strIcon = "sprRunecrafting_Air_Colored", 	strBright = "sprRunecrafting_Air",		strFade = "sprRunecrafting_AirFade" },
-	[Item.CodeEnumRuneType.Fire]	= { strIcon = "sprRunecrafting_Fire_Colored", 	strBright = "sprRunecrafting_Fire",		strFade = "sprRunecrafting_FireFade" },
-	[Item.CodeEnumRuneType.Water]	= { strIcon = "sprRunecrafting_Water_Colored", 	strBright = "sprRunecrafting_Water",	strFade = "sprRunecrafting_WaterFade" },
-	[Item.CodeEnumRuneType.Earth]	= { strIcon = "sprRunecrafting_Earth_Colored", 	strBright = "sprRunecrafting_Earth",	strFade = "sprRunecrafting_EarthFade" },
-	[Item.CodeEnumRuneType.Logic]	= { strIcon = "sprRunecrafting_Logic_Colored", 	strBright = "sprRunecrafting_Logic",	strFade = "sprRunecrafting_LogicFade" },
-	[Item.CodeEnumRuneType.Life]	= { strIcon = "sprRunecrafting_Life_Colored", 	strBright = "sprRunecrafting_Life",		strFade = "sprRunecrafting_LifeFade" },
-	[Item.CodeEnumRuneType.Fusion]	= { strIcon = "sprRunecrafting_Fusion_Colored", strBright = "sprRunecrafting_Fusion",	strFade = "sprRunecrafting_FusionFade" },
-	[Item.CodeEnumRuneType.Omni]	= { strIcon = "sprRunecrafting_Omni_Colored", 	strBright = "sprRunecrafting_Omni",		strFade = "sprRunecrafting_OmniFade" },
+	[Item.CodeEnumRuneType.Air]		= { strBright = "Runecrafting:sprRunecrafting_Air",			strFade = "Runecrafting:sprRunecrafting_AirFade" },
+	[Item.CodeEnumRuneType.Fire]	= { strBright = "Runecrafting:sprRunecrafting_Fire",		strFade = "Runecrafting:sprRunecrafting_FireFade" },
+	[Item.CodeEnumRuneType.Water]	= { strBright = "Runecrafting:sprRunecrafting_Water",		strFade = "Runecrafting:sprRunecrafting_WaterFade" },
+	[Item.CodeEnumRuneType.Earth]	= { strBright = "Runecrafting:sprRunecrafting_Earth",		strFade = "Runecrafting:sprRunecrafting_EarthFade" },
+	[Item.CodeEnumRuneType.Logic]	= { strBright = "Runecrafting:sprRunecrafting_Logic",		strFade = "Runecrafting:sprRunecrafting_LogicFade" },
+	[Item.CodeEnumRuneType.Life]	= { strBright = "Runecrafting:sprRunecrafting_Life",		strFade = "Runecrafting:sprRunecrafting_LifeFade" },
+	[Item.CodeEnumRuneType.Fusion]	= { strBright = "Runecrafting:sprRunecrafting_Fusion",		strFade = "Runecrafting:sprRunecrafting_FusionFade" },
 }
 
 local karElementsToName =
 {
-	[Item.CodeEnumRuneType.Air]		= { strLetter = "A",	strName = Apollo.GetString("CRB_Air") },
-	[Item.CodeEnumRuneType.Fire]	= { strLetter = "F",	strName = Apollo.GetString("CRB_Fire") },
-	[Item.CodeEnumRuneType.Water]	= { strLetter = "W",	strName = Apollo.GetString("CRB_Water") },
-	[Item.CodeEnumRuneType.Earth]	= { strLetter = "E",	strName = Apollo.GetString("CRB_Earth") },
-	[Item.CodeEnumRuneType.Logic]	= { strLetter = "O",	strName = Apollo.GetString("CRB_Logic") },
-	[Item.CodeEnumRuneType.Life]	= { strLetter = "L",	strName = Apollo.GetString("CRB_Life") },
-	[Item.CodeEnumRuneType.Fusion]	= { strLetter = "U",	strName = Apollo.GetString("CRB_Fusion") },
-	[Item.CodeEnumRuneType.Omni]	= { strLetter = "",		strName = Apollo.GetString("CRB_Omni") },
+	[Item.CodeEnumRuneType.Air]		= Apollo.GetString("CRB_Air"),
+	[Item.CodeEnumRuneType.Fire]	= Apollo.GetString("CRB_Fire"),
+	[Item.CodeEnumRuneType.Water]	= Apollo.GetString("CRB_Water"),
+	[Item.CodeEnumRuneType.Earth]	= Apollo.GetString("CRB_Earth"),
+	[Item.CodeEnumRuneType.Logic]	= Apollo.GetString("CRB_Logic"),
+	[Item.CodeEnumRuneType.Life]	= Apollo.GetString("CRB_Life"),
+	[Item.CodeEnumRuneType.Fusion]	= Apollo.GetString("CRB_Fusion"),
 }
 
-local karElementsToId = -- TODO: Replace with enums
+local karElementsToSounds =
 {
-	[Item.CodeEnumRuneType.Fire]		= 131,
-	[Item.CodeEnumRuneType.Water]		= 132,
-	[Item.CodeEnumRuneType.Earth]		= 133,
-	[Item.CodeEnumRuneType.Air]			= 134,
-	[Item.CodeEnumRuneType.Life]		= 135,
-	[Item.CodeEnumRuneType.Logic]		= 136,
-	[Item.CodeEnumRuneType.Fusion]		= 137,
-	[Item.CodeEnumRuneType.Omni]		= 0,
+	[Item.CodeEnumRuneType.Air]		= {eNonSet = Sound.PlayUIEquipAirRune,		eSet = Sound.PlayUIEquipAirSetRune},
+	[Item.CodeEnumRuneType.Fire]	= {eNonSet = Sound.PlayUIEquipFireRune,		eSet = Sound.PlayUIEquipFireSetRune},
+	[Item.CodeEnumRuneType.Water]	= {eNonSet = Sound.PlayUIEquipWaterRune,	eSet = Sound.PlayUIEquipWaterSetRune},
+	[Item.CodeEnumRuneType.Earth]	= {eNonSet = Sound.PlayUIEquipEarthRune,	eSet = Sound.PlayUIEquipEarthSetRune},
+	[Item.CodeEnumRuneType.Logic]	= {eNonSet = Sound.PlayUIEquipLogicRune,	eSet = Sound.PlayUIEquipLogicSetRune},
+	[Item.CodeEnumRuneType.Life]	= {eNonSet = Sound.PlayUIEquipLifeRune,		eSet = Sound.PlayUIEquipLifeSetRune},
+	[Item.CodeEnumRuneType.Fusion]	= {eNonSet = Sound.PlayUIEquipFusionRune},
 }
 
-local ktAttributeToText =
+local karQualityColors =
 {
-	[Unit.CodeEnumProperties.Dexterity] 					= Apollo.GetString("CRB_Finesse"),
-	[Unit.CodeEnumProperties.Technology] 					= Apollo.GetString("CRB_Tech_Attribute"),
-	[Unit.CodeEnumProperties.Magic] 						= Apollo.GetString("CRB_Moxie"),
-	[Unit.CodeEnumProperties.Wisdom] 						= Apollo.GetString("UnitPropertyInsight"),
-	[Unit.CodeEnumProperties.Stamina] 						= Apollo.GetString("CRB_Grit"),
-	[Unit.CodeEnumProperties.Strength] 						= Apollo.GetString("CRB_Brutality"),
-
-	[Unit.CodeEnumProperties.Armor] 						= Apollo.GetString("CRB_Armor") ,
-	[Unit.CodeEnumProperties.ShieldCapacityMax] 			= Apollo.GetString("CBCrafting_Shields"),
-
-	[Unit.CodeEnumProperties.AssaultPower] 					= Apollo.GetString("CRB_Assault_Power"),
-	[Unit.CodeEnumProperties.SupportPower] 					= Apollo.GetString("CRB_Support_Power"),
-	[Unit.CodeEnumProperties.Rating_AvoidReduce] 			= Apollo.GetString("CRB_Strikethrough_Rating"),
-	[Unit.CodeEnumProperties.Rating_CritChanceIncrease] 	= Apollo.GetString("CRB_Critical_Chance"),
-	[Unit.CodeEnumProperties.RatingCritSeverityIncrease] 	= Apollo.GetString("CRB_Critical_Severity"),
-	[Unit.CodeEnumProperties.Rating_AvoidIncrease] 			= Apollo.GetString("CRB_Deflect_Rating"),
-	[Unit.CodeEnumProperties.Rating_CritChanceDecrease] 	= Apollo.GetString("CRB_Deflect_Critical_Hit_Rating"),
-	[Unit.CodeEnumProperties.ManaPerFiveSeconds] 			= Apollo.GetString("CRB_Attribute_Recovery_Rating"),
-	[Unit.CodeEnumProperties.HealthRegenMultiplier] 		= Apollo.GetString("CRB_Health_Regen_Factor"),
-	[Unit.CodeEnumProperties.BaseHealth] 					= Apollo.GetString("CRB_Health_Max"),
-
-	[Unit.CodeEnumProperties.ResistTech] 					= Apollo.GetString("Tooltip_ResistTech"),
-	[Unit.CodeEnumProperties.ResistMagic]					= Apollo.GetString("Tooltip_ResistMagic"),
-	[Unit.CodeEnumProperties.ResistPhysical]				= Apollo.GetString("Tooltip_ResistPhysical"),
-
-	[Unit.CodeEnumProperties.PvPOffensiveRating] 			= Apollo.GetString("Tooltip_PvPOffense"),
-	[Unit.CodeEnumProperties.PvPDefensiveRating]			= Apollo.GetString("Tooltip_PvPDefense"),
+	[Item.CodeEnumItemQuality.Inferior] 		= "ItemQuality_Inferior",
+	[Item.CodeEnumItemQuality.Average] 			= "ItemQuality_Average",
+	[Item.CodeEnumItemQuality.Good] 			= "ItemQuality_Good",
+	[Item.CodeEnumItemQuality.Excellent] 		= "ItemQuality_Excellent",
+	[Item.CodeEnumItemQuality.Superb] 			= "ItemQuality_Superb",
+	[Item.CodeEnumItemQuality.Legendary] 		= "ItemQuality_Legendary",
+	[Item.CodeEnumItemQuality.Artifact]		 	= "ItemQuality_Artifact",
 }
+
+local ktSlotNames =
+{
+	[GameLib.CodeEnumItemSlots.Weapon] 	= Apollo.GetString("CRB_Weapon"),
+	[GameLib.CodeEnumItemSlots.Head] 	= Apollo.GetString("CRB_Head"),
+	[GameLib.CodeEnumItemSlots.Chest] 	= Apollo.GetString("CRB_Chest"),
+	[GameLib.CodeEnumItemSlots.Legs] 	= Apollo.GetString("CRB_Legs"),
+	[GameLib.CodeEnumItemSlots.Feet] 	= Apollo.GetString("CRB_Feet"),
+	[GameLib.CodeEnumItemSlots.Hands] 	= Apollo.GetString("CRB_Hands"),
+}
+
+local crRed = ApolloColor.new("Reddish")
+
+local keFilterType =
+{
+	Level = 1,
+	Slot = 2,
+}
+
+local knAllRunesId = 0
+
+
+local knFilterDividerData = 51
 
 local Runecrafting = {}
 
@@ -113,55 +109,33 @@ function Runecrafting:OnDocumentReady()
 		return
 	end
 
-	math.randomseed(os.time())
-
 	Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded", 					"OnInterfaceMenuListHasLoaded", self)
-	-- Apollo.RegisterEventHandler("WindowManagementReady", 					"OnWindowManagementReady", self) -- Temporarily disabled
+	Apollo.RegisterEventHandler("GenericEvent_CraftingResume_CloseEngraving", 	"OnGenericEvent_CraftingResume_CloseEngraving", self)
+	Apollo.RegisterEventHandler("TradeskillEngravingStationClose", 				"OnTradeskillEngravingStationClose", self)
 
-	Apollo.RegisterEventHandler("GenericEvent_RightClick_OpenEngraving", 		"OnOpenEquipTab", self)
-	Apollo.RegisterEventHandler("GenericEvent_InterfaceMenu_OpenEngraving", 	"OnOpenEquipTab", self)
-	Apollo.RegisterEventHandler("GenericEvent_CraftingResume_OpenEngraving", 	"OnOpenCraftingResume", self)
+	Apollo.RegisterEventHandler("GenericEvent_RightClick_OpenEngraving", 		"InitEditWindow", self)
+	Apollo.RegisterEventHandler("GenericEvent_InterfaceMenu_OpenEngraving", 	"InitEditWindow", self)
+	Apollo.RegisterEventHandler("ItemModified",									"OnItemModified", self)
+	Apollo.RegisterEventHandler("DragDropSysBegin",								"OnDragDropSystemBegin", self)
+	Apollo.RegisterEventHandler("DragDropSysEnd", 								"OnDragDropSystemEnd", self)
+	
+	Apollo.RegisterEventHandler("GenericEvent_CraftingResume_OpenEngraving", 	"InitCraftingWindow", self)
 	Apollo.RegisterEventHandler("GenericEvent_CraftingSummary_Closed", 			"OnCloseSummary", self)
-	Apollo.RegisterEventHandler("GenericEvent_CraftingResume_CloseEngraving", 	"OnClose", self)
-	Apollo.RegisterEventHandler("TradeskillEngravingStationClose", 				"OnClose", self)
-	Apollo.RegisterEventHandler("UpdateInventory", 								"OnUpdateInventory", self)
-	Apollo.RegisterEventHandler("PlayerEquippedItemChanged", 					"OnRedrawAllFromUI", self)
-	Apollo.RegisterEventHandler("ItemModified", 								"OnRedrawAllFromUI", self)
+	Apollo.RegisterEventHandler("UpdateInventory", 								"HelperRefreshBottomMaterials", self)
 
-	Apollo.RegisterTimerHandler("Runecrafting_RerollDelay",						"OnRedrawAllFromUI", self)
-	Apollo.CreateTimer("Runecrafting_RerollDelay", 1.5, false)
-	Apollo.StopTimer("Runecrafting_RerollDelay")
+	--ServiceTokenPrompt
+	Apollo.RegisterEventHandler("ServiceTokenClosed_RuneCrafting", "OnServiceTokenClosed_RuneCrafting", self)
 
-	Apollo.RegisterTimerHandler("Runecrafting_ConfirmPopupDelay",				"OnRunecrafting_ConfirmPopupDelay", self)
-	Apollo.CreateTimer("Runecrafting_ConfirmPopupDelay", 0.15, false)
-	Apollo.StopTimer("Runecrafting_ConfirmPopupDelay")
-
-	self.timerCraftingSation = ApolloTimer.Create(1.0, true, "OnRunecrafting_TimerStationCheck", self)
-
-	Apollo.RegisterEventHandler("DragDropSysBegin", 							"OnSystemBeginDragDrop", self)
-	Apollo.RegisterEventHandler("DragDropSysEnd", 								"OnSystemEndDragDrop", self)
+	self.tFilters = {}
+	self.nDefaultLevel = 1
+	self.wndCurrentConfirmPopup = nil
+	self.wndSelectedElement = nil
+	self.wndSelection = nil
 end
 
 function Runecrafting:OnInterfaceMenuListHasLoaded()
 	local tData = { "GenericEvent_InterfaceMenu_OpenEngraving", "", "Icon_Windows32_UI_CRB_InterfaceMenu_Runecrafting" }
 	Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("EngravingStation_RunecraftingTitle"), tData)
-end
-
-function Runecrafting:OnWindowManagementReady()
-	--Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("EngravingStation_RunecraftingTitle")})
-end
-
-function Runecrafting:OnOpenEquipTab(itemArg) -- Optional Arg
-	self:Initialize()
-	self.wndMain:FindChild("ToggleRuneCreation"):SetCheck(false)
-	self.wndMain:FindChild("ToggleEquipRunes"):SetCheck(true)
-	self:RedrawAll(itemArg)
-end
-
-function Runecrafting:OnOpenCraftingResume()
-	self:Initialize()
-	self:RedrawAll()
-	self.tWindowMap["RerollItemTitle"]:SetText(Apollo.GetString("EngravingStation_RuneSlotRerollTitleResume"))
 end
 
 function Runecrafting:Initialize()
@@ -170,346 +144,429 @@ function Runecrafting:Initialize()
 	end
 
     self.wndMain = Apollo.LoadForm(self.xmlDoc, "RunecraftingForm", nil, self)
-
-	self.wndMain:FindChild("RuneCreationContainer"):FindChild("RuneCreationCraftBtn"):Enable(false)
-	self.wndMain:FindChild("ToggleRuneCreation"):AttachWindow(self.wndMain:FindChild("RuneCreationContainer"))
-	self.wndMain:FindChild("ToggleEquipRunes"):AttachWindow(self.wndMain:FindChild("EquipRunesContainer"))
-
-	self.tWindowMap =
-	{
-		["PostCraftBlocker"]			= self.wndMain:FindChild("BGFrame:PostCraftBlocker"),
-		["CraftingSummaryContainer"]	= self.wndMain:FindChild("BGFrame:PostCraftBlocker:CraftingSummaryContainer"),
-		["RerollBlocker"]				= self.wndMain:FindChild("BGFrame:RerollBlocker"),
-		["RerollInitCastBarBG"]			= self.wndMain:FindChild("BGFrame:RerollBlocker:RerollInitCastBarBG"),
-		["RerollDoneCastBarBG"]			= self.wndMain:FindChild("BGFrame:RerollBlocker:RerollDoneCastBarBG"),
-		["RerollBlockerHoloBG"]			= self.wndMain:FindChild("BGFrame:RerollBlocker:RerollBlockerHoloBG"),
-		["RerollItemTitle"]				= self.wndMain:FindChild("BGFrame:RerollBlocker:RerollBlockerHoloBG:RerollItemTitle"),
-		["RuneCreationName"]			= self.wndMain:FindChild("RuneCreationContainer:RuneCreationBottom:RuneCreationName"),
-		["RuneCreationNoStationBG"]		= self.wndMain:FindChild("RuneCreationContainer:RuneCreationBottom:RuneCreationNoStationBG"),
-		["RuneCreationNoSignal"]		= self.wndMain:FindChild("RuneCreationContainer:RuneCreationBottom:RuneCreationNoStationBG:RuneCreationNoSignal"),
-		["RuneCreationNoSignalText"]	= self.wndMain:FindChild("RuneCreationContainer:RuneCreationBottom:RuneCreationNoStationBG:RuneCreationNoSignalText"),
-	}
-
-	local wndMeasure = Apollo.LoadForm(self.xmlDoc, "EquipmentItem", nil, self)
-	self.knEquipmentItemHeight = wndMeasure:GetHeight()
-	wndMeasure:Destroy()
-
-	wndMeasure = Apollo.LoadForm(self.xmlDoc, "TypeTierItem", nil, self)
-	self.knDefaultTypeTierItemHeight = wndMeasure:GetHeight()
-	wndMeasure:Destroy()
-
-	-- Tutorial
-	local wndTutorialPopup = self.wndMain:FindChild("BGFrame:ShowTutorialsBtn:ShowTutorialPopup")
-	local wndTutorialPopupText = wndTutorialPopup:FindChild("ShowTutorialPopupText")
-	local strTutorialPopupText = Apollo.GetString("Runecrafting_ShowTutorialPopupText"):gsub("\\n", "<P TextColor=\"0\">.</P>")
-	wndTutorialPopupText:SetAML("<P Font=\"CRB_InterfaceSmall\" TextColor=\"UI_TextHoloBody\">"..strTutorialPopupText.."</P>")
-	local nTextWidth, nTextHeight = wndTutorialPopupText:SetHeightToContentHeight() -- For various languages
-	local nLeft, nTop, nRight, nBottom = wndTutorialPopup:GetAnchorOffsets()
-	wndTutorialPopup:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nTextHeight + 30)
-	self.wndMain:FindChild("BGFrame:ShowTutorialsBtn"):AttachWindow(wndTutorialPopup)
-
-	-- Variables
-	self.bAllowClicks = true
-	self.itemDragging = nil
-	self.wndCurrentConfirmPopup = nil
-
-	local bRequirementMet = true
-	local nPlayerLevel = GameLib.GetPlayerLevel()
-	if nPlayerLevel and nPlayerLevel < knLevelRequirement then
-		self.wndMain:FindChild("RuneCreationItemList"):SetTextColor(ApolloColor.new("UI_WindowTextCraftingRedCapacitor"))
-		self.wndMain:FindChild("RuneCreationItemList"):SetText(String_GetWeaselString(Apollo.GetString("Runecrafting_LevelRequirementNotMet"), knLevelRequirement))
-		bRequirementMet = false
+	
+	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("EngravingStation_RunecraftingTitle")})
+	
+	self.wndMain:Invoke()
+	
+	self.bPlayerCanCraft = GameLib.GetPlayerLevel() >= GameLib.GetLevelUpUnlock(GameLib.LevelUpUnlock.Runecrafting).nLevel
+	
+	if not CraftingLib.IsAtEngravingStation() then
+		local wndTabs = self.wndMain:FindChild("BGFrame:RuneCreationTypes")
+		wndTabs:FindChild("ToggleElementCreation"):Enable(false)
+		wndTabs:FindChild("ToggleSetCreation"):Enable(false)
 	else
-		self.wndMain:FindChild("RuneCreationItemList"):SetTextColor(ApolloColor.new("UI_TextHoloBodyHighlight"))
-		self.wndMain:FindChild("RuneCreationItemList"):SetText(Apollo.GetString("Runecrafting_StartingHelperTip"))
-	end
-
-	-- Initialize Elements
-	local wndParent = self.wndMain:FindChild("RuneCreationElementList")
-	for idx, eElement in pairs(Item.CodeEnumRuneType) do
-		if eElement ~= Item.CodeEnumRuneType.Omni then -- There are no Omni runes, so skip
-			local wndCurr = self:LoadByName("RuneCreationElementItem", wndParent, idx)
-			wndCurr:FindChild("RuneCreationElementBtn"):SetData(eElement)
-			wndCurr:FindChild("RuneCreationElementBtn"):Enable(bRequirementMet)
-			wndCurr:FindChild("RuneCreationElementIcon"):SetSprite(karElementalsToMetal[eElement].strFade)
-			wndCurr:FindChild("RuneCreationElementName"):SetText(karElementsToName[eElement].strName)
-			wndCurr:FindChild("RuneCreationElementName"):SetTextColor("WindowTitleColor")
-		end
-	end
-	
-	wndParent:ArrangeChildrenVert(0, function(a,b) return a:GetName() < b:GetName() end)
-	
-	--Default to equipped tab.
-	self.wndMain:FindChild("ToggleEquipRunes"):SetCheck(true)
-end
-
-function Runecrafting:OnRunecrafting_TimerStationCheck() -- Hackish: These are async from the rest of the UI (and definitely can't handle data being set)
-	if self.wndMain and self.wndMain:IsValid() then
-		local bAtStation = CraftingLib.IsAtEngravingStation()
-		self.tWindowMap["RuneCreationNoStationBG"]:Show(not bAtStation)
-		self.tWindowMap["RuneCreationNoSignal"]:Show(not bAtStation and self.tWindowMap["RuneCreationName"]:GetText() == "")
-		self.tWindowMap["RuneCreationNoSignalText"]:Show(not bAtStation and self.tWindowMap["RuneCreationName"]:GetText() == "")
+		self:InitFilters()
 	end
 end
 
 function Runecrafting:OnCloseFromUI(wndHandler, wndControl)
 	if wndHandler == wndControl then
-		self:OnClose()
+		self.wndMain:Close()
+	end
+end
+
+function Runecrafting:OnGenericEvent_CraftingResume_CloseEngraving()
+	if self.wndMain and self.wndMain:IsValid() then
+		self.wndMain:Close()
+	end
+end
+	
+function Runecrafting:OnTradeskillEngravingStationClose()
+	if self.wndMain and self.wndMain:IsValid() then
+		self.wndMain:Close()
 	end
 end
 
 function Runecrafting:OnClose()
-	if self.wndMain and self.wndMain:IsValid() then
+	if self.wndMain then
 		self.wndMain:Destroy()
 		self.wndMain = nil
-		self.tWindowMap = nil
-	end
-
-	Event_CancelEngravingStation()
-end
-
-function Runecrafting:OnRedrawAllFromUI()
-	self:RedrawAll()
-end
-
-function Runecrafting:OnRuneCreationElementToggle(wndHandler, wndControl)
-	for idx, wndCurr in pairs(self.wndMain:FindChild("RuneCreationElementList"):GetChildren()) do
-		if wndCurr:FindChild("RuneCreationElementName") then
-			wndCurr:FindChild("RuneCreationElementName"):SetTextColor(wndCurr:FindChild("RuneCreationElementBtn"):IsChecked() and "UI_WindowTitleYellow" or "WindowTitleColor")
-		end
-	end
-
-	self.wndMain:FindChild("RuneCreationItemList"):SetText(Apollo.GetString("Runecrafting_StartingHelperTip"))
-	self.wndMain:FindChild("RuneCreationItemList"):DestroyChildren() -- May be able to refactor this
-	self.wndMain:FindChild("RuneCreationItemList"):RecalculateContentExtents()
-	self:ResetRuneCreationBottom()
-	self:RedrawAll()
-end
-
------------------------------------------------------------------------------------------------
--- Main Draw Method
------------------------------------------------------------------------------------------------
-
-function Runecrafting:RedrawAll(itemToOpenTo)
-	if not self.wndMain or not self.wndMain:IsValid() or not self.wndMain:IsVisible() then
-		return
-	end
-
-	if self.wndMain:FindChild("ToggleRuneCreation"):IsChecked() then
-		self:RedrawCreation()
-	elseif self.wndMain:FindChild("ToggleEquipRunes"):IsChecked() then
-		self:RedrawEquipment(itemToOpenTo)
-	end
-
-	local tCurrentCraft = CraftingLib.GetCurrentCraft()
-	if tCurrentCraft and tCurrentCraft.arSlotTypes and not self.tWindowMap["RerollDoneCastBarBG"]:IsShown() then
-		self:RedrawRerollBlocker(tCurrentCraft)
-	elseif not self.tWindowMap["RerollInitCastBarBG"]:IsShown() then
-		self.tWindowMap["RerollBlocker"]:Show(false)
-		self.tWindowMap["RerollDoneCastBarBG"]:Show(false)
+		
+		self.tFilters = {}
+		self.wndCurrentConfirmPopup = nil
+		self.wndSelectedElement = nil
+		self.wndSelection = nil
+		
+		Event_CancelEngravingStation()
 	end
 end
 
-function Runecrafting:RedrawRerollBlocker(tCurrentCraft)
-	self.tWindowMap["RerollBlocker"]:Show(true)
-	self.tWindowMap["RerollBlockerHoloBG"]:Show(true)
-	self.tWindowMap["RerollInitCastBarBG"]:Show(false)
-
-	local itemSelected = tCurrentCraft.itemSelected
-	local tRuneData = itemSelected:GetRuneSlots()
-	local tPreviousRune = tRuneData.arRuneSlots[tCurrentCraft.nSlotIndex]
-
-	local eSlot1 = tCurrentCraft.arSlotTypes[1]
-	local eSlot2 = tCurrentCraft.arSlotTypes[2]
-	local wndRerollBlocker = self.tWindowMap["RerollBlocker"]
-	wndRerollBlocker:FindChild("RerollElementLeftBtn"):SetData(eSlot1)
-	wndRerollBlocker:FindChild("RerollElementLeftBtn"):SetActionData(GameLib.CodeEnumConfirmButtonType.RuneSlotFinishReroll, eSlot1)
-	wndRerollBlocker:FindChild("RerollElementRightBtn"):SetData(eSlot2)
-	wndRerollBlocker:FindChild("RerollElementRightBtn"):SetActionData(GameLib.CodeEnumConfirmButtonType.RuneSlotFinishReroll, eSlot2)
-	wndRerollBlocker:FindChild("RerollElementAbandonBtn"):SetData(tCurrentCraft.nSchematicId)
-	wndRerollBlocker:FindChild("RerollElementAbandonBtn"):SetActionData(GameLib.CodeEnumConfirmButtonType.CraftingAbandon)
-
-	-- Formatting
-	local strDescription = String_GetWeaselString(Apollo.GetString("EngravingStation_SlotPreviously"), tCurrentCraft.nSlotIndex, karElementsToName[tPreviousRune.eType].strName)
-	wndRerollBlocker:FindChild("RerollElementLeftIcon"):SetSprite(karElementsToSprite[eSlot1].strBtn)
-	wndRerollBlocker:FindChild("RerollElementRightIcon"):SetSprite(karElementsToSprite[eSlot2].strBtn)
-	wndRerollBlocker:FindChild("RerollElementAbandonIcon"):SetSprite(karElementsToSprite[tPreviousRune.eType].strBtn)
-	wndRerollBlocker:FindChild("RerollElementAbandonBtn"):SetText("")
-	wndRerollBlocker:FindChild("RerollItemName"):SetText(itemSelected:GetName())
-	wndRerollBlocker:FindChild("RerollItemDescription"):SetText(strDescription)
-	wndRerollBlocker:FindChild("RerollItemIcon"):SetSprite(itemSelected:GetIcon())
-	Tooltip.GetItemTooltipForm(self, wndRerollBlocker:FindChild("RerollItemIcon"), itemSelected, {bSelling = false})
-
-	-- Random Quip
-	local tRandomElement = { karElementsToName[eSlot1].strLetter, karElementsToName[eSlot2].strLetter }
-	local strRandom = Apollo.GetString("Runecrafting_RandomFlavor_"..tRandomElement[math.random(1,2)]..math.random(1, knNumRandomRerollFlavor)) or ""
-	wndRerollBlocker:FindChild("RerollSpeechText"):SetText(strRandom)
-end
-
-function Runecrafting:RedrawEquipment(itemToOpenTo)
-	local wndScroll = self.wndMain:FindChild("MainItemList")
-	local nVScrollPos = wndScroll:GetVScrollPos()
-	wndScroll:DestroyChildren()
-
-	local nScrollHeightCounter = 0
-	local nScrollHeightOverride = 0
-	for idx, tCurrItem in pairs(CraftingLib.GetItemsWithRuneSlots(true, false)) do -- 1st arg is Equipped
-		if tCurrItem == itemToOpenTo then
-			nScrollHeightOverride = nScrollHeightCounter
-		end
-
-		if tCurrItem then
-			self:NewEquipmentItem(tCurrItem, wndScroll, true)
-			nScrollHeightCounter = nScrollHeightCounter + self.knEquipmentItemHeight
-		end
+---------------------------------------------------------------------------------------
+-- Crafting
+---------------------------------------------------------------------------------------
+	---------------------------------------------------
+	-- Initialization
+	---------------------------------------------------
+function Runecrafting:InitCraftingWindow()
+	if not self.wndMain then
+		self:Initialize()
 	end
+	
+	self.wndMain:FindChild("RuneCreationContainer"):Show(true)
+	
 
-	for idx, tCurrItem in pairs(CraftingLib.GetItemsWithRuneSlots(false, true)) do -- 2nd arg is Inventory
-		if tCurrItem == itemToOpenTo then
-			nScrollHeightOverride = nScrollHeightCounter
-		end
-
-		if tCurrItem then
-			self:NewEquipmentItem(tCurrItem, wndScroll)
-			nScrollHeightCounter = nScrollHeightCounter + self.knEquipmentItemHeight
-		end
-	end
-
-	wndScroll:ArrangeChildrenVert(0)
-	wndScroll:SetVScrollPos(nScrollHeightOverride > 0 and nScrollHeightOverride or nVScrollPos)
-	wndScroll:RecalculateContentExtents()
-	wndScroll:SetText(#self.wndMain:FindChild("MainItemList"):GetChildren() == 0 and Apollo.GetString("EngravingStation_NoInscribableItems") or "")
-end
-
-function Runecrafting:RedrawCreation()
-	-- Determine element filter
-	local eElementFilter = nil
-	for idx, wndCurr in pairs(self.wndMain:FindChild("RuneCreationElementList"):GetChildren()) do
-		local wndCurrBtn = wndCurr:FindChild("RuneCreationElementBtn")
-		wndCurrBtn:FindChild("RuneCreationElementIcon"):SetSprite(karElementalsToMetal[wndCurrBtn:GetData()].strFade)
-		wndCurrBtn:FindChild("RuneCreationElementIconBright"):SetSprite(karElementalsToMetal[wndCurrBtn:GetData()].strBright)
-		wndCurrBtn:FindChild("RuneCreationElementIconBright"):Show(wndCurrBtn:IsChecked(), false, 0.4)
-
-		if wndCurrBtn and wndCurrBtn:IsChecked() then
-			eElementFilter = karElementsToId[wndCurrBtn:GetData()] or nil
-		end
-	end
-
-	if not eElementFilter then
-		return
-	end
-
-	-- Prebuild the table
-	local tSchematicList = {}
-	for idx, tCurrSchematic in pairs(CraftingLib.GetSchematicList(CraftingLib.CodeEnumTradeskill.Runecrafting, eElementFilter, nil, false)) do
-		local tSchematicInfo = CraftingLib.GetSchematicInfo(tCurrSchematic.nSchematicId)
-		local strItemType = tSchematicInfo.itemOutput:GetItemTypeName() -- This will be Earth Tier 1, Earth Tier 2, etc.
-		if not tSchematicList[strItemType] then
-			tSchematicList[strItemType] = {}
-		end
-		tSchematicList[strItemType][idx] = { tCurrSchematic = tCurrSchematic, tSchematicInfo = tSchematicInfo }
-	end
-
-	-- Draw Runes
-	local wndPrevChecked = nil
-	local wndCreateARuneParent = self.wndMain:FindChild("RuneCreationItemList")
-	for strItemType, tRuneList in pairs(tSchematicList) do
-		local wndTypeTier = self:LoadByName("TypeTierItem", wndCreateARuneParent, "TypeTierItem"..strItemType)
-		wndTypeTier:FindChild("TypeTierItemLabel"):SetText(strItemType)
-		wndTypeTier:FindChild("TypeTierItemBtn"):SetData(wndTypeTier)
-		wndTypeTier:FindChild("TypeTierItemContainer"):DestroyChildren()
-		wndTypeTier:SetData(tRuneList)
-
-		if wndTypeTier:FindChild("TypeTierItemBtn"):IsChecked() then
-			wndPrevChecked = wndTypeTier
-		end
-		wndTypeTier:FindChild("TypeTierItemBtn"):SetCheck(false)
-	end
-
-	-- Check the first in list, after sorting
-	wndCreateARuneParent:SetText("")
-	wndCreateARuneParent:ArrangeChildrenVert(0, function(a,b) return a:GetName() < b:GetName() end)
-	if wndPrevChecked then
-		wndPrevChecked:FindChild("TypeTierItemBtn"):SetCheck(true)
-		self:DrawCreateRuneContents(wndPrevChecked)
+	local wndItemList = self.wndMain:FindChild("RuneCreationItemList")
+	if not self.bPlayerCanCraft then
+		wndItemList:SetTextColor(crRed)
+		wndItemList:SetText(String_GetWeaselString(Apollo.GetString("Runecrafting_LevelRequirementNotMet"), GameLib.GetLevelUpUnlock(GameLib.LevelUpUnlock.Runecrafting).nLevel))
 	else
-		local wndFirst = wndCreateARuneParent:GetChildren()[1]
-		if wndFirst then
-			wndFirst:FindChild("TypeTierItemBtn"):SetCheck(true)
-			self:DrawCreateRuneContents(wndFirst)
-		end
+		wndItemList:SetTextColor(ApolloColor.new("UI_TextHoloBodyHighlight"))
+		wndItemList:SetText(Apollo.GetString("Runecrafting_StartingHelperTip"))
 	end
-
-	self:ResizeCreateRunes()
+	
+	local wndTabs = self.wndMain:FindChild("BGFrame:RuneCreationTypes")
+	wndTabs:FindChild("ToggleElementCreation"):SetCheck(true)
+	wndTabs:FindChild("ToggleSetCreation"):SetCheck(false)
+	wndTabs:FindChild("ToggleEquipRunes"):SetCheck(false)
+	
+	self:OnElementalCreation()
 end
 
-function Runecrafting:DrawCreateRuneContents(wndParent)
-	local tRuneList = wndParent:GetData()
+function Runecrafting:OnElementalCreation(wndHandler, wndControl)
+	self.wndSelectedElement = nil
+	self.tSelectedSchematic = nil
 
-	for idx2, tPackedData in pairs(tRuneList) do
-		local tCurrSchematic = tPackedData.tCurrSchematic
-		local tSchematicInfo = tPackedData.tSchematicInfo
+	-- Initialize Elements
+	local wndParent = self.wndMain:FindChild("RuneCreationElementList")
+	wndParent:DestroyChildren()
+	
+	self.wndMain:FindChild("RuneCreationItemList"):DestroyChildren()
+	
+	local wndStatSeperator = Apollo.LoadForm(self.xmlDoc, "RuneCreationSeperator", wndParent, self)
+	wndStatSeperator:SetText(Apollo.GetString("Character_Stats"))
+	
+	for idx, eElement in pairs(Item.CodeEnumRuneType) do
+		if eElement ~= Item.CodeEnumRuneType.Fusion then
+			local wndCurr = Apollo.LoadForm(self.xmlDoc, "RuneCreationElementBtn", wndParent, self)
+			wndCurr:SetData(eElement)
+			wndCurr:Enable(self.bPlayerCanCraft)
+			wndCurr:FindChild("RuneCreationElementIcon"):SetSprite(karElementsToCategorySprite[eElement].strFade)
+			wndCurr:FindChild("RuneCreationElementIconBright"):SetSprite(karElementsToCategorySprite[eElement].strBright)
+			wndCurr:FindChild("RuneCreationElementName"):SetText(karElementsToName[eElement])
+		end
+	end
+	
+	-- Set up the seperator
+	local wndSpecialSeperator = Apollo.LoadForm(self.xmlDoc, "RuneCreationSeperator", wndParent, self)
+	wndSpecialSeperator:SetText(Apollo.GetString("Runecrafting_Specials"))
+	
+	-- Set up the Fusion rune entry
+	local wndFusion = Apollo.LoadForm(self.xmlDoc, "RuneCreationSpecialBtn", wndParent, self)
+	wndFusion:SetData(Item.CodeEnumRuneType.Fusion)
+	wndFusion:Enable(self.bPlayerCanCraft)
+	
+	self.wndMain:FindChild("RuneCreationItemList"):SetText(Apollo.GetString("Runecrafting_StartingHelperTip"))
+	
+	wndParent:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	wndParent:RecalculateContentExtents()
+	wndParent:SetVScrollPos(0)
+	
+	self.wndMain:FindChild("RuneCreationContainer:RuneCreationBottom:RuneCreationCraftBtn"):Enable(false)
+	self:HelperRefreshBottomMaterials()
+	
+	self.wndMain:FindChild("EquipRunesContainer"):Show(false)
+	self.wndMain:FindChild("RuneCreationContainer"):Show(true)
+	
+	local wndHeader = self.wndMain:FindChild("FilterHeader")
+	local wndElements = self.wndMain:FindChild("RuneCreationElementList")
+	local nLeft, nTop, nRight, nBottom = wndHeader:GetOriginalLocation():GetOffsets()
+	local nElementLeft, nElementTop, nElementRight, nElementBottom = wndElements:GetOriginalLocation():GetOffsets()
+	
+	wndHeader:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+	wndElements:SetAnchorOffsets(nElementLeft, nElementTop, nElementRight, nElementBottom)
+	
+	self.tFilters.nLevel = self.nDefaultLevel
+	self:SelectElementOrSet(nil, nil, true)
+end
 
-		-- Check Materials
-		local bHasMaterials = true
-		for idx2, tMaterialData in pairs(tSchematicInfo.tMaterials) do
-			if tMaterialData.nAmount > (tMaterialData.itemMaterial:GetBackpackCount() + tMaterialData.itemMaterial:GetBankCount()) then
-				bHasMaterials = false
-				break
+function Runecrafting:OnSetCreation(wndHandler, wndControl)	
+	-- Initialize Sets
+	self.tSelectedSchematic = nil
+	
+	local wndParent = self.wndMain:FindChild("RuneCreationElementList")
+	wndParent:DestroyChildren()
+	
+	self.wndMain:FindChild("RuneCreationItemList"):DestroyChildren()
+	
+	local tSets = CraftingLib.GetRuneSets(self.tFilters.eClass)
+	for idx = 1, #tSets do
+		local wndCurr = Apollo.LoadForm(self.xmlDoc, "RuneCreationSetBtn", wndParent, self)
+		wndCurr:SetData(tSets[idx].nSetId)
+		wndCurr:Enable(self.bPlayerCanCraft)
+		wndCurr:FindChild("RuneCreationSetName"):SetText(tSets[idx].strName)
+	end
+	
+	self.wndMain:FindChild("RuneCreationItemList"):SetText(Apollo.GetString("Runecrafting_SelectSet"))
+	
+	wndParent:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function(a,b) return a:FindChild("RuneCreationSetName"):GetText() < b:FindChild("RuneCreationSetName"):GetText() end)
+	wndParent:RecalculateContentExtents()
+	wndParent:SetVScrollPos(0)
+	
+	self.wndMain:FindChild("RuneCreationContainer:RuneCreationBottom:RuneCreationCraftBtn"):Enable(false)
+	self:HelperRefreshBottomMaterials()
+	self.wndMain:FindChild("EquipRunesContainer"):Show(false)
+	self.wndMain:FindChild("RuneCreationContainer"):Show(true)
+	
+	local wndHeader = self.wndMain:FindChild("FilterHeader")
+	local wndElements = self.wndMain:FindChild("RuneCreationElementList")
+	local nLeft, nTop, nRight, nBottom = wndHeader:GetOriginalLocation():GetOffsets()
+	local nElementLeft, nElementTop, nElementRight, nElementBottom = wndElements:GetOriginalLocation():GetOffsets()
+	
+	wndHeader:SetAnchorOffsets(nElementLeft, nTop, nRight, nBottom)
+	wndElements:SetAnchorOffsets(nElementLeft, nBottom, nElementRight, nElementBottom)
+	
+	self.tFilters.nLevel = self.nDefaultLevel
+	self:SelectElementOrSet(nil, nil, true)
+end
+
+	
+function Runecrafting:InitFilters()	
+	local wndFilters = self.wndMain:FindChild("RuneCreationContainer:FilterHeader:FilterButtons")
+	local wndLevelFilter = wndFilters:FindChild("LevelFilter")
+	wndFilters:FindChild("ShowCraftable"):Enable(true)
+	
+	local wndDropdown = wndLevelFilter:FindChild("Dropdown")
+	local wndContainer = wndDropdown:FindChild("Container")
+	local nPadding = wndDropdown:GetHeight() - wndContainer:GetHeight()
+	
+	wndContainer:DestroyChildren()
+
+	local arLevels = CraftingLib.GetRunecraftingLevels()
+
+	local nPlayerLevel = GameLib.GetPlayerLevel()
+	for idx = 1, #arLevels do
+		if arLevels[idx + 1] and nPlayerLevel < arLevels[idx + 1] then
+			self.nDefaultLevel = arLevels[idx]
+			break
+		end
+	end
+	
+	wndLevelFilter:SetText(String_GetWeaselString(Apollo.GetString("LevelUpUnlocks_LevelNum"), self.nDefaultLevel))
+
+	for idx = 1, #arLevels do
+		local wndEntry = Apollo.LoadForm(self.xmlDoc, "LevelFilterOption", wndContainer, self)
+		wndEntry:SetText(String_GetWeaselString(Apollo.GetString("LevelUpUnlocks_LevelNum"), arLevels[idx]))
+		wndEntry:SetData(arLevels[idx])
+		
+		if arLevels[idx] == self.nDefaultLevel then
+			wndEntry:SetCheck(true)
+		end
+	end
+	wndContainer:SetData(keFilterType.Level)
+	
+	-- Header for leveling runes.  Data of 0 means it'll be at the top
+	local wndDivider = Apollo.LoadForm(self.xmlDoc, "FilterDropdownDivider", wndContainer, self)
+	wndDivider:SetText(Apollo.GetString("Runecrafting_LevelingRunes"))
+	wndDivider:SetData(0)
+	
+	wndDivider = Apollo.LoadForm(self.xmlDoc, "FilterDropdownDivider", wndContainer, self)
+	wndDivider:SetText(Apollo.GetString("Runecrafting_ElderGameRunes"))
+	
+	-- Just need a value over 50  and less than the next step up for the sort function
+	wndDivider:SetData(knFilterDividerData)
+	
+	local nHeight = wndContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function(a,b) return a:GetData() < b:GetData() end)
+	
+	local nLeft, nTop, nRight, nBottom = wndDropdown:GetAnchorOffsets()
+	wndDropdown:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nHeight + nPadding)
+	
+	-- Slot Filter
+	local wndSlotDropdown = wndFilters:FindChild("SlotFilter:Dropdown")
+	local wndSlotContainer = wndSlotDropdown:FindChild("Container")
+	
+	nPadding = wndSlotDropdown:GetHeight() - wndSlotContainer:GetHeight()
+	
+	wndSlotContainer:DestroyChildren()
+	
+	local wndAllSlots = Apollo.LoadForm(self.xmlDoc, "SlotFilterOption", wndSlotContainer, self)
+	wndAllSlots:SetText(String_GetWeaselString(Apollo.GetString("Runecrafting_FitsIn"), Apollo.GetString("Runecrafting_AnySlot")))
+	wndAllSlots:SetData(knAllRunesId)
+	wndAllSlots:SetCheck(true)
+	
+	local arSlots = CraftingLib.GetRunecraftingSchematicFilters(Item.CodeEnumRuneType.Fusion).arSlots
+
+	for idx = 1, #arSlots do
+		local wndSlot = Apollo.LoadForm(self.xmlDoc, "SlotFilterOption", wndSlotContainer, self)
+		wndSlot:SetText(String_GetWeaselString(Apollo.GetString("Runecrafting_FitsIn"), ktSlotNames[arSlots[idx].eSlotId]))
+		wndSlot:SetData(arSlots[idx].eSlotId)
+	end
+	wndSlotContainer:SetData(keFilterType.Slot)
+	nHeight = wndSlotContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	
+	wndSlotDropdown:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nHeight + nPadding)
+	
+	local wndClassFilter = wndFilters:FindChild("ClassFilter")
+	local wndClassDropdown = wndClassFilter:FindChild("Dropdown")
+	local wndClassContainer = wndClassDropdown:FindChild("Container")
+	
+	nPadding = wndClassDropdown:GetHeight() - wndClassContainer:GetHeight()
+	
+	wndClassContainer:DestroyChildren()
+	
+	local wndEveryClass = Apollo.LoadForm(self.xmlDoc, "ClassFilterOption", wndClassContainer, self)
+	wndEveryClass:SetText(Apollo.GetString("Runecrafting_AllSets"))
+	wndEveryClass:SetData(knAllRunesId)
+	
+	local ePlayerClass = GameLib.GetPlayerUnit():GetClassId()
+	for strName, eClass in pairs(GameLib.CodeEnumClass) do
+		local wndClass = Apollo.LoadForm(self.xmlDoc, "ClassFilterOption", wndClassContainer, self)
+		wndClass:SetText(GameLib.GetClassName(eClass))
+		wndClass:SetData(eClass)
+		wndClass:SetCheck(eClass == ePlayerClass)
+	end
+
+	nHeight = wndClassContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function(a,b) return a:GetData() == knAllRunesId or a:GetText() < b:GetText() end)
+	
+	wndClassDropdown:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nHeight + nPadding)
+	wndClassFilter:SetText(GameLib.GetClassName(ePlayerClass))
+	
+	self.tFilters =
+	{
+		idElementOrSet = 0,
+		nLevel = self.nDefaultLevel,
+		eSlot = 0,
+		eClass = ePlayerClass,
+	}	
+	
+	self:SelectElementOrSet(nil, nil, true)
+end
+
+	---------------------------------------------------
+	-- Elements
+	---------------------------------------------------
+
+function Runecrafting:OnRuneCreationElementCheck(wndHandler, wndControl)
+	if wndHandler ~= wndControl then
+		return
+	end
+
+	if self.wndSelectedElement then
+		self.wndSelectedElement:FindChild("RuneCreationElementIconBright"):Show(false)
+	end
+	
+	wndHandler:FindChild("RuneCreationElementIconBright"):Show(true)
+	self.wndSelectedElement = wndHandler
+	
+	local wndSchematicContainer = self.wndMain:FindChild("RuneCreationItemList")
+	wndSchematicContainer:DestroyChildren()
+	wndSchematicContainer:SetText(Apollo.GetString("Runecrafting_SearchHelperFilter"))
+	
+	local eElement = wndHandler:GetData()
+	local tValidFilters = CraftingLib.GetRunecraftingSchematicFilters(eElement)
+	
+	self:SelectElementOrSet(eElement, tValidFilters)
+end
+
+	---------------------------------------------------
+	-- Rune Sets
+	---------------------------------------------------
+
+function Runecrafting:OnRuneSetCheck(wndHandler, wndControl)
+	if wndHandler ~= wndControl then
+		return
+	end
+	
+	local wndContainer = self.wndMain:FindChild("RuneCreationItemList")	
+	wndContainer:DestroyChildren()
+	wndContainer:SetText(Apollo.GetString("Runecrafting_SearchHelperFilter"))
+	
+	local idSet = wndHandler:GetData()
+	local tValidFilters = CraftingLib.GetRuneSetSchematicFilters(idSet)
+	
+	self:SelectElementOrSet(idSet, tValidFilters)
+end
+
+	---------------------------------------------------
+	-- General Rune Creation Functions
+	---------------------------------------------------
+function Runecrafting:SelectElementOrSet(idElementOrSet, tValidFilters, bForLoad)
+	local wndContainer = self.wndMain:FindChild("RuneCreationContainer:FilterHeader:FilterButtons")
+	
+	if idElementOrSet then
+		self.tFilters.idElementOrSet = idElementOrSet
+		
+		local wndLevelFilter = wndContainer:FindChild("LevelFilter")
+		local tValidLevels = {}
+
+		local bFoundCurrentLevel = false
+		for idx, tLevel in pairs(tValidFilters.arLevels) do
+			tValidLevels[tLevel.nLevel] = tLevel.nCount
+			if tLevel.nLevel == self.tFilters.nLevel then
+				bFoundCurrentLevel = true
 			end
 		end
 
-		-- Formatting
-		local wndCurr = self:LoadByName("NewRuneItem", wndParent:FindChild("TypeTierItemContainer"), "NewRuneItem"..tCurrSchematic.nSchematicId)
-		wndCurr:FindChild("NewRuneMoreInfoBtn"):SetData(tSchematicInfo)
-		wndCurr:FindChild("NewRuneMoreInfoName"):SetData(bHasMaterials)
-		wndCurr:FindChild("NewRuneMoreInfoName"):SetText(tCurrSchematic.strName)
-		wndCurr:FindChild("NewRuneMoreInfoName"):SetTextColor(bHasMaterials and "UI_BtnTextBlueNormal" or "xkcdReddish")
-		wndCurr:FindChild("NewRuneMoreInfoIcon"):SetSprite(bHasMaterials and "sprRunecrafting_BulletPoint_Green" or "sprRunecrafting_BulletPoint_Red")
-		Tooltip.GetItemTooltipForm(self, wndCurr, tSchematicInfo.itemOutput, {bSelling = false})
-	end
-end
+		for idx, wndLevel in pairs(wndLevelFilter:FindChild("Dropdown:Container"):GetChildren()) do
+			local nLevel = wndLevel:GetData()		
+			local bEnable = tValidLevels[nLevel] and tValidLevels[nLevel] > 0
+			wndLevel:Enable(bEnable)
 
-function Runecrafting:OnTypeTierItemCheck(wndHandler, wndControl)
-	local wndParent = wndHandler:GetData()
-	self:DrawCreateRuneContents(wndParent)
-	self:ResizeCreateRunes()
-end
-
-function Runecrafting:OnTypeTierItemUncheck(wndHandler, wndControl)
-	local wndParent = wndHandler:GetData()
-	wndParent:FindChild("TypeTierItemContainer"):DestroyChildren()
-	self:ResizeCreateRunes()
-end
-
-function Runecrafting:ResizeCreateRunes()
-	local function SortTypeTierItemContainer(a,b)
-		if not a or not b or not a:FindChild("NewRuneMoreInfoName") or not b:FindChild("NewRuneMoreInfoName") then return true end
-		return a:FindChild("NewRuneMoreInfoName"):GetText() < b:FindChild("NewRuneMoreInfoName"):GetText()
-	end
-
-	for idx, wndCurr in pairs(self.wndMain:FindChild("RuneCreationItemList"):GetChildren()) do
-		local nHeight = 0
-		if wndCurr:FindChild("TypeTierItemBtn"):IsChecked() then
-			nHeight = wndCurr:FindChild("TypeTierItemContainer"):ArrangeChildrenVert(0, SortTypeTierItemContainer)
-		else
-			nHeight = wndCurr:FindChild("TypeTierItemContainer"):ArrangeChildrenVert(0)
+			if bEnable and not bFoundCurrentLevel then
+				self.tFilters.nLevel = nLevel
+				bFoundCurrentLevel = true
+			end
+			
+			if nLevel > 0 and nLevel ~= knFilterDividerData then
+				local bCheck = nLevel == self.tFilters.nLevel
+				wndLevel:SetCheck(bCheck)
+				if bCheck then
+					wndLevelFilter:SetText(wndLevel:GetText())
+				end
+			end
 		end
-
-		local nExtra = wndCurr:FindChild("TypeTierItemBtn"):IsChecked() and 3 or 0
-		local nLeft, nTop, nRight, nBottom = wndCurr:GetAnchorOffsets()
-		wndCurr:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nHeight + nExtra + self.knDefaultTypeTierItemHeight)
+		
+		local wndSlotFilter = wndContainer:FindChild("SlotFilter")
+		local bUseSlots = self.wndMain:FindChild("BGFrame:RuneCreationTypes:ToggleElementCreation"):IsChecked() and idElementOrSet == Item.CodeEnumRuneType.Fusion
+		
+		if bUseSlots then
+			-- "All Slots" is always valid
+			local tValidSlots = {[knAllRunesId] = 1,}
+			for idx, tSlot in pairs(tValidFilters.arSlots) do
+				tValidSlots[tSlot.eSlotId] = tSlot.nCount
+			end
+			
+			for idx, wndSlot in pairs(wndSlotFilter:FindChild("Dropdown:Container"):GetChildren()) do
+				wndSlot:Enable(tValidSlots[wndSlot:GetData()] > 0)
+			end
+		end
+		
+		wndLevelFilter:Enable(true)
+		wndSlotFilter:Enable(bUseSlots)
+		wndContainer:FindChild("ShowCraftable"):Enable(true)
+	else
+		self.tFilters.idElementOrSet = 0
+		wndContainer:FindChild("LevelFilter"):Enable(false)
+		wndContainer:FindChild("SlotFilter"):Enable(false)
+		wndContainer:FindChild("ShowCraftable"):Enable(false)
 	end
-	self.wndMain:FindChild("RuneCreationItemList"):ArrangeChildrenVert(0, function(a,b) return a:GetName() < b:GetName() end)
+	
+	self.tFilters.eSlot = knAllRunesId
+	local wndFilter = self.wndMain:FindChild("RuneCreationContainer:FilterHeader:FilterButtons:SlotFilter")
+	
+	for idx, wndSlot in pairs(wndFilter:FindChild("Dropdown:Container"):GetChildren()) do
+		local bCorrectSlot = wndSlot:GetData() == self.tFilters.eSlot
+		wndSlot:SetCheck(bCorrectSlot)
+		
+		if bCorrectSlot then
+			wndFilter:SetText(wndSlot:GetText())
+		end
+	end
+	
+	self.tSelectedSchematic = nil
+	self:ResetRuneCreationBottom()
+
+	if not bForLoad then
+		self:GetSchematics()
+	end
 end
 
------------------------------------------------------------------------------------------------
--- Rune Creation Items
------------------------------------------------------------------------------------------------
-
-function Runecrafting:OnUpdateInventory()
-	self:HelperRefreshBottomMaterials()
-	self:RedrawAll()
+function Runecrafting:ResetRuneCreationBottom()
+	local wndBottom = self.wndMain:FindChild("RuneCreationContainer:RuneCreationBottom")
+	wndBottom:FindChild("RuneCreationMaterialsList"):DestroyChildren()
+	wndBottom:FindChild("RuneCreationMaterialsContainer"):Show(false)
+	wndBottom:FindChild("RuneCreationCraftBtn"):Enable(false)
+	wndBottom:FindChild("RuneCreationName"):SetText("")
 end
 
 function Runecrafting:HelperRefreshBottomMaterials()
@@ -517,91 +574,54 @@ function Runecrafting:HelperRefreshBottomMaterials()
 		return
 	end
 
-	local wndParent = self.wndMain:FindChild("RuneCreationContainer"):FindChild("RuneCreationBottom")
-	local tSchematicInfo = wndParent:GetData()
-	if not tSchematicInfo then
+	local wndParent = self.wndMain:FindChild("RuneCreationContainer:RuneCreationBottom")
+
+	if not self.tSelectedSchematic then
+		self:ResetRuneCreationBottom()
 		return
 	end
+	
+	self.tSelectedSchematic = CraftingLib.GetSchematicInfo(self.tSelectedSchematic.nSchematicId)
 
+	local wndMaterialList = wndParent:FindChild("RuneCreationMaterialsList")
+	wndMaterialList:DestroyChildren()
+	
 	local bCanMake = true
-	for idx2, tData in pairs(tSchematicInfo.tMaterials) do
-		local itemMaterial = tData.itemMaterial
-		local nOwnedCount = itemMaterial:GetBackpackCount() + itemMaterial:GetBankCount()
-		local bNotEnough = nOwnedCount < tData.nAmount
-		local wndMaterial = self:LoadByName("RawMaterialsItem", wndParent:FindChild("RuneCreationMaterialsList"), "RawMaterialsItem"..itemMaterial:GetName())
-		wndMaterial:FindChild("RawMaterialsIcon"):SetSprite(itemMaterial:GetIcon())
-		wndMaterial:FindChild("RawMaterialsIcon"):SetText(String_GetWeaselString(Apollo.GetString("CRB_NOutOfN"), nOwnedCount, tData.nAmount))
+	for idx, tData in pairs(self.tSelectedSchematic.arMaterials) do
+		bCanMake = bCanMake and tData.nOwned >= tData.nNeeded
+		local wndMaterial = Apollo.LoadForm(self.xmlDoc, "RawMaterialsItem", wndMaterialList, self)
+		wndMaterial:FindChild("RawMaterialsIcon"):SetSprite(tData.itemMaterial:GetIcon())
+		wndMaterial:FindChild("RawMaterialsIcon"):SetText(String_GetWeaselString(Apollo.GetString("CRB_NOutOfN"), tData.nOwned, tData.nNeeded))
 		wndMaterial:FindChild("RawMaterialsNotEnough"):Show(bNotEnough)
-		Tooltip.GetItemTooltipForm(self, wndMaterial, itemMaterial, {bSelling = false})
-
-		if bNotEnough then
-			bCanMake = false
-			wndParent:FindChild("RuneCreationCraftBtn"):Enable(false)
-		end
+		Tooltip.GetItemTooltipForm(self, wndMaterial, tData.itemMaterial, {bSelling = false})
 	end
-	wndParent:FindChild("RuneCreationMaterialsList"):ArrangeChildrenHorz(0)
-	wndParent:FindChild("RuneCreationChatBtn"):SetData({ tSchematicInfo = tSchematicInfo, bCanMake = bCanMake })
+	
+	wndParent:FindChild("RuneCost"):SetAmount(self.tSelectedSchematic.monMaxCraftingCost)
+	bCanMake = bCanMake and GameLib.GetPlayerCurrency():GetAmount() >= self.tSelectedSchematic.monMaxCraftingCost:GetAmount() and GameLib.GetEmptyInventorySlots() > 0
+	
+	wndParent:FindChild("RuneCreationCraftBtn"):Enable(bCanMake)
+	wndMaterialList:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.RightOrBottom)
+	wndMaterialList:Show(true)
+	wndParent:FindChild("RefreshAnim"):SetSprite("BK3:UI_BK3_Holo_RefreshReflectionSquare_anim")
+
 end
 
-function Runecrafting:OnRuneCreationChatBtn(wndHandler, wndControl)
-	local bCanMake = wndHandler:GetData().bCanMake
-	local tSchematicInfo = wndHandler:GetData().tSchematicInfo
-
-	local strResult = ""
-	if bCanMake then
-		for idx, tMaterialData in pairs(tSchematicInfo.tMaterials) do
-			local nTotal = tMaterialData.itemMaterial:GetBackpackCount() + tMaterialData.itemMaterial:GetBankCount()
-			strResult = strResult .. String_GetWeaselString(Apollo.GetString("Runecrafting_NOutOfNName"),  nTotal, tMaterialData.nAmount, tMaterialData.itemMaterial:GetName())
-		end
-	else
-		for idx, tMaterialData in pairs(tSchematicInfo.tMaterials) do
-			local nTotal = tMaterialData.itemMaterial:GetBackpackCount() + tMaterialData.itemMaterial:GetBankCount()
-			if nTotal < tMaterialData.nAmount then
-				strResult = strResult .. String_GetWeaselString(Apollo.GetString("Runecrafting_NMaterials"), tMaterialData.nAmount, tMaterialData.itemMaterial:GetName())
-			end
-		end
-	end
-	strResult = String_GetWeaselString(Apollo.GetString("Runecrafting_MaterialsOutput"), tSchematicInfo.itemOutput:GetName(), string.sub(strResult, 0, #strResult - 2))
-	Event_FireGenericEvent("GenericEvent_LootChannelMessage", strResult)
-end
-
-function Runecrafting:OnNewRuneMoreInfoCheck(wndHandler, wndControl) -- NewRuneMoreInfoBtn, data is tSchematicInfo
+function Runecrafting:OnRuneSchematicCheck(wndHandler, wndControl)
 	if wndHandler ~= wndControl then
 		return
 	end
 
-	wndHandler:FindChild("NewRuneMoreInfoName"):SetTextColor(ApolloColor.new("UI_BtnTextBluePressed"))
-
-	local tSchematicInfo = wndHandler:GetData()
-	local wndParent = self.wndMain:FindChild("RuneCreationContainer"):FindChild("RuneCreationBottom")
-	wndParent:FindChild("RuneCreationMaterialsList"):DestroyChildren()
-	wndParent:FindChild("RuneCreationCraftBtn"):SetData(tSchematicInfo)
-	wndParent:FindChild("RuneCreationCraftBtn"):Enable(true)
-	wndParent:FindChild("RuneCreationName"):SetText(tSchematicInfo.strName)
-	wndParent:FindChild("RuneCreationMaterialsContainer"):Show(true)
-	wndParent:SetData(tSchematicInfo)
+	self.tSelectedSchematic = wndHandler:GetData()
+	local wndBottom = self.wndMain:FindChild("RuneCreationContainer:RuneCreationBottom")
+	wndBottom:FindChild("RuneCreationMaterialsList"):DestroyChildren()
+	wndBottom:FindChild("RuneCreationCraftBtn"):SetData(self.tSelectedSchematic)
+	wndBottom:FindChild("RuneCreationName"):SetText(self.tSelectedSchematic.strName)
+	wndBottom:FindChild("RuneCreationMaterialsContainer"):Show(true)
 
 	self:HelperRefreshBottomMaterials()
 end
 
-function Runecrafting:OnNewRuneMoreInfoUncheck(wndHandler, wndControl)
-	if wndHandler ~= wndControl then
-		return
-	end
-	wndHandler:FindChild("NewRuneMoreInfoName"):SetTextColor(wndHandler:FindChild("NewRuneMoreInfoName"):GetData() and "UI_BtnTextBlueNormal" or "xkcdReddish")
-	self:ResetRuneCreationBottom()
-end
-
-function Runecrafting:ResetRuneCreationBottom()
-	local wndParent = self.wndMain:FindChild("RuneCreationContainer"):FindChild("RuneCreationBottom")
-	wndParent:FindChild("RuneCreationMaterialsList"):DestroyChildren()
-	wndParent:FindChild("RuneCreationMaterialsContainer"):Show(false)
-	wndParent:FindChild("RuneCreationCraftBtn"):Enable(false)
-	wndParent:FindChild("RuneCreationName"):SetText("")
-	wndParent:SetData(nil)
-end
-
-function Runecrafting:OnRuneCreationCraftBtn(wndHandler, wndControl) -- RuneCreationCraftBtn
+function Runecrafting:OnRuneCreationCraftBtn(wndHandler, wndControl)
 	local tSchematicInfo = wndHandler:GetData()
 
 	-- Order is important, must clear first
@@ -609,10 +629,10 @@ function Runecrafting:OnRuneCreationCraftBtn(wndHandler, wndControl) -- RuneCrea
 
 	-- Build summary screen list
 	local strSummaryMsg = Apollo.GetString("CoordCrafting_LastCraftTooltip")
-	for idx, tData in pairs(tSchematicInfo.tMaterials) do
+	for idx, tData in pairs(tSchematicInfo.arMaterials) do
 		local itemCurr = tData.itemMaterial
 		if itemCurr then
-			strSummaryMsg = strSummaryMsg .. "\n" .. String_GetWeaselString(Apollo.GetString("CraftingGrid_CatalystCountAndName"), tData.nAmount, itemCurr:GetName())
+			strSummaryMsg = strSummaryMsg .. "\n" .. String_GetWeaselString(Apollo.GetString("CraftingGrid_CatalystCountAndName"), tData.nNeeded, itemCurr:GetName())
 		end
 	end
 	Event_FireGenericEvent("GenericEvent_CraftSummaryMsg", strSummaryMsg)
@@ -621,463 +641,662 @@ function Runecrafting:OnRuneCreationCraftBtn(wndHandler, wndControl) -- RuneCrea
 	CraftingLib.CraftItem(tSchematicInfo.nSchematicId)
 
 	-- Post Craft Effects
-	Event_FireGenericEvent("GenericEvent_StartCraftCastBar", self.tWindowMap["CraftingSummaryContainer"], tSchematicInfo.itemOutput)
-	self.tWindowMap["PostCraftBlocker"]:Show(true)
+	local wndPostCraftBlocker = self.wndMain:FindChild("RuneCreationContainer:PostCraftBlocker")
+	Event_FireGenericEvent("GenericEvent_StartCraftCastBar", wndPostCraftBlocker:FindChild("CraftingSummaryContainer"), tSchematicInfo.itemOutput)
+	wndPostCraftBlocker:Show(true)
 end
 
 function Runecrafting:OnCloseSummary()
-	if self.tWindowMap and self.tWindowMap["PostCraftBlocker"] and self.tWindowMap["PostCraftBlocker"]:IsValid() then
-		self.tWindowMap["PostCraftBlocker"]:Show(false)
+	if self.wndMain and self.wndMain:IsValid() then
+		self.wndMain:FindChild("RuneCreationContainer:PostCraftBlocker"):Show(false)
 	end
 end
 
------------------------------------------------------------------------------------------------
--- Equipment
------------------------------------------------------------------------------------------------
 
-function Runecrafting:NewEquipmentItem(itemSource, wndParent, bEquipped)
-	local wndItem = Apollo.LoadForm(self.xmlDoc, "EquipmentItem", wndParent, self)
-	wndItem:FindChild("EquipmentItemCantUseIcon"):Show(self:HelperPrereqFailed(itemSource))
-	wndItem:FindChild("EquipmentItemName"):SetText(itemSource:GetName())
-	wndItem:FindChild("EquipmentItemIcon"):SetSprite(itemSource:GetIcon())
-	wndItem:FindChild("EquipmentItemEquippedBrackets"):Show(bEquipped)
+function Runecrafting:ShowFilter(wndHandler, wndControl)
+	if wndHandler ~= wndControl then
+		return
+	end
+	
+	wndHandler:FindChild("Dropdown"):Show(true)
+end
 
-	if bEquipped then
-		Tooltip.GetItemTooltipForm(self, wndItem:FindChild("EquipmentItemIcon"), itemSource, { bPrimary = true, bSelling = false })
+function Runecrafting:OnFilterClose(wndHandler, wndControl)
+	if wndHandler ~= wndControl then
+		return
+	end
+	
+	local wndParent = wndHandler:GetParent()
+	if not wndParent:ContainsMouse() then
+		wndParent:SetCheck(false)
+	end	
+end
+
+function Runecrafting:FilterOptionSelected(wndHandler, wndControl)
+	if wndHandler ~= wndControl then
+		return
+	end
+	
+	local wndContainer = wndHandler:GetParent()
+	local wndDropdown = wndContainer:GetParent()
+	
+	local eFilterType = wndContainer:GetData()
+	local strDisplay = ""
+	
+	if eFilterType == keFilterType.Level then
+		self.tFilters.nLevel = wndHandler:GetData()
+	elseif eFilterType == keFilterType.Slot then
+		self.tFilters.eSlot = wndHandler:GetData()
+	end
+	
+	wndDropdown:GetParent():SetText(wndHandler:GetText())
+	
+	wndDropdown:Close()
+	self:GetSchematics()
+end
+
+function Runecrafting:FilterByClass(wndHandler, wndControl)
+	if wndHandler ~= wndControl then
+		return
+	end
+	
+	self.tFilters.eClass = wndHandler:GetData()
+	
+	local wndDropdown = wndHandler:GetParent():GetParent()
+	
+	wndDropdown:GetParent():SetText(wndHandler:GetText())
+	wndDropdown:Close()
+	
+	self:OnSetCreation()
+end
+
+function Runecrafting:ShowCraftableChecked(wndHandler, wndControl)
+	if wndHandler ~= wndControl then
+		return
+	end
+	
+	self:GetSchematics()
+end
+
+function Runecrafting:GetSchematics(wndHandler, wndControl)
+	local wndContainer = self.wndMain:FindChild("RuneCreationContainer:RuneCreationItemList")
+	
+	local arSchematics = nil
+	if self.wndMain:FindChild("BGFrame:RuneCreationTypes:ToggleElementCreation"):IsChecked() then
+		arSchematics = CraftingLib.GetRunecraftingSchematicList(self.tFilters.idElementOrSet, self.tFilters.nLevel, self.wndMain:FindChild("ShowCraftable"):IsChecked(), self.tFilters.eSlot)
 	else
-		local itemEquipped = itemSource and itemSource:GetEquippedItemForItemType() or nil
-		Tooltip.GetItemTooltipForm(self, wndItem:FindChild("EquipmentItemIcon"), itemSource, { bPrimary = true, bSelling = false, itemCompare = itemEquipped })
-	end
+		arSchematics = CraftingLib.GetRuneSetSchematicList(self.tFilters.idElementOrSet, self.tFilters.nLevel, self.wndMain:FindChild("ShowCraftable"):IsChecked(), self.tFilters.eSlot)
+	end	
+	
+	wndContainer:DestroyChildren()
 
-	-- Runes if valid
-	wndItem:FindChild("EquipmentItemRuneSlotContainer"):DestroyChildren()
-	local tRuneData = itemSource:GetRuneSlots()
-	if not tRuneData or not tRuneData.bIsDefined then
+	if not arSchematics or #arSchematics == 0 then
+		wndContainer:SetText(Apollo.GetString("Tradeskills_NoResults"))
 		return
 	end
+	
+	wndContainer:SetText("")
+	
+	for idx = 1, #arSchematics do
+		local wndSchematic = Apollo.LoadForm(self.xmlDoc, "RuneSchematic", wndContainer, self)
+		local wndButton = wndSchematic:FindChild("RuneSchematicBtn")
+		
+		local tSchematicInfo = CraftingLib.GetSchematicInfo(arSchematics[idx].nSchematicId)
+		
+		wndButton:SetText(arSchematics[idx].strName)
+		wndButton:FindChild("RuneIcon"):SetSprite(tSchematicInfo.itemOutput:GetIcon())
+		wndButton:SetData(tSchematicInfo)
+		self:HelperBuildItemTooltip(wndButton, tSchematicInfo.itemOutput)
+	end
+	
+	wndContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+end
 
-	-- Existing Runes
-	local bFirstLockedSlot = true
-	local tEngravingInfo = CraftingLib.GetEngravingInfo(itemSource)
-	local tRerollInfo = tEngravingInfo.tRerollInfo
+-----------------------------------------------------------------------------------------------
+-- Equip Runes
+-----------------------------------------------------------------------------------------------
+function Runecrafting:EquipTabChecked(wndHandler, wndControl)
+	self:InitEditWindow()
+end
 
-	for nSlotIndex, tCurrRuneSlot in pairs(tRuneData.arRuneSlots) do
-		local tRuneslotItemData = Item.GetDataFromId(tCurrRuneSlot.idRune)
-		local wndRuneSlot = self:LoadByName(tCurrRuneSlot.bUnlocked and "RuneSlotItem" or "RuneSlotLockedItem", wndItem:FindChild("EquipmentItemRuneSlotContainer"), "RuneSlotItem"..nSlotIndex)
-		wndRuneSlot:FindChild("RuneSlotBtn"):SetData({ nSlotIndex, tCurrRuneSlot, itemSource })
-		wndRuneSlot:FindChild("RuneSlotType"):SetSprite(karElementsToSprite[tCurrRuneSlot.eType][tRuneslotItemData and "strBright" or "strFade"])
+function Runecrafting:InitEditWindow(itemToDisplay)
+	if not self.wndMain then
+		self:Initialize()
+	end
+	
+	local wndItemEditor = self.wndMain:FindChild("EquipRunesContainer:EquipRuneSingleItem")
+	
+	local wndItemDisplay = wndItemEditor:FindChild("ItemDisplay")
+	
+	if itemToDisplay then
+		local wndItemEditor = self.wndMain:FindChild("EquipRunesContainer:EquipRuneSingleItem")
+		
+		-- Show the item
+		local luaSubclass = wndItemDisplay:FindChild("EquipmentItem"):GetWindowSubclass()
+		luaSubclass:SetItem(itemToDisplay)
+		
+		local strQualityColor = karQualityColors[itemToDisplay:GetItemQuality()]
+		wndItemDisplay:FindChild("ItemName"):SetText(itemToDisplay:GetName())
+		wndItemDisplay:FindChild("ItemName"):SetTextColor(strQualityColor)
+		
+		wndItemDisplay:FindChild("ItemType"):SetText(itemToDisplay:GetItemTypeName())
+		wndItemDisplay:FindChild("ItemType"):SetTextColor(strQualityColor)
+		
+		wndItemDisplay:FindChild("ItemLevel"):SetText(String_GetWeaselString(Apollo.GetString("Tooltips_ItemLevel"), itemToDisplay:GetPowerLevel()))
+		wndItemDisplay:FindChild("ItemLevel"):SetTextColor(strQualityColor)
+		
+		wndItemEditor:FindChild("RuneContainer"):Show(true)
+		wndItemEditor:FindChild("RuneSets"):Show(true)
+		
+		-- Set up runes
+		self:BuildRunes(itemToDisplay)
+	else
+		wndItemDisplay:FindChild("ItemName"):SetText(Apollo.GetString("Runecrafting_NoItem"))
+		wndItemDisplay:FindChild("ItemType"):SetText("")
+		wndItemDisplay:FindChild("ItemLevel"):SetText("")
+		wndItemDisplay:FindChild("ItemContainer:EquipmentItem"):SetSprite("")
+		wndItemEditor:FindChild("RuneContainer"):Show(false)
+		wndItemEditor:FindChild("RuneSets"):Show(false)
+	end
+		
+	local wndTabs = self.wndMain:FindChild("BGFrame:RuneCreationTypes")
+	wndTabs:FindChild("ToggleElementCreation"):SetCheck(false)
+	wndTabs:FindChild("ToggleSetCreation"):SetCheck(false)
+	wndTabs:FindChild("ToggleEquipRunes"):SetCheck(true)
+	
+	self.wndMain:FindChild("EquipRunesContainer"):Show(true)
+	self.wndMain:FindChild("RuneCreationContainer"):Show(false)
+end
 
-		if wndRuneSlot:FindChild("RuneSlotFakeLockIcon") then
-			wndRuneSlot:FindChild("RuneSlotFakeLockIcon"):Show(not tCurrRuneSlot.bUnlocked)
-		end
+function Runecrafting:OnItemModified(itemUpdated)
+	if self.wndMain and itemUpdated == self.wndMain:FindChild("EquipRunesContainer:EquipRuneSingleItem:ItemDisplay:ItemContainer:EquipmentItem"):GetData() then
+		self:BuildRunes(itemUpdated)
+	end
+end
 
-		-- This is how "strong" a socket is. Current design has this diminish the more slots there are (so an 8 slot drop isn't significantly better than a 7 slot drop)
-		local tDetailedInfo = itemSource:GetDetailedInfo()
-		if tDetailedInfo and tDetailedInfo.tPrimary.tRunes then
-			local tRelevantSlotBudgetData = tDetailedInfo.tPrimary.tRunes.arRuneSlots[nSlotIndex]
-			wndRuneSlot:FindChild("RuneSlotEfficiency"):SetText(math.floor(tRelevantSlotBudgetData.nPercent * 100).."%")
-			wndRuneSlot:FindChild("RuneSlotEfficiency"):SetTextColor((tCurrRuneSlot.bUnlocked or bFirstLockedSlot) and "UI_TextMetalGoldHighlight" or "UI_TextMetalBody")
-		end
+function Runecrafting:BuildRunes(itemUpdated)
+	local wndRuneContainer = self.wndMain:FindChild("EquipRunesContainer:EquipRuneSingleItem:RuneContainer")
+	if self.wndSelection then
+		self:OnSelectionDestroy()
+	end
 
-		-- Reroll indicator
-		local bOmniSlot = tCurrRuneSlot.eType == Item.CodeEnumRuneType.Omni
-		local nReagentCost = (tRerollInfo and tRerollInfo.arCosts[nSlotIndex]) and tRerollInfo.arCosts[nSlotIndex].nReagents or 0
-		if wndRuneSlot:FindChild("RuneSlotRerollAllowed") then
-			wndRuneSlot:FindChild("RuneSlotRerollAllowed"):Show(nReagentCost > 0 and not bOmniSlot)
-		end
+	wndRuneContainer:DestroyChildren()
+	
+	local bIsFirstEmpty = true
+	local arRuneInfo = itemUpdated:GetRuneSlots()
 
-		-- Different formatting and text for different button states
-		if tRuneslotItemData then
-			self:HelperBuildItemTooltip(wndRuneSlot, tRuneslotItemData)
-		elseif tCurrRuneSlot.bUnlocked and bOmniSlot then
-			wndRuneSlot:SetTooltip(Apollo.GetString("EngravingStation_OmniSlotAnyRune"))
-		elseif tCurrRuneSlot.bUnlocked and nReagentCost > 0 then
-			wndRuneSlot:SetTooltip(String_GetWeaselString(Apollo.GetString("EngravingStation_AvailableOrRerollSlot"), tCurrRuneSlot.strName))
-		elseif tCurrRuneSlot.bUnlocked then
-			wndRuneSlot:SetTooltip(String_GetWeaselString(Apollo.GetString("EngravingStation_AvailableSlot"), tCurrRuneSlot.strName))
-		elseif bFirstLockedSlot then
-			bFirstLockedSlot = false
-			wndRuneSlot:SetTooltip(String_GetWeaselString(Apollo.GetString("EngravingStation_LockedSlot"), tCurrRuneSlot.strName))
+	for idx = 1, arRuneInfo.nMaximum do
+		local tSlotInfo = arRuneInfo.arRuneSlots[idx]
+		if tSlotInfo then
+			local tData = 
+			{ 
+				itemSource = itemUpdated, 
+				nSlotIndex = idx, 
+				itemRune = tSlotInfo.itemRune, 
+				eElement = tSlotInfo.eElement,
+			}
+			
+			local wndSlot = Apollo.LoadForm(self.xmlDoc, "RuneSlotItemSingleItem", wndRuneContainer, self)
+			wndSlot:FindChild("RuneSlotType"):SetSprite(tSlotInfo.itemRune and karElementsToRuneSprite[tSlotInfo.eElement].strBright or karElementsToRuneSprite[tSlotInfo.eElement].strFade)
+			wndSlot:FindChild("RuneSlotBtn"):SetData(tData)
+			wndSlot:FindChild("RerollBtn"):Show(not tSlotInfo.itemRune)
+			wndSlot:FindChild("RerollBtn"):SetData(tData)
+			
+			if tSlotInfo.itemRune then
+				self:HelperBuildItemTooltip(wndSlot, tSlotInfo.itemRune)
+			else
+				wndSlot:SetTooltip(Apollo.GetString("Runecrafting_EmptyRuneTooltip"))
+			end
 		else
-			wndRuneSlot:FindChild("RuneSlotBtn"):Enable(false)
-			wndRuneSlot:SetTooltip(Apollo.GetString("EngravingStation_LockedChildSlot"))
+			local wndSlot = Apollo.LoadForm(self.xmlDoc, "RuneSlotAddSingleItem", wndRuneContainer, self)
+			wndSlot:FindChild("RuneSlotAppendBtn"):SetData({itemSource = itemUpdated, nSlotIndex = idx})
+			wndSlot:FindChild("RuneSlotAppendBtn"):Enable(bIsFirstEmpty)
+			
+			wndSlot:SetTooltip(String_GetWeaselString(Apollo.GetString("EngravingStation_AddSlotTooltip"), arRuneInfo.nMaximum))
+			
+			bIsFirstEmpty = false
 		end
 	end
+	
+	wndRuneContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.Middle)
+	
+	local arSetBonuses = itemUpdated:GetSetBonuses()
+	
+	local wndSetList = self.wndMain:FindChild("EquipRunesContainer:EquipRuneSingleItem:RuneSets:RuneSetList")
+	wndSetList:DestroyChildren()
 
-	-- Append Rune
-	local tAddData = tEngravingInfo.tAddInfo
-	if tAddData then
-		local wndAppend = self:LoadByName("RuneSlotAppendItem", wndItem:FindChild("EquipmentItemRuneSlotContainer"), "RuneSlotAppendItem") -- Add one at a time
-		wndAppend:SetTooltip(String_GetWeaselString(Apollo.GetString("EngravingStation_AddSlotTooltip"), tAddData.nMaximumSigils))
-		wndAppend:FindChild("RuneSlotAppendBtn"):SetData({ tAddData = tAddData, itemSource = itemSource })
+	for idx = 1, #arSetBonuses do
+		local wndSetBonus = Apollo.LoadForm(self.xmlDoc, "RuneSetEntry", wndSetList, self)
+		wndSetBonus:SetText(arSetBonuses[idx].strName .. " (" .. arSetBonuses[idx].nPower .. "/" .. arSetBonuses[idx].nMaxPower .. ")")
 	end
-
-	wndItem:FindChild("EquipmentItemRuneSlotContainer"):ArrangeChildrenHorz(0)
+	
+	wndSetList:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin)
 end
 
-function Runecrafting:OnAppendConfirmYes(wndHandler, wndControl)
-	local itemSource = wndHandler:GetData()
-	CraftingLib.AddRuneSlot(itemSource)
-	self:OnCurrentConfirmPopupClose()
-end
-
-function Runecrafting:OnRerollConfirmYes(wndHandler, wndControl)
-	local nSlotIndex = wndHandler:GetData()[1]
-	local itemSource = wndHandler:GetData()[3] -- Data is passed along, origates from RuneSlotBtn and is { nSlotIndex, tCurrRuneSlot, itemSource }
-
-	-- Update UIs
-	self.tWindowMap["RerollItemTitle"]:SetText(Apollo.GetString("EngravingStation_RuneSlotRerollTitle"))
-	self:OnCurrentConfirmPopupClose()
-	self:HelperPostRerollTransition(self.tWindowMap["RerollInitCastBarBG"])
-	Apollo.StartTimer("Runecrafting_RerollDelay")
-end
-
-function Runecrafting:OnRerollElementPickedBtn(wndHandler, wndControl) -- From RerollElementLeftBtn or RerollElementRightBtn
-	self:HelperPostRerollTransition(self.tWindowMap["RerollDoneCastBarBG"])
-end
-
-function Runecrafting:OnRerollElementAbandonBtn(wndHandler, wndControl)
-	self:HelperPostRerollTransition(self.tWindowMap["RerollDoneCastBarBG"])
-end
-
-function Runecrafting:HelperPostRerollTransition(wndCastBar)
-	self.tWindowMap["RerollBlockerHoloBG"]:Show(false)
-	self.tWindowMap["RerollBlocker"]:Show(true, true)
-	wndCastBar:Show(true)
-end
-
-function Runecrafting:OnUnlockConfirmYes(wndHandler, wndControl)
-	local nSlotIndex = wndHandler:GetData()[1]
-	local itemSource = wndHandler:GetData()[3] -- Data is passed along, origates from RuneSlotBtn and is { nSlotIndex, tCurrRuneSlot, itemSource }
-	CraftingLib.UnlockRuneSlot(itemSource, nSlotIndex)
-	self:OnCurrentConfirmPopupClose()
-end
-
-function Runecrafting:OnClearConfirmYes(wndHandler, wndControl)
-	local nSlotIndex = wndHandler:GetData()[1]
-	local itemSource = wndHandler:GetData()[3] -- Data is passed along, origates from RuneSlotBtn and is { nSlotIndex, tCurrRuneSlot, itemSource }
-	CraftingLib.ClearRuneSlot(itemSource, nSlotIndex)
-	self:OnCurrentConfirmPopupClose()
-end
-
------------------------------------------------------------------------------------------------
--- wndCurrentConfirmPopup
------------------------------------------------------------------------------------------------
-
-function Runecrafting:OnRuneSlotBtn(wndHandler, wndControl) -- RuneSlotBtn of RuneSlotLockedItem
-	if not self.bAllowClicks then
+function Runecrafting:OnRuneSlotBtn(wndHandler, wndControl)
+	if wndHandler ~= wndControl then
 		return
 	end
-
-	local nSlotIndex = wndHandler:GetData()[1]
-	local tCurrRuneSlot = wndHandler:GetData()[2]
-	local itemSource = wndHandler:GetData()[3]
-	local tEngravingInfo = CraftingLib.GetEngravingInfo(itemSource)
-	local tRerollInfo = tEngravingInfo.tRerollInfo
-	local tClearInfo = tEngravingInfo.tClearInfo
-
-	self:OnCurrentConfirmPopupClose()
-
-	if self.itemDragging and self.itemDragging:GetRuneInfo().eType ~= tCurrRuneSlot.eType then
-		return Apollo.DragDropQueryResult.Accept -- HACK
+	
+	local tData = wndHandler:GetData()
+	
+	if tData.itemRune then
+		self:BuildRemoveOptions(tData, wndHandler)
+	else
+		self:BuildRuneSelection(tData, wndHandler)
 	end
+end
 
-	if tCurrRuneSlot.idRune == 0 then
-		local unitPlayer = GameLib.GetPlayerUnit()
-		local nPlayerLevel = unitPlayer:GetLevel()
-		local eClassId =  unitPlayer:GetClassId()
+function Runecrafting:BuildRemoveOptions(tRuneData, wndHandler)
+	if self.wndSelection then
+		self:OnSelectionDestroy()
+	end
+	
+	local tRemoveInfo = CraftingLib.GetEngravingInfo(tRuneData.itemSource).tClearInfo.arSlot[tRuneData.nSlotIndex]
 
-		-- Reroll possible?
-		local nReagentCost = (tRerollInfo and tRerollInfo.arCosts[nSlotIndex]) and tRerollInfo.arCosts[nSlotIndex].nReagents or 0
-		local bRerollPossible = tCurrRuneSlot.eType ~= Item.CodeEnumRuneType.Omni and nReagentCost > 0
-		local strAddPickerText = bRerollPossible and Apollo.GetString("EngravingStation_AddRerollPicker") or Apollo.GetString("EngravingStation_AddPickerLabel")
+	self.wndSelection = Apollo.LoadForm(self.xmlDoc, "SelectionDropdown", wndHandler, self)
+	self.wndSelection:FindChild("HeaderText"):SetText(Apollo.GetString("Runecrafting_RemoveRuneHeader"))
+	
+	local wndContainer = self.wndSelection:FindChild("SelectionContainer")
+	
+	local wndDestroy = Apollo.LoadForm(self.xmlDoc, "ActionConfirmSelection", wndContainer, self)
+	wndDestroy:SetActionData(GameLib.CodeEnumConfirmButtonType.RuneSlotClear, tRuneData.itemSource, tRuneData.nSlotIndex, false, false)
+	wndDestroy:FindChild("Text"):SetText(Apollo.GetString("Runecrafting_DestroyRune"))
 
-		-- Build form
-		self.wndCurrentConfirmPopup = Apollo.LoadForm(self.xmlDoc, "AddPicker", self.wndMain, self)
-		self.wndCurrentConfirmPopup:FindChild("AddPickerText"):SetText(strAddPickerText)
+	local wndCost = wndDestroy:FindChild("CostAmount")
+	wndCost:Show(tRemoveInfo.monCost)
+	
+	if tRemoveInfo.monCost then
+		wndCost:SetAmount(tRemoveInfo.monCost, true)
+		
+		if GameLib.GetPlayerCurrency():GetAmount() < tRemoveInfo.monCost:GetAmount() then
+			wndDestroy:Enable(false)
+			wndCost:SetTextColor(crRed)
+		end		
+	end
+	
+	local wndExtract = Apollo.LoadForm(self.xmlDoc, "ActionConfirmSelection", wndContainer, self)
+	wndExtract:SetActionData(GameLib.CodeEnumConfirmButtonType.RuneSlotClear, tRuneData.itemSource, tRuneData.nSlotIndex, true, false)
+	wndExtract:FindChild("Text"):SetText(Apollo.GetString("Runecrafting_RecoverRune"))
+	
+	local wndExtractCost = wndExtract:FindChild("CostAmount")
+	wndExtractCost:Show(tRemoveInfo.monExtractGoldCost)
+	
+	if tRemoveInfo.monExtractGoldCost then
+		wndExtractCost:SetAmount(tRemoveInfo.monExtractGoldCost, true)
+		
+		if GameLib.GetPlayerCurrency():GetAmount() < tRemoveInfo.monExtractGoldCost:GetAmount() then
+			wndExtract:Enable(false)
+			wndExtractCost:SetTextColor(crRed)
+		end		
+	end
+	
+	local wndRecover = Apollo.LoadForm(self.xmlDoc, "ConfirmSelection", wndContainer, self)
+	local strRuneText = Apollo.GetString("Runecrafting_RecoverRune")
+	local tData = 
+	{	
+		wndParent = self.wndMain:FindChild("ConfirmationOverlay"),
+		strEventName = "ServiceTokenClosed_RuneCrafting",
+		monCost = tRemoveInfo.monServiceTokenCost,
+		strConfirmation = String_GetWeaselString(Apollo.GetString("ServiceToken_Confirm"), strRuneText),
+		tActionData =
+		{
+			GameLib.CodeEnumConfirmButtonType.RuneSlotClear,
+			tRuneData.itemSource,
+			tRuneData.nSlotIndex,
+			true,
+			true
+		}
+	}
+	
+	wndRecover:SetData(tData)
+	wndRecover:SetText(strRuneText)
+	
+	local wndRecoverCost = wndRecover:FindChild("CostAmount")
+	wndRecoverCost:Show(true)
+	wndRecoverCost:SetAmount(tRemoveInfo.monServiceTokenCost, true)
+	
+	if AccountItemLib.GetAccountCurrency(AccountItemLib.CodeEnumAccountCurrency.ServiceToken):GetAmount() < tRemoveInfo.monServiceTokenCost:GetAmount() then
+		wndRecover:Enable(false)
+		wndRecoverCost:SetTextColor(crRed)
+	end
+	
+	wndContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+end
 
-		for idx, itemRune in pairs(CraftingLib.GetValidRuneItems(itemSource, nSlotIndex)) do
-			local tItemRuneInfo = itemRune:GetRuneInfo()
-			if self:HelperCheckElementMatch(tItemRuneInfo, tCurrRuneSlot) then
-				local wndRune = self:LoadByName("RunePickerItem", self.wndCurrentConfirmPopup:FindChild("AddPickerList"), "AddPickerList"..idx..itemRune:GetName())
-				wndRune:FindChild("RunePickerItemBtn"):SetData({ wndHandler = wndHandler, itemSource = itemSource, itemRune = itemRune, nSlotIndex = nSlotIndex, bReroll = false })
-				wndRune:FindChild("RunePickerItemText"):SetText(itemRune:GetName())
-				wndRune:FindChild("RunePickerItemIcon"):SetSprite(itemRune:GetIcon())
-				wndRune:FindChild("RunePickerItemIcon"):SetText(itemRune:GetBackpackCount() + itemRune:GetBankCount())
-				self:HelperBuildItemTooltip(wndRune:FindChild("RunePickerItemIcon"), itemRune)
+function Runecrafting:BuildRuneSelection(tRuneData, wndHandler)
+	if self.wndSelection then
+		self:OnSelectionDestroy()
+	end
+	
+	self.wndSelection = Apollo.LoadForm(self.xmlDoc, "SelectionDropdown", wndHandler, self)
+	
+	local arRunes = CraftingLib.GetValidRuneItems(tRuneData.itemSource, tRuneData.nSlotIndex)
+	local wndRuneContainer = self.wndSelection:FindChild("SelectionContainer")
+	if arRunes and #arRunes > 0 then
+		for idx = 1, #arRunes do
+			local wndRune = Apollo.LoadForm(self.xmlDoc, "RunePickerItem", wndRuneContainer, self)
+			local wndRuneBtn = wndRune:FindChild("RunePickerItemBtn")
+			wndRuneBtn:SetData({nSlotIndex = tRuneData.nSlotIndex, itemRune = arRunes[idx], itemSource = tRuneData.itemSource})
+			wndRuneBtn:SetText(arRunes[idx]:GetName())
+			
+			local luaSubclass = wndRune:FindChild("RunePickerItemIcon"):GetWindowSubclass()
+			luaSubclass:SetItem(arRunes[idx])
+			self:HelperBuildItemTooltip(wndRune:FindChild("RunePickerItemIcon"), arRunes[idx])
+			
+			wndRuneBtn:Enable(true)
+		end
+	else
+		self.wndSelection:FindChild("SelectionContainer"):SetText(Apollo.GetString("EngravingStation_AddPickerNone"))
+	end	
+	
+	wndRuneContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+end
 
-				-- Check validity of rune
-				local tRequiredClass = itemRune:GetRequiredClass()
-				local tItemEffectData = itemSource:GetGlyphBonus(itemRune, nSlotIndex)
-				local bMatchingClass = false
-				for idx, result in pairs(tRequiredClass) do -- As of now only going to have one result in this table, but if runes will have more than one class option
-					if result.idClassReq == eClassId then
-						bMatchingClass = true
-						break
-					end
-				end
+function Runecrafting:BuildRerollOptions(wndHandler, wndControl)
+	if wndHandler ~= wndControl then
+		return
+	end
+	
+	if self.wndSelection then
+		self:OnSelectionDestroy()
+	end
+	
+	local tRerollData = wndHandler:GetData()
+	
+	local tRerollInfo = CraftingLib.GetEngravingInfo(tRerollData.itemSource).tRerollInfo
+	
+	self.wndSelection = Apollo.LoadForm(self.xmlDoc, "SelectionDropdown", wndHandler, self)
+	self.wndSelection:FindChild("HeaderText"):SetText(Apollo.GetString("Runecrafting_RerollHeader"))
+	
+	local wndContainer = self.wndSelection:FindChild("SelectionContainer")
+	
+	local wndRandom = Apollo.LoadForm(self.xmlDoc, "ActionConfirmSelection", wndContainer, self)
+	wndRandom:SetActionData(GameLib.CodeEnumConfirmButtonType.RuneSlotReroll, tRerollData.itemSource, tRerollData.nSlotIndex)
+	wndRandom:FindChild("Text"):SetText(Apollo.GetString("Runecrafting_RerollRandom"))
+	
+	local wndRandomCost = wndRandom:FindChild("CostAmount")
+	wndRandomCost:Show(true)
+	wndRandomCost:SetAmount(tRerollInfo.monCost, true)
 
-				local bFailed = false
-				local strErrorMessage =  ""
-				if #tRequiredClass > 0 and not bMatchingClass then
-					strErrorMessage = Apollo.GetString("PrerequisiteComp_Class")
-					bFailed = true
-				elseif nPlayerLevel < itemRune:GetRequiredLevel() then
-					strErrorMessage = Apollo.GetString("PrerequisiteComp_Level")
-					bFailed = true
-				elseif not tItemEffectData.nValue then -- Catch all
-					strErrorMessage = Apollo.GetString("Runecrafting_NoDuplicateRunes")
-					bFailed = true
-				end
-
-				if bFailed then
-					wndRune:FindChild("RunePickerItemText"):SetTextColor(ApolloColor.new("ffda2a00"))
-					wndRune:FindChild("RunePickerItemText"):SetTooltip(strErrorMessage)
-				end
-
-				wndRune:FindChild("RunePickerItemDisabled"):Show(bFailed)
-				wndRune:FindChild("RunePickerItemBtn"):Enable(not bFailed)
+	if GameLib.GetPlayerCurrency():GetAmount() < tRerollInfo.monCost:GetAmount() then
+		wndRandom:Enable(false)
+		wndRandomCost:SetTextColor(crRed)
+	end
+	
+	local monServiceTokens = AccountItemLib.GetAccountCurrency(AccountItemLib.CodeEnumAccountCurrency.ServiceToken)
+	for strName, eRuneType in pairs(Item.CodeEnumRuneType) do
+		if eRuneType ~= Item.CodeEnumRuneType.Fusion and eRuneType ~= tRerollData.eElement then
+			local wndReroll = Apollo.LoadForm(self.xmlDoc, "ConfirmSelection", wndContainer, self)
+			local strRuneText = karElementsToName[eRuneType]
+			local tData = 
+			{	
+				wndParent = self.wndMain:FindChild("ConfirmationOverlay"),
+				strEventName = "ServiceTokenClosed_RuneCrafting",
+				monCost = tRerollInfo.monServiceTokenCost,
+				strConfirmation = String_GetWeaselString(Apollo.GetString("ServiceToken_Confirm"), strRuneText),
+				tActionData =
+				{
+					GameLib.CodeEnumConfirmButtonType.RuneSlotReroll,
+					tRerollData.itemSource,
+					tRerollData.nSlotIndex,
+					eRuneType
+				}
+			}
+			wndReroll:SetData(tData)
+			wndReroll:SetText(String_GetWeaselString(Apollo.GetString("Runecrafting_ElementSlot"), strRuneText))
+			
+			local wndCost = wndReroll:FindChild("CostAmount")
+			wndCost:Show(true)
+			wndCost:SetAmount(tRerollInfo.monServiceTokenCost, true)
+			
+			if tRerollInfo.monServiceTokenCost:GetAmount() > monServiceTokens:GetAmount() then
+				wndCost:SetTextColor(crRed)
 			end
 		end
+	end
+	
+	wndContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+end
 
-		if bRerollPossible then
-			local nReagentCost = tRerollInfo.arCosts[nSlotIndex] and tRerollInfo.arCosts[nSlotIndex].nReagents or 0 -- Currently hardcoded to only have one Reagent cost
-			local wndReroll = self:LoadByName("RunePickerItem", self.wndCurrentConfirmPopup:FindChild("AddPickerList"), "Reroll")
-			wndReroll:FindChild("RunePickerItemBtn"):SetData({ wndHandler = wndHandler, itemSource = itemSource, nSlotIndex = nSlotIndex, bReroll = true })
-			wndReroll:FindChild("RunePickerItemText"):SetText(Apollo.GetString("EngravingStation_ClickToReroll"))
-			wndReroll:FindChild("RunePickerItemIcon"):SetSprite(tRerollInfo.itemReagent:GetIcon())
-			wndReroll:FindChild("RunePickerItemIcon"):SetText(String_GetWeaselString(Apollo.GetString("CRB_NOutOfN"), tRerollInfo.nReagentCount, nReagentCost))
-			wndReroll:FindChild("RunePickerItemIcon"):SetTextColor(tRerollInfo.nReagentCount >= nReagentCost and "white" or "xkcdReddish")
-			self:HelperBuildItemTooltip(wndReroll:FindChild("RunePickerItemIcon"), tRerollInfo.itemReagent)
+function Runecrafting:BuildAddSlotOptions(wndHandler, wndControl)
+	if wndHandler ~= wndControl then
+		return
+	end
+	
+	if self.wndSelection then
+		self:OnSelectionDestroy()
+	end
+	
+	self.wndSelection = Apollo.LoadForm(self.xmlDoc, "SelectionDropdown", wndHandler, self)
+	self.wndSelection:FindChild("HeaderText"):SetText(Apollo.GetString("Runecrafting_AddSlot"))
+	
+	local tAddData = wndHandler:GetData()
+	local tAddInfo = CraftingLib.GetEngravingInfo(tAddData.itemSource).tAddInfo
+	
+	local wndContainer = self.wndSelection:FindChild("SelectionContainer")
+	
+	local wndRandom = Apollo.LoadForm(self.xmlDoc, "ActionConfirmSelection", wndContainer, self)
+	wndRandom:SetActionData(GameLib.CodeEnumConfirmButtonType.RuneSlotAdd, tAddData.itemSource, tAddData.nSlotIndex)
+	wndRandom:FindChild("Text"):SetText(Apollo.GetString("Runecrafting_RerollRandom"))
+
+	local wndRandomCost = wndRandom:FindChild("CostAmount")
+	wndRandomCost:Show(true)
+	wndRandomCost:SetAmount(tAddInfo.monCost, true)
+
+	if GameLib.GetPlayerCurrency():GetAmount() < tAddInfo.monCost:GetAmount() then
+		wndRandom:Enable(false)
+		wndRandomCost:SetTextColor(crRed)
+	end
+	
+	local monServiceTokens = AccountItemLib.GetAccountCurrency(AccountItemLib.CodeEnumAccountCurrency.ServiceToken)
+	for strName, eRuneType in pairs(Item.CodeEnumRuneType) do
+		if eRuneType ~= Item.CodeEnumRuneType.Fusion and eRuneType ~= tAddData.eElement then
+			local wndAdd = Apollo.LoadForm(self.xmlDoc, "ConfirmSelection", wndContainer, self)
+			local strRuneText = String_GetWeaselString(Apollo.GetString("Runecrafting_ElementSlot"), karElementsToName[eRuneType])
+			local tData = 
+			{
+				wndParent = self.wndMain:FindChild("ConfirmationOverlay"),
+				strEventName = "ServiceTokenClosed_RuneCrafting",	
+				monCost = tAddInfo.monServiceTokenCost,
+				strConfirmation = String_GetWeaselString(Apollo.GetString("ServiceToken_Confirm"), strRuneText),
+				tActionData =
+				{
+					GameLib.CodeEnumConfirmButtonType.RuneSlotAdd,
+					tAddData.itemSource,
+					eRuneType
+				}
+			}
+			wndAdd:SetData(tData)
+			wndAdd:SetText(strRuneText)
+			
+			local wndCost = wndAdd:FindChild("CostAmount")
+			wndCost:Show(true)
+			wndCost:SetAmount(tAddInfo.monServiceTokenCost)
+			
+			if tAddInfo.monServiceTokenCost:GetAmount() > monServiceTokens:GetAmount() then
+				wndCost:SetTextColor(crRed)
+			end
 		end
-
-		local bHasItems = #self.wndCurrentConfirmPopup:FindChild("AddPickerList"):GetChildren() > 0
-		self.wndCurrentConfirmPopup:FindChild("AddPickerList"):ArrangeChildrenVert(0, function(a,b) return not b:FindChild("RunePickerItemBtn"):IsEnabled() end)
-		self.wndCurrentConfirmPopup:FindChild("AddPickerList"):SetText(bHasItems and "" or Apollo.GetString("EngravingStation_NoRunesFound"))
-	else
-		local tCurrentCosts = tClearInfo.arCosts[nSlotIndex]
-		self.wndCurrentConfirmPopup = Apollo.LoadForm(self.xmlDoc, "ClearConfirm", self.wndMain, self)
-		self.wndCurrentConfirmPopup:FindChild("ClearConfirmYes"):SetData(wndHandler:GetData())
-		self.wndCurrentConfirmPopup:FindChild("ClearCashWindow"):SetAmount(tCurrentCosts and tCurrentCosts.nReagents or 0)
 	end
-	self:HelperRepositionConfirmPopup(wndHandler)
-
-	return Apollo.DragDropQueryResult.Accept -- HACK
+	
+	wndContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
-function Runecrafting:OnRuneSlotAppendBtn(wndHandler, wndControl) -- RuneSlotAppendBtn of RuneSlotAppendItem
-	if not self.bAllowClicks then
+function Runecrafting:OnPurchaseWithServiceTokens(wndHandler, wndControl)
+	local tData = wndControl:GetData()
+
+	self.wndSelection:Close()
+
+	local wndServiceTokenParent = self.wndMain:FindChild("ConfirmationOverlay")
+	wndServiceTokenParent:Show(true)
+	
+	Event_FireGenericEvent("GenericEvent_ServiceTokenPrompt", tData)
+end
+
+function Runecrafting:OnRuneSlotAdded()
+	Sound.Play(Sound.PlayUIAddRuneSlot)
+end
+
+function Runecrafting:OnServiceTokenClosed_RuneCrafting(strParent, eActionConfirmEvent)
+	if not self.wndMain then
 		return
 	end
 
-	local tAddData = wndHandler:GetData().tAddData
-	local itemSource = wndHandler:GetData().itemSource
-	local itemReagent = tAddData.itemReagent
-
-	self:OnCurrentConfirmPopupClose()
-	self.wndCurrentConfirmPopup = Apollo.LoadForm(self.xmlDoc, "AppendConfirm", self.wndMain, self)
-	self.wndCurrentConfirmPopup:FindChild("AppendConfirmYes"):SetData(itemSource)
-	self.wndCurrentConfirmPopup:FindChild("AppendConfirmYes"):Enable(tAddData.nReagentCount >= tAddData.tCost.nReagents)
-	self.wndCurrentConfirmPopup:FindChild("AppendMaterialIcon"):SetSprite(itemReagent:GetIcon())
-	self.wndCurrentConfirmPopup:FindChild("AppendMaterialIcon"):SetText(String_GetWeaselString(Apollo.GetString("CRB_NOutOfN"), tAddData.nReagentCount, tAddData.tCost.nReagents))
-	self.wndCurrentConfirmPopup:FindChild("AppendMaterialIcon"):SetTextColor(tAddData.nReagentCount >= tAddData.tCost.nReagents and "white" or "xkcdReddish")
-	self.wndCurrentConfirmPopup:FindChild("SoulboundWarning"):Show(not itemSource:IsSoulbound())
-	self:HelperBuildItemTooltip(self.wndCurrentConfirmPopup:FindChild("AppendMaterialIcon"), itemReagent)
-	self:HelperRepositionConfirmPopup(wndHandler)
-end
-
-function Runecrafting:OnRuneSlotLockedBtn(wndHandler, wndControl) -- RuneSlotBtn of RuneSlotLockedItem
-	if not self.bAllowClicks then
-		return
+	local wndServiceTokenParent = self.wndMain:FindChild(strParent)
+	if wndServiceTokenParent then
+		wndServiceTokenParent:Show(false)
 	end
 
-	local nSlotIndex = wndHandler:GetData()[1]
-	local itemSource = wndHandler:GetData()[3]
-	local tEngravingInfo = CraftingLib.GetEngravingInfo(itemSource)
-	local tCurrentCosts = tEngravingInfo.tUnlockInfo.tCost
-
-	self:OnCurrentConfirmPopupClose()
-	self.wndCurrentConfirmPopup = Apollo.LoadForm(self.xmlDoc, "UnlockConfirm", self.wndMain, self)
-	self.wndCurrentConfirmPopup:FindChild("UnlockConfirmYes"):SetData(wndHandler:GetData())
-	self.wndCurrentConfirmPopup:FindChild("UnlockCashWindow"):SetAmount(tCurrentCosts and tCurrentCosts.monCost or 0)
-	self.wndCurrentConfirmPopup:FindChild("SoulboundWarning"):Show(not itemSource:IsSoulbound())
-	self:HelperRepositionConfirmPopup(wndHandler)
+	if eActionConfirmEvent == GameLib.CodeEnumConfirmButtonType.RuneSlotAdd then
+		self:OnRuneSlotAdded()
+	end
 end
+
 
 function Runecrafting:OnRunePickerItemBtn(wndHandler, wndControl)
 	local tData = wndHandler:GetData()
-	if tData.bReroll then
-		self:DrawRuneRerollConfirm(tData.wndHandler, tData.itemSource, tData.nSlotIndex)
-	else
-		self:DrawAddRuneConfirm(tData.wndHandler, tData.itemSource, tData.nSlotIndex, tData.itemRune)
-	end
-end
 
-function Runecrafting:DrawRuneRerollConfirm(wndHandler, itemSource, nSlotIndex)
-	if not self.bAllowClicks then
-		return
+	self:DrawAddRuneConfirm(self.wndSelection:GetParent(), tData.itemSource, tData.nSlotIndex, tData.itemRune)
+		
+	if self.wndSelection then
+		self:OnSelectionDestroy()
 	end
-
-	local tEngravingInfo = CraftingLib.GetEngravingInfo(itemSource)
-	local tRerollInfo = tEngravingInfo.tRerollInfo
-	local nReagentCost = tRerollInfo.arCosts[nSlotIndex] and tRerollInfo.arCosts[nSlotIndex].nReagents or 0 -- Currently hardcoded to only have one Reagent cost
-
-	local bHaveMats = tRerollInfo.nReagentCount >= nReagentCost
-	self:OnCurrentConfirmPopupClose()
-	self.wndCurrentConfirmPopup = Apollo.LoadForm(self.xmlDoc, "RerollConfirm", self.wndMain, self)
-	self.wndCurrentConfirmPopup:FindChild("RerollConfirmYes"):SetData(wndHandler:GetData())
-	self.wndCurrentConfirmPopup:FindChild("RerollConfirmYes"):Enable(bHaveMats)
-	if bHaveMats then
-		self.wndCurrentConfirmPopup:FindChild("RerollConfirmYes"):SetActionData(GameLib.CodeEnumConfirmButtonType.RuneSlotReroll, itemSource, nSlotIndex)
-	end
-	self.wndCurrentConfirmPopup:FindChild("SoulboundWarning"):Show(not itemSource:IsSoulbound())
-	self.wndCurrentConfirmPopup:FindChild("RerollMaterialIcon"):SetSprite(tRerollInfo.itemReagent:GetIcon())
-	self.wndCurrentConfirmPopup:FindChild("RerollMaterialIcon"):SetText(String_GetWeaselString(Apollo.GetString("CRB_NOutOfN"), tRerollInfo.nReagentCount, nReagentCost))
-	self.wndCurrentConfirmPopup:FindChild("RerollMaterialIcon"):SetTextColor(bHaveMats and "white" or "xkcdReddish")	
-	self:HelperBuildItemTooltip(self.wndCurrentConfirmPopup:FindChild("RerollMaterialIcon"), tRerollInfo.itemReagent)
-	self:HelperRepositionConfirmPopup(wndHandler)
 end
 
 function Runecrafting:DrawAddRuneConfirm(wndHandler, itemSource, nSlotIndex, itemRune)
-	self:OnCurrentConfirmPopupClose()
-
-	-- What the rune will add to the item, if successful
-	local tItemEffectData = itemSource:GetGlyphBonus(itemRune, nSlotIndex)
-	local strItemEffect = String_GetWeaselString(Apollo.GetString("EngravingStation_EffectIfSuccessful"), tItemEffectData.nValue or 0, ktAttributeToText[tItemEffectData.eProperty])
-
 	-- Draw Window
-	self.wndCurrentConfirmPopup = Apollo.LoadForm(self.xmlDoc, "AddConfirm", self.wndMain, self)
-	self.wndCurrentConfirmPopup:FindChild("AddConfirmYes"):SetData({ nSlotIndex, itemRune, itemSource }) -- GOTCHA: Different 2nd argument than normal
-	self.wndCurrentConfirmPopup:FindChild("AddConfirmItemEffect"):SetText(strItemEffect)
+	self.wndCurrentConfirmPopup = Apollo.LoadForm(self.xmlDoc, "AddConfirm", wndHandler, self)
+	self.wndCurrentConfirmPopup:FindChild("AddConfirmYes"):SetData({ nSlotIndex = nSlotIndex, itemRune = itemRune, itemSource = itemSource })
 	self.wndCurrentConfirmPopup:FindChild("AddConfirmIcon"):SetSprite(itemRune:GetIcon())
+	self.wndCurrentConfirmPopup:FindChild("AddConfirmItemName"):SetText(itemRune:GetName())
 	self.wndCurrentConfirmPopup:FindChild("SoulboundWarning"):Show(not itemSource:IsSoulbound())
 	self:HelperBuildItemTooltip(self.wndCurrentConfirmPopup:FindChild("AddConfirmIcon"), itemRune)
-	self:HelperRepositionConfirmPopup(wndHandler)
-end
-
-function Runecrafting:DrawRuneReplaceConfirm(wndHandler, itemRune)
-	local nSlotIndex = wndHandler:FindChild("RuneSlotBtn"):GetData()[1]
-	local itemSource = wndHandler:FindChild("RuneSlotBtn"):GetData()[3]
-	local tEngravingInfo = CraftingLib.GetEngravingInfo(itemSource)
-	local tCurrentCosts = tEngravingInfo.tClearInfo.arCosts[nSlotIndex]
-	self:OnCurrentConfirmPopupClose()
-
-	-- Draw Window
-	self.wndCurrentConfirmPopup = Apollo.LoadForm(self.xmlDoc, "ReplaceConfirm", self.wndMain, self)
-	self.wndCurrentConfirmPopup:FindChild("AddConfirmYes"):SetData({ nSlotIndex, itemRune, itemSource }) -- GOTCHA: Different 2nd argument than normal
-	self.wndCurrentConfirmPopup:FindChild("AddConfirmIcon"):SetSprite(itemRune:GetIcon())
-	self.wndCurrentConfirmPopup:FindChild("ReplaceCashWindow"):SetAmount(tCurrentCosts and tCurrentCosts.nReagents or 0)
-	self:HelperBuildItemTooltip(self.wndCurrentConfirmPopup:FindChild("AddConfirmIcon"), itemRune)
-	self:HelperRepositionConfirmPopup(wndHandler)
 end
 
 function Runecrafting:OnCurrentConfirmPopupClose(wndHandler, wndControl)
 	if self.wndCurrentConfirmPopup and self.wndCurrentConfirmPopup:IsValid() then
 		self.wndCurrentConfirmPopup:Destroy()
 		self.wndCurrentConfirmPopup = nil
-		Apollo.StartTimer("Runecrafting_ConfirmPopupDelay")
-		self.bAllowClicks = false
 	end
 end
 
-function Runecrafting:OnRunecrafting_ConfirmPopupDelay()
-	self.bAllowClicks = true
+function Runecrafting:OnSelectionDestroy()
+	if self.wndSelection then
+		self.wndSelection:Close()
+	end
 end
 
-function Runecrafting:HelperRepositionConfirmPopup(wndOrigin)
-	local wndIter = wndOrigin
-	local wndExit = wndOrigin:GetFrame()
-	local nTotalX, nTotalY = 0, 0
-
-	for idx = 1, 99 do
-		if not wndIter or wndIter == wndExit then
-			break
-		end
-
-		local x, y = wndIter:GetPos()
-		nTotalX = nTotalX + x
-		nTotalY = nTotalY + y
-		wndIter = wndIter:GetParent()
+function Runecrafting:OnSelectionClose()
+	if not self.wndSelection then
+		return
 	end
+	
+	if not self.wndSelection:GetParent():ContainsMouse() then
+		self.wndSelection:GetParent():SetCheck(false)
+	end
+	
+	self.wndSelection:Destroy()
+	self.wndSelection = nil
 
-	local wndPopup = self.wndCurrentConfirmPopup
-	local nLeft, nTop, nRight, nBottom = wndPopup:GetAnchorOffsets()
-	wndPopup:SetAnchorOffsets(nTotalX + nLeft, nTotalY + nTop, nTotalX + nRight, nTotalY + nBottom)
-	wndPopup:ToFront()
 end
 
 -----------------------------------------------------------------------------------------------
 -- Drag Drop Events
 -----------------------------------------------------------------------------------------------
-
-function Runecrafting:OnRuneSlotQueryDragDrop(wndHandler, wndControl, x, y, wndSource, strType, nDragInventoryItemIdx, eResult)
-	local itemSource = self.wndMain:FindChild("HiddenBagWindow"):GetItem(nDragInventoryItemIdx)
-	if itemSource and strType == "DDBagItem" then
-		local tCurrRuneSlot = wndHandler:GetData()[2]
-		local tItemRuneInfo = self.wndMain:FindChild("HiddenBagWindow"):GetItem(nDragInventoryItemIdx):GetRuneInfo()
-		if tCurrRuneSlot.eType and tItemRuneInfo then
-			return Apollo.DragDropQueryResult.Accept
-		end
+function Runecrafting:OnDragDropQueryItem(wndHandler, wndControl, x, y, wndSource, strType, nItemSourceLoc)
+	if strType ~= "DDBagItem" or wndHandler ~= wndControl then
+		return
 	end
-	return Apollo.DragDropQueryResult.Ignore
+	local itemSource = Item.GetItemFromInventoryLoc(nItemSourceLoc)
+	if not itemSource then
+		return
+	end
+	
+	local tRuneInfo = itemSource:GetRuneSlots()
+	if not tRuneInfo.nMaximum or tRuneInfo.nMaximum <= 0 then
+		return Apollo.DragDropQueryResult.Invalid
+	end
+	
+	return Apollo.DragDropQueryResult.Accept
 end
 
-function Runecrafting:OnRuneSlotDragDrop(wndHandler, wndControl, x, y, wndSource, strType, nDragInventoryItemIdx, bDragDropHasBeenReset)
-	local itemRune = self.wndMain:FindChild("HiddenBagWindow"):GetItem(nDragInventoryItemIdx)
-	if itemRune and strType == "DDBagItem" then
-		local tCurrRuneSlot = wndHandler:GetData()[2]
-		local tItemRuneInfo = self.wndMain:FindChild("HiddenBagWindow"):GetItem(nDragInventoryItemIdx):GetRuneInfo()
-		if self:HelperCheckElementMatch(tItemRuneInfo, tCurrRuneSlot) then
-			if tCurrRuneSlot.idRune == 0 then -- No rune in slot
-				local nSlotIndex = wndHandler:GetData()[1]
-				local itemSource = wndHandler:GetData()[3]
-				self:DrawAddRuneConfirm(wndHandler:GetParent(), itemSource, nSlotIndex, itemRune)
-			else -- Replace rune in slot
-				self:DrawRuneReplaceConfirm(wndHandler:GetParent(), itemRune)
+function Runecrafting:OnDragDropItem(wndHandler, wndControl, x, y, wndSource, strType, nItemSourceLoc)
+	if strType ~= "DDBagItem" or wndHandler ~= wndControl then
+		return
+	end
+	
+	local itemDropped = Item.GetItemFromInventoryLoc(nItemSourceLoc)
+	
+	if not itemDropped:GetRuneSlots().nMaximum then
+		return
+	end
+	
+	self:InitEditWindow(itemDropped)
+end
+
+function Runecrafting:OnDragDropSystemBegin(wndSource, strType, nItemSourceLoc)
+	if self.wndMain then
+		local itemDragged = Item.GetItemFromInventoryLoc(nItemSourceLoc)
+
+		if itemDragged and itemDragged:IsEquippable() then
+			local tRuneInfo = itemDragged:GetRuneSlots()
+
+			if tRuneInfo and tRuneInfo.nMaximum and tRuneInfo.nMaximum > 0 then
+				self.wndMain:FindChild("WindowHighlight"):Show(true)
 			end
 		end
-		return false
 	end
-	return true
 end
 
+function Runecrafting:OnDragDropSystemEnd(strType, nItemSourceLoc)
+	if self.wndMain then
+		self.wndMain:FindChild("WindowHighlight"):Show(false)
+	end
+end
+	
 function Runecrafting:OnAddConfirmYes(wndHandler, wndControl) -- Potentially from drag drop or from picker
-	local nSlotIndex = wndHandler:GetData()[1]
-	local itemRune = wndHandler:GetData()[2] -- GOTCHA: This is an item object, not the normal table of data
-	local itemSource = wndHandler:GetData()[3]
-
-	local tRuneData = itemSource:GetRuneSlots()
-	if tRuneData and tRuneData.bIsDefined then
-		local tListOfRunes = {}
-		for idx, tCurrRuneSlot in pairs(tRuneData.arRuneSlots) do
-			if tCurrRuneSlot.bUnlocked then
-				tListOfRunes[idx] = tCurrRuneSlot.idRune
-			end
-		end
-		tListOfRunes[nSlotIndex] = itemRune:GetItemId() -- Replace with the desired
-		CraftingLib.InstallRuneIntoSlot(itemSource, tListOfRunes)
-	end
-	self:OnCurrentConfirmPopupClose()
-end
-
-function Runecrafting:OnReplaceConfirmYes( wndHandler, wndControl, eMouseButton )
-	local nSlotIndex = wndHandler:GetData()[1]
-	local itemRune = wndHandler:GetData()[2] -- GOTCHA: This is an item object, not the normal table of data
-	local itemSource = wndHandler:GetData()[3]
-
-	local tRuneData = itemSource:GetRuneSlots()
-	if tRuneData and tRuneData.bIsDefined then
-		local tListOfRunes = {}
-		for idx, tCurrRuneSlot in pairs(tRuneData.arRuneSlots) do
-			if tCurrRuneSlot.bUnlocked then
-				tListOfRunes[idx] = tCurrRuneSlot.idRune
-			end
-		end
-		tListOfRunes[nSlotIndex] = itemRune:GetItemId() -- Replace with the desired
-		CraftingLib.ClearRuneSlot(itemSource, nSlotIndex)
-		CraftingLib.InstallRuneIntoSlot(itemSource, tListOfRunes)
+	local tConfirmData = wndHandler:GetData()
+	if not tConfirmData then
+		return
 	end
 
+	local tRuneData = tConfirmData.itemSource:GetRuneSlots()
+	if tRuneData then
+		local tListOfRunes = {}
+
+		for idx = 1, #tRuneData.arRuneSlots do
+			tListOfRunes[idx] = (tRuneData.arRuneSlots[idx] and tRuneData.arRuneSlots[idx].itemRune) and tRuneData.arRuneSlots[idx].itemRune:GetItemId() or 0
+		end
+
+		tListOfRunes[tConfirmData.nSlotIndex] = tConfirmData.itemRune:GetItemId() -- Replace with the desired
+
+		--Play a sound based on the rune element and if it applies a set bonus.
+
+		local eElement = nil
+		local tRuneInfo = tConfirmData.itemRune:GetDetailedInfo( nil, Item.CodeEnumItemDetailedTooltip.Specifics )
+		if tRuneInfo and tRuneInfo.tPrimary and tRuneInfo.tPrimary.arRuneTypes then
+			if #tRuneInfo.tPrimary.arRuneTypes > 1 then--Assuming that if there is multiple elements this rune can fufil, it is fusion.
+				eElement = Item.CodeEnumRuneType.Fusion
+			else
+				eElement = tRuneInfo.tPrimary.arRuneTypes[1]
+			end
+		end
+
+		if eElement then
+			local tSounds = karElementsToSounds[eElement]
+			local arSetBonuses = tConfirmData.itemSource:GetSetBonuses()
+			if tSounds then
+				if #arSetBonuses > 0 and tSounds.soundSet ~= nil then
+					Sound.Play(tSounds.eSet)--Set Bonus Sound.
+				else
+					Sound.Play(tSounds.eNonSet)--Normal element sound.
+				end
+			end
+		end
+
+		CraftingLib.InstallRuneIntoSlot(tConfirmData.itemSource, tListOfRunes)
+	end
 	self:OnCurrentConfirmPopupClose()
 end
 
@@ -1085,25 +1304,8 @@ end
 -- Helpers
 -----------------------------------------------------------------------------------------------
 
-function Runecrafting:HelperCheckElementMatch(tItemRuneInfo, tRuneSlot)
-	return tRuneSlot.eType == Item.CodeEnumRuneType.Omni or tItemRuneInfo.eType == Item.CodeEnumRuneType.Omni or tItemRuneInfo.eType == tRuneSlot.eType
-end
-
-function Runecrafting:HelperPrereqFailed(tCurrItem)
-	return tCurrItem and tCurrItem:IsEquippable() and not tCurrItem:CanEquip()
-end
-
 function Runecrafting:HelperBuildItemTooltip(wndArg, itemCurr)
 	Tooltip.GetItemTooltipForm(self, wndArg, itemCurr, { bPrimary = true, bSelling = false, itemCompare = itemCurr:GetEquippedItemForItemType() })
-end
-
-function Runecrafting:LoadByName(strForm, wndParent, strCustomName)
-	local wndNew = wndParent:FindChild(strCustomName)
-	if not wndNew then
-		wndNew = Apollo.LoadForm(self.xmlDoc, strForm, wndParent, self)
-		wndNew:SetName(strCustomName)
-	end
-	return wndNew
 end
 
 local RunecraftingInst = Runecrafting:new()

@@ -304,12 +304,12 @@ function GalacticArchive:OnPopulateArchiveIndexTimer()
 		self.wndFilterUpdated:SetText(String_GetWeaselString(Apollo.GetString("Archive_UpdatedArticlesNumber"), self.nNumOfNewArticles))
 	end
 
-	local nHeight = self.wndHeaderContainer:ArrangeChildrenVert(0, function (a,b)
+	local nHeight = self.wndHeaderContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function (a,b)
 		return a:GetData() < b:GetData()
 	end)
 	
 	for idx, wndHeader in pairs(self.wndHeaderContainer:GetChildren()) do
-		wndHeader:FindChild("HeaderItemContainer"):ArrangeChildrenVert(0, function (a,b)
+		wndHeader:FindChild("HeaderItemContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function (a,b)
 			return (a:GetData():GetTitle() < b:GetData():GetTitle())
 		end)
 	end
@@ -359,7 +359,7 @@ function GalacticArchive:FilterArchiveIndex()
 	end
 	
 	
-	local nHeight = self.wndHeaderContainer:ArrangeChildrenVert(0)
+	local nHeight = self.wndHeaderContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	
 	-- Empty Label and etc. formatting
 	local bShowEmpty = nHeight == 0
@@ -371,7 +371,7 @@ end
 
 function GalacticArchive:FormatHeaderDisplay(wndHeader)
 	local wndHeaderItemContainer = wndHeader:FindChild("HeaderItemContainer")
-	local nChildrenHeight = wndHeaderItemContainer:ArrangeChildrenVert(0)
+	local nChildrenHeight = wndHeaderItemContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	local bShow = nChildrenHeight > 0
 	if bShow ~= wndHeader:IsShown() then
 		wndHeader:Show(bShow)
@@ -648,7 +648,7 @@ function GalacticArchive:DisplayArticle(artDisplay)
 		wndArticle:FindChild("ArticleTitle"):SetAML("<P Font=\"CRB_HeaderMedium\" TextColor=\"UI_TextHoloTitle\">"..artDisplay:GetTitle().."</P>")
 	end
 	wndArticle:FindChild("ArticleSubtitle"):SetHeightToContentHeight()
-	wndArticle:FindChild("ArticleHeaderTextAligner"):ArrangeChildrenVert(1)	
+	wndArticle:FindChild("ArticleHeaderTextAligner"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.Middle)	
 
 	local nLockCount = 0
 	local nEntryCount = 0
@@ -684,11 +684,11 @@ function GalacticArchive:DisplayArticle(artDisplay)
 	-- End Middle
 
 	wndArticle:FindChild("EntriesContainer"):SetAnchorOffsets(self.nEntryLeft, self.nEntryTop, self.nEntryRight, self.nEntryBottom + nAdditionalHeight)
-	wndArticle:FindChild("EntriesContainerList"):ArrangeChildrenVert(0)
+	wndArticle:FindChild("EntriesContainerList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 	wndArticle:FindChild("ArticleScroll"):SetVScrollPos(0)
 	wndArticle:FindChild("ArticleScroll"):RecalculateContentExtents()
-	wndArticle:FindChild("ArticleScroll"):ArrangeChildrenVert(0)
+	wndArticle:FindChild("ArticleScroll"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 	self.wndArchiveIndexForm:Show(true)
 	self.wndArticleDisplay:Invoke()-- wndArticle

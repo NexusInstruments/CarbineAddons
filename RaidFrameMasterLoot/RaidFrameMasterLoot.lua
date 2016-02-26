@@ -27,7 +27,15 @@ function RaidFrameMasterLoot:OnDocumentReady()
 	if  self.xmlDoc == nil then
 		return
 	end
+
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
+
 	Apollo.RegisterEventHandler("GenericEvent_Raid_ToggleMasterLoot", "Initialize", self)
+end
+
+function RaidFrameMasterLoot:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("Group_MasterLoot")})
 end
 
 function RaidFrameMasterLoot:Initialize(bShow)

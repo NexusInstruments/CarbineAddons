@@ -39,11 +39,17 @@ local ktResultErrorCodeStrings =
 
 local ktLogTypeStrings =
 {
+	[AccountItemLib.CodeEnumAccountOperation.ClaimPending] = "MarketplaceCredd_Log_ClaimPending", -- has claimed pending
 	[AccountItemLib.CodeEnumAccountOperation.SellCREDD] = "MarketplaceCredd_Log_SellOrderCreated",
 	[AccountItemLib.CodeEnumAccountOperation.BuyCREDD] = "MarketplaceCredd_Log_BuyOrderCreated",
 	[AccountItemLib.CodeEnumAccountOperation.SellCREDDComplete] = "MarketplaceCredd_Log_SellOrderComplete",
 	[AccountItemLib.CodeEnumAccountOperation.BuyCREDDComplete] = "MarketplaceCredd_Log_BuyOrderComplete",
 	[AccountItemLib.CodeEnumAccountOperation.CancelCREDDOrder] = "MarketplaceCredd_Log_CancelOrder",
+	[AccountItemLib.CodeEnumAccountOperation.ReturnPending] = "MarketplaceCredd_Log_ReturnPending",
+	[AccountItemLib.CodeEnumAccountOperation.TakeItem] = "MarketplaceCredd_Log_Take",
+	[AccountItemLib.CodeEnumAccountOperation.GiftItem] = "MarketplaceCredd_Log_Gifted",
+	[AccountItemLib.CodeEnumAccountOperation.CREDDRedeem] = "MarketplaceCredd_Log_Redeem",
+	[AccountItemLib.CodeEnumAccountOperation.ExpireCREDDOrder] = "MarketplaceCredd_Log_ExpireOrder",
 }
 
 local knMaxPlat = 9999999999 -- 9999 plat
@@ -72,8 +78,15 @@ function MarketplaceCREDD:OnDocumentReady()
 		return
 	end
 
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
+
 	Apollo.RegisterEventHandler("ToggleCREDDExchangeWindow", 	"OnToggleCREDDExchangeWindow", self)
 	Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded", 	"OnInterfaceMenuListHasLoaded", self)
+end
+
+function MarketplaceCREDD:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {wnd = wndMain, strName = Apollo.GetString("MarketplaceCredd_Title")})
 end
 
 function MarketplaceCREDD:OnInterfaceMenuListHasLoaded()
@@ -173,10 +186,11 @@ function MarketplaceCREDD:OnToggleCREDDExchangeWindow()
 		wndMain = self.tWindowMap["Main"]
 	end
 
-	wndMain:Show(not wndMain:IsShown())
-	if wndMain:IsShown() then
-		wndMain:ToFront()
+	if not wndMain:IsShown() then
+		wndMain:Invoke()
 		CREDDExchangeLib.RequestExchangeInfo() -- Leads to OnCREDDExchangeInfoResults
+	else
+		wndMain:Close()
 	end
 end
 
@@ -242,7 +256,7 @@ function MarketplaceCREDD:OnCREDDExchangeInfoResults(arMarketStats, arOrders) --
 	wndMarketData:FindChild("MarketDataFormLabel"):SetTextColor(ApolloColor.new("UI_TextHoloBody"))
 	wndMarketData:FindChild("MarketDataFormPrice"):SetTextColor(ApolloColor.new("UI_TextHoloBody"))
 	wndMarketData:FindChild("MarketDataFormPrice"):SetAmount(tBuyOrderData.monPrice, false)
-	self.tWindowMap["MainBuyContainer"]:ArrangeChildrenVert(0)
+	self.tWindowMap["MainBuyContainer"]:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 	self.tWindowMap["MainSellContainer"]:DestroyChildren()
 	local wndMarketData = Apollo.LoadForm(self.xmlDoc, "MarketDataForm", self.tWindowMap["MainSellContainer"], self)
@@ -250,7 +264,7 @@ function MarketplaceCREDD:OnCREDDExchangeInfoResults(arMarketStats, arOrders) --
 	wndMarketData:FindChild("MarketDataFormLabel"):SetTextColor(ApolloColor.new("ffc2e57f"))
 	wndMarketData:FindChild("MarketDataFormPrice"):SetTextColor(ApolloColor.new("ffc2e57f"))
 	wndMarketData:FindChild("MarketDataFormPrice"):SetAmount(tSellOrderData.monPrice, false)
-	self.tWindowMap["MainSellContainer"]:ArrangeChildrenVert(0)
+	self.tWindowMap["MainSellContainer"]:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 	-- Allow refresh btn to be clicked again
 	self.tWindowMap["RefreshMarketBtn"]:Enable(true)
@@ -265,10 +279,6 @@ end
 function MarketplaceCREDD:RefreshEscrow()
 	-- Escrow
 	local tFlattenedTable = {}
-	for idx, tPendingAccountItem in pairs(AccountItemLib.GetPendingAccountSingleItems()) do
-		table.insert(tFlattenedTable, tPendingAccountItem)
-	end
-
 	for idx, tPendingAccountItemGroup in pairs(AccountItemLib.GetPendingAccountItemGroups()) do
 		for idx2, tPendingAccountItem in pairs(tPendingAccountItemGroup.items) do
 			table.insert(tFlattenedTable, tPendingAccountItem)
@@ -295,7 +305,7 @@ function MarketplaceCREDD:RefreshBoundCredd()
 	if wndMain and wndMain:IsValid() and wndMain:IsVisible() then
 		local nPlayerCash = GameLib.GetPlayerCurrency():GetAmount()
 		local bBuyTabChecked = self.tWindowMap["HeaderBuyBtn"]:IsChecked()
-		local nNumBound = AccountItemLib.GetAccountCurrency(AccountItemLib.CodeEnumAccountCurrency.CREDD)
+		local nNumBound = AccountItemLib.GetAccountCurrency(AccountItemLib.CodeEnumAccountCurrency.CREDD):GetAmount()
 		self.tWindowMap["HeaderSellCount"]:Show(nNumBound > 0)
 		self.tWindowMap["HeaderSellCount"]:SetText(nNumBound > 0 and nNumBound or "")
 		self.tWindowMap["HeaderSellCount"]:SetTooltip(String_GetWeaselString(Apollo.GetString("MarketplaceCredd_SellNumAvailable"), nNumBound))
@@ -438,7 +448,7 @@ function MarketplaceCREDD:OnCREDDExchangeOperationResults(eOperationType, eResul
 		self.tWindowMap["WaitingScreen"]:Show(false)
 		self.tWindowMap["PostResultNotification"]:Show(true)
 		self.tWindowMap["PostResultNotificationLabel"]:SetText(bSuccess and Apollo.GetString("CRB_Success") or Apollo.GetString("CRB_Error"))
-		self.tWindowMap["PostResultNotificationLabel"]:SetTextColor(bSuccess and ApolloColor.new("UI_TextHoloTitle") or ApolloColor.new("xkcdLightOrange"))
+		self.tWindowMap["PostResultNotificationLabel"]:SetTextColor(bSuccess and ApolloColor.new("UI_TextHoloTitle") or ApolloColor.new("LightOrange"))
 
 		self.tWindowMap["PostResultNotificationSubText"]:SetText(bSuccess and Apollo.GetString("MarketplaceCredd_TransactionSuccess") or Apollo.GetString((ktResultErrorCodeStrings[eResult] or MarketplaceCredd_Error_GenericFail)))
 	end
@@ -485,7 +495,7 @@ function MarketplaceCREDD:OnCREDDOperationHistoryResults(tHistory)
 		wndEntry:FindChild("LogTimeStamp"):SetText("")
 	end
 
-	self.tWindowMap["LogScroll"]:ArrangeChildrenVert(0)
+	self.tWindowMap["LogScroll"]:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function MarketplaceCREDD:HelperLogConvertToTimeString(nDays)

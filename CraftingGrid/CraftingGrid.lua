@@ -143,7 +143,6 @@ function CraftingGrid:OnDocumentReady()
 	Apollo.RegisterEventHandler("CraftingUpdateCurrent", 							"OnCraftingUpdateCurrent", self)
 	Apollo.RegisterEventHandler("UpdateInventory", 									"RedrawAll", self)
 	Apollo.RegisterEventHandler("PlayerCurrencyChanged", 							"RedrawCash", self)
-	Apollo.RegisterEventHandler("CraftingStationClose",								"OnCraftingGrid_CraftBtnTimer", self)
 
 	Apollo.RegisterEventHandler("CraftingInterrupted",								"OnCraftingGrid_CraftBtnTimer", self)
 	Apollo.RegisterEventHandler("P2PTradeInvite", 									"OnP2PTradeExitAndReset", self)
@@ -152,7 +151,7 @@ function CraftingGrid:OnDocumentReady()
 	self.timerBtn = ApolloTimer.Create(3.25, false, "OnCraftingGrid_CraftBtnTimer", self)
 	self.timerBtn:Stop()
 
-	--self.timerCraftingSation = ApolloTimer.Create(1.0, true, "OnCraftingGrid_TimerCraftingStationCheck", self)
+	self.timerCraftingSation = ApolloTimer.Create(1.0, true, "OnCraftingGrid_TimerCraftingStationCheck", self)
 
 	self.wndArrowTutorial = -1 -- This is -1 if not set yet, then 0 after it's been set (and we no longer ever want to show it)
 
@@ -191,6 +190,8 @@ function CraftingGrid:Initialize()
 	self.wndMain:FindChild("ShowTutorialsBtn"):Enable(false)
 	self.wndAdditiveEstimate = nil
 	self.wndMarker = nil
+	
+	self.wndMain:FindChild("BGCraftingStationBlocker"):Show(not CraftingLib.IsAtCraftingStation())
 
 	self.bFullDestroyNeeded = false -- Either Catalysts, or Discovery Success so far
 	self.nMaxY, self.nMaxX, self.nMinX, self.nMinY = nil
@@ -216,11 +217,13 @@ function CraftingGrid:RedrawAll()
 
 	-- Build List of Variants
 	local wndVariantsParent = self.wndMain:FindChild("VariantsList")
+	wndVariantsParent:DestroyChildren()
+	
 	for idx, tCurrSubRecipe in pairs(tSchematicInfo.tSubRecipes) do
 		local bHitThisSubSchematic = bCurrentCraftStarted and tCurrentCraft.nSubSchematicId == tCurrSubRecipe.nSchematicId
 		self:BuildVariantItem(wndVariantsParent, tCurrSubRecipe.itemOutput, tCurrSubRecipe, bHitThisSubSchematic)
 	end
-	self.wndMain:FindChild("VariantsListLabel"):Show(wndVariantsParent:ArrangeChildrenVert(0) > 0)
+	self.wndMain:FindChild("VariantsListLabel"):Show(wndVariantsParent:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop) > 0)
 
 	-- Bottom Right Item Output
 	self.wndMain:FindChild("VariantsCurrentBox"):DestroyChildren()
@@ -241,8 +244,8 @@ function CraftingGrid:RedrawAll()
 
 	-- Count Raw Materials
 	local bHasEnoughRawMaterials = true
-	for idx, tMaterial in pairs(tSchematicInfo.tMaterials) do
-		if tMaterial.nAmount > (tMaterial.itemMaterial:GetBackpackCount() + tMaterial.itemMaterial:GetBankCount()) then
+	for idx, tMaterial in pairs(tSchematicInfo.arMaterials) do
+		if tMaterial.nNeeded > tMaterial.nOwned then
 			bHasEnoughRawMaterials = false
 			break
 		end
@@ -253,16 +256,15 @@ function CraftingGrid:RedrawAll()
 	wndBlockerParent:FindChild("BGNoMaterialsBlocker"):Show(not bCurrentCraftStarted and not bHasEnoughRawMaterials)
 	if not bCurrentCraftStarted and not bHasEnoughRawMaterials then
 		wndBlockerParent:FindChild("BGNoMaterialsList"):DestroyChildren()
-		for idx, tMaterial in pairs(tSchematicInfo.tMaterials) do
-			local nOwnedCount = tMaterial.itemMaterial:GetBackpackCount() + tMaterial.itemMaterial:GetBankCount()
+		for idx, tMaterial in pairs(tSchematicInfo.arMaterials) do
 			local wndNoMaterials = Apollo.LoadForm(self.xmlDoc, "RawMaterialsItem", wndBlockerParent:FindChild("BGNoMaterialsList"), self)
 			wndNoMaterials:FindChild("RawMaterialsIcon"):SetTextColor("ffff0000")
-			wndNoMaterials:FindChild("RawMaterialsIcon"):SetText(String_GetWeaselString(Apollo.GetString("CRB_NOutOfN"), nOwnedCount, tMaterial.nAmount))
+			wndNoMaterials:FindChild("RawMaterialsIcon"):SetText(String_GetWeaselString(Apollo.GetString("CRB_NOutOfN"), tMaterial.nOwned, tMaterial.nNeeded))
 			wndNoMaterials:FindChild("RawMaterialsIcon"):SetSprite(tMaterial.itemMaterial:GetIcon())
-			wndNoMaterials:FindChild("RawMaterialsNotEnough"):Show(nOwnedCount < tMaterial.nAmount)
+			wndNoMaterials:FindChild("RawMaterialsNotEnough"):Show(tMaterial.nOwned < tMaterial.nNeeded)
 			self:HelperBuildItemTooltip(wndNoMaterials, tMaterial.itemMaterial)
 		end
-		wndBlockerParent:FindChild("BGNoMaterialsList"):ArrangeChildrenHorz(1)
+		wndBlockerParent:FindChild("BGNoMaterialsList"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.Middle)
 		return
 	end
 
@@ -289,7 +291,7 @@ function CraftingGrid:RedrawAll()
 			end
 		end
 		wndCatalystList:SetText(#wndCatalystList:GetChildren() == 0 and Apollo.GetString("CoordCrafting_NoCatalystsInInv") or "")
-		wndCatalystList:ArrangeChildrenVert(0)
+		wndCatalystList:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	end
 	wndBlockerParent:FindChild("CatalystContainer"):Show(#wndCatalystList:GetChildren() > 0)
 	wndBlockerParent:FindChild("BGPreviewOnlyBlocker"):Show(not bCurrentCraftStarted)
@@ -341,24 +343,29 @@ function CraftingGrid:BuildVariantItem(wndParent, itemRecipe, tSchem, bHitThisSu
 	wndSubrecipe:FindChild("VariantItemName"):SetText(bHitThisSubSchematic and "" or itemRecipe:GetName())
 	wndSubrecipe:FindChild("VariantItemRarity"):SetSprite(ktItemRarityToBorderSprite[itemRecipe:GetItemQuality()])
 
+	local wndVarItemIcon = wndSubrecipe:FindChild("VariantItemIcon")
 	if tSchem and tSchem.bIsUndiscovered then
-		wndSubrecipe:FindChild("VariantItemIcon"):SetBGColor(ApolloColor.new("UI_TextHoloTitle"))
-		wndSubrecipe:FindChild("VariantItemIcon"):SetSprite("Icon_Mission_Explorer_ScavengerHunt")
-		wndSubrecipe:FindChild("VariantItemIcon"):SetTooltip(Apollo.GetString("CraftingGrid_DiscoverableVariantTooltip"))
+		wndVarItemIcon:SetBGColor(ApolloColor.new("UI_TextHoloTitle"))
+		wndVarItemIcon:SetSprite("Icon_Mission_Explorer_ScavengerHunt")
+		wndVarItemIcon:SetTooltip(Apollo.GetString("CraftingGrid_DiscoverableVariantTooltip"))
 	elseif tSchem and not tSchem.bIsKnown then
-		wndSubrecipe:FindChild("VariantItemIcon"):SetBGColor(ApolloColor.new("white"))
-		wndSubrecipe:FindChild("VariantItemIcon"):SetSprite("CRB_AMPs:spr_AMPs_LockStretch_Blue")
-		wndSubrecipe:FindChild("VariantItemIcon"):SetTooltip(tSchem.achSource and Apollo.GetString("CraftingGrid_NotKnownVariantTooltip") or Apollo.GetString("CoordCrafting_UnlockTooltipRecipe"))
+		wndVarItemIcon:SetBGColor(ApolloColor.new("white"))
+		wndVarItemIcon:SetSprite(itemRecipe:GetIcon())
+		local wndVarItemLocked = wndSubrecipe:FindChild("VariantItemLocked")
+		wndVarItemLocked:SetBGColor(ApolloColor.new("white"))
+		wndVarItemLocked:SetSprite("CRB_AMPs:spr_AMPs_LockStretch_Blue")
+		wndVarItemLocked:Show(true)
+		wndVarItemLocked:SetTooltip(tSchem.achSource and Apollo.GetString("CraftingGrid_NotKnownVariantTooltip") or Apollo.GetString("CoordCrafting_UnlockTooltipRecipe"))
 	else
-		wndSubrecipe:FindChild("VariantItemIcon"):SetBGColor(ApolloColor.new("white"))
-		wndSubrecipe:FindChild("VariantItemIcon"):SetSprite(itemRecipe:GetIcon())
-		wndSubrecipe:FindChild("VariantItemIcon"):SetTooltip("")
-		self:HelperBuildItemTooltip(wndSubrecipe:FindChild("VariantItemIcon"), itemRecipe)
+		wndVarItemIcon:SetBGColor(ApolloColor.new("white"))
+		wndVarItemIcon:SetSprite(itemRecipe:GetIcon())
+		wndVarItemIcon:SetTooltip("")
+		self:HelperBuildItemTooltip(wndVarItemIcon, itemRecipe)
 	end
 
 	-- Determine direction, if not the base
 	if tSchem then
-		wndSubrecipe:FindChild("VariantItemIcon"):SetData(self:HelperDetermineAdditiveDirection(tSchem)) -- For OnVariantItemIconClick, to auto open the correct recipe category
+		wndVarItemIcon:SetData(self:HelperDetermineAdditiveDirection(tSchem)) -- For OnVariantItemIconClick, to auto open the correct recipe category
 	end
 end
 
@@ -406,21 +413,21 @@ function CraftingGrid:RedrawAllDetailed(idSchematic, tSchematicInfo, tCurrentCra
 			wndAdditiveMaterial:FindChild("CraftMaterialsCircle"):SetSprite("Crafting_CoordSprites:sprCoord_SmallCircle_Green")
 			Sound.Play(Sound.PlayUICraftingCoordinateHit)
 		elseif bCurrent and tSchematicInfo.nMaxAdditives == tCurrentCraft.nAdditiveCount then
-			wndAdditiveMaterial:FindChild("CraftMaterialsTitle"):SetTextColor(ApolloColor.new("xkcdReddish"))
-			wndAdditiveMaterial:FindChild("CraftMaterialsCircle"):SetTextColor(ApolloColor.new("xkcdReddish"))
+			wndAdditiveMaterial:FindChild("CraftMaterialsTitle"):SetTextColor(ApolloColor.new("Reddish"))
+			wndAdditiveMaterial:FindChild("CraftMaterialsCircle"):SetTextColor(ApolloColor.new("Reddish"))
 			wndAdditiveMaterial:FindChild("CraftMaterialsCircle"):SetSprite("Crafting_CoordSprites:sprCoord_SmallCircle_Red")
 			Sound.Play(Sound.PlayUICraftingCoordinateMiss)
 		end
 
 		-- wndMarker
 		if self.wndMarker and bCurrent and not bHitACircle and tSchematicInfo.nMaxAdditives == tCurrentCraft.nAdditiveCount then
-			self.wndMarker:FindChild("GridMarkerCircle"):SetTextColor(ApolloColor.new("xkcdReddish"))
+			self.wndMarker:FindChild("GridMarkerCircle"):SetTextColor(ApolloColor.new("Reddish"))
 			self.wndMarker:FindChild("GridMarkerCircle"):SetSprite("Crafting_CoordSprites:sprCoord_SmallCircle_Red")
 		elseif self.wndMarker and itemAdditive then
 			self.wndMarker:SetSprite(itemAdditive:GetIcon())
 		end
 	end
-	wndCraftMaterialsList:ArrangeChildrenVert(0)
+	wndCraftMaterialsList:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 	-- Additives Store Direction Set Up
 	local tTradeskillInfo = CraftingLib.GetTradeskillInfo(tSchematicInfo.eTradeskillId)
@@ -436,8 +443,9 @@ function CraftingGrid:RedrawAllDetailed(idSchematic, tSchematicInfo, tCurrentCra
 	table.sort(tListAdditives, function(a,b) return a:GetBuyPrice():GetAmount() < b:GetBuyPrice():GetAmount() end) -- Apparently this can change mid craft
 
 	-- Additives Store Draw
+	local wndAdditiveList = self.wndMain:FindChild("AdditiveList")
 	for eAxis, strAxisName in pairs(tAxisNames) do -- R, T, L, B
-		local wndAdditiveHeader = self:LoadByName("AdditiveHeader", self.wndMain:FindChild("AdditiveList"), "AdditiveHeader"..strAxisName)
+		local wndAdditiveHeader = self:LoadByName("AdditiveHeader", wndAdditiveList, "AdditiveHeader"..strAxisName)
 		wndAdditiveHeader:FindChild("AdditiveHeaderIcon"):SetSprite(ktstrAxisToIcon[tSchematicInfo.eTradeskillId][eAxis] or "")
 		wndAdditiveHeader:FindChild("AdditiveHeaderBtnText"):SetText(strAxisName)
 
@@ -452,7 +460,7 @@ function CraftingGrid:RedrawAllDetailed(idSchematic, tSchematicInfo, tCurrentCra
 					wndCurr:SetData(itemCurr)
 					wndCurr:FindChild("AdditiveMouseCatcher"):SetData(itemCurr)
 					wndCurr:FindChild("AdditiveCashWindow"):SetAmount(nAdditivePrice)
-					wndCurr:FindChild("AdditiveCashWindow"):SetTextColor(bCanAfford and ApolloColor.new("UI_BtnTextGoldListPressed") or ApolloColor.new("xkcdReddish"))
+					wndCurr:FindChild("AdditiveCashWindow"):SetTextColor(bCanAfford and ApolloColor.new("UI_BtnTextGoldListPressed") or ApolloColor.new("Reddish"))
 					wndCurr:FindChild("AdditiveIcon"):SetSprite(bCanAfford and itemCurr:GetIcon() or "ClientSprites:LootCloseBox")
 					wndCurr:FindChild("AdditiveTitleText"):SetAML("<P Font=\"CRB_InterfaceMedium_BO\" TextColor=\"UI_BtnTextGoldListPressed\">"..itemCurr:GetName().."</P>")
 
@@ -468,13 +476,13 @@ function CraftingGrid:RedrawAllDetailed(idSchematic, tSchematicInfo, tCurrentCra
 	end
 
 	-- Resize Additive List
-	for idx, wndAdditiveHeader in pairs(self.wndMain:FindChild("AdditiveList"):GetChildren()) do
+	for idx, wndAdditiveHeader in pairs(wndAdditiveList:GetChildren()) do
 		local nCheckedPadding = wndAdditiveHeader:FindChild("AdditiveHeaderBtn"):IsChecked() and 56 or 40
-		local nChildrenHeight = wndAdditiveHeader:FindChild("AdditiveHeaderItems"):ArrangeChildrenVert(0)
+		local nChildrenHeight = wndAdditiveHeader:FindChild("AdditiveHeaderItems"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 		local nLeft, nTop, nRight, nBottom = wndAdditiveHeader:GetAnchorOffsets()
 		wndAdditiveHeader:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nChildrenHeight + nCheckedPadding)
 	end
-	self.wndMain:FindChild("AdditiveList"):ArrangeChildrenVert(0)
+	wndAdditiveList:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 	-- Enable craft button only if there is enough room in inventory
 	local bHaveBagSpace = self.wndMain:FindChild("HiddenBagWindow"):GetTotalEmptyBagSlots() > 0
@@ -489,6 +497,58 @@ function CraftingGrid:RedrawAllDetailed(idSchematic, tSchematicInfo, tCurrentCra
 	local bReadyToCraft = bCurrentCraftStarted and tCurrentCraft.nAdditiveCount == tSchematicInfo.nMaxAdditives
 	self.wndMain:FindChild("AdditiveListBlocker"):Show(bReadyToCraft)
 	self.wndMain:FindChild("HelperText_ReadyToCraft"):Show(bReadyToCraft)
+end
+
+function CraftingGrid:HandleAdditiveSizeAndBonuses(tSchematicInfo)
+	
+	local nBonuses = 0
+	local nBonusesHeight = 0
+	local wndBonusList = self.wndMain:FindChild("BonusList")
+	if AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0  then
+		local nSignatureBonus = math.ceil(tSchematicInfo.fBonusSignatureRadius) * 10
+		local wndBonusEntry  = Apollo.LoadForm(self.xmlDoc, "BonusEntry", wndBonusList, self)
+		wndBonusEntry:FindChild("EntryName"):SetText(Apollo.GetString("CraftingGrid_BonusSignature"))
+		wndBonusEntry:FindChild("Amount"):SetText(String_GetWeaselString(Apollo.GetString("CraftingGrid_BonusPercent"), nSignatureBonus))
+		nBonusesHeight = nBonusesHeight + wndBonusEntry:GetHeight()
+		nBonuses = nBonuses + nSignatureBonus
+		self.bBonus = true
+	end
+
+	if AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.LoyaltyBonusCoordinateCraftingRadius) > 0  then
+		local nLoyaltyBonus = math.ceil(tSchematicInfo.fBonusLoyaltyRadius) * 10
+		local wndBonusEntry  = Apollo.LoadForm(self.xmlDoc, "BonusEntry", wndBonusList, self)
+		wndBonusEntry:FindChild("EntryName"):SetText(Apollo.GetString("CraftingGrid_BonusLoyalty"))
+		wndBonusEntry:FindChild("Amount"):SetText(String_GetWeaselString(Apollo.GetString("CraftingGrid_BonusPercent"), nLoyaltyBonus))
+		nBonusesHeight = nBonusesHeight + wndBonusEntry:GetHeight()
+		nBonuses = nBonuses + nLoyaltyBonus
+		self.bBonus = true
+	end
+
+	nBonusesHeight = nBonusesHeight + 10--Padding
+	local wndAdditiveList = self.wndMain:FindChild("AdditiveList")
+	local wndBonusesContainer = self.wndMain:FindChild("BonusesContainer")
+	if nBonuses > 0 then
+		wndBonusList:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+		local nLeft, nTop, nRight, nBottom = wndBonusList:GetAnchorOffsets()
+		
+		wndBonusList:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nBonusesHeight)
+		
+		nLeft, nTop, nRight, nBottom = wndBonusesContainer:GetAnchorOffsets()
+		local nNewBonusTop = nBottom - self.wndMain:FindChild("ContentFrame"):GetHeight() - self.wndMain:FindChild("BonusList"):GetHeight()
+		wndBonusesContainer:SetAnchorOffsets(nLeft, nNewBonusTop , nRight, nBottom)--Hide Bonus window
+		
+		self.wndMain:FindChild("BonusAmount"):SetText(String_GetWeaselString(Apollo.GetString("CraftingGrid_BonusAmount"), nBonuses))
+		nLeft, nTop, nRight, nBottom = wndAdditiveList:GetAnchorOffsets()
+		wndAdditiveList:SetAnchorOffsets(nLeft, nTop, nRight, nNewBonusTop )
+	else
+		
+		local nLeft, nTop, nRight, nBottom = wndBonusesContainer:GetAnchorOffsets()
+		wndBonusesContainer:SetAnchorOffsets(nLeft, nBottom, nRight, nBottom)--Hide Bonus window
+
+		local nBlockerHeight = self.wndMain:FindChild("AdditiveListBlocker"):GetHeight()
+		nLeft, nTop, nRight, nBottom = wndAdditiveList:GetAnchorOffsets()
+		wndAdditiveList:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nBlockerHeight)
+	end
 end
 
 function CraftingGrid:RedrawCash()
@@ -514,11 +574,10 @@ function CraftingGrid:OnPreviewStartCraftBtn(wndHandler, wndControl) -- PreviewS
 	if self.wndMain:FindChild("CatalystGlobalList"):GetData() then
 		self.bFullDestroyNeeded = true
 	end
-	Event_FireGenericEvent("GenericEvent_StartCraftingGrid", idSchematic)
 end
 
 function CraftingGrid:OnCraftingUpdateCurrent()
-	if self.bFullDestroyNeeded then
+	if self.bFullDestroyNeeded or self.wndMain and CraftingLib.GetCurrentCraft() == nil then
 		self.bFullDestroyNeeded = false
 
 		local idSchematic = nil
@@ -691,10 +750,14 @@ function CraftingGrid:HelperBuildMarker()
 	self.wndMarker:SetAnchorPoints(nAdjX, nAdjY, nAdjX, nAdjY)
 
 	-- Animate the Spawn Effect
-	local nLeft, nTop, nRight, nBottom = self.wndMarker:FindChild("GridMarkerSpawnAnimation"):GetAnchorOffsets()
+	local strSprite = self.bBonus and "sprCoord_AdditivePreviewMTX_SmallCombined" or "sprCoord_AdditivePreviewSmall"
+	self.wndMarker:SetSprite(strSprite)
+	local wndGridMarkerSpawnAnimation = self.wndMarker:FindChild("GridMarkerSpawnAnimation")
+	wndGridMarkerSpawnAnimation:SetSprite(strSprite)
+	local nLeft, nTop, nRight, nBottom = wndGridMarkerSpawnAnimation:GetAnchorOffsets()
 	local tLoc = WindowLocation.new({ fPoints = {0.5, 0.5, 0.5, 0.5}, nOffsets = { 0, 0, 0, 0 }})
-	self.wndMarker:FindChild("GridMarkerSpawnAnimation"):TransitionMove(tLoc, 0.5)
-	self.wndMarker:FindChild("GridMarkerSpawnAnimation"):Show(false, false, 5)
+	wndGridMarkerSpawnAnimation:TransitionMove(tLoc, 0.5, Window.MoveMethod.EaseInOutExpo)
+	wndGridMarkerSpawnAnimation:Show(false, false, 5)
 end
 
 -----------------------------------------------------------------------------------------------
@@ -770,11 +833,11 @@ function CraftingGrid:OnAdditiveMouseEnter(wndHandler, wndControl) -- AdditiveIt
 	-- Different sprites for different sizes (so the art is more crisp)
 	local strEstimate = "sprCoord_AdditivePreview"
 	if nRadiusAdjX < 20 then
-		strEstimate = "sprCoord_AdditivePreviewTiny"
+		strEstimate = self.bBonus and "sprCoord_AdditivePreviewMTX_TinyCombined" or "sprCoord_AdditivePreviewTiny"
 	elseif nRadiusAdjX < 48 then
-		strEstimate = "sprCoord_AdditivePreviewSmall"
+		strEstimate = self.bBonus and "sprCoord_AdditivePreviewMTX_SmallCombined" or "sprCoord_AdditivePreviewSmall"
 	else
-		strEstimate = "sprCoord_AdditivePreview"
+		strEstimate = self.bBonus and "sprCoord_AdditivePreviewMTX_Combined" or "sprCoord_AdditivePreview"
 	end
 	self.wndAdditiveEstimate:SetSprite(strEstimate)
 
@@ -884,6 +947,8 @@ function CraftingGrid:BuildNewGrid(idSchematic)
 	self.wndMain:FindChild("SuccessRobot"):Show(false)
 	self.wndMain:FindChild("BGPostCraftBlocker"):Show(false)
 	self.wndMain:FindChild("AdditiveList"):DestroyChildren()
+
+	self:HandleAdditiveSizeAndBonuses(tSchematicInfo)
 end
 
 function CraftingGrid:OnVariantItemIconClick(wndHandler, wndControl)
@@ -967,7 +1032,7 @@ function CraftingGrid:BuildNewDiscoverable(tSchem) -- discoveryAngle, discoveryD
 			fPoints = { 0.5, 0.5, 0.5, 0.5 },
 			nOffsets = { nMaxX-nHalfRadiusMax, nMaxY-nHalfRadiusMax, nMaxX+nHalfRadiusMax, nMaxY+nHalfRadiusMax },
 		},
-		fRotation = math.atan2(-nMaxY, -nMaxX) * (180/math.pi) + 225,
+		fRotation = math.atan2(-nMaxY, -nMaxX) + (math.pi*225/180),
 		strSprite = "sprCoord_DiscoverBG_Teal",
 	}
 	local nBgPixieId = wndResult:AddPixie(tDiscoveryRadius)
@@ -982,7 +1047,7 @@ function CraftingGrid:BuildNewDiscoverable(tSchem) -- discoveryAngle, discoveryD
 			fPoints = { 0.5, 0.5, 0.5, 0.5 },
 			nOffsets = { nMinX-nHalfRadiusMin, nMinY-nHalfRadiusMin, nMinX+nHalfRadiusMin, nMinY+nHalfRadiusMin },
 		},
-		fRotation = math.atan2(-nMinY, -nMinX) * (180/math.pi) + 225,
+		fRotation = math.atan2(-nMinY, -nMinX)  + (math.pi*225/180),
 		strSprite = "sprCoord_DiscoverBG_Mask",
 	}
 	local nInnerRadiusPixieId = wndResult:AddPixie(tDiscoveryRadius)
@@ -1016,8 +1081,17 @@ function CraftingGrid:BuildNewGridCircle(tSchem) -- vectorX, vectorY, radius
 	if tSchem.bIsKnown or tSchem.bIsUndiscovered then
 		local strTooltip = string.format("<P Font=\"CRB_InterfaceSmall_O\" TextColor=\"ff9d9d9d\">%s</P><P Font=\"CRB_InterfaceSmall_O\" TextColor=\"%s\">%s</P>",
 		Apollo.GetString("CoordCrafting_LandInCircle"), karEvalColors[itemCraft:GetItemQuality()], itemCraft:GetName())
-		if itemCraft:GetActivateSpell() then
-			strTooltip = strTooltip.."<P Font=\"CRB_InterfaceSmall_O\">"..itemCraft:GetActivateSpell():GetFlavor().."</P>"
+		local tItemInfo = itemCraft:GetDetailedInfo(itemCraft, {Item.CodeEnumItemDetailedTooltip.Spells})
+		local strSpellFlavor = nil
+		if tItemInfo and tItemInfo.tPrimary.arSpells then
+			for idx = 1, #tItemInfo.tPrimary.arSpells do
+				if tItemInfo.tPrimary.arSpells[idx].bActivate then
+					strSpellFlavor = tItemInfo.tPrimary.arSpells[idx].strFlavor
+				end
+			end
+		end
+		if strSpellFlavor then
+			strTooltip = strTooltip.."<P Font=\"CRB_InterfaceSmall_O\">"..strSpellFlavor.."</P>"
 		elseif itemCraft:GetItemFlavor() then
 			strTooltip = strTooltip.."<P Font=\"CRB_InterfaceSmall_O\">"..itemCraft:GetItemFlavor().."</P>"
 		end

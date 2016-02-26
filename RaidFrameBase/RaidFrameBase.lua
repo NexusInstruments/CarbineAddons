@@ -130,7 +130,7 @@ function RaidFrameBase:new(o)
 		bShowLeaderIcons		= true,
 		bShowClassIcons			= false,
 		bShowMarkIcons			= false,
-		bShowManaBar			= false,
+		bShowFocusBar			= false,
 		bShowFixedShields		= false,
 		bShowCategories			= true,
 		bShowNames				= true,
@@ -164,7 +164,7 @@ function RaidFrameBase:OnSave(eType)
 		bShowLeaderIcons		= self.tSettings.bShowLeaderIcons,
 		bShowClassIcons			= self.tSettings.bShowClassIcons,
 		bShowMarkIcons			= self.tSettings.bShowMarkIcons,
-		bShowManaBar			= self.tSettings.bShowManaBar,
+		bShowFocusBar			= self.tSettings.bShowFocusBar,
 		bShowFixedShields		= self.tSettings.bShowFixedShields,
 		bShowCategories			= self.tSettings.bShowCategories,
 		bShowNames				= self.tSettings.bShowNames,
@@ -193,8 +193,8 @@ function RaidFrameBase:OnRestore(eType, tSavedData)
 	if tSavedData.bShowMarkIcons ~= nil then
 		self.tSettings.bShowMarkIcons = tSavedData.bShowMarkIcons
 	end
-	if tSavedData.bShowManaBar ~= nil then
-		self.tSettings.bShowManaBar = tSavedData.bShowManaBar
+	if tSavedData.bShowFocusBar ~= nil then
+		self.tSettings.bShowFocusBar = tSavedData.bShowFocusBar
 	end
 	if tSavedData.bShowFixedShields ~= nil then
 		self.tSettings.bShowFixedShields = tSavedData.bShowFixedShields
@@ -234,9 +234,8 @@ function RaidFrameBase:OnDocumentReady()
 	Apollo.RegisterEventHandler("CharacterCreated",							"OnCharacterCreated", self)
 	Apollo.RegisterEventHandler("GenericEvent_Raid_UncheckMasterLoot",		"OnUncheckMasterLoot", self)
 	Apollo.RegisterEventHandler("GenericEvent_Raid_UncheckLeaderOptions",	"OnUncheckLeaderOptions", self)
-	Apollo.RegisterEventHandler("WindowManagementReady",					"OnWindowManagementReady", self)
 
-	Apollo.RegisterEventHandler("VarChange_FrameCount",						"OnFrame", self)
+	Apollo.RegisterEventHandler("NextFrame",								"OnFrame", self)
 	
 	Apollo.RegisterEventHandler("UnitCreated",								"OnUnitCreated", self)
 	Apollo.RegisterEventHandler("UnitDestroyed",							"OnUnitDestroyed", self)
@@ -271,7 +270,7 @@ function RaidFrameBase:OnDocumentReady()
 	wndRaidOptions:FindChild("RaidCustomizeLeaderIcons"):SetData("bShowLeaderIcons")
 	wndRaidOptions:FindChild("RaidCustomizeClassIcons"):SetData("bShowClassIcons")
 	wndRaidOptions:FindChild("RaidCustomizeMarkIcons"):SetData("bShowMarkIcons")
-	wndRaidOptions:FindChild("RaidCustomizeManaBar"):SetData("bShowManaBar")
+	wndRaidOptions:FindChild("RaidCustomizeFocusBar"):SetData("bShowFocusBar")
 	wndRaidOptions:FindChild("RaidCustomizeFixedShields"):SetData("bShowFixedShields")
 	wndRaidOptions:FindChild("RaidCustomizeCategories"):SetData("bShowCategories")
 	wndRaidOptions:FindChild("RaidCustomizeShowNames"):SetData("bShowNames")
@@ -296,9 +295,13 @@ function RaidFrameBase:OnDocumentReady()
 	if unitPlayer then
 		self:OnCharacterCreated()
 	end
+
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 end
 
 function RaidFrameBase:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", { wnd = self.wndMain, strName = Apollo.GetString("CRB_Raid") })
 	Event_FireGenericEvent("WindowManagementAdd", { wnd = self.wndMain, strName = Apollo.GetString("CRB_Raid") })
 	
 	local wndCategoryContainer = self.wndMain:FindChild("RaidCategoryContainer")
@@ -353,13 +356,13 @@ function RaidFrameBase:OnFrame()
 				if nAbsorbMax > 0 then
 					nAbsorbCurr = unitMember:GetAbsorptionValue() -- Since it doesn't clear when the buff drops off
 				end
-				local nManaCurr = unitMember:GetMana()
-				local nManaMax = unitMember:GetMaxMana() or nManaCurr
+				local nFocusCurr = unitMember:GetFocus()
+				local nFocusMax = unitMember:GetMaxFocus() or nFocusCurr
 				
 				if tWndMember.nLastKnownHealth ~= nHealthCurr and (tWndMember.nLastKnownHealth == 0 or nHealthCurr == 0) then
 					self:BuildMember(tWndMember.wndParent, tMember)
 				else
-					self:DrawHealth(tWndMember, nHealthCurr, nHealthMax, nShieldCurr, nShieldMax, nAbsorbCurr, nAbsorbMax, nManaCurr, nManaMax, bInstantHealth)
+					self:DrawHealth(tWndMember, nHealthCurr, nHealthMax, nShieldCurr, nShieldMax, nAbsorbCurr, nAbsorbMax, nFocusCurr, nFocusMax, bInstantHealth)
 				end
 			else
 				if tWndMember.nLastKnownHealth ~= nHealthCurr and (tWndMember.nLastKnownHealth == 0 or nHealthCurr == 0) then
@@ -378,17 +381,17 @@ function RaidFrameBase:OnFrame()
 	self.wndRaidTitle:SetText(String_GetWeaselString(Apollo.GetString("RaidFrame_MemberCount"), nMemberCount - nInvalidOrDeadMembers, nMemberCount))
 end
 
-function RaidFrameBase:DrawHealth(tWndMember, nHealthCurr, nHealthMax, nShieldCurr, nShieldMax, nAbsorbCurr, nAbsorbMax, nManaCurr, nManaMax, bInstantProgress)
+function RaidFrameBase:DrawHealth(tWndMember, nHealthCurr, nHealthMax, nShieldCurr, nShieldMax, nAbsorbCurr, nAbsorbMax, nFocusCurr, nFocusMax, bInstantProgress)
 	local wndMemberBtn = tWndMember.wndMemberBtn
 	local wndHealthBar = tWndMember.wndHealthBar
 	local wndAbsorbBar = tWndMember.wndAbsorbBar
 	local wndShieldBar = tWndMember.wndShieldBar
-	local wndManaBar = tWndMember.wndManaBar
+	local wndFocusBar = tWndMember.wndFocusBar
 	
 	if nHealthCurr == 0 then
 		nShieldCurr = 0
 		nAbsorbCurr = 0
-		nManaCurr = 0
+		nFocusCurr = 0
 	end
 	
 	tWndMember.nLastKnownHealth = nHealthCurr
@@ -427,18 +430,18 @@ function RaidFrameBase:DrawHealth(tWndMember, nHealthCurr, nHealthMax, nShieldCu
 		wndHealthBar:SetFullSprite("sprRaid_HealthProgBar_Green")
 	end
 	
-	-- Mana Bar
-	local bShowManaBar = self.tSettings.bShowManaBar
-	if bShowManaBar then
-		wndManaBar:SetMax(nManaMax)
+	-- Focus Bar
+	local bShowFocusBar = self.tSettings.bShowFocusBar
+	if bShowFocusBar then
+		wndFocusBar:SetMax(nFocusMax)
 		if bInstantProgress then
-			wndManaBar:SetProgress(nManaCurr)
+			wndFocusBar:SetProgress(nFocusCurr)
 		else
-			wndManaBar:SetProgress(nManaCurr, nManaMax * 4)
+			wndFocusBar:SetProgress(nFocusCurr, nFocusMax * 4)
 		end
 	end
 	
-	wndManaBar:Show(bShowManaBar and nManaMax > 0 and nHealthCurr > 0 and nHealthMax > 0)
+	wndFocusBar:Show(bShowFocusBar and nFocusMax > 0 and nHealthCurr > 0 and nHealthMax > 0)
 end
 
 function RaidFrameBase:CategorizeMembers()
@@ -620,7 +623,7 @@ function RaidFrameBase:BuildMember(wndMemberContainer, tMember)
 			wndHealthBar = wndMember:FindChild("RaidMemberBtn:HealthBar"),
 			wndAbsorbBar = wndMember:FindChild("RaidMemberBtn:AbsorbBar"),
 			wndShieldBar = wndMember:FindChild("RaidMemberBtn:ShieldBar"),
-			wndManaBar = wndMember:FindChild("RaidMemberBtn:RaidMemberManaBar"),
+			wndFocusBar = wndMember:FindChild("RaidMemberBtn:RaidMemberFocusBar"),
 			wndParent = wndMemberContainer,
 		}
 		
@@ -988,7 +991,11 @@ function RaidFrameBase:OnStartReadyCheckBtn(wndHandler, wndControl) -- StartRead
 	self.wndRaidConfigureBtn:SetCheck(false)
 
 	local strMessage = self.wndReadyCheckMessageEditBox:GetText()
-	GroupLib.ReadyCheck(string.len(strMessage) > 0 and strMessage or Apollo.GetString("RaidFrame_AreYouReady")) -- Sanitized in code
+	if not strMessage then
+		strMessage = ""
+	end
+	
+	GroupLib.ReadyCheck(strMessage) -- Sanitized in code
 end
 
 function RaidFrameBase:OnReadyCheckTimeout()
@@ -1006,7 +1013,7 @@ function RaidFrameBase:HelperUpdateSettings()
 	wndRaidOptions:FindChild("RaidCustomizeLeaderIcons"):SetCheck(self.tSettings.bShowLeaderIcons)
 	wndRaidOptions:FindChild("RaidCustomizeClassIcons"):SetCheck(self.tSettings.bShowClassIcons)
 	wndRaidOptions:FindChild("RaidCustomizeMarkIcons"):SetCheck(self.tSettings.bShowMarkIcons)
-	wndRaidOptions:FindChild("RaidCustomizeManaBar"):SetCheck(self.tSettings.bShowManaBar)
+	wndRaidOptions:FindChild("RaidCustomizeFocusBar"):SetCheck(self.tSettings.bShowFocusBar)
 	wndRaidOptions:FindChild("RaidCustomizeFixedShields"):SetCheck(self.tSettings.bShowFixedShields)
 	wndRaidOptions:FindChild("RaidCustomizeCategories"):SetCheck(self.tSettings.bShowCategories)
 	wndRaidOptions:FindChild("RaidCustomizeShowNames"):SetCheck(self.tSettings.bShowNames)

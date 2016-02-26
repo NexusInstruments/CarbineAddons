@@ -40,9 +40,7 @@ function ArenaTeam:OnDocumentReady()
 	if self.xmlDoc == nil then
 		return
 	end
-	
-	Apollo.RegisterEventHandler("WindowManagementReady", 			"OnWindowManagementReady", self)
-	
+
 	-- Registering events with Apollo
 	Apollo.RegisterEventHandler("Event_ShowArenaInfo", 				"OnShowArenaInfo", self)
 	Apollo.RegisterEventHandler("GuildInvite", 						"OnGuildInvite", self)  -- notification you got a guild/circle invite
@@ -59,9 +57,13 @@ function ArenaTeam:OnDocumentReady()
 	-- loading windows
     self.wndMain = Apollo.LoadForm(self.xmlDoc, "ArenaTeamForm", nil, self)
 	self.wndMain:Show(false, true)
+
+	Apollo.RegisterEventHandler("WindowManagementReady", 			"OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 end
 
 function ArenaTeam:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {wnd = self.wndMain, strName = Apollo.GetString("Guild_GuildTypeArena"), nSaveVersion=2})
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("Guild_GuildTypeArena"), nSaveVersion=2})
 end
 
@@ -127,17 +129,19 @@ end
 -- Bottom Panel Roster Actions
 -----------------------------------------------------------------------------------------------
 
-function ArenaTeam:ResetRosterMemberButtons()
+function ArenaTeam:ResetRosterMemberButtons(bPreventClose)
 	local wndRemoveBtn = self.wndMain:FindChild("RosterOptionBtnRemove")
 	local wndDisband = self.wndMain:FindChild("RosterDisbandBtn")
 	local wndLeave = self.wndMain:FindChild("RosterLeaveBtn")
 	local wndAdd = self.wndMain:FindChild("RosterOptionBtnAdd")
 	local wndInvite = self.wndMain:FindChild("RosterOptionBtnInvite")
 	
-	self.wndMain:FindChild("AddMemberContainer"):Close()
-	self.wndMain:FindChild("RemoveMemberContainer"):Close()
-	self.wndMain:FindChild("DisbandContainer"):Close()
-	self.wndMain:FindChild("LeaveContainer"):Close()
+	if not bPreventClose then
+		self.wndMain:FindChild("AddMemberContainer"):Close()
+		self.wndMain:FindChild("RemoveMemberContainer"):Close()
+		self.wndMain:FindChild("DisbandContainer"):Close()
+		self.wndMain:FindChild("LeaveContainer"):Close()
+	end
 	
 	-- Defaults
 	wndAdd:Show(false)
@@ -368,8 +372,17 @@ function ArenaTeam:OnGuildRoster(guildCurr, tRoster)
 	
 	self.wndMain:FindChild("RosterLeaveBtn"):FindChild("ConfirmLeaveBtn"):SetData(guildCurr)
 	self.wndMain:FindChild("RosterDisbandBtn"):FindChild("ConfirmDisbandBtn"):SetData(guildCurr)
-
-	self:ResetRosterMemberButtons()
+	
+	-- Set true to krevent closing to keep container open while members come online/offline
+	self:ResetRosterMemberButtons(true)
+	
+	-- Maintain the state of the AddMemberContainer if already opened
+	if self.wndMain:FindChild("RosterOptionBtnAdd"):IsChecked() then
+		local wndAddMemberEditBox = self.wndMain:FindChild("AddMemberEditBox")
+		local nStringLen = string.len(wndAddMemberEditBox:GetText())
+		wndAddMemberEditBox:SetSel(nStringLen, nStringLen)
+		self.wndMain:FindChild("AddMemberContainer"):Show(true)
+	end
 end
 
 function ArenaTeam:OnRosterGridItemClick(wndControl, wndHandler, iRow, iCol)

@@ -39,6 +39,7 @@ function HUDInteract:OnDocumentReady()
 	Apollo.RegisterEventHandler("Dialog_ShowState", 									"OnDialog_ShowState", self)
 	Apollo.RegisterEventHandler("Dialog_Close", 										"OnDialog_Close", self)
 	Apollo.RegisterEventHandler("OptionsUpdated_HUDInteract", 							"OnOptionsUpdated", self)
+	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 							"OnTutorial_RequestUIAnchor", self)
 
 	-- Stun Events
 	Apollo.RegisterEventHandler("ActivateCCStateStun", 									"OnActivateCCStateStun", self)
@@ -84,8 +85,8 @@ end
 
 function HUDInteract:OnInteractiveUnitChanged(unitArg, strArg)
 	local strKeybind = GameLib.GetKeyBinding("Interact")
-	if strKeybind == Apollo.GetString("HUDAlert_Unbound") then -- Don't show interact
-		return
+	if strKeybind == Apollo.GetString("HUDAlert_Unbound") then
+		strKeybind = ""
 	end
 
 	self.unitInteract = unitArg
@@ -193,6 +194,30 @@ function HUDInteract:OnToggleInteractPopoutText(bToggle)
 	if self.wndMain and self.wndMain:IsValid() and self.wndMain:FindChild("AlertPopout") then
 		self.wndMain:FindChild("AlertPopout"):Show(bToggle, not bToggle)
 		self.wndMain:FindChild("AlertItemKeybind"):SetSprite(bToggle and "sprAlert_Square_Blue" or "sprAlert_Square_Black")
+	end
+end
+
+---------------------------------------------------------------------------------------------------
+-- Tutorial anchor request
+---------------------------------------------------------------------------------------------------
+
+function HUDInteract:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
+	local tAnchors =
+	{
+		[GameLib.CodeEnumTutorialAnchor.NPCInteraction] = true,
+	}
+	
+	if not tAnchors[eAnchor] or not self.wndMain then 
+		return 
+	end
+	
+	local tAnchorMapping = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.NPCInteraction] = self.wndMain:FindChild("AlertItemKeybind"),
+	}
+	
+	if tAnchorMapping[eAnchor] then
+		Event_FireGenericEvent("Tutorial_ShowCallout", eAnchor, idTutorial, strPopupText, tAnchorMapping[eAnchor])
 	end
 end
 

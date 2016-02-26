@@ -66,7 +66,7 @@ function GuildInfo:Initialize(wndParent)
 	
 	self.wndMain:FindChild("EditInfoBtn"):AttachWindow(self.wndMain:FindChild("EditAdditionalInfo"))
 	self.wndMain:FindChild("EditMessageBtn"):AttachWindow(self.wndMain:FindChild("EditMOTD"))
-	self.wndMain:FindChild("NewsPane"):ArrangeChildrenVert(1)
+	self.wndMain:FindChild("NewsPane"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.Middle)
 end
 
 function GuildInfo:OnToggleInfo(wndParent)
@@ -454,7 +454,7 @@ function GuildInfo:OnNewsExpand()
 	local nBottomNewsStuckToBottom = nBottomNews --Saving initial bottom anchor before it's changed
 	self.wndMain:FindChild("InfoPaneLabel1"):SetAnchorOffsets(nLeftMotD, nTopMotD, nRightMotD, nTopMotD + 35)
 	self.wndMain:FindChild("InfoPaneLabel2"):SetAnchorOffsets(nLeftInfo, nTopInfo, nRightInfo, nTopInfo + 35)
-	self.wndMain:FindChild("NewsPane"):ArrangeChildrenVert(0)
+	self.wndMain:FindChild("NewsPane"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	
 	local nLeftNews2, nTopNews2, nRightNews2, nBottomNews2 = self.wndMain:FindChild("NewsFraming"):GetAnchorOffsets() -- This needs to run AFTER ArrangeChildren
 	self.wndMain:FindChild("NewsFraming"):SetAnchorOffsets(nLeftNews2, nTopNews2, nRightNews2, nBottomNewsStuckToBottom)
@@ -467,7 +467,7 @@ function GuildInfo:OnNewsCollapse()
 	local nBottomNewsStuckToBottom = nBottomNews --Saving initial bottom anchor before it's changed
 	self.wndMain:FindChild("InfoPaneLabel1"):SetAnchorOffsets(nLeftMotD, nTopMotD, nRightMotD, nTopMotD + 120)
 	self.wndMain:FindChild("InfoPaneLabel2"):SetAnchorOffsets(nLeftInfo, nTopInfo, nRightInfo, nTopInfo + 120)
-	self.wndMain:FindChild("NewsPane"):ArrangeChildrenVert(0)
+	self.wndMain:FindChild("NewsPane"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	
 	local nLeftNews2, nTopNews2, nRightNews2, nBottomNews2 = self.wndMain:FindChild("NewsFraming"):GetAnchorOffsets()-- This needs to run AFTER ArrangeChildren
 	self.wndMain:FindChild("NewsFraming"):SetAnchorOffsets(nLeftNews2, nTopNews2, nRightNews2, nBottomNewsStuckToBottom)

@@ -236,7 +236,7 @@ function ZoneCompletion:RedrawAll() -- Also from GenericEvent_ZoneMap_ZoneChange
 	-- Resize
 	local nHeight = self.wndMain:FindChild("WorldCompletionFrame"):GetHeight() * 2
 	if self.wndMain:FindChild("ZoneCompletionFrame"):IsVisible() then
-		nHeight = nHeight + self.wndMain:FindChild("CountsContainer"):ArrangeChildrenVert(0)
+		nHeight = nHeight + self.wndMain:FindChild("CountsContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	end
 	local nLeft, nTop, nRight, nBottom = self.wndMain:GetAnchorOffsets()
 	self.wndMain:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nHeight + 100)

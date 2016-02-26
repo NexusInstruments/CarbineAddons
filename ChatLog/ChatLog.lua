@@ -256,9 +256,12 @@ end
 
 function ChatLog:OnConfigure() -- From ESC -> Options
 	if self.wndChatOptions and self.wndChatOptions:IsValid() then
-		self.wndChatOptions:Show(not self.wndChatOptions:IsVisible())
-		self.wndChatOptions:ToFront()
+		self.wndChatOptions:Invoke()
 	end
+end
+
+function ChatLog:OnClose(wndHandle, wndControl)
+	self.wndChatOptions:Close()
 end
 
 function ChatLog:OnLoad()
@@ -272,7 +275,6 @@ function ChatLog:OnDocumentReady()
 		return
 	end
 
-	Apollo.RegisterEventHandler("WindowManagementReady", 		"OnWindowManagementReady", self)
 	Apollo.RegisterEventHandler("WindowManagementUpdate", 		"OnWindowManagementUpdate", self)
 
 	Apollo.RegisterEventHandler("ChatMessage", 					"OnChatMessage", self)
@@ -287,16 +289,16 @@ function ChatLog:OnDocumentReady()
 	Apollo.RegisterEventHandler("ChatList", 					"OnChatList", self)
 	Apollo.RegisterEventHandler("ChatAction", 					"OnChatAction", self)
 	Apollo.RegisterEventHandler("ChatJoinResult", 				"OnChatJoinResult", self)
-	Apollo.RegisterEventHandler("CombatLogItemDestroy", 		"OnCombatLogItemDestroy", self) -- duplicated in combat log too
 	Apollo.RegisterEventHandler("CombatLogModifying", 			"OnCombatLogModifying", self) -- duplicated in combat log too
-	Apollo.RegisterEventHandler("CombatLogCrafting", 			"OnCombatLogCrafting", self) -- duplicated in combat log too
 	Apollo.RegisterEventHandler("CombatLogDatacube",			"OnCombatLogDatacube", self)
 	Apollo.RegisterEventHandler("ItemSentToCrate", 				"OnItemSentToCrate", self)
 	Apollo.RegisterEventHandler("HarvestItemsSentToOwner", 		"OnHarvestItemsSentToOwner", self)
 	Apollo.RegisterEventHandler("LuaChatLogMessage", 			"OnLuaChatLogMessage", self)
 	Apollo.RegisterEventHandler("PlayedTime",					"OnPlayedtime", self)
 	Apollo.RegisterEventHandler("ChatReply",					"OnChatReply", self)
-	Apollo.RegisterEventHandler("CombatLogLoot", 				"OnCombatLogLoot", self)
+	Apollo.RegisterEventHandler("ChannelUpdate_Loot",			"OnChannelUpdate_Loot", self)
+	Apollo.RegisterEventHandler("ChannelUpdate_Crafting",		"OnChannelUpdate_Crafting", self)
+	Apollo.RegisterEventHandler("ChannelUpdate_Progress",		"OnChannelUpdate_Progress", self)
 	Apollo.RegisterEventHandler("GenericEvent_LinkItemToChat", 	"OnGenericEvent_LinkItemToChat", self)
 
 	Apollo.RegisterEventHandler("TradeSkillSigilResult", 				"OnTradeSkillSigilResult", self)
@@ -309,7 +311,7 @@ function ChatLog:OnDocumentReady()
 	Apollo.RegisterEventHandler("Event_EngageAccountWhisper",			"OnEvent_EngageAccountWhisper", self)
 	Apollo.RegisterEventHandler("SuggestedMenuResult",					"OnSuggestedMenuResult", self)
 
-	Apollo.RegisterEventHandler("VarChange_FrameCount",					"OnChatLineTimer", self)
+	Apollo.RegisterEventHandler("NextFrame",							"OnChatLineTimer", self)
 
 	self.timerFade = ApolloTimer.Create(knFadeTimerfrequency, true, "OnChatLineFadeTimer", self)
 
@@ -367,7 +369,7 @@ function ChatLog:OnDocumentReady()
 	end
 
 	---------------OPTIONS---------------
-	self.wndChatOptions = Apollo.LoadForm(self.xmlDoc, "ChatOptionsForm", nil, self)
+	self.wndChatOptions = Apollo.LoadForm(self.xmlDoc, "ChatOptionsForm", "FixedHudStratumLow", self)
 
 	local wndOptionsContainer = self.wndChatOptions:FindChild("TwoOptionsContainer")
 
@@ -385,7 +387,6 @@ function ChatLog:OnDocumentReady()
 		local nLeft, nTop, nRight, nBottom = self.wndChatOptions:GetAnchorOffsets()
 		self.wndChatOptions:SetAnchorOffsets(nLeft, nTop, nRight, nBottom - nHeight)
 	end
-	self.wndChatOptions:Show(false)
 
 	-- Profanity Filter Option
 	if self.bProfanityFilter == nil then
@@ -618,6 +619,9 @@ function ChatLog:OnDocumentReady()
 			channelCurrent:SetProfanity(self.bProfanityFilter)
 		end
 	end
+
+	Apollo.RegisterEventHandler("WindowManagementReady", 		"OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 end
 
 function ChatLog:OnWindowManagementUpdate(tSettings)
@@ -632,7 +636,10 @@ function ChatLog:OnWindowManagementUpdate(tSettings)
 		if wndChat:GetText() == tSettings.strName and #self.tChatWindows > 1 then
 			--make sure not to attach window to itself, and make sure that index is atleast 1
 			local nIndexToAttach = (key  % #self.tChatWindows) + 1
-			self.tChatWindows[nIndexToAttach]:AttachTab(wndChat, false)
+			local wndAttach = self.tChatWindows[nIndexToAttach]
+			if not wndAttach:IsAttachedToTab(wndChat) then
+				wndAttach:AttachTab(wndChat, false)
+			end
 			break
 		end
 	end
@@ -640,16 +647,19 @@ end
 
 function ChatLog:OnWindowManagementReady()
 	for key, wndChat in pairs(self.tChatWindows) do
+		Event_FireGenericEvent("WindowManagementRegister", {wnd = wndChat, strName = wndChat:GetText(), bIsTabWindow = true})
 		Event_FireGenericEvent("WindowManagementAdd", {wnd = wndChat, strName = wndChat:GetText(), bIsTabWindow = true})
 	end
 
 	if self.wndChatOptions and self.wndChatOptions:FindChild("BGHeaderText") then
+		Event_FireGenericEvent("WindowManagementRegister", {wnd = self.wndChatOptions, strName = self.wndChatOptions:FindChild("BGHeaderText"):GetText(), nSaveVersion=6})
 		Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndChatOptions, strName = self.wndChatOptions:FindChild("BGHeaderText"):GetText(), nSaveVersion=6})
 	end
 end
 
 function ChatLog:NewChatWindow(strTitle, tViewedChannels, bCombatLog, channelCurrent)
-	local wndChatWindow = Apollo.LoadForm(self.xmlDoc, "ChatWindow", "FixedHudStratumHigh", self)
+	local wndChatWindow = Apollo.LoadForm(self.xmlDoc, "ChatWindow", "FixedHudStratumLow", self)
+	Event_FireGenericEvent("WindowManagementRegisterd", {wnd = wndChatWindow, strName = strTitle, bIsTabWindow = true})
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = wndChatWindow, strName = strTitle, bIsTabWindow = true})
 
 	wndChatWindow:SetSizingMinimum(240, 240)
@@ -737,26 +747,84 @@ function ChatLog:OnLuaChatLogMessage(strArgMessage, tArgFlags)
 end
 
 -----------------------------------------------------------------------------------------------
+-- ChannelUpdates
+-----------------------------------------------------------------------------------------------
+function ChatLog:OnChannelUpdate_Loot(eType, tEventArgs)
+	local strResult = nil
+	
+	if eType == GameLib.ChannelUpdateLootType.Currency and tEventArgs.monNew then
+		
+		if tEventArgs.monNew:GetAccountCurrencyType() == AccountItemLib.CodeEnumAccountCurrency.Omnibits and tOmniBitInfo then
+			local tOmniBitInfo = GameLib.GetOmnibitsBonusInfo()
+			if tOmniBitInfo then
+				strResult = String_GetWeaselString(Apollo.GetString("ChatLog_OmniBits_Gained"), tEventArgs.nOmnibitsGained, tEventArgs.nBonusAmount, tOmniBitInfo.nWeeklyBonusEarned, tOmniBitInfo.nWeeklyBonusTotal)
+			else
+				strResult = String_GetWeaselString(Apollo.GetString("CombatLog_LootReceived"), tEventArgs.monNew:GetMoneyString())
+			end
+		else
+			strResult = String_GetWeaselString(Apollo.GetString("CombatLog_LootReceived"), tEventArgs.monNew:GetMoneyString())
+		end
+		
+	elseif eType == GameLib.ChannelUpdateLootType.Item and tEventArgs.itemNew then
+
+		local strItem = tEventArgs.itemNew:GetChatLinkString()
+		if tEventArgs.nCount > 1 then
+			strItem = String_GetWeaselString(Apollo.GetString("CombatLog_MultiItem"), tEventArgs.nCount, strItem)
+		end
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_LootReceived"), strItem)
+
+	elseif eType == GameLib.ChannelUpdateLootType.ItemDestroy and tEventArgs.itemDestroyed then
+
+		strResult = String_GetWeaselString(Apollo.GetString("ChatLog_DestroyItem"), tEventArgs.itemDestroyed:GetChatLinkString())
+
+	end
+
+	if strResult ~= nil then
+		ChatSystemLib.PostOnChannel(ChatSystemLib.ChatChannel_Loot, strResult, "")
+	end
+end
+
+function ChatLog:OnChannelUpdate_Crafting(eType, tEventArgs)
+	local strResult = nil
+
+	if eType == GameLib.ChannelUpdateCraftingType.Item and tEventArgs.itemNew then
+		strResult = String_GetWeaselString(Apollo.GetString("ChatLog_CraftItem"), tEventArgs.itemNew:GetChatLinkString())
+	end
+	
+	if strResult ~= nil then
+		ChatSystemLib.PostOnChannel(ChatSystemLib.ChatChannel_Loot, strResult, "")
+	end
+end
+
+function ChatLog:OnChannelUpdate_Progress(eType, tEventArgs)
+	local strResult = nil
+
+	if eType == GameLib.ChannelUpdateProgressType.RewardPoints and tEventArgs.rtCurr then
+		if tEventArgs.rtCurr:GetType() == RewardTrackLib.CodeEnumRewardTrackType.Challenge then
+			strResult = String_GetWeaselString(Apollo.GetString("ChatLog_Progress_Challenge"), tEventArgs.rtCurr:GetName(), tEventArgs.nGain)
+		end
+	elseif eType == GameLib.ChannelUpdateProgressType.Experience then
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_XPGain"), tEventArgs.nGain)
+	elseif eType == GameLib.ChannelUpdateProgressType.RestExperience then
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_RestXPGain"), tEventArgs.nGain)
+	elseif eType == GameLib.ChannelUpdateProgressType.ElderPoints then
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_ElderPointsGained"), tEventArgs.nGain)
+	elseif eType == GameLib.ChannelUpdateProgressType.RestElderPoints then
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_RestEPGain"), tEventArgs.nGain)
+	elseif eType == GameLib.ChannelUpdateProgressType.SignatureExperience then
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_SignatureXPGain"), tEventArgs.nGain)
+	elseif eType == GameLib.ChannelUpdateProgressType.SignatureElderPoints then
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_SignatureEPGain"), tEventArgs.nGain)
+	end
+	
+	if strResult ~= nil then
+		ChatSystemLib.PostOnChannel(ChatSystemLib.ChatChannel_Loot, strResult, "")
+	end
+end
+
+-----------------------------------------------------------------------------------------------
 -- Duplicated in Combat Log
 -----------------------------------------------------------------------------------------------
-
-function ChatLog:OnCombatLogItemDestroy(tEventArgs)
-	if tEventArgs.itemDestroyed == nil then
-		return
-	end
-
-	local strResult = String_GetWeaselString(Apollo.GetString("ChatLog_DestroyItem"), tEventArgs.itemDestroyed:GetChatLinkString())
-	ChatSystemLib.PostOnChannel(ChatSystemLib.ChatChannel_Loot, strResult, "")
-end
-
-function ChatLog:OnCombatLogCrafting(tEventArgs)
-	if tEventArgs.itemCrafted == nil then
-		return
-	end
-
-	local strResult = String_GetWeaselString(Apollo.GetString("ChatLog_CraftItem"), tEventArgs.itemCrafted:GetChatLinkString())
-	ChatSystemLib.PostOnChannel(ChatSystemLib.ChatChannel_Loot, strResult, "")
-end
 
 function ChatLog:OnCombatLogDatacube(tEventArgs)
 	local strResult = ktDatacubeTypeStrings[tEventArgs.eDatacubeType]
@@ -1069,7 +1137,7 @@ function ChatLog:PrettyItUp(wndForm)
 	end
 
 	-- arrange children
-	wndChatList:ArrangeChildrenVert(0)
+	wndChatList:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 	if bAtBottom then
 		wndChatList:SetVScrollPos(wndChatList:GetVScrollRange())
@@ -1150,7 +1218,7 @@ function ChatLog:OnNodeClick(wndHandler, wndControl, strNode, tAttributes, eMous
 		local nIndex = tonumber(tAttributes.strIndex)
 
 		if self.tLinks[nIndex] and
-			( self.tLinks[nIndex].uItem or self.tLinks[nIndex].uQuest or self.tLinks[nIndex].uArchiveArticle ) then
+			( self.tLinks[nIndex].uItem or self.tLinks[nIndex].uQuest or self.tLinks[nIndex].uArchiveArticle or self.tLinks[nIndex].tNavPoint ) then
 
 			if Apollo.IsShiftKeyDown() then
 
@@ -1198,6 +1266,9 @@ function ChatLog:OnNodeClick(wndHandler, wndControl, strNode, tAttributes, eMous
 				elseif self.tLinks[nIndex].uArchiveArticle then
 					Event_FireGenericEvent("HudAlert_ToggleLoreWindow")
 					Event_FireGenericEvent("GenericEvent_ShowGalacticArchive", self.tLinks[nIndex].uArchiveArticle)
+				elseif self.tLinks[nIndex].tNavPoint then
+					GameLib.SetNavPoint(self.tLinks[nIndex].tNavPoint.tPosition, self.tLinks[nIndex].tNavPoint.nMapZoneId)
+					GameLib.ShowNavPointHintArrow()
 				end
 			end
 		end
@@ -1318,7 +1389,7 @@ function ChatLog:OnEmoteCheck(wndHandler, wndControl)
 			end
 		end
 
-		wndContainer:ArrangeChildrenVert(0, function(a,b) return a:GetData() < b:GetData() end)
+		wndContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function(a,b) return a:GetData() < b:GetData() end)
 		wndContainer:SetVScrollPos(nScrollPosition)
 	end
 	wndEmotes:GetParent():FindChild("CloseBtn"):Enable(not wndHandler:IsChecked())
@@ -1404,8 +1475,8 @@ function ChatLog:OnSuggestedMenuResult(tInfo, nTextBoxId)
 	local tInput = ChatSystemLib.SplitInput(wndEdit:GetText())
 	local strCommand = ""
 	local strExtraSpace = " "
-	local eChannelType = nil
-	if tInput and tInput.channelCommand ~= self.channelAccountWhisper and tInput.channelCommand  ~= self.channelWhisper then
+	local eChannelType = ChatSystemLib.ChatChannel_Whisper
+	if tInput and tInput.channelCommand and tInput.channelCommand ~= self.channelAccountWhisper and tInput.channelCommand  ~= self.channelWhisper then
 		strCommand 	  = tInput.strCommand
 		eChannelType  = tInput.channelCommand:GetType()
 		bExtraSpace   = false
@@ -1420,8 +1491,7 @@ function ChatLog:OnSuggestedMenuResult(tInfo, nTextBoxId)
 
 	local strOutput = "/"..strCommand.." "..tInfo.strCharacterName..strExtraSpace
 	wndEdit:SetText(strOutput)
-	local eChannelColorType = eChannelType or tInput and tInput.channelCommand:GetType()
-	wndEdit:SetTextColor(self.arChatColor[eChannelColorType] or ApolloColor.new("white"))
+	wndEdit:SetTextColor(self.arChatColor[eChannelType] or ApolloColor.new("white"))
 	wndEdit:SetFocus()
 	wndEdit:SetSel(strOutput:len(), -1)
 end
@@ -1543,14 +1613,20 @@ function ChatLog:VerifyChannelVisibility(channelChecking, tInput, wndChat)
 			local strPattern = "" --using regex pattern
 			if channelChecking:GetType() == ChatSystemLib.ChatChannel_Whisper then
 				--find a space, any number of alphabet characters, and then another space
-				strPattern = "%s%a*%s*"
+				strPattern = "%s%a*%s-"
 			elseif channelChecking:GetType() == ChatSystemLib.ChatChannel_AccountWhisper then
 				--since account names only are one word, find a space
 				strPattern = "%s"
 			end
-			local nPlaceHolder, nIndexOfPatternSpace = string.find(strSend, strPattern)
-			if strPattern ~= "" and nIndexOfPatternSpace then
-				self.strLastTarget = string.sub(strSend, 0, nIndexOfPatternSpace -1)--gets the name of the target
+			local nPlaceHolder, nSubstringStop = string.find(strSend, strPattern)
+			
+			--Occurs when not typing a message, just ending with sender name.
+			if not nSubstringStop then
+				nSubstringStop = string.len(strSend) 
+			end
+			
+			if strPattern ~= "" then
+				self.strLastTarget = string.sub(strSend, 0, nSubstringStop)--gets the name of the target
 			end
 		end
 
@@ -1988,30 +2064,6 @@ function ChatLog:OnGenericEvent_LinkItemToChat(itemLinked)
 	-- pump link to the chat line
 	if wndEdit then
 		self:HelperAppendLink( wndEdit, tLink )
-	end
-end
-
-function ChatLog:OnCombatLogLoot(tEventArgs)
-	local strResult = ""
-	if tEventArgs.monLoot then
-		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_LootReceived"), tEventArgs.monLoot:GetMoneyString())
-		ChatSystemLib.PostOnChannel(ChatSystemLib.ChatChannel_Loot, strResult)
-	end
-
-	if tEventArgs.nItemAmount > 0 and tEventArgs.itemLoot then
-		local strArgItemName = tEventArgs.itemLoot:GetName()
-		local strItemName = Apollo.GetString("CombatLog_SpellUnknown")
-		if strArgItemName and strArgItemName ~= "" then
-			strItemName = strArgItemName
-		end
-
-		if tEventArgs.nItemAmount > 1 then
-			strItemName = String_GetWeaselString(Apollo.GetString("CombatLog_MultiItem"), tEventArgs.nItemAmount, strItemName)
-		end
-
-		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_LootReceived"), strItemName)
-
-		ChatSystemLib.PostOnChannel(ChatSystemLib.ChatChannel_Loot, strResult)
 	end
 end
 
@@ -2532,7 +2584,16 @@ function ChatLog:HelperGenerateChatMessage(tQueuedMessage)
 
 				tLink.strText = strText
 				tLink.uArchiveArticle = tSegment.uArchiveArticle
+				
+			elseif tSegment.tNavPoint ~= nil then
+				-- replace me with correct colors
+				strText = String_GetWeaselString(Apollo.GetString("CRB_Brackets"), "NavPoint")
+				crChatText = ApolloColor.new("blue")
+				crBubbleText = ApolloColor.new("blue")
 
+				tLink.strText = strText
+				tLink.tNavPoint = tSegment.tNavPoint
+				
 			else
 				if tSegment.bRolePlay then
 					crBubbleText = kstrColorChatRoleplay

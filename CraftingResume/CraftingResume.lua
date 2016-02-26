@@ -58,6 +58,7 @@ function CraftingResume:OnDocumentReady()
 	Apollo.RegisterEventHandler("GenericEvent_InterfaceMenu_OpenEngraving", 	"OnInvokeEngravingWindow", self)
 	Apollo.RegisterEventHandler("TradeskillEngravingStationOpen", 				"OnInvokeEngravingWindow", self) -- Opening from in game station
 	Apollo.RegisterEventHandler("InvokeCraftingWindow", 						"OnInvokeCraftingWindow", self) -- Opening from in game station
+	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 					"OnTutorial_RequestUIAnchor", self)
 	self.bCraftingStation = true
 end
 
@@ -125,18 +126,33 @@ function CraftingResume:OnGenericEvent_CraftFromPL(idQueuedSchematic)
 
 		-- Build materials list
 		self.wndMain:FindChild("CoordPrevWindowMaterials"):DestroyChildren()
-		for idx, tMaterial in pairs(tSchematicInfo.tMaterials) do
+		for idx, tMaterial in pairs(tSchematicInfo.arMaterials) do
 			local wndNoMaterials = Apollo.LoadForm(self.xmlDoc, "CoordPrevMaterialItem", self.wndMain:FindChild("CoordPrevWindowMaterials"), self)
 			wndNoMaterials:FindChild("CoordPrevMaterialIcon"):SetText(tMaterial.nAmount)
 			wndNoMaterials:FindChild("CoordPrevMaterialIcon"):SetSprite(tMaterial.itemMaterial:GetIcon())
 			Tooltip.GetItemTooltipForm(self, wndNoMaterials, tMaterial.itemMaterial, {bPrimary = true, bSelling = false})
 		end
-		self.wndMain:FindChild("CoordPrevWindowMaterials"):ArrangeChildrenHorz(0)
+		self.wndMain:FindChild("CoordPrevWindowMaterials"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 		self.wndMain:Invoke()
+		local nPrevCraftingResumeLeft, nPrevCraftingResumeTop, nPrevCraftingResumeRight, nPrevCraftingResumeBottom = self.wndMain:FindChild("CraftingResumeForm"):GetAnchorOffsets()
 
 		if self.locSavedWindowLoc then
 			self.wndMain:MoveToLocation(self.locSavedWindowLoc)
 		end
+		
+		-- Resize warning line
+		local nOldHeight = self.wndMain:FindChild("AbandonWarningLine2"):GetHeight()
+		local nWidth, nHeight = self.wndMain:FindChild("AbandonWarningLine2"):SetHeightToContentHeight()
+		local nBottomOffset = nHeight - nOldHeight
+		local tPixAbandonWarn2 = self.wndMain:GetPixieInfo(2)
+		local nLineBuffer = tPixAbandonWarn2.loc.nOffsets[4] - tPixAbandonWarn2.loc.nOffsets[2] - nOldHeight
+		tPixAbandonWarn2.loc.nOffsets[4] = tPixAbandonWarn2.loc.nOffsets[4] + nBottomOffset + nLineBuffer
+		self.wndMain:UpdatePixie(2, tPixAbandonWarn2)
+		local nCraftingResumeLeft, nCraftingResumeTop, nCraftingResumeRight, nCraftingResumeBottom = self.wndMain:FindChild("CraftingResumeForm"):GetAnchorOffsets()
+		local nWndBottomOffset = nCraftingResumeTop + (nPrevCraftingResumeBottom - nPrevCraftingResumeTop)
+		self.wndMain:FindChild("CraftingResumeForm"):SetAnchorOffsets(nCraftingResumeLeft, nCraftingResumeTop, nCraftingResumeRight, nWndBottomOffset + nBottomOffset)
+		
+		Event_ShowTutorial(GameLib.CodeEnumTutorial.AbandonCraft)
 	else
 		self:HelperStartCraft(idQueuedSchematic)
 	end
@@ -158,6 +174,7 @@ function CraftingResume:OnCoordPrevAbandoned(wndHandler, wndControl) -- CoordPre
 
 	Event_FireGenericEvent("GenericEvent_LootChannelMessage", Apollo.GetString("CraftingResume_Abandon"))
 	Event_FireGenericEvent("GenericEvent_BotchCraft")
+	Event_CancelMasterCraftsman()
 	self.locSavedWindowLoc = self.wndMain:GetLocation()
 	self.wndMain:Destroy()
 	self.wndMain = nil
@@ -189,6 +206,27 @@ function CraftingResume:OnWindowClosed()
 	self.wndMain:Destroy()
 	self.wndMain = nil
 	self.bCraftingStation = true
+	Event_CancelMasterCraftsman()
+end
+
+function CraftingResume:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
+	local tAnchors = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.AbandonCraft] 	= true,
+	}
+	
+	if not tAnchors[eAnchor] or not self.wndMain then 
+		return 
+	end
+	
+	local tAnchorMapping = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.AbandonCraft] 	= self.wndMain:FindChild("CoordPrevAbandonBtn"),
+	}
+	
+	if tAnchorMapping[eAnchor] then
+		Event_FireGenericEvent("Tutorial_ShowCallout", eAnchor, idTutorial, strPopupText, tAnchorMapping[eAnchor])
+	end
 end
 
 local CraftingResumeInst = CraftingResume:new()

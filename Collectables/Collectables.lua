@@ -52,19 +52,23 @@ function Collectables:OnDocLoaded()
 	self.wndMain = Apollo.LoadForm(self.xmlDoc, "CollectablesMainForm", nil, self)
 	self.wndMain:Show(false, true)
 
-	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
-	Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded", "OnInterfaceMenuLoaded", self)
-	Apollo.RegisterEventHandler("GenericEvent_RegisterCollectableWindow", "RegisterAddon", self)
-	Apollo.RegisterEventHandler("GenericEvent_OpenCollectables", "OnCollectablesOn", self)
-	Apollo.RegisterEventHandler("GenericEvent_RequestCollectablesReady", "OnRequestReady", self)
-	Apollo.RegisterEventHandler("GenericEvent_CloseCollectablesWindow", "OnClose", self)
+	Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded",				"OnInterfaceMenuLoaded", self)
+	Apollo.RegisterEventHandler("ToggleCollectiblesWindow",					"OnToggleCollectiblesWindow", self)
+	Apollo.RegisterEventHandler("GenericEvent_RegisterCollectableWindow",	"RegisterAddon", self)
+	Apollo.RegisterEventHandler("GenericEvent_OpenCollectables",			"OnCollectablesOn", self)
+	Apollo.RegisterEventHandler("GenericEvent_RequestCollectablesReady",	"OnRequestReady", self)
+	Apollo.RegisterEventHandler("GenericEvent_CloseCollectablesWindow",		"OnClose", self)
 
 	self.tRegisteredAddonInfo = {}
 	
 	Event_FireGenericEvent("GenericEvent_CollectablesReady", self.wndMain:FindChild("HoloBG"))
+	
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 end
 
 function Collectables:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("Collectables_Header"), nSaveVersion = 2})
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("Collectables_Header"), nSaveVersion = 2})
 end
 
@@ -81,7 +85,7 @@ end
 -- nTabOrder determines the order the addon will appear in the tabs.  Carbine addons should be in increments of 100.
 -- strEventBase is the base name for the open/close events.
 function Collectables:RegisterAddon(nTabOrder, strEventBase, strTabLabel)
-	if nTabOrder and strEventBase and strTabLabel then
+	if type(nTabOrder) == "number" and type(strEventBase) == "string" and type(strTabLabel) == "string" then
 		self.tRegisteredAddonInfo[strTabLabel] = {strEventName = strEventBase, nTabOrder = nTabOrder}
 		
 		--Addons should pass the event name along with this event
@@ -147,8 +151,16 @@ function Collectables:OnOpenTab(strEvent)
 	end
 end
 
+function Collectables:OnToggleCollectiblesWindow()	
+	if self.wndMain ~= nil and self.wndMain:IsValid() and self.wndMain:IsShown() then
+		self:OnClose()
+	else
+		self:OnCollectablesOn()
+	end
+end
+
 function Collectables:OnCollectablesOn()
-	self.wndMain:Show(true)
+	self.wndMain:Invoke()
 	
 	if self.wndCheckedTab then
 		self.wndCheckedTab:SetCheck(true)
@@ -168,7 +180,7 @@ end
 
 -- The collectables container will still exist, but the children should be destroyed.
 function Collectables:OnClose(wndHandler, wndControl)
-	self.wndMain:Show(false, true)
+	self.wndMain:Close()
 	
 	Event_FireGenericEvent("GenericEvent_CollectablesClose")
 end

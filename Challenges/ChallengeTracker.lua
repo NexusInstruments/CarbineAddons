@@ -20,7 +20,7 @@ local kstrObjectiveType =  Apollo.GetString("Challenges")
 local karTypeToFormattedString =
 {
 	[ChallengesLib.ChallengeType_Combat] 				= "Challenges_CombatChallenge",
-	[ChallengesLib.ChallengeType_Ability] 					= "Challenges_AbilityChallenge",
+	[ChallengesLib.ChallengeType_Ability] 				= "Challenges_AbilityChallenge",
 	[ChallengesLib.ChallengeType_General] 				= "Challenges_GeneralChallenge",
 	[ChallengesLib.ChallengeType_Item] 					= "Challenges_ItemChallenge",
 	[ChallengesLib.ChallengeType_ChecklistActivate] 	= "Challenges_ActivateChallenge",
@@ -37,9 +37,9 @@ local karTierIdxToWindowName =
 local karTierIdxToTextColor =
 {
 	[0] = "UI_WindowTextDefault",
-	[1] = "xkcdBronze",
-	[2] = "xkcdSilver",
-	[3] = "xkcdPaleGold",
+	[1] = "Bronze",
+	[2] = "Silver",
+	[3] = "PaleGold",
 }
 
 local karTierIdxToStarSprite =
@@ -64,17 +64,24 @@ function ChallengeTracker:new(o)
     setmetatable(o, self)
     self.__index = self
 	
-	o.tMinimized = { }
-	o.tCategories = { }
-	o.tHidden = { }
+	-- Window Management
+	o.tChallengeWndCache = {}
+	o.tCategories = {}
 	
+	-- Data
+	o.tNeedsRealTimeUpdate = {}
+	o.tChallengeCompare = {}
+	o.tLootChallenges = {}
+	o.tDistanceCache = {}
+	
+	-- Saved Data
+	o.tHidden = {}
+	o.tMinimized = {}
+	o.bShowChallenges = true
 	o.bFilterLimit = true
 	o.bFilterDistance = true
 	o.nMaxMissionLimit = 3
 	o.nMaxMissionDistance = 300
-	o.bShowChallenges = true
-	o.tChallengeCompare = { }
-	o.tLootChallenges = { }
 	
     return o
 end
@@ -83,13 +90,15 @@ function ChallengeTracker:Init()
     Apollo.RegisterAddon(self)
 end
 
------------------------------------------------------------------------------------------------
--- ChallengeTracker OnLoad
------------------------------------------------------------------------------------------------
-
 function ChallengeTracker:OnLoad()
 	self.xmlDoc = XmlDoc.CreateFromFile("ChallengeTracker.xml")
 	self.xmlDoc:RegisterCallback("OnDocumentReady", self)
+	
+	self.timerResizeDelay = ApolloTimer.Create(0.1, false, "OnResizeDelayTimer", self)
+	self.timerResizeDelay:Stop()
+	
+	self.timerRealTimeUpdate = ApolloTimer.Create(1.0, true, "OnRealTimeUpdateTimer", self)
+	self.timerRealTimeUpdate:Stop()
 end
 
 function ChallengeTracker:OnSave(eType)
@@ -99,13 +108,13 @@ function ChallengeTracker:OnSave(eType)
 
 	return
 	{
-		tMinimized 				 = self.tMinimized,
-		tHidden					 = self.tHidden,
-		bShowChallenges		 = self.bShowChallenges,
-		nMaxMissionLimit		 = self.nMaxMissionLimit,
+		tMinimized = self.tMinimized,
+		tHidden = self.tHidden,
+		bShowChallenges = self.bShowChallenges,
+		nMaxMissionLimit = self.nMaxMissionLimit,
 		nMaxMissionDistance = self.nMaxMissionDistance,
-		bFilterLimit				 = self.bFilterLimit,
-		bFilterDistance		 = self.bFilterDistance,
+		bFilterLimit = self.bFilterLimit,
+		bFilterDistance = self.bFilterDistance,
 	}
 end
 
@@ -148,30 +157,8 @@ function ChallengeTracker:OnDocumentReady()
 		return
 	end
 	
+	Apollo.RegisterEventHandler("ObjectiveTrackerLoaded", "OnObjectiveTrackerLoaded", self)
 	Event_FireGenericEvent("ObjectiveTracker_RequestParent")
-
-	Apollo.RegisterEventHandler("ObjectiveTrackerLoaded",		"OnObjectiveTrackerLoaded", self)
-	Apollo.RegisterEventHandler("ObjectiveTracker_ButtonAdded", "OnObjectiveTracker_ButtonAdded", self)
-	
-	Apollo.RegisterEventHandler("ChallengeUpdated",				"OnChallengeUpdated", self)
-	Apollo.RegisterEventHandler("ChallengeLeftArea", 				"OnChallengeUpdated", self)
-	
-	Apollo.RegisterEventHandler("ChallengeActivate", 				"OnChallengeActivate", self)
-	Apollo.RegisterEventHandler("ChallengeAbandon", 				"OnChallengeAbandonSound", self)
-	Apollo.RegisterEventHandler("ChallengeFailSound", 				"OnChallengeFailSound", self)
-	Apollo.RegisterEventHandler("ChallengeCompletedSound", 	"OnChallengeCompletedSound", self)
-	Apollo.RegisterEventHandler("ChallengeTierAchieved", 		"OnChallengeTierAchieved", self)
-	
-	Apollo.RegisterEventHandler("ToggleShowChallenges", 	"OnToggleShowChallenges", self)
-	Apollo.RegisterEventHandler("ToggleChallengeOptions", 	"OnToggleChallengeOptions", self)
-	
-	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 	"OnTutorial_RequestUIAnchor", self)
-	
-	self.wndActiveChallenges = Apollo.LoadForm(self.xmlDoc, "ActiveChallenges", "FixedHudStratumLow", self)
-	self.wndActiveChallenges:Show(false)
-
-	self:TrackChallenges()
-	self.timerActiveTimerUpdate = ApolloTimer.Create(1.0, true, "BuildActiveListItems", self)--If there are no challenges that are active, this timer will turn itself off.
 end
 
 function ChallengeTracker:OnObjectiveTrackerLoaded(wndForm)
@@ -180,18 +167,27 @@ function ChallengeTracker:OnObjectiveTrackerLoaded(wndForm)
 	end
 
 	Apollo.RemoveEventHandler("ObjectiveTrackerLoaded", self)
-
-	local tData = {
-		["strAddon"]				= kstrObjectiveType,
-		["strEventMouseLeft"]	= "ToggleShowChallenges", 
-		["strEventMouseRight"]	= "ToggleChallengeOptions", 
-		["strIcon"]					= "spr_ObjectiveTracker_IconChallenge",
-		["strDefaultSort"]			= kstrChallengeQuesttMarker,
-	}
 	
-	Apollo.RegisterEventHandler("ObjectiveTrackerUpdated", "TrackChallenges", self)
-	Event_FireGenericEvent("ObjectiveTracker_NewAddOn", tData)
-
+	Apollo.RegisterEventHandler("ToggleShowChallenges", "OnToggleShowChallenges", self)
+	Apollo.RegisterEventHandler("ToggleChallengeOptions", "OnToggleChallengeOptions", self)
+	
+	Apollo.RegisterEventHandler("SubZoneChanged", "OnSubZoneChanged", self)
+	Apollo.RegisterEventHandler("ChallengeAbandon", "OnChallengeAbandon", self)
+	Apollo.RegisterEventHandler("ChallengeActivate", "OnChallengeActivate", self)
+	Apollo.RegisterEventHandler("ChallengeAreaRestriction", "OnChallengeAreaRestriction", self)
+	Apollo.RegisterEventHandler("ChallengeCompleted", "OnChallengeCompleted", self)
+	Apollo.RegisterEventHandler("ChallengeCooldownActive", "OnChallengeCooldownActive", self)
+	Apollo.RegisterEventHandler("ChallengeFailArea", "OnChallengeFailArea", self)
+	Apollo.RegisterEventHandler("ChallengeFailGeneric", "OnChallengeFailGeneric", self)
+	Apollo.RegisterEventHandler("ChallengeFailTime", "OnChallengeFailTime", self)
+	Apollo.RegisterEventHandler("ChallengeLeftArea", "OnChallengeLeftArea", self)
+	Apollo.RegisterEventHandler("ChallengeRewardListReady", "OnChallengeRewardListReady", self)
+	Apollo.RegisterEventHandler("ChallengeRewardReady", "OnChallengeRewardReady", self)
+	Apollo.RegisterEventHandler("ChallengeTierAchieved", "OnChallengeTierAchieved", self)
+	Apollo.RegisterEventHandler("ChallengeTimeUpdated", "OnChallengeTimeUpdated", self)
+	Apollo.RegisterEventHandler("ChallengeUnlocked", "OnChallengeUnlocked", self)
+	Apollo.RegisterEventHandler("ChallengeUpdated", "OnChallengeUpdated", self)
+	
 	self.wndTracker = Apollo.LoadForm(self.xmlDoc, "Container", wndForm, self)
 	
 	local strKey = self.wndTracker:FindChild("Title"):GetText()
@@ -217,113 +213,164 @@ function ChallengeTracker:OnObjectiveTrackerLoaded(wndForm)
 	self.wndTrackerRepeat = Apollo.LoadForm(self.xmlDoc, "Category", self.wndTrackerContent, self)
 	self.wndTrackerRepeat:SetData({strKey = Apollo.GetString("Challenges_Repeatable"), bCanHide = true})
 	self.wndTrackerRepeatContent = self.wndTrackerRepeat:FindChild("Content")
-
-	self:TrackChallenges()
+	
+	local tData =
+	{
+		["strAddon"] = kstrObjectiveType,
+		["strEventMouseLeft"] = "ToggleShowChallenges", 
+		["strEventMouseRight"] = "ToggleChallengeOptions", 
+		["strIcon"] = "spr_ObjectiveTracker_IconChallenge",
+		["strDefaultSort"] = kstrChallengeQuesttMarker,
+	}
+	Event_FireGenericEvent("ObjectiveTracker_NewAddOn", tData)
+	
+	self:BuildAll()
+	self:ResizeAll()
 end
 
-function ChallengeTracker:TrackChallenges()
-	if self.wndTrackerActiveContent then
-		self.wndTrackerActiveContent:DestroyChildren()
+---------------------------------------------------------------------------------------------------
+-- Drawing
+---------------------------------------------------------------------------------------------------
+
+function ChallengeTracker:OnRealTimeUpdateTimer(nTime)
+	for idChallenge, clgChallenge in pairs(self.tNeedsRealTimeUpdate) do
+		self:BuildChallenge(clgChallenge)
 	end
 	
-	if self.wndTrackerLootContent then
-		self.wndTrackerLootContent:DestroyChildren()
+	if self.bFilterDistance then
+		self:ResizeAll()
 	end
 	
-	if self.wndTrackerAvailableContent then
-		self.wndTrackerAvailableContent:DestroyChildren()
+	if next(self.tNeedsRealTimeUpdate) == nil and not self.bFilterDistance then
+		self.timerRealTimeUpdate:Stop()
+	end
+end
+
+function ChallengeTracker:OnResizeDelayTimer(nTime)
+	self:ResizeAll()
+end
+
+function ChallengeTracker:BuildAll()
+	local idCurrentZone = GameLib.GetCurrentZoneId()
+
+	local tChallenges = {}
+	for _, clgCurrent in pairs(ChallengesLib.GetActiveChallengeList()) do
+		local tZoneInfo = clgCurrent:GetZoneInfo()
+		if clgCurrent:IsActivated() or clgCurrent:GetTimer() or (tZoneInfo ~= nil and tZoneInfo.idZone == idCurrentZone) then
+			tChallenges[clgCurrent:GetId()] = true
+			self:BuildChallenge(clgCurrent)
+		end
 	end
 	
-	if self.wndTrackerRepeatContent then
-		self.wndTrackerRepeatContent:DestroyChildren()
+	for idChallenge, wndChallenge in pairs(self.tChallengeWndCache) do
+		if tChallenges[idChallenge] == nil then
+			wndChallenge:Destroy()
+			self.tChallengeWndCache[idChallenge] = nil
+		end
+	end
+end
+
+function ChallengeTracker:GetDistance(clgChallenge)
+	local nDistance = self.tDistanceCache[clgChallenge:GetId()]
+	if nDistance == nil then
+		nDistance = clgChallenge:GetDistance()
+		self.tDistanceCache[clgChallenge:GetId()] = nDistance
 	end
 	
+	return nDistance
+end
+
+function ChallengeTracker:ResizeAll()
+	self.timerResizeDelay:Stop()
+	local nStartingHeight = self.wndTracker:GetHeight()
+	local bStartingShown = self.wndTracker:IsShown()
+	
+	self.tDistanceCache = {}
+
 	-- Inline Sort Method
-	local function SortChallenges(clgA, clgB) -- GOTCHA: This needs to be declared before it's used
-		--local bQuestTrackerByDistance = g_InterfaceOptions and g_InterfaceOptions.Carbine.bQuestTrackerByDistance
+	local function SortChallenges(clgA, clgB)
 		if clgA:GetTimer() == 0 and clgB:GetTimer() == 0 then
-			return clgA:GetDistance() < clgB:GetDistance()
+			return self:GetDistance(clgA) < self:GetDistance(clgB)
 		else
 			return clgA:GetTimer() < clgB:GetTimer()
 		end
 	end
 	
-	self.tActiveChallenges = {}
-	local nChallengesShown = 0
-	local nChallengesFiltered = 0
-	local nLootableChallenges = 0
-	local tChallengesSorted = {}
-	local tChallenges = ChallengesLib.GetActiveChallengeList()
-	for _, clgCurrent in pairs(tChallenges) do
+	local arChallenges = {}
+	
+	for _, clgCurrent in pairs(ChallengesLib.GetActiveChallengeList()) do
 		if clgCurrent:GetTimer() then
-			table.insert(tChallengesSorted, clgCurrent)
+			table.insert(arChallenges, clgCurrent)
 		end
 	end
 	
-	table.sort(tChallengesSorted, SortChallenges)
-	for _, clgCurrent in ipairs(tChallengesSorted) do
-		local nZoneId = clgCurrent:GetZoneInfo() and clgCurrent:GetZoneInfo().idZone or 0
-		
-		--and GameLib.IsZoneInZone(GameLib.GetCurrentZoneId(), nZoneId)
-		local wndParent = nil
+	table.sort(arChallenges, SortChallenges)
 	
+	local tDisplayedChallenges = {}
+	local nChallengesShown = 0
+	local nChallengesFiltered = 0
+	
+	for idx, clgCurrent in ipairs(arChallenges) do
 		if clgCurrent:IsActivated() then
-			wndParent = self.wndTrackerActiveContent
-			table.insert(self.tActiveChallenges, clgCurrent)
-			
-			self.tLootChallenges[clgCurrent:GetId()] = clgCurrent
-		elseif clgCurrent:ShouldCollectReward() then
-			nLootableChallenges = nLootableChallenges + 1
-			wndParent = self.wndTrackerLootContent
+			tDisplayedChallenges[clgCurrent:GetId()] = true
+			nChallengesShown = nChallengesShown + 1
 		else
-			if (not self.bFilterLimit or nChallengesFiltered < self.nMaxMissionLimit) and (not self.bFilterDistance or clgCurrent:GetDistance() < self.nMaxMissionDistance) then
-				wndParent = clgCurrent:GetCompletionCount() > 0 
-					and self.wndTrackerRepeatContent 
-					or self.wndTrackerAvailableContent
-			
+			if (not self.bFilterLimit or nChallengesFiltered < self.nMaxMissionLimit) and (not self.bFilterDistance or self:GetDistance(clgCurrent) < self.nMaxMissionDistance) then				
+				tDisplayedChallenges[clgCurrent:GetId()] = true
+				nChallengesShown = nChallengesShown + 1
 				nChallengesFiltered = nChallengesFiltered + 1
 			end
 		end
-		
-		if wndParent then
-			nChallengesShown = nChallengesShown + self:BuildTrackerListItem(clgCurrent, wndParent)
+	end
+	
+	for idChallenge, wndChallenge in pairs(self.tChallengeWndCache) do
+		wndChallenge:Show(tDisplayedChallenges[idChallenge] ~= nil)
+	end
+	
+	self.wndTracker:Show(nChallengesShown > 0 and self.bShowChallenges)
+	if self.wndTracker:IsShown() then
+		local strKey = self.wndTracker:FindChild("Title"):GetText()
+		local bMinimized = self.tMinimized[strKey]
+		self.wndTracker:FindChild("MinimizeBtn"):SetCheck(bMinimized)
+	
+		local nContentHeight = 0
+		if not bMinimized then
+			self:ResizeCategory(self.wndTrackerActive)
+			self:ResizeCategory(self.wndTrackerLoot)
+			self:ResizeCategory(self.wndTrackerAvailable)
+			self:ResizeCategory(self.wndTrackerRepeat)
+			
+			nContentHeight = self.wndTracker:FindChild("Content"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 		end
+		self.wndTracker:FindChild("Content"):Show(not bMinimized)
+		
+		local nContentHeightChange = nContentHeight - self.wndTracker:FindChild("Content"):GetHeight()
+		local nLeft, nTop, nRight, nBottom = self.wndTracker:GetAnchorOffsets()
+		self.wndTracker:SetAnchorOffsets(nLeft, nTop, nRight, nBottom + nContentHeightChange)
 	end
 	
-	self:BuildContainer(self.wndTrackerActive)
-	self:BuildContainer(self.wndTrackerLoot)
-	self:BuildContainer(self.wndTrackerAvailable)
-	self:BuildContainer(self.wndTrackerRepeat)
-	
-	if self.wndTracker then
-		self:ResizeContainer(self.wndTracker)
-		self.wndTracker:Show(nChallengesShown > 0 and self.bShowChallenges)
+	if self.wndTracker:GetHeight() ~= nStartingHeight
+		or self.nChallengesShown ~= nChallengesShown
+		or self.wndTracker:IsShown() ~= bStartingShown then
+		
+		local tData =
+		{
+			["strAddon"] = kstrObjectiveType,
+			["strText"] = nChallengesShown,
+			["bChecked"] = self.bShowChallenges,
+		}
+		Event_FireGenericEvent("ObjectiveTracker_UpdateAddOn", tData)
 	end
-	
-	local tData = {
-		["strAddon"]	= kstrObjectiveType,
-		["strText"]		= nChallengesShown,
-		["bChecked"]	= self.bShowChallenges,
-	}
-
-	Event_FireGenericEvent("ObjectiveTracker_UpdateAddOn", tData)
+	self.nChallengesShown = nChallengesShown
 end
 
-function ChallengeTracker:OnObjectiveTracker_ButtonAdded(tData)
-	if not tData or tData.strAddon ~= kstrObjectiveType then
-		return
-	end
-
-	self.tObjectiveTrackerBtnRect = tData.tRect
-end
-
-function ChallengeTracker:BuildContainer(wndContainer)
-	if not wndContainer or not wndContainer:IsValid() then
-		return
-	end
+function ChallengeTracker:ResizeCategory(wndContainer)
+	local wndContent = wndContainer:FindChild("Content")
+	local wndMinimize = wndContainer:FindChild("MinimizeBtn")
 
 	local tData = wndContainer:GetData()
 	local strKey = tData.strKey
+	
 	local nChallengesShown = #wndContainer:FindChild("Content"):GetChildren()
 	local strTitle = nChallengesShown ~= 1 and string.format("%s [%s]", strKey, nChallengesShown) or strKey
 	local bMinimize = false
@@ -333,228 +380,122 @@ function ChallengeTracker:BuildContainer(wndContainer)
 	else
 		bMinimize = self.tMinimized[strKey]
 	end
+
+	local bHidden = false
+	if self.tHidden and self.tHidden[strKey] ~= nil then
+		bHidden = self.tHidden[strKey]
+	end
 	
 	self.tCategories[strKey] = {strKey = tData.strKey, bCanHide=tData.bCanHide, strTitle = strTitle}
 	wndContainer:FindChild("Title"):SetText(strTitle)
-	wndContainer:FindChild("MinimizeBtn"):SetData(strKey)
-	wndContainer:FindChild("MinimizeBtn"):SetCheck(bMinimize)
-	wndContainer:FindChild("MinimizeBtn"):Show(bMinimize)
-	self:ResizeContainer(wndContainer:FindChild("Content"))
-	self:ResizeContainer(wndContainer)
-
-	wndContainer:Show(nChallengesShown > 0)
-end
-
-function ChallengeTracker:BuildActiveListItems()
-	local wndContent = self.wndActiveChallenges:FindChild("Content")
-	wndContent:DestroyChildren()
+	wndMinimize:SetData(strKey)
+	wndMinimize:SetCheck(bMinimize)
+	wndMinimize:Show(bMinimize or wndMinimize:ContainsMouse())
+	wndContainer:Show(nChallengesShown > 0 and not bHidden)
 	
-	for _, clgCurrent in pairs(self.tActiveChallenges) do
-		local wndListItem = Apollo.LoadForm(self.xmlDoc, "ActiveChallenge", wndContent, self)
-		wndListItem:SetData(clgCurrent:GetId())
-		wndListItem:FindChild("Description"):SetData(clgCurrent)
-		
-		self:UpdateActiveListItem(wndListItem)
-	end
-	
-	wndContent:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.Middle)
-	local bHaveActiveChallenges = #self.tActiveChallenges > 0
-	self.wndActiveChallenges:Show(bHaveActiveChallenges)
-	if not bHaveActiveChallenges then
-		self.timerActiveTimerUpdate:Stop()
-	else
-		self.timerActiveTimerUpdate:Start()
-	end
-end
-
-function ChallengeTracker:UpdateActiveListItem(wndListItem)
-	if not wndListItem or not wndListItem:IsValid() then
-		return
-	end
-	
-	local clgCurrent = wndListItem:FindChild("Description"):GetData()
-	wndListItem:FindChild("CloseBtn"):SetData(clgCurrent:GetId())
-	
-	local nTotal = clgCurrent:GetTotalCount()
-	local nCurrent = clgCurrent:GetCurrentCount()
-	local nCurrentTier = clgCurrent:GetCurrentTier() + 1
-	local nTimeLimit = clgCurrent:GetDuration()
-	local nCurrentTime = clgCurrent:GetTimer()
-	local nTimeElappsed = math.abs(nCurrentTime - nTimeLimit)
-	local nTimeLeftArea = ChallengesLib.GetTimeRemaining(clgCurrent:GetId(), ChallengesLib.ChallengeTimerFlags_LeftArea)
-	
-	local strLeftArea = nTimeLeftArea > 0 and nTimeLeftArea < nCurrentTime and string.format("\n\n%s %s", Apollo.GetString("ChallengeLeftArea"), self:HelperConvertToTime(nTimeLeftArea)) or ""
-	local strDesc = clgCurrent:GetDescription() .. strLeftArea
-	wndListItem:FindChild("Timer"):SetText(self:HelperConvertToTime(nCurrentTime))
-	wndListItem:FindChild("Description"):SetText(strDesc)
-	
-	local wndTimeRemaining = wndListItem:FindChild("TimeRemaining")
-	wndTimeRemaining:SetMax(nTimeLimit)
-	
-	if math.abs(nCurrentTime - wndTimeRemaining:GetProgress()) > 100 then
-		wndTimeRemaining:SetProgress(nCurrentTime)
-	else
-		wndTimeRemaining:SetProgress(nCurrentTime, 1.5)
-	end
-	
-	local bTieredChallenge = clgCurrent:GetAllTierCounts() and #clgCurrent:GetAllTierCounts() > 1
-	local tTimerDeltas = {}
-	for iTierIdx = #clgCurrent:GetAllTierCounts(), 0, -1 do
-		local nCurrTier = clgCurrent:GetAllTierCounts()[iTierIdx+1] and clgCurrent:GetAllTierCounts()[iTierIdx+1]["nGoalCount"] or 0
-		
-		tTimerDeltas[iTierIdx] = nCurrTier
-	end
-	
-	for iTierIdx, tCurrTier in pairs(clgCurrent:GetAllTierCounts()) do
-		local bShowTimedTier = bTieredChallenge
-		local wndCurrTier = wndListItem:FindChild(karTierIdxToWindowName[iTierIdx] or "")
-		if not wndCurrTier then
-			break
-		end
-
-		local nTierLimit = tCurrTier["nGoalCount"]
-		local wndLimit = wndCurrTier:FindChild("Limit")
-		local strText = ""
-		if clgCurrent:IsTimeTiered() then
-			local nTierTimeRemaining = math.max(0, nTimeLimit-nTierLimit-nTimeElappsed)
-			bShowTimedTier = nTierTimeRemaining > 1
-			strText = self:HelperConvertToTime(nTierTimeRemaining, true)
-			
-			nCurrentTier = nTimeElappsed < nTimeLimit - nTierLimit and iTierIdx or nCurrentTier
-			if iTierIdx == nCurrentTier then
-				nTotal = math.abs(nTimeLimit - tTimerDeltas[iTierIdx]  - nTierLimit)
-				nCurrent = math.abs(nTimeLimit - nTierLimit - nTimeElappsed)
+	if wndMinimize ~= nil and not wndMinimize:IsChecked() then
+		for idx, wndChild in pairs(wndContent:GetChildren()) do
+			if wndChild:IsShown() then
+				self:ResizeChallenge(wndChild)
 			end
-		elseif iTierIdx == (nCurrentTier) then -- Active tier
-			strText = nTierLimit == 100 and String_GetWeaselString(Apollo.GetString("CRB_Percent"), nTierLimit) or nTierLimit
-		else -- Implict not active
-			strText = nTierLimit == 100 and "" or nTierLimit
 		end
-		
-		wndLimit:SetText(strText)
-		--wndCurrTier:FindChild("Completed"):Show(clgCurrent:GetCurrentTier() >= iTierIdx)
-		wndCurrTier:Show(bShowTimedTier and bTieredChallenge and #clgCurrent:GetAllTierCounts() >= iTierIdx)
 	end
 	
-	--nCurrentTier = nTimeLeftArea > 0 and 0 or nCurrentTier
-	wndListItem:FindChild("CurrentMedal"):SetSprite(bTieredChallenge and karTierIdxToMedalSprite[nCurrentTier] or "")
+	local nContentHeight = 0
+	if not bMinimize then
+		nContentHeight = wndContent:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	end
+	local nContentHeightChange = nContentHeight - wndContent:GetHeight()
 	
-	local wndCurrentStatus = wndListItem:FindChild("CurrentStatus")
-	if nCurrent == 0 and nTotal == 1 then
-		wndCurrentStatus:SetText("")
-	elseif nCurrent == 0 and nTotal == 0 then
-		wndCurrentStatus:SetText("")
-	elseif nTotal == 100 then
-		wndCurrentStatus:SetText(String_GetWeaselString(Apollo.GetString("CRB_Percent"), math.floor(nCurrent / nTotal * 100)))
-	elseif clgCurrent:IsTimeTiered() then
-		wndCurrentStatus:SetText(self:HelperConvertToTime(nCurrent))
+	local nLeft, nTop, nRight, nBottom = wndContainer:GetAnchorOffsets()
+	wndContainer:SetAnchorOffsets(nLeft, nTop, nRight, nBottom + nContentHeightChange)
+end
+
+function ChallengeTracker:BuildChallenge(clgChallenge)
+	local wndParent = nil
+	if clgChallenge:IsActivated() then
+		wndParent = self.wndTrackerActiveContent
+	elseif clgChallenge:GetCompletionCount() > 0 then
+		wndParent = self.wndTrackerRepeatContent
 	else
-		wndCurrentStatus:SetText(string.format("%s / %s", nCurrent, nTotal))
+		wndParent = self.wndTrackerAvailableContent
 	end
-	
-	wndCurrentStatus:SetTextColor(ApolloColor.new(karTierIdxToTextColor[nCurrentTier]))
-	
-	local wndMedalStanding = wndListItem:FindChild("MedalStanding")
-	wndMedalStanding:SetEmptySprite(karTierIdxToStarSprite[nCurrentTier-1])
-	wndMedalStanding:SetFillSprite(karTierIdxToStarSprite[nCurrentTier])
-	wndMedalStanding:SetMax(nTotal)
-	wndMedalStanding:SetProgress(nCurrent)
-end
 
-function ChallengeTracker:BuildTrackerListItem(clgCurrent, wndParent)
-	local strKey = wndParent:GetParent():GetData().strKey
-	
-	if strKey and not self.tHidden[strKey] then
-		if not self.bShowChallenges then return 1 end
-		
-		local wndListItem = Apollo.LoadForm(self.xmlDoc, "ListItem", wndParent, self)
-			
-		wndListItem:SetData(clgCurrent:GetId())
-		wndListItem:FindChild("ListItemBigBtn"):SetData(clgCurrent)
-		wndListItem:FindChild("ListItemGearBtn"):SetData(clgCurrent)
-		
-		self:OnChallengeUpdated(clgCurrent:GetId())
-		return 1
+	local wndChallenge = self.tChallengeWndCache[clgChallenge:GetId()]
+	if wndChallenge ~= nil and wndChallenge:IsValid() and wndChallenge:GetParent() ~= wndParent then
+		wndChallenge:Destroy()
 	end
 	
-	return 0
-end
+	if wndChallenge == nil or not wndChallenge:IsValid() then
+		wndChallenge = Apollo.LoadForm(self.xmlDoc, "ListItem", wndParent, self)
+		self.tChallengeWndCache[clgChallenge:GetId()] = wndChallenge
+	end
+	
+	if clgChallenge:IsActivated() then
+		self.tNeedsRealTimeUpdate[clgChallenge:GetId()] = clgChallenge
+		self.timerRealTimeUpdate:Start()
+	end
 
-function ChallengeTracker:UpdateTrackerListItem(wndListItem)
-	if not wndListItem or not wndListItem:IsValid() then
-		return
-	end
+	wndChallenge:SetData(clgChallenge)
+	wndChallenge:FindChild("ListItemGearBtn"):SetData(clgChallenge)
 	
-	local clgCurrent = wndListItem:FindChild("ListItemBigBtn"):GetData()
-	local strChallengeType = Apollo.GetString(karTypeToFormattedString[clgCurrent:GetType()])
-	local strTime =  clgCurrent:GetTimer() > 0 and "("..self:HelperConvertToTime(clgCurrent:GetTimer())..") " or ""	
+	local wndBtn = wndChallenge:FindChild("ListItemBigBtn")
+	wndBtn:SetData(clgChallenge)
+	wndBtn:SetText(GameLib.GetKeyBinding("Interact").." >")
+	
+	
+	local strChallengeType = Apollo.GetString(karTypeToFormattedString[clgChallenge:GetType()])
+	local strTime = ""
+	if clgChallenge:GetTimer() ~= nil and clgChallenge:GetTimer() > 0 then
+		strTime = "("..self:HelperConvertToTime(clgChallenge:GetTimer())..") "
+	end
 	local strTooltip = string.format(
 		"<P Font=\"CRB_InterfaceSmall\" TextColor=\"UI_TextHoloTitle\">%s%s</P>"..
 		"<P Font=\"CRB_InterfaceSmall\" TextColor=\"ffffffff\">%s</P>",
 		strChallengeType, 
 		Apollo.GetString("Chat_ColonBreak"), 
-		clgCurrent:GetDescription()
+		clgChallenge:GetDescription()
 	)
 	
-	local strSubTitle = wndListItem:GetParent() == self.wndTrackerActiveContent and strTooltip or ""
-	wndListItem:FindChild("ListItemBigBtn"):SetData(clgCurrent)
-	wndListItem:FindChild("ListItemBigBtn"):SetTooltip(strTooltip)
-	wndListItem:FindChild("ListItemName"):SetAML("<P Font=\"CRB_InterfaceMedium_B\" TextColor=\""..kstrLightGrey.."\">"..strTime..clgCurrent:GetName().."</P>")
-	wndListItem:FindChild("ListItemSubtitle"):SetAML(strSubTitle)
-	wndListItem:FindChild("ListItemIcon"):SetSprite(self:CalculateIconPath(clgCurrent:GetType()))
-	wndListItem:FindChild("ListItemHasLoot"):Show(clgCurrent:ShouldCollectReward())
 	
-	wndListItem:FindChild("ListItemSpell"):Show(clgCurrent:GetType() == ChallengesLib.ChallengeType_Ability)
-	if clgCurrent:GetType() == ChallengesLib.ChallengeType_Ability then
-		wndListItem:FindChild("ListItemSpell"):SetContentId(clgCurrent)
+	local strSubTitle = ""
+	if wndParent == self.wndTrackerActiveContent then
+		strSubTitle = strTooltip
 	end
+	wndBtn:SetTooltip(strTooltip)
+	wndChallenge:FindChild("ListItemName"):SetAML("<P Font=\"CRB_InterfaceMedium_B\" TextColor=\""..kstrLightGrey.."\">"..strTime..clgChallenge:GetName().."</P>")
+	wndChallenge:FindChild("ListItemSubtitle"):SetAML(strSubTitle)
+	wndChallenge:FindChild("ListItemIcon"):SetSprite(self:CalculateIconPath(clgChallenge:GetType()))
+	wndChallenge:FindChild("ListItemHasLoot"):Show(false)
+
+	self:HelperSelectInteractHintArrowObject(clgChallenge, wndBtn)
 	
-	-- Resize
-	local nNameWidth, nNameHeight = wndListItem:FindChild("ListItemName"):SetHeightToContentHeight()
-	local nTitleWidth, nTitleHeight = wndListItem:FindChild("ListItemSubtitle"):SetHeightToContentHeight()
-	local nLeft, nTop, nRight, nBottom = wndListItem:GetAnchorOffsets()
-	wndListItem:SetAnchorOffsets(nLeft, nTop, nRight, math.max(nTop, nTop + nNameHeight + nNameHeight + nTitleHeight))
+	local wndChallengeSpell = wndChallenge:FindChild("ListItemSpell")
+	wndChallengeSpell:Show(clgChallenge:GetType() == ChallengesLib.ChallengeType_Ability)
+	if clgChallenge:GetType() == ChallengesLib.ChallengeType_Ability then
+		wndChallengeSpell:SetContentId(clgChallenge)
+	end
 end
 
-function ChallengeTracker:ResizeContainer(wndContainer)
-	if not wndContainer or not wndContainer:IsValid() then
-		return 0
-	end
-	
-	local nOngoingGroupHeight = self.bShowChallenges and self.knInitialEpisodeGroupHeight or 0
-	local wndContent = wndContainer:FindChild("Content")
-	local wndMinimize = wndContainer:FindChild("MinimizeBtn")
-	
-	if wndMinimize and not wndMinimize:IsChecked() then
-		for idx, wndChild in pairs(wndContent:GetChildren()) do
-			if wndChild:IsShown() then
-				nOngoingGroupHeight = nOngoingGroupHeight + wndChild:GetHeight()
-			end
-		end
-	end
-	
-	local nLeft, nTop, nRight, nBottom = wndContainer:GetAnchorOffsets()
-	wndContainer:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nOngoingGroupHeight)
-	wndContent:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
-	wndContent:RecalculateContentExtents()
-	
-	return nOngoingGroupHeight
+function ChallengeTracker:ResizeChallenge(wndChallenge)
+	local nNameWidth, nNameHeight = wndChallenge:FindChild("ListItemName"):SetHeightToContentHeight()
+	local nTitleWidth, nTitleHeight = wndChallenge:FindChild("ListItemSubtitle"):SetHeightToContentHeight()
+	local nLeft, nTop, nRight, nBottom = wndChallenge:GetAnchorOffsets()
+	wndChallenge:SetAnchorOffsets(nLeft, nTop, nRight, math.max(nTop, nTop + nNameHeight + nNameHeight/3 + nTitleHeight))
 end
 
 function ChallengeTracker:CalculateIconPath(eType)
-    local strIconPath = "CRB_GuildSprites:sprChallengeTypeGenericTiny"
-	
 	if eType == ChallengesLib.ChallengeType_Combat then     -- Combat
-		strIconPath = "CRB_ChallengeTrackerSprites:sprChallengeTypeKillTiny"
+		return "CRB_ChallengeTrackerSprites:sprChallengeTypeKillTiny"
 	elseif eType == ChallengesLib.ChallengeType_Ability then -- Ability
-		strIconPath = "CRB_ChallengeTrackerSprites:sprChallengeTypeSkillTiny"
+		return "CRB_ChallengeTrackerSprites:sprChallengeTypeSkillTiny"
 	elseif eType == ChallengesLib.ChallengeType_General then -- General
-		strIconPath = "CRB_ChallengeTrackerSprites:sprChallengeTypeGenericTiny"
+		return "CRB_ChallengeTrackerSprites:sprChallengeTypeGenericTiny"
 	elseif eType == ChallengesLib.ChallengeType_Item then -- Items
-		strIconPath = "CRB_ChallengeTrackerSprites:sprChallengeTypeLootTiny"
+		return "CRB_ChallengeTrackerSprites:sprChallengeTypeLootTiny"
 	end
     
-	return strIconPath
+	return "CRB_GuildSprites:sprChallengeTypeGenericTiny"
 end
 
 function ChallengeTracker:HelperConvertToTime(nInSeconds, bReturnZero)
@@ -576,64 +517,136 @@ function ChallengeTracker:HelperConvertToTime(nInSeconds, bReturnZero)
 	return strResult
 end
 
-function ChallengeTracker:OnChallengeUpdated(nChallengeId)
-	local wndTracked = self.wndTrackerContent and self.wndTrackerContent:FindChildByUserData(nChallengeId)
-	local wndActive = self.wndActiveChallenges and self.wndActiveChallenges:FindChildByUserData(nChallengeId)
-	
-	if wndTracked and wndTracked:IsValid() then
-		local clgCurrent = wndTracked:FindChild("ListItemBigBtn"):GetData()
-		local tPrevious = self.tChallengeCompare[clgCurrent:GetId()]
-		
-		--determine if we need to resort or change parents. note the things being checked here should
-		--match what's being done to determine the parent.
-		local	bRedrawAll = false
-		if tPrevious then
-			bRedrawAll = clgCurrent:IsActivated() ~= tPrevious.bIsActivated
-			or clgCurrent:ShouldCollectReward() ~= tPrevious.bShouldCollectReward
-			or clgCurrent:GetCompletionCount() ~= tPrevious.bGetCompletionCount
-			or (clgCurrent:GetTimer() == 0 and tPrevious.nCurrentTime ~= 0)
-		end
-		
-		self.tChallengeCompare[clgCurrent:GetId()] = 
-		{
-			bIsActivated				= clgCurrent:IsActivated(),
-			bShouldCollectReward	= clgCurrent:ShouldCollectReward(),
-			bGetCompletionCount	= clgCurrent:GetCompletionCount(),
-			nCurrentTime				= clgCurrent:GetTimer(),
-		}
-		
-		if bRedrawAll then
-			self:TrackChallenges()
-			return
-		else
-			self:UpdateTrackerListItem(wndTracked)
-			if wndActive and wndActive:IsValid() then
-				self:UpdateActiveListItem(wndActive)
-			end
-		end
-	else
-		self:TrackChallenges()
-	end
-	
-	if not self.unitPlayer or not self.unitPlayer:IsValid() then
-		self.unitPlayer = GameLib.GetPlayerUnit()
-	end
-	
-	local bIsInCombat = self.unitPlayer ~= nil and self.unitPlayer:IsInCombat()
-	if not bIsInCombat and #self.tActiveChallenges == 0 then
-		for _, clgCurrent in pairs(self.tLootChallenges) do
-			self:LootChallenge(clgCurrent)
-		end
+-----------------------------------------------------------------------------------------------
+-- Game Events
+-----------------------------------------------------------------------------------------------
+
+function ChallengeTracker:OnSubZoneChanged(idZone, strZoneName)
+	self:BuildAll()
+	self:ResizeAll()
+end
+
+function ChallengeTracker:OnChallengeAbandon(idChallenge, strDescription)
+	local wndChallenge = self.tChallengeWndCache[idChallenge]
+	if wndChallenge ~= nil and wndChallenge:IsValid() then
+		local clgChallenge = wndChallenge:GetData()
+		self:BuildChallenge(clgChallenge)
+		self.timerResizeDelay:Start()
 	end
 end
 
-function ChallengeTracker:LootChallenge(clgCurrent)
-	local nChallengeId = clgCurrent:GetId()
-	
-	if clgCurrent:ShouldCollectReward() then
-		Event_FireGenericEvent("ChallengeRewardShow", nChallengeId)
+function ChallengeTracker:OnChallengeActivate(clgChallenge)
+	self:BuildChallenge(clgChallenge)
+	self.timerResizeDelay:Start()
+end
+
+function ChallengeTracker:ChallengeAreaRestriction(idChallenge, strHeader, strDescription, nTime)
+	local wndChallenge = self.tChallengeWndCache[idChallenge]
+	if wndChallenge ~= nil and wndChallenge:IsValid() then
+		local clgChallenge = wndChallenge:GetData()
+		self:BuildChallenge(clgChallenge)
+		self.timerResizeDelay:Start()
 	end
-						
+end
+
+function ChallengeTracker:OnChallengeCompleted(idChallenge, strHeader, strDescription, nDuration)
+	local wndChallenge = self.tChallengeWndCache[idChallenge]
+	if wndChallenge ~= nil and wndChallenge:IsValid() then
+		local clgChallenge = wndChallenge:GetData()
+		self:BuildChallenge(clgChallenge)
+		self.timerResizeDelay:Start()
+	end
+end
+
+function ChallengeTracker:OnChallengeCooldownActive(idChallenge, strHeader, strDescription, nDuration)
+	local wndChallenge = self.tChallengeWndCache[idChallenge]
+	if wndChallenge ~= nil and wndChallenge:IsValid() then
+		local clgChallenge = wndChallenge:GetData()
+		self:BuildChallenge(clgChallenge)
+		self.timerResizeDelay:Start()
+	end
+end
+
+function ChallengeTracker:OnChallengeFailArea(clgChallenge, strHeader, strDescription, nDuration)
+	self:BuildChallenge(clgChallenge)
+	self.timerResizeDelay:Start()
+end
+
+function ChallengeTracker:OnChallengeFailGeneric(clgChallenge, strHeader, strDescription, nDuration)
+	self:BuildChallenge(clgChallenge)
+	self.timerResizeDelay:Start()
+end
+
+function ChallengeTracker:OnChallengeFailTime(clgChallenge, strHeader, strDescription, nDuration)
+	self:BuildChallenge(clgChallenge)
+	self.timerResizeDelay:Start()
+end
+
+function ChallengeTracker:OnChallengeLeftArea(idChallenge, strHeader, strDescription, nDuration)
+	local wndChallenge = self.tChallengeWndCache[idChallenge]
+	if wndChallenge ~= nil and wndChallenge:IsValid() then
+		local clgChallenge = wndChallenge:GetData()
+		self:BuildChallenge(clgChallenge)
+		self.timerResizeDelay:Start()
+	end
+end
+
+function ChallengeTracker:OnChallengeRewardListReady(idChallenge, nTier)
+	local wndChallenge = self.tChallengeWndCache[idChallenge]
+	if wndChallenge ~= nil and wndChallenge:IsValid() then
+		local clgChallenge = wndChallenge:GetData()
+		self:BuildChallenge(clgChallenge)
+		self.timerResizeDelay:Start()
+	end
+end
+
+function ChallengeTracker:OnChallengeTierAchieved(idChallenge, nTier)
+	local wndChallenge = self.tChallengeWndCache[idChallenge]
+	if wndChallenge ~= nil and wndChallenge:IsValid() then
+		local clgChallenge = wndChallenge:GetData()
+		self:BuildChallenge(clgChallenge)
+		self.timerResizeDelay:Start()
+	end
+end
+
+function ChallengeTracker:OnChallengeTimeUpdated(idChallenge)
+	local wndChallenge = self.tChallengeWndCache[idChallenge]
+	if wndChallenge ~= nil and wndChallenge:IsValid() then
+		local clgChallenge = wndChallenge:GetData()
+		self:BuildChallenge(clgChallenge)
+		self.timerResizeDelay:Start()
+	end
+end
+
+function ChallengeTracker:OnChallengeUpdated(idChallenge)
+	local wndChallenge = self.tChallengeWndCache[idChallenge]
+	if wndChallenge ~= nil and wndChallenge:IsValid() then
+		local clgChallenge = wndChallenge:GetData()
+		self:BuildChallenge(clgChallenge)
+		self.timerResizeDelay:Start()
+	end
+end
+
+
+-----------------------------------------------------------------------------------------------
+-- Control Events
+-----------------------------------------------------------------------------------------------
+
+function ChallengeTracker:HelperSelectInteractHintArrowObject(oCur, wndBtn)
+	local oInteractObject = GameLib.GetInteractHintArrowObject()
+	if not oInteractObject or oInteractObject and (oInteractObject.eHintArrowType == GameLib.CodeEnumHintType.None) then
+		return
+	end
+
+	local bIsInteractHintArrowObject = oInteractObject.objTarget and oInteractObject.objTarget == oCur
+	if bIsInteractHintArrowObject and not wndBtn:IsChecked() then
+		wndBtn:SetCheck(true)
+	end
+end
+
+function ChallengeTracker:LootChallenge(clgChallenge)
+	local nChallengeId = clgChallenge:GetId()
+	
 	if self.tLootChallenges[nChallengeId] then
 		self.tLootChallenges[nChallengeId] = nil
 	end
@@ -687,7 +700,7 @@ function ChallengeTracker:OnMinimizedBtnChecked(wndHandler, wndControl, eMouseBu
 	else
 		self.tMinimized[wndHandler:GetData()] = wndHandler:IsChecked()
 	
-		self:TrackChallenges()
+		self:ResizeAll()
 	end
 end
 
@@ -699,14 +712,18 @@ function ChallengeTracker:OnListItemHintArrow(wndHandler, wndControl, eMouseButt
 	local clgCurrent = wndHandler:GetData()
 	if eMouseButton == GameLib.CodeEnumInputMouse.Right then
 		self:DrawContextMenu(clgCurrent)
-	elseif clgCurrent:ShouldCollectReward() then
-		self:LootChallenge(clgCurrent)
-		
-		ChallengesLib.ShowHintArrow(clgCurrent:GetId())
 	else
 		ChallengesLib.ShowHintArrow(clgCurrent:GetId())
+		GameLib.SetInteractHintArrowObject(clgCurrent) 
 	end
 end
+
+function ChallengeTracker:OnGenerateSpellTooltip( wndHandler, wndControl, eType, splSource )
+	if eType == Tooltip.TooltipGenerateType_Spell then
+		Tooltip.GetSpellTooltipForm(self, wndControl, splSource)
+	end
+end
+
 
 -----------------------------------------------------------------------------------------------
 -- Right Click
@@ -730,7 +747,7 @@ function ChallengeTracker:DrawContextMenu(clgCurrent)
 	self.wndContextMenu:FindChild("RightClickRestartBtn"):SetData(clgCurrent)
 	self.wndContextMenu:FindChild("RightClickRestartBtn"):SetText(clgCurrent:IsActivated() and Apollo.GetString("QuestLog_AbandonBtn") or Apollo.GetString("Options_RestartConfirm"))
 	self.wndContextMenu:FindChild("RightClickLootRewardstBtn"):SetData(clgCurrent)
-	self.wndContextMenu:FindChild("RightClickLootRewardstBtn"):Enable(clgCurrent:ShouldCollectReward())
+	self.wndContextMenu:FindChild("RightClickLootRewardstBtn"):Enable(false)
 	self.wndContextMenu:FindChild("RightClickHideBtn"):SetData(clgCurrent)
 	self.wndContextMenu:FindChild("RightClickHideBtn"):Enable(false)
 	
@@ -824,21 +841,21 @@ function ChallengeTracker:OnToggleShowChallenges()
 	self.bShowChallenges = not self.bShowChallenges
 	
 	self:HelperDrawContextMenuSubOptions()
-	self:TrackChallenges()
+	self:ResizeAll()
 end
 
 function ChallengeTracker:OnToggleFilterLimit()
 	self.bFilterLimit = not self.bFilterLimit
 	
 	self:HelperDrawContextMenuSubOptions()
-	self:TrackChallenges()
+	self:ResizeAll()
 end
 
 function ChallengeTracker:OnToggleFilterDistance()
 	self.bFilterDistance = not self.bFilterDistance
 	
 	self:HelperDrawContextMenuSubOptions()
-	self:TrackChallenges()
+	self:ResizeAll()
 end
 
 function ChallengeTracker:OnMissionLimitEditBoxChanged(wndHandler, wndControl)
@@ -848,7 +865,7 @@ function ChallengeTracker:OnMissionLimitEditBoxChanged(wndHandler, wndControl)
 	self.bFilterLimit = self.nMaxMissionLimit > 0
 	
 	self:HelperDrawContextMenuSubOptions(wndControl)
-	self:TrackChallenges()
+	self:ResizeAll()
 end
 
 function ChallengeTracker:OnMissionDistanceEditBoxChanged(wndHandler, wndControl)
@@ -858,7 +875,7 @@ function ChallengeTracker:OnMissionDistanceEditBoxChanged(wndHandler, wndControl
 	self.bFilterDistance = self.nMaxMissionDistance > 0
 	
 	self:HelperDrawContextMenuSubOptions(wndControl)
-	self:TrackChallenges()
+	self:ResizeAll()
 end
 
 function ChallengeTracker:OnRightClickOptionBtn(wndHandler, wndControl)
@@ -869,7 +886,7 @@ function ChallengeTracker:OnRightClickOptionBtn(wndHandler, wndControl)
 	end
 	
 	self.tHidden[strKey] = not self.tHidden[strKey]
-	self:TrackChallenges()
+	self:ResizeAll()
 end
 
 function ChallengeTracker:OnRightClickBtn(wndHandler, wndControl)
@@ -880,7 +897,7 @@ function ChallengeTracker:OnRightClickBtn(wndHandler, wndControl)
 	end
 	
 	self.tHidden[strKey] = not self.tHidden[strKey]
-	self:TrackChallenges()
+	self:ResizeAll()
 	self:CloseContextMenu(self.wndContextMenuOptions)
 end
 
@@ -909,79 +926,6 @@ function ChallengeTracker:OnRightClickRestartBtn(wndHandler, wndControl)
 	end
 	
 	self:CloseContextMenu()
-end
-
-function ChallengeTracker:OnCloseBtnClick(wndHandler, wndControl)
-	if not wndHandler or not wndHandler:IsValid() then
-		return
-	end
-	
-	ChallengesLib.AbandonChallenge(wndHandler:GetData())
-	self:BuildActiveListItems()
-end
-
-function ChallengeTracker:OnChallengeMouseEnter(wndHandler, wndControl)
-	if not wndHandler or not wndHandler:IsValid() then
-		return
-	end
-	
-	wndHandler:FindChild("CloseBtn"):Show(wndHandler:ContainsMouse())
-end
-
-function ChallengeTracker:OnChallengeMouseExit(wndHandler, wndControl)
-	if not wndHandler or not wndHandler:IsValid() then
-		return
-	end
-	
-	wndHandler:FindChild("CloseBtn"):Show(wndHandler:ContainsMouse())
-end
-
-function ChallengeTracker:OnGenerateSpellTooltip( wndHandler, wndControl, eType, splSource )
-	if eType == Tooltip.TooltipGenerateType_Spell then
-		Tooltip.GetSpellTooltipForm(self, wndControl, splSource)
-	end
-end
-
-function ChallengeTracker:OnChallengeActivate(challenge)
-	self.timerActiveTimerUpdate:Start()
-	Sound.Play(Sound.PlayUIChallengeStarted)
-end
-
----------------------------------------------------------------------------------------------------
--- Sound FX
----------------------------------------------------------------------------------------------------
-
-function ChallengeTracker:OnChallengeAbandonSound(idChallenge, strDescription)
-	Sound.Play(Sound.PlayChallengeQuestCancelled)
-end
-
-function ChallengeTracker:OnChallengeFailSound(idChallenge)
-	Sound.Play(Sound.PlayUIChallengeFailed)
-end
-
-function ChallengeTracker:OnChallengeCompletedSound(idChallenge)
-	Sound.Play(Sound.PlayUIChallengeComplete)
-end
-
-function ChallengeTracker:OnChallengeTierAchieved(idChallenge, nTier)
-	if nTier == 1 then
-		Sound.Play(Sound.PlayUIChallengeBronze)
-	elseif nTier == 2 then
-		Sound.Play(Sound.PlayUIChallengeSilver)
-	elseif nTier == 3 then
-		Sound.Play(Sound.PlayUIChallengeGold)
-	end
-end
-
----------------------------------------------------------------------------------------------------
--- Tutorial anchor request
----------------------------------------------------------------------------------------------------
-function ChallengeTracker:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
-	if eAnchor ~= GameLib.CodeEnumTutorialAnchor.Challenge or not self.tObjectiveTrackerBtnRect then
-		return
-	end
-
-	Event_FireGenericEvent("Tutorial_RequestUIAnchorResponse", eAnchor, idTutorial, strPopupText, self.tObjectiveTrackerBtnRect)
 end
 
 local ChallengeTrackerInst = ChallengeTracker:new()

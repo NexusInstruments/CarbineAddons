@@ -4,6 +4,7 @@
 -----------------------------------------------------------------------------------------------
 
 require "Window"
+require "CollectiblesLib"
 require "PetFlair"
 require "PetCustomization"
 require "PetCustomizationLib"
@@ -62,6 +63,7 @@ function MountScreen:OnDocumentReady()
 	Apollo.RegisterEventHandler("GenericEvent_CollectablesClose",					"OnClose", self)
 	Apollo.RegisterEventHandler("MountUnlocked",									"BuildMountList", self)
 	Apollo.RegisterEventHandler("PetFlairUnlocked", 								"RebuildFlairList", self)
+	Apollo.RegisterEventHandler("StoreLinksRefresh",								"RefreshStoreLink", self)
 	
 	self.bShowUnknown = true
 	self.tKnownMounts = {}
@@ -90,6 +92,7 @@ function MountScreen:OnMountsChecked()
 	end
 	
 	self:BuildMountList()
+	self:RefreshStoreLink()
 	self.wndMain:Show(true)
 end
 
@@ -127,7 +130,7 @@ function MountScreen:BuildMountList()
 		return
 	end
 	
-	local arMountList = GameLib.GetMountList()
+	local arMountList = CollectiblesLib.GetMountList()
 	table.sort(arMountList, function(a,b) return (a.bIsKnown and not b.bIsKnown) or (a.bIsKnown == b.bIsKnown and a.strName < b.strName) end)
 	
 	local wndMountList = self.wndMain:FindChild("StableList")
@@ -207,6 +210,7 @@ function MountScreen:OnMountSelected(tMountData)
 	-- Costume Preview
 	self.wndMain:FindChild("PortraitContainer:MountName"):SetText(tMountData.strName)
 	self.wndMain:FindChild("MountPortrait"):SetCostumeToCreatureId(tMountData.nPreviewCreatureId)
+	self.wndMain:FindChild("LoadingSymbol"):Show(true)
 	
 	if tMountData.bIsHoverboard then
 		self.wndMain:FindChild("MountPortrait"):SetCamera("HoverboardTarget")
@@ -290,6 +294,10 @@ function MountScreen:RebuildFlairList()
 	end
 		
 	self:BuildFlairList(wndOptionContainers, custCurrentCustomization, bCanCustomize)
+end
+
+function MountScreen:OnModelLoaded( wndHandler, wndControl )
+	self.wndMain:FindChild("LoadingSymbol"):Show(false)
 end
 
 ----------------------------------------------------------------------------------------------
@@ -461,6 +469,22 @@ function MountScreen:ArrangeList()
 	
 	wndMountList:SetVScrollPos(0)
 	wndMountList:RecalculateContentExtents()
+end
+
+-----------------------------------------------------------------------------------------------
+-- Store / Upsell Management
+-----------------------------------------------------------------------------------------------
+
+function MountScreen:RefreshStoreLink()
+	if not self.wndMain then
+		return
+	end
+	
+	self.wndMain:FindChild("MTX_Mounts"):Show(StorefrontLib.IsLinkValid(StorefrontLib.CodeEnumStoreLink.Mounts))
+end
+
+function MountScreen:OnPurchaseMoreMounts()
+	StorefrontLib.OpenLink(StorefrontLib.CodeEnumStoreLink.Mounts)
 end
 
 local MountScreenInst = MountScreen:new()

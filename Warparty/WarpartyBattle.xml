@@ -61,7 +61,7 @@
         <Control Class="Button" Base="BK3:btnHolo_Close" Font="Thick" ButtonType="PushButton" RadioGroup="" LAnchorPoint="1" LAnchorOffset="-78" TAnchorPoint="0" TAnchorOffset="33" RAnchorPoint="1" RAnchorOffset="-36" BAnchorPoint="0" BAnchorOffset="77" DT_VCENTER="1" DT_CENTER="1" TooltipType="OnCursor" Name="CloseBtn" BGColor="ffffffff" TextColor="ffffffff" TooltipColor="" NormalTextColor="ffffffff" PressedTextColor="ffffffff" FlybyTextColor="ffffffff" PressedFlybyTextColor="ffffffff" DisabledTextColor="ffffffff" Tooltip="" TestAlpha="0" NewWindowDepth="0">
             <Event Name="ButtonSignal" Function="OnCloseBtn"/>
         </Control>
-        <Event Name="WindowClosed" Function="OnClosed"/>
+        <Event Name="WindowClosed" Function="OnWindowClosed"/>
     </Form>
     <Form Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="0" RAnchorOffset="50" BAnchorPoint="0" BAnchorOffset="50" RelativeToClient="1" Font="Default" Text="" Template="Default" TooltipType="OnCursor" Name="BossTokenEntry" BGColor="ffffffff" TextColor="ffffffff" TooltipColor="" Sprite="CRB_Basekit:kitBase_MetalGrey_IconLarge" Picture="1" IgnoreMouse="1" HideInEditor="0" Tooltip="">
         <Control Class="ActionBarButton" Base="CRB_Basekit:kitBtn_List_MetalNoEdge" RelativeToClient="1" IfHoldNoSignal="1" DT_VCENTER="1" DT_CENTER="1" NeverBringToFront="1" Picture="0" WindowSoundTemplate="ActionBarButton" LAnchorPoint="0.00000" LAnchorOffset="7" TAnchorPoint="0.00000" TAnchorOffset="7" RAnchorPoint="0.00000" RAnchorOffset="45" BAnchorPoint="0.00000" BAnchorOffset="45" IgnoreTooltipDelay="1" TooltipType="OnCursor" Name="BossTokenEntryIcon" BGColor="ffffffff" TextColor="ffffffff" TooltipColor="" ContentType="BTBar" ContentId="0">

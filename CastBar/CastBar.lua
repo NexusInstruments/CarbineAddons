@@ -42,6 +42,8 @@ function CastBar:OnDocumentReady()
 	Apollo.RegisterEventHandler("UpdateSpellThreshold", "OnUpdateSpellThreshold", self)
 	
 	self.wndCastFrame 		= Apollo.LoadForm(self.xmlDoc, "CastBarFrame", "InWorldHudStratum", self)
+	self.wndCastingProgress = self.wndCastFrame:FindChild("CastingProgress")
+	
 	self.wndOppFrame 		= Apollo.LoadForm(self.xmlDoc, "WindowOfOppFrame", "InWorldHudStratum", self)
 	self.wndOppBar 			= self.wndOppFrame:FindChild("SingleBar")
 	self.wndOppBarCircle 	= self.wndOppFrame:FindChild("CircleBar")
@@ -75,11 +77,11 @@ function CastBar:OnDocumentReady()
 	self.wndOppFrame:Show(false, true)
 	
 	self.timerUpdateCastBar = ApolloTimer.Create(0.033, true, "OnUpdate", self)
+	self.timerUpdateCastBar:Set(0.033, true, false)
 end
 
 function CastBar:OnUpdate()
 	local unitPlayer = GameLib.GetPlayerUnit()
-	local nRectLeft, nRectTop, nRectRight, nRectBottom = self.wndCastFrame:GetRect()
 
 	if not unitPlayer then
 		return
@@ -99,8 +101,6 @@ function CastBar:OnUpdate()
 	--Toggle Visibility based on ui preference (Hide simple cast bar if my unit frame is visible.)
 	local unitPlayer = GameLib.GetPlayerUnit()
 	local nVisibility = Apollo.GetConsoleVariable("hud.myUnitFrameDisplay")
-	local nCurrEffHP = unitPlayer:GetHealth() + unitPlayer:GetShieldCapacity()
-	local nMaxEffHP = unitPlayer:GetMaxHealth() + unitPlayer:GetShieldCapacityMax()
 	
 	if nVisibility == 2 then --always off
 		bShowSimpleCast = true
@@ -109,6 +109,8 @@ function CastBar:OnUpdate()
 	elseif nVisibility == 4 then --on out of combat
 		bShowSimpleCast = unitPlayer:IsInCombat()
 	elseif nVisibility == 5 then --on with a target (unit frame symmetry)
+		local nCurrEffHP = unitPlayer:GetHealth() + unitPlayer:GetShieldCapacity()
+		local nMaxEffHP = unitPlayer:GetMaxHealth() + unitPlayer:GetShieldCapacityMax()
 		bShowSimpleCast = not (unitPlayer:GetTarget()  and unitPlayer:GetTarget():GetHealth() ~= nil or nCurrEffHP < nMaxEffHP)
 	else --always on/unspecified
 		bShowSimpleCast = false
@@ -125,12 +127,14 @@ function CastBar:OnUpdate()
 	local nElapsed = 0
 	local eType = Unit.CodeEnumCastBarType.None
 
+	local nRectLeft, nRectTop, nRectRight, nRectBottom = self.wndCastFrame:GetRect()
+	
 	if unitPlayer:ShouldShowCastBar() and bShowSimpleCast then
 		self.bIsShown = true
 		eType = unitPlayer:GetCastBarType()
 		
 		if eType == Unit.CodeEnumCastBarType.Normal then
-			self.wndCastFrame:FindChild("CastingProgress"):SetFullSprite("SpellChargeFull")
+			self.wndCastingProgress:SetFullSprite("SpellChargeFull")
 
 			bShowCasting = true
 			bEnableGlow = true
@@ -139,7 +143,7 @@ function CastBar:OnUpdate()
 			fDuration = unitPlayer:GetCastDuration()
 			fElapsed = unitPlayer:GetCastElapsed()
 
-			self.wndCastFrame:FindChild("CastingProgress"):SetTickLocations(0, 100, 200, 300)
+			self.wndCastingProgress:SetTickLocations(0, 100, 200, 300)
 
 			strSpellName = unitPlayer:GetCastName()
 		end
@@ -154,9 +158,10 @@ function CastBar:OnUpdate()
 	if bShowCasting and fDuration > 0 and nMaxZone > 0 then
 		self.wndCastFrame:Show(bShowCasting)
 
-		self.wndCastFrame:FindChild("CastingProgress"):SetMax(fDuration)
-		self.wndCastFrame:FindChild("CastingProgress"):SetProgress(fElapsed)
-		self.wndCastFrame:FindChild("CastingProgress"):EnableGlow(bEnableGlow)
+		self.wndCastingProgress:SetMax(fDuration)
+		self.wndCastingProgress:SetProgress(fElapsed)
+		self.wndCastingProgress:SetProgress(fDuration, fDuration)
+		self.wndCastingProgress:EnableGlow(bEnableGlow)
 		self.wndCastFrame:FindChild("CastingProgressText"):SetText(strSpellName)
 	end
 
@@ -176,12 +181,15 @@ end
 
 function CastBar:DrawSingleBarFrame(wnd)
 	local fPercentDone = GameLib.GetSpellThresholdTimePrcntDone(self.tCurrentOpSpell.id)
-	wnd:FindChild("Fill"):SetMax(1)	
-	wnd:FindChild("Fill"):SetProgress(fPercentDone)
+	local wndFill = wnd:FindChild("Fill")
+	wndFill:SetMax(1)
+	wndFill:SetProgress(fPercentDone)
 	
-	local strExtra = Apollo.GetString("CastBar_Press")
+	local strExtra
 	if Apollo.GetConsoleVariable("spell.useButtonDownForAbilities") then
 		strExtra = Apollo.GetString("CastBar_Hold")
+	else
+		strExtra = Apollo.GetString("CastBar_Press")
 	end
 	
 	wnd:FindChild("Label"):SetText(String_GetWeaselString(Apollo.GetString("CastBar_ComplexLabel"), self.tCurrentOpSpell.strName, strExtra))
@@ -189,8 +197,9 @@ end
 
 function CastBar:DrawSingleBarFrameCircle(wnd)
 	local fPercentDone = GameLib.GetSpellThresholdTimePrcntDone(self.tCurrentOpSpell.id)
-	wnd:FindChild("Fill"):SetMax(1)
-	wnd:FindChild("Fill"):SetProgress(1 - fPercentDone)
+	local wndFill = wnd:FindChild("Fill")
+	wndFill:SetMax(1)
+	wndFill:SetProgress(1 - fPercentDone)
 	local strTier = string.format("<T Font=\"%s\" TextColor=\"%s\">%s</T>", kstrOpSpellCircleFont, kcrOpSpellCurrent, self.tCurrentOpSpell.nCurrentTier)
 	local strMax = string.format("<T Font=\"%s\" TextColor=\"%s\">%s</T>", kstrOpSpellCircleFont, kcrOpSpellMax, self.tCurrentOpSpell.nMaxTier)
 	wnd:FindChild("Label"):SetText(string.format("<P Font=\"%s\" Align=\"Center\">%s/%s</P>", kstrOpSpellCircleFont, strTier, strMax))
@@ -199,8 +208,9 @@ end
 
 function CastBar:DrawSingleBarFrameTiered(wnd)
 	local fPercentDone = GameLib.GetSpellThresholdTimePrcntDone(self.tCurrentOpSpell.id)
-	wnd:FindChild("Fill"):SetFillSprite(self.arTierSprites[self.tCurrentOpSpell.nCurrentTier].strFillSprite)
-	wnd:FindChild("Fill"):SetGlowSprite(self.arTierSprites[self.tCurrentOpSpell.nCurrentTier].strCapSprite)
+	local wndFill = wnd:FindChild("Fill")
+	wndFill:SetFillSprite(self.arTierSprites[self.tCurrentOpSpell.nCurrentTier].strFillSprite)
+	wndFill:SetGlowSprite(self.arTierSprites[self.tCurrentOpSpell.nCurrentTier].strCapSprite)
 
 	if self.tCurrentOpSpell.nCurrentTier > 1 then
 		wnd:FindChild("FillBacker"):SetSprite(self.arTierSprites[self.tCurrentOpSpell.nCurrentTier - 1].strFillSprite)
@@ -208,13 +218,13 @@ function CastBar:DrawSingleBarFrameTiered(wnd)
 		wnd:FindChild("FillBacker"):SetSprite("")
 	end
 
-	wnd:FindChild("Fill"):SetMax(1)
+	wndFill:SetMax(1)
 
 	if self.tCurrentOpSpell.nCurrentTier == self.tCurrentOpSpell.nMaxTier then
-		wnd:FindChild("Fill"):SetProgress(.99) -- last tier would read as empty; this fixes it
-		wnd:FindChild("Fill"):SetGlowSprite("")
+		wndFill:SetProgress(.99) -- last tier would read as empty; this fixes it
+		wndFill:SetGlowSprite("")
 	else
-		wnd:FindChild("Fill"):SetProgress(fPercentDone)
+		wndFill:SetProgress(fPercentDone)
 	end
 	
 	local strExtra = Apollo.GetString("CastBar_Press")
@@ -276,7 +286,7 @@ function CastBar:OnStartSpellThreshold(idSpell, nMaxThresholds, eCastMethod) -- 
 			self.tTierMarks[idx]:FindChild("Marker"):SetSprite("")
 		end
 
-		self.wndOppBarTiered:FindChild("TierMarkContainer"):ArrangeChildrenHorz(1)
+		self.wndOppBarTiered:FindChild("TierMarkContainer"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.Middle)
 
 		self.wndOppBarTiered:Show(true)
 	end

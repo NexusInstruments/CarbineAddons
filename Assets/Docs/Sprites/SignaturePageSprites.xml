@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Sprites>
+    <Sprite Name="sprSignaturePage_Background" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_SignaturePage_Background.tga" x0="0" x1="1024" x2="1024" x3="1024" x4="1024" x5="1024" y0="0" y1="0" y2="0" y3="643" y4="701" y5="768" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprSignaturePage_Illustration" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_SignaturePage_Illustration.tga" x0="0" x1="0" x2="0" x3="0" x4="565" x5="565" y0="0" y1="0" y2="0" y3="0" y4="640" y5="640" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprSignaturePage_TableCell_LightSolid" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_SignaturePage_Sprites.tga" x0="0" x1="6" x2="11" x3="16" x4="16" x5="16" y0="0" y1="6" y2="11" y3="16" y4="16" y5="16" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprSignaturePage_TableCell_DarkSolid" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_SignaturePage_Sprites.tga" x0="0" x1="6" x2="11" x3="16" x4="16" x5="16" y0="16" y1="22" y2="27" y3="32" y4="32" y5="32" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprSignaturePage_TableCell_LightGradient" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_SignaturePage_Sprites.tga" x0="0" x1="8" x2="16" x3="128" x4="128" x5="128" y0="0" y1="6" y2="11" y3="16" y4="16" y5="16" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprSignaturePage_TableCell_DarkGradient" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_SignaturePage_Sprites.tga" x0="0" x1="8" x2="16" x3="128" x4="128" x5="128" y0="16" y1="22" y2="27" y3="32" y4="32" y5="32" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprSignaturePage_Line" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_SignaturePage_Sprites.tga" x0="128" x1="133" x2="139" x3="144" x4="144" x5="144" y0="0" y1="0" y2="0" y3="0" y4="0" y5="2" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprSignaturePage_TableBackground" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_SignaturePage_Sprites.tga" x0="0" x1="0" x2="0" x3="0" x4="256" x5="256" y0="32" y1="32" y2="32" y3="32" y4="256" y5="256" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprSignaturePage_TableHighlight" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_SignaturePage_Sprites.tga" x0="256" x1="304" x2="464" x3="512" x4="512" x5="512" y0="0" y1="192" y2="194" y3="256" y4="256" y5="256" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="sprSignaturePage_IllustrationMini" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_SignaturePage_Illustration.tga" x0="751" x1="751" x2="751" x3="751" x4="1024" x5="1024" y0="0" y1="0" y2="0" y3="0" y4="367" y5="367" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+</Sprites>

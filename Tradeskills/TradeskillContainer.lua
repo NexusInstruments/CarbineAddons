@@ -30,8 +30,7 @@ function TradeskillContainer:OnDocumentReady()
 		return
 	end
 
-	Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded", 	"OnInterfaceMenuListHasLoaded", self)
-	Apollo.RegisterEventHandler("WindowManagementReady", 		"OnWindowManagementReady", self)
+	Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded", 			"OnInterfaceMenuListHasLoaded", self)
 
 	Apollo.RegisterEventHandler("GenericEvent_OpenToSpecificSchematic", "OnOpenToSpecificSchematic", self) -- Not Used Yet
 	Apollo.RegisterEventHandler("GenericEvent_OpenToSpecificTechTree", 	"OnOpenToSpecificTechTree", self)
@@ -60,6 +59,9 @@ function TradeskillContainer:OnDocumentReady()
 	if self.locSavedWindowLoc then
 		self.wndMain:MoveToLocation(self.locSavedWindowLoc)
 	end
+
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 end
 
 function TradeskillContainer:OnInterfaceMenuListHasLoaded()
@@ -67,12 +69,13 @@ function TradeskillContainer:OnInterfaceMenuListHasLoaded()
 end
 
 function TradeskillContainer:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {wnd = self.wndMain, strName = Apollo.GetString("CRB_Tradeskills")})
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("CRB_Tradeskills")})
 end
 
 function TradeskillContainer:OnClose(wndHandler, wndControl)
 	if wndHandler == wndControl then
-		self.wndMain:Show(false)
+		self.wndMain:Close()
 	end
 end
 
@@ -80,14 +83,12 @@ function TradeskillContainer:OnAlwaysShowTradeskills()
 	if GameLib.GetPlayerUnit():IsCasting() then
 		return
 	end
-
-	self.wndMain:ToFront()
-	self.wndMain:Show(true)
+	self.wndMain:Invoke()
 	self:RedrawAll()
 end
 
 function TradeskillContainer:OnAlwaysHideTradeskills()
-	self.wndMain:Show(false)
+	self.wndMain:Close()
 end
 
 function TradeskillContainer:OnToggleTradeskills()
@@ -144,8 +145,7 @@ function TradeskillContainer:OnOpenToSpecificTechTree(achievementData)
 		return
 	end
 
-	self.wndMain:ToFront()
-	self.wndMain:Show(true)
+	self.wndMain:Invoke()
 	self.wndMain:FindChild("SchematicsMainForm"):Show(false)
 	self.wndMain:FindChild("AchievementsMainForm"):Show(true)
 	self.wndMain:FindChild("TalentsMainForm"):Show(false)
@@ -161,8 +161,7 @@ function TradeskillContainer:OnOpenToSpecificSchematic(nSchematicId)
 		return
 	end
 
-	self.wndMain:ToFront()
-	self.wndMain:Show(true)
+	self.wndMain:Invoke()
 	self.wndMain:FindChild("SchematicsMainForm"):Show(true)
 	self.wndMain:FindChild("AchievementsMainForm"):Show(false)
 	self.wndMain:FindChild("TalentsMainForm"):Show(false)
@@ -178,8 +177,7 @@ function TradeskillContainer:OnOpenToSearchSchematic(strQuery)
 		return
 	end
 
-	self.wndMain:ToFront()
-	self.wndMain:Show(true)
+	self.wndMain:Invoke()
 	self.wndMain:FindChild("SchematicsMainForm"):Show(true)
 	self.wndMain:FindChild("AchievementsMainForm"):Show(false)
 	self.wndMain:FindChild("TalentsMainForm"):Show(false)

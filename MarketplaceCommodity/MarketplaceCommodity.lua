@@ -8,6 +8,7 @@ require "GameLib"
 require "Money"
 require "MarketplaceLib"
 require "CommodityOrder"
+require "StorefrontLib"
 
 local MarketplaceCommodity = {}
 
@@ -24,8 +25,8 @@ local knMaxLevel = 50 -- TODO: Replace with a variable from code
 local kCommodityAuctionRake = MarketplaceLib.kCommodityAuctionRake
 local kAuctionSearchMaxResults = MarketplaceLib.kAuctionSearchMaxResults
 local kMaxCommodityOrder = MarketplaceLib.kMaxCommodityOrder -- An order can only go up to 200 stock
-local kMaxPlayerCommodityOrders = MarketplaceLib.kMaxPlayerCommodityOrders -- You can only have 25 postings active
 local kstrAuctionOrderDuration = MarketplaceLib.kCommodityOrderListTimeDays
+local knButtonTextPadding = 10
 
 local karEvalStrings =
 {
@@ -70,23 +71,44 @@ function MarketplaceCommodity:OnDocumentReady()
 		return
 	end
 
-	Apollo.RegisterEventHandler("ToggleMarketplaceWindow", 							"Initialize", self)
-	Apollo.RegisterEventHandler("PostCommodityOrderResult", 						"OnPostCommodityOrderResult", self)
-	Apollo.RegisterEventHandler("CommodityAuctionRemoved", 							"OnCommodityAuctionRemoved", self)
-	Apollo.RegisterEventHandler("CommodityInfoResults", 							"OnCommodityInfoResults", self)
-	Apollo.RegisterEventHandler("OwnedCommodityOrders", 							"OnCommodityDataReceived", self)
-	Apollo.RegisterEventHandler("MarketplaceWindowClose", 							"OnDestroy", self)
+	Apollo.RegisterEventHandler("WindowManagementReady", 			"OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 
-	Apollo.RegisterTimerHandler("PostResultTimer", 									"OnPostResultTimer", self)
+	Apollo.RegisterEventHandler("ToggleMarketplaceWindow", 			"Initialize", self)
+	Apollo.RegisterEventHandler("PostCommodityOrderResult", 		"OnPostCommodityOrderResult", self)
+	Apollo.RegisterEventHandler("CommodityAuctionRemoved", 			"OnCommodityAuctionRemoved", self)
+	Apollo.RegisterEventHandler("CommodityInfoResults", 			"OnCommodityInfoResults", self)
+	Apollo.RegisterEventHandler("OwnedCommodityOrders", 			"OnCommodityDataReceived", self)
+	Apollo.RegisterEventHandler("MarketplaceWindowClose", 			"OnWindowClose", self)
+	Apollo.RegisterEventHandler("CharacterEntitlementUpdate",		"OnEntitlementUpdate", self)
+	Apollo.RegisterEventHandler("AccountEntitlementUpdate",			"OnEntitlementUpdate", self)
+	Apollo.RegisterEventHandler("StoreLinksRefresh",						"RequestOrderUpdate", self)
+	
+	Apollo.RegisterTimerHandler("PostResultTimer", 					"OnPostResultTimer", self)
+	
+	self.nCurMaxSlots = 0
+	self.nPrevCommoditiesCount = 0
+	self.nOwnedBuyOrderCount = 0
+	self.nOwnedSellOrderCount = 0
 end
 
-function MarketplaceCommodity:OnDestroy()
+function MarketplaceCommodity:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("MarketplaceCommodity_CommoditiesExchange")})
+end
+
+function MarketplaceCommodity:OnWindowClose()
 	if self.wndMain and self.wndMain:IsValid() then
 		self:OnSearchClearBtn()
 		self.wndMain:Destroy()
 		self.wndMain = nil
 	end
 	Event_CancelCommodities()
+end
+
+function MarketplaceCommodity:OnCloseBtnSignal()
+	if self.wndMain and self.wndMain:IsValid() then
+		self.wndMain:Close()
+	end
 end
 
 function MarketplaceCommodity:Initialize()
@@ -149,12 +171,14 @@ function MarketplaceCommodity:Initialize()
 		wndFilter:FindChild("FilterOptionsRarityItemBtn"):SetTooltip(karEvalStrings[tQuality.nQuality])
 		wndFilter:FindChild("FilterOptionsRarityItemColor"):SetBGColor(karEvalColors[tQuality.nQuality])
 	end
-	wndFilterParent:ArrangeChildrenVert(0)
+	wndFilterParent:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 	self:InitializeCategories()
 	self:OnResizeCategories()
 	self:OnHeaderBtnToggle()
 	MarketplaceLib.RequestOwnedCommodityOrders()
+	
+	self.wndMain:Invoke()
 
 	Sound.Play(Sound.PlayUIWindowCommoditiesExchangeOpen)
 end
@@ -195,12 +219,12 @@ end
 
 function MarketplaceCommodity:OnResizeCategories() -- Can come from XML
 	for idx, wndTop in pairs(self.wndMain:FindChild("MainCategoryContainer"):GetChildren()) do
-		local nListHeight = wndTop:FindChild("CategoryTopBtn"):IsChecked() and (wndTop:FindChild("CategoryTopList"):ArrangeChildrenVert(0) + 12) or 0
+		local nListHeight = wndTop:FindChild("CategoryTopBtn"):IsChecked() and (wndTop:FindChild("CategoryTopList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop) + 12) or 0
 		local nLeft, nTop, nRight, nBottom = wndTop:GetAnchorOffsets()
 		wndTop:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nListHeight + 44)
 	end
 	self.wndMain:FindChild("MainCategoryContainer"):RecalculateContentExtents()
-	self.wndMain:FindChild("MainCategoryContainer"):ArrangeChildrenVert(0)
+	self.wndMain:FindChild("MainCategoryContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 -----------------------------------------------------------------------------------------------
@@ -242,7 +266,7 @@ function MarketplaceCommodity:OnHeaderBtnToggle()
 		strMessage = bAnyCategoryChecked and Apollo.GetString("MarketplaceCommodity_NoResults") or Apollo.GetString("MarketplaceCommodity_PickACategory")
 	end
 	self.wndMain:FindChild("MainScrollContainer"):SetText(strMessage)
-	self.wndMain:FindChild("MainScrollContainer"):ArrangeChildrenVert(0)
+	self.wndMain:FindChild("MainScrollContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	self.wndMain:FindChild("MainScrollContainer"):SetVScrollPos(0)
 	self:OnResizeCategories()
 end
@@ -305,6 +329,7 @@ function MarketplaceCommodity:InitializeSell()
 			MarketplaceLib.RequestCommodityInfo(tCurrItem:GetItemId()) -- Leads to OnCommodityInfoResults
 		end
 	end
+	MarketplaceLib.RequestOwnedCommodityOrders() -- Leads to OwnedCommodityOrders
 end
 
 function MarketplaceCommodity:InitializeBuy()
@@ -318,6 +343,7 @@ function MarketplaceCommodity:InitializeBuy()
 		end
 	end
 
+	MarketplaceLib.RequestOwnedCommodityOrders() -- Leads to OwnedCommodityOrders
 	-- Early exit if no search or category (completely blank UI)
 	local strSearchFilter = self.wndMain:FindChild("SearchEditBox"):GetText()
 	if not bAnyCategoryChecked and string.len(strSearchFilter) == 0 then
@@ -519,7 +545,7 @@ function MarketplaceCommodity:HelperValidateListInputForSubmit(wndParent)
 	end
 
 	if wndListInputPrice then
-		wndListInputPrice:SetTextColor(bCanAfford and "white" or "xkcdReddish")
+		wndListInputPrice:SetTextColor(bCanAfford and "white" or "Reddish")
 	end
 
 	local wndQuantity = wndParent:FindChild("ListInputNumber")
@@ -886,7 +912,7 @@ function MarketplaceCommodity:OnCommodityInfoResults(nItemId, tStats, tOrders)
 	wndMatch:FindChild("ListSubtitlePriceLeft"):Show(nValueForLeftPrice)
 	wndMatch:FindChild("ListSubtitlePriceLeft"):SetAmount(nValueForLeftPrice or 0)
 
-	self.wndMain:FindChild("MainScrollContainer"):ArrangeChildrenVert(0)
+	self.wndMain:FindChild("MainScrollContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function MarketplaceCommodity:OnPostCommodityOrderResult(eAuctionPostResult, orderSource, nActualCost)
@@ -927,7 +953,11 @@ function MarketplaceCommodity:OnPostCommodityOrderResult(eAuctionPostResult, ord
 		end
 
 		if orderSource:IsPosted() then
-			self:UpdateOrderLimit(self.nOwnedOrderCount + 1)
+			if orderSource:IsBuy() then
+				self:UpdateOrderLimit(self.nOwnedBuyOrderCount + 1, self.nOwnedSellOrderCount)
+			else
+				self:UpdateOrderLimit(self.nOwnedBuyOrderCount, self.nOwnedSellOrderCount + 1)
+			end
 		end
 	end
 end
@@ -941,7 +971,7 @@ function MarketplaceCommodity:OnPostCustomMessage(strMessage, bResultOK, nDurati
 	self.wndMain:FindChild("PostResultNotification"):Show(true)
 	self.wndMain:FindChild("PostResultNotification"):SetTooltip(strTitle)
 	self.wndMain:FindChild("PostResultNotificationSubText"):SetText(strMessage)
-	self.wndMain:FindChild("PostResultNotificationLabel"):SetTextColor(bResultOK and ApolloColor.new("UI_TextHoloTitle") or ApolloColor.new("xkcdReddish"))
+	self.wndMain:FindChild("PostResultNotificationLabel"):SetTextColor(bResultOK and ApolloColor.new("UI_TextHoloTitle") or ApolloColor.new("Reddish"))
 	self.wndMain:FindChild("PostResultNotificationLabel"):SetText(strTitle)
 	Apollo.CreateTimer("PostResultTimer", nDuration, false)
 end
@@ -957,7 +987,178 @@ function MarketplaceCommodity:OnCommodityAuctionRemoved(eAuctionEventType, order
 		return
 	end
 
-	self:UpdateOrderLimit(self.nOwnedOrderCount - 1)
+	if orderRemoved:IsBuy() then
+		self:UpdateOrderLimit(self.nOwnedBuyOrderCount - 1, self.nOwnedSellOrderCount)
+	else
+		self:UpdateOrderLimit(self.nOwnedBuyOrderCount, self.nOwnedSellOrderCount - 1)
+	end
+end
+
+function MarketplaceCommodity:OnEntitlementUpdate(tEntitlementInfo)
+	local bNotSignatureOrFree = tEntitlementInfo.nEntitlementId ~= AccountItemLib.CodeEnumEntitlement.Signature and tEntitlementInfo.nEntitlementId ~= AccountItemLib.CodeEnumEntitlement.Free
+	local bNotExtraOrLoyalty = tEntitlementInfo.nEntitlementId ~= AccountItemLib.CodeEnumEntitlement.ExtraCommodityOrders and tEntitlementInfo.nEntitlementId ~= AccountItemLib.CodeEnumEntitlement.LoyaltyExtraCommodityOrders
+	if not self.wndMain or (bNotSignatureOrFree and bNotExtraOrLoyalty) then
+		return
+	end
+	self:UpdateSlotNotification()
+end
+
+function MarketplaceCommodity:UpdateSlotNotification()
+	if not self.wndMain then
+		return
+	end
+	
+	self:RefreshStoreLink()
+	local nMaxSlots = MarketplaceLib.GetMaxCommodityOrders()
+	local nTotalOwnedOrderCount = self.nOwnedBuyOrderCount + self.nOwnedSellOrderCount
+	local bCommoditiesChanged = self.nPrevCommoditiesCount ~= nTotalOwnedOrderCount
+	self.bCommodityOrdersFull = ((nMaxSlots - self.nOwnedBuyOrderCount) <= 0) or ((nMaxSlots - self.nOwnedSellOrderCount) <= 0)
+	local bValidTab = self.wndMain:FindChild("HeaderSellOrderBtn"):IsChecked() or self.wndMain:FindChild("HeaderBuyOrderBtn"):IsChecked() 
+	local bDisplay = self.bStoreLinkValid and self.bCommodityOrdersFull and MarketplaceLib.GetCommodityLimit() ~= nMaxSlots
+	local wndMTXSlotNotify = self.wndMain:FindChild("MTX_SlotWarning")
+	if not wndMTXSlotNotify then
+		wndMTXSlotNotify = Apollo.LoadForm(self.xmlDoc, "MTX_SlotWarning", self.wndMain, self)
+	end
+	
+	local wndMaxSlots = self.wndOrderLimitText:FindChild("MaxSlots")
+	
+	local nLoyaltyCommodityCount = AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.LoyaltyExtraCommodityOrders)
+	local nSignatureCount = AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature)
+	local nSignatureMaxCount = 0
+	if nSignatureCount > 0 then
+		nSignatureMaxCount = MarketplaceLib.GetSignatureCommodityLimit() - nLoyaltyCommodityCount
+	end
+	local nExtraCommodityCount = AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.ExtraCommodityOrders)
+	local nTotalCommodityCount = nSignatureMaxCount + nExtraCommodityCount + nLoyaltyCommodityCount
+
+	local strOrderLimitTooltipBuy = string.format('%s%d%s', String_GetWeaselString(Apollo.GetString("Marketplace_CommodityLimitBuyBegin"), self.nOwnedBuyOrderCount), nMaxSlots, Apollo.GetString("Marketplace_LimitEnd"))
+	local strOrderLimitTooltipSell = string.format('%s%d%s', String_GetWeaselString(Apollo.GetString("Marketplace_CommodityLimitBegin"), self.nOwnedSellOrderCount), nMaxSlots, Apollo.GetString("Marketplace_LimitEnd"))
+
+	self.wndOrderLimitText:SetTooltip(strOrderLimitTooltipBuy .. "\n" .. strOrderLimitTooltipSell)
+	
+	-- Adjust displayed text and icon based on any slot increases coming from entitlements
+	if nTotalCommodityCount > 0 then	
+		self.wndOrderLimitText:ChangeArt("BK3:btnMetal_ExpandMenu_NoNav")
+		self.wndOrderLimitText:SetText(String_GetWeaselString(Apollo.GetString("MarketplaceAuction_MyListings"), nTotalOwnedOrderCount))
+		
+		local wndIconMTX = self.wndOrderLimitText:FindChild("IconMTX")
+		wndIconMTX:Show(true)
+		local nDiffCount = 0
+		local nBaseCount = MarketplaceLib.GetBaseCommodityOrders()
+		if nSignatureCount > 0 then
+			nDiffCount = nBaseCount
+		end
+		wndIconMTX:SetTooltip(String_GetWeaselString(Apollo.GetString("MarketplaceAuction_AdditionalSlots"), nBaseCount, nTotalCommodityCount - nDiffCount))
+		
+		wndMaxSlots:SetText(nMaxSlots * 2)
+		wndMaxSlots:Show(true)
+	else -- Reset to default if no longer getting additional slots
+		self.wndOrderLimitText:ChangeArt("BK3:btnMetal_Flyout")
+		self.wndOrderLimitText:FindChild("IconMTX"):Show(false)
+		self.wndOrderLimitText:SetText(String_GetWeaselString(Apollo.GetString("MarketplaceCommodity_OrderLimitCount"), nTotalOwnedOrderCount, nMaxSlots * 2))
+		wndMaxSlots:Show(false)
+	end
+	
+	local nLeft, nTop, nRight, nBottom = wndMaxSlots:GetOriginalLocation():GetOffsets()
+	local nOrderLimitTextWidth = Apollo.GetTextWidth("CRB_Button", self.wndOrderLimitText:GetText())
+	wndMaxSlots:SetAnchorOffsets(nOrderLimitTextWidth + knButtonTextPadding, nTop, Apollo.GetTextWidth("CRB_Button", wndMaxSlots:GetText()), nBottom)
+	
+	local wndWaitScreen = self.wndMain:FindChild("WaitingScreen")
+	local wndRefreshAnimation = self.wndMain:FindChild("RefreshAnimation")
+	local wndMainScrollContainer = self.wndMain:FindChild("MainScrollContainer")
+	local nWaitScreenLeft, nWaitScreenTop, nWaitScreenRight, nWaitScreenBottom = wndWaitScreen:GetOriginalLocation():GetOffsets()
+	local nRefreshAnimationLeft, nRefreshAnimationTop, nRefreshAnimationRight, nRefreshAnimationBottom = wndRefreshAnimation:GetOriginalLocation():GetOffsets()
+	local nMainScrollLeft, nMainScrollTop, nMainScrollRight, nMainScrollBottom = wndMainScrollContainer:GetOriginalLocation():GetOffsets()
+	if bDisplay == wndMTXSlotNotify:IsShown() and not bCommoditiesChanged and nMaxSlots == self.nCurMaxSlots and not bValidTab then
+		wndWaitScreen:SetAnchorOffsets(nWaitScreenLeft, nWaitScreenTop, nWaitScreenRight, nWaitScreenBottom)
+		wndRefreshAnimation:SetAnchorOffsets(nRefreshAnimationLeft, nRefreshAnimationTop, nRefreshAnimationRight, nRefreshAnimationBottom)
+		wndMainScrollContainer:SetAnchorOffsets(nMainScrollLeft, nMainScrollTop, nMainScrollRight, nMainScrollBottom)
+		wndMTXSlotNotify:Show(false)
+		return
+	end
+	
+	self.nPrevCommoditiesCount = nTotalOwnedOrderCount
+	self.nCurMaxSlots = nMaxSlots
+	
+	local wndSearchHeader = self.wndMain:FindChild("MetalHeader")
+	local nLeftSearchOffsets, nTopSearchOffsets, nRightSearchOffsets, nBottomSearchOffsets = wndSearchHeader:GetAnchorOffsets()
+	local wndUnlockAddSlotsBtn = wndMTXSlotNotify:FindChild("UnlockSlotsBtn")
+	local nMTXSlotNotifyHeight = 0
+	local nSearchHeaderHeight = 0
+	wndMTXSlotNotify:Show(bDisplay and bValidTab)
+	
+	if bDisplay and bValidTab then
+		local wndSigPlayerBtn = wndMTXSlotNotify:FindChild("SigPlayerBtn")
+		local nUnlockAddSlotsBtnLeft, nUnlockAddSlotsBtnTop, nUnlockAddSlotsBtnRight, nUnlockAddSlotsBtnBottom = wndUnlockAddSlotsBtn:GetOriginalLocation():GetOffsets()
+		local nUnlockAddSlotsBtnPointsLeft, nUnlockAddSlotsBtnPointsTop, nUnlockAddSlotsBtnPointsRight, nUnlockAddSlotsPointsBtnBottom = wndUnlockAddSlotsBtn:GetOriginalLocation():GetPoints()
+		local nSigPlayerBtnPointsLeft, nSigPlayerBtnPointsTop, nSigPlayerBtnPointsRight, nSigPlayerBtnPointsBottom = wndSigPlayerBtn:GetOriginalLocation():GetPoints()
+		local wndMTXSlotNotifyBody = wndMTXSlotNotify:FindChild("Body")
+		
+		nMTXSlotNotifyHeight = wndMTXSlotNotify:GetData()
+		if not nMTXSlotNotifyHeight then
+			nMTXSlotNotifyHeight = wndMTXSlotNotify:GetHeight()
+			wndMTXSlotNotify:SetData(nMTXSlotNotifyHeight)
+		end
+		local nSlotCount = not self.bStoreLinkValid and 0 or MarketplaceLib.GetSignatureCommodityLimit() - nMaxSlots
+		if nSlotCount <= 0 then
+			wndSigPlayerBtn:Show(false)
+			wndMTXSlotNotifyBody:SetAML("<P Font=\"CRB_InterfaceMedium\" Align=\"Center\" TextColor=\"UI_TextHoloBody\">"..Apollo.GetString("MarketplaceAuction_UnlockAdditionalSlotsGroups").."</P>")
+		else
+			wndSigPlayerBtn:Show(true)
+			wndMTXSlotNotifyBody:SetAML("<P Font=\"CRB_InterfaceMedium\" Align=\"Center\" TextColor=\"UI_TextHoloBody\">"..String_GetWeaselString(Apollo.GetString("MarketplaceAuction_BecomeSignatureOrUnlock"), tostring(nSlotCount)).."</P>")
+		end
+		
+		local nPrevMTXSlotBodyHeight = wndMTXSlotNotifyBody:GetData()
+		if not nPrevMTXSlotBodyHeight then
+			nPrevMTXSlotBodyHeight = wndMTXSlotNotifyBody:GetHeight()
+			wndMTXSlotNotifyBody:SetData(nPrevMTXSlotBodyHeight)
+		end
+		wndMTXSlotNotify:SetAnchorOffsets(nLeftSearchOffsets, nBottomSearchOffsets, 0, nBottomSearchOffsets) -- adjust the width so Body sizes correctly
+		local nMTXSlotBodyWidth, nMTXSlotBodyHeight = wndMTXSlotNotifyBody:SetHeightToContentHeight()
+		if nMTXSlotBodyHeight - nPrevMTXSlotBodyHeight > 0 then
+			nMTXSlotNotifyHeight = nMTXSlotNotifyHeight + (nMTXSlotBodyHeight - nPrevMTXSlotBodyHeight)
+		end
+		wndMTXSlotNotify:SetAnchorOffsets(nLeftSearchOffsets, nBottomSearchOffsets, nRightSearchOffsets, nBottomSearchOffsets + nMTXSlotNotifyHeight)
+		if nSlotCount <= 0 then
+			nUnlockAddSlotsBtnPointsLeft = nSigPlayerBtnPointsLeft
+			local nWidth = wndMTXSlotNotify:GetWidth() - wndUnlockAddSlotsBtn:GetWidth()
+			nUnlockAddSlotsBtnRight = nWidth / -2
+			nUnlockAddSlotsBtnLeft = math.abs(nUnlockAddSlotsBtnRight)
+		end
+		wndUnlockAddSlotsBtn:SetAnchorPoints(nUnlockAddSlotsBtnPointsLeft, nUnlockAddSlotsBtnPointsTop, nUnlockAddSlotsBtnPointsRight, nUnlockAddSlotsPointsBtnBottom)
+		wndUnlockAddSlotsBtn:SetAnchorOffsets(nUnlockAddSlotsBtnLeft, nUnlockAddSlotsBtnTop, nUnlockAddSlotsBtnRight, nUnlockAddSlotsBtnBottom)
+		nSearchHeaderHeight = nMTXSlotNotifyHeight + wndSearchHeader:GetHeight()
+	end
+	
+	wndWaitScreen:SetAnchorOffsets(nWaitScreenLeft, nWaitScreenTop + nMTXSlotNotifyHeight + nSearchHeaderHeight, nWaitScreenRight, nWaitScreenBottom)
+	wndRefreshAnimation:SetAnchorOffsets(nRefreshAnimationLeft, nRefreshAnimationTop + nMTXSlotNotifyHeight + nSearchHeaderHeight, nRefreshAnimationRight, nRefreshAnimationBottom)
+	wndMainScrollContainer:SetAnchorOffsets(nMainScrollLeft, nMainScrollTop + nMTXSlotNotifyHeight, nMainScrollRight, nMainScrollBottom)
+end
+
+function MarketplaceCommodity:RefreshStoreLink()
+	local nMaxSlots = MarketplaceLib.GetMaxCommodityOrders()
+	self.bCommodityOrdersFull = ((nMaxSlots - self.nOwnedBuyOrderCount) <= 0) or ((nMaxSlots - self.nOwnedSellOrderCount) <= 0)
+	
+	self.bStoreLinkValid = StorefrontLib.IsLinkValid(StorefrontLib.CodeEnumStoreLink.Signature) 
+	if self.bCommodityOrdersFull then
+		self.bStoreLinkValidExtras = StorefrontLib.IsLinkValid(StorefrontLib.CodeEnumStoreLink.ExtraCommodityOrders) 
+	end
+end
+
+function MarketplaceCommodity:OnUnlockMoreSlots()
+	StorefrontLib.OpenLink(StorefrontLib.CodeEnumStoreLink.ExtraCommodityOrders)
+end
+
+function MarketplaceCommodity:OnBecomeSignature()
+	StorefrontLib.OpenLink(StorefrontLib.CodeEnumStoreLink.Signature)
+end
+
+function MarketplaceCommodity:OnGenerateSignatureTooltip(wndHandler, wndControl)
+	if wndHandler ~= wndControl then
+		return
+	end
+
+	Tooltip.GetSignatureTooltipForm(self, wndControl, Apollo.GetString("Signature_CommodityTooltip"))
 end
 
 function MarketplaceCommodity:OnPostResultTimer()
@@ -971,20 +1172,41 @@ end
 -- Order List
 -----------------------------------------------------------------------------------------------
 
-function MarketplaceCommodity:OnCommodityDataReceived(tOrders) -- From MarketplaceLib.RequestOwnedCommodityOrders()
-	self:UpdateOrderLimit(#tOrders)
+function MarketplaceCommodity:RequestOrderUpdate()
+	MarketplaceLib.RequestOwnedCommodityOrders() -- Leads to OwnedCommodityOrders
 end
 
-function MarketplaceCommodity:UpdateOrderLimit(nCount)
+function MarketplaceCommodity:OnCommodityDataReceived(tOrders) -- From MarketplaceLib.RequestOwnedCommodityOrders()
+	local nBuyCount = 0
+	local nSellCount = 0
+	for nIdx, tCurrOrder in pairs(tOrders) do
+		if tCurrOrder:IsBuy() then
+			nBuyCount = nBuyCount + 1
+		else
+			nSellCount = nSellCount + 1
+		end
+	end
+	self:UpdateOrderLimit(nBuyCount, nSellCount)
+end
+
+function MarketplaceCommodity:UpdateOrderLimit(nBuyCount, nSellCount)
 	if not self.wndMain or not self.wndMain:IsValid() then
 		return
 	end
-	if nCount < 0 then
-		self.nOwnedOrderCount = 0
+
+	if nBuyCount < 0 then
+		self.nOwnedBuyOrderCount = 0
 	else
-		self.nOwnedOrderCount = nCount
+		self.nOwnedBuyOrderCount = nBuyCount
 	end
-	self.wndOrderLimitText:SetText(String_GetWeaselString(Apollo.GetString("MarketplaceCommodity_OrderLimitCount"), self.nOwnedOrderCount, kMaxPlayerCommodityOrders))
+
+	if nSellCount < 0 then
+		self.nOwnedSellOrderCount = 0
+	else
+		self.nOwnedSellOrderCount = nSellCount
+	end
+
+	self:UpdateSlotNotification()
 end
 
 function MarketplaceCommodity:OnOpenMarketListingsBtn(wndHandler, wndControl)

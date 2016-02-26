@@ -4,6 +4,9 @@
 -----------------------------------------------------------------------------------------------
  
 require "Window"
+require "GameLib"
+require "CollectiblesLib"
+require "StorefrontLib"
  
 -----------------------------------------------------------------------------------------------
 -- VanityPets Module Definition
@@ -50,11 +53,12 @@ function VanityPets:OnDocLoaded()
 		return
 	end
 	
-	Apollo.RegisterEventHandler("GenericEvent_CollectablesReady", "OnRegisterContainer", self)
-	Apollo.RegisterEventHandler("GenericEvent_VanityPetsChecked", "OnPetsShow", self)
-	Apollo.RegisterEventHandler("GenericEvent_VanityPetsUnchecked", "OnPetsHide", self)
-	Apollo.RegisterEventHandler("GenericEvent_CollectablesClose", "OnClose", self)
-	Apollo.RegisterEventHandler("AbilityBookChange", "UpdatePetLists", self)
+	Apollo.RegisterEventHandler("GenericEvent_CollectablesReady", 		"OnRegisterContainer", self)
+	Apollo.RegisterEventHandler("GenericEvent_VanityPetsChecked", 		"OnPetsShow", self)
+	Apollo.RegisterEventHandler("GenericEvent_VanityPetsUnchecked", 	"OnPetsHide", self)
+	Apollo.RegisterEventHandler("GenericEvent_CollectablesClose", 		"OnClose", self)
+	Apollo.RegisterEventHandler("AbilityBookChange", 					"UpdatePetLists", self)
+	Apollo.RegisterEventHandler("StoreLinksRefresh",					"RefreshStoreLink", self)
 	
 	self.tKnownPets = {}
 	self.tUnknownPets = {}
@@ -97,6 +101,7 @@ function VanityPets:OnPetsShow()
 	self.wndMain:FindChild("FooterBG:ShowUnknown:ShowUnknownBtn"):SetCheck(self.bShowUnknown)
 	
 	self:UpdatePetLists()
+	self:RefreshStoreLink()
 	
 	self.wndMain:Show(true)
 end
@@ -111,7 +116,7 @@ function VanityPets:UpdatePetLists()
 	end
 	
 	local wndPetList = self.wndMain:FindChild("PetList")
-	local arPetList = GameLib.GetVanityPetList()
+	local arPetList = CollectiblesLib.GetVanityPetList()
 	
 	table.sort(arPetList, function(a,b) return (a.bIsKnown and not b.bIsKnown) or (a.bIsKnown == b.bIsKnown and a.strName < b.strName) end)
 	
@@ -130,14 +135,15 @@ function VanityPets:UpdatePetLists()
 
 			wndActionButton:SetData(tPetInfo.nId)
 			wndActionButton:SetSprite(tPetInfo.splObject and tPetInfo.splObject:GetIcon() or "Icon_ItemArmorWaist_Unidentified_Buckle_0001")
-			wndPet:FindChild("PetName"):SetText(tPetInfo.strName)
+			wndPet:FindChild("PetButton:PetName"):SetText(tPetInfo.strName)
 		end
 		
+		local wndPetButton = wndPet:FindChild("PetButton")
 		wndPet:SetData(tPetInfo)
 		
 		if not self.nSelectedId or self.nSelectedId == tPetInfo.nId then
-			wndPet:SetCheck(true)
-			self:OnPetItemClick(wndPet, wndPet)
+			wndPetButton:SetCheck(true)
+			self:OnPetItemClick(wndPetButton, wndPetButton)
 			self.nSelectedId = tPetInfo.nId
 		end
 		
@@ -145,13 +151,13 @@ function VanityPets:UpdatePetLists()
 			self.tKnownPets[tPetInfo.nSpellId] = wndPet
 			self.tUnknownPets[tPetInfo.nSpellId] = nil
 			wndPet:FindChild("DisabledShade"):Show(false)
-			wndPet:FindChild("PetName"):SetTextColor(ApolloColor.new("UI_BtnTextHoloListNormal"))
+			wndPetButton:FindChild("PetName"):SetTextColor(ApolloColor.new("UI_BtnTextHoloListNormal"))
 			wndPet:FindChild("ActionBarButton"):Enable(true)
 		else
 			self.tKnownPets[tPetInfo.nSpellId] = nil
 			self.tUnknownPets[tPetInfo.nSpellId] = wndPet
 			wndPet:FindChild("DisabledShade"):Show(true)
-			wndPet:FindChild("PetName"):SetTextColor(ApolloColor.new("UI_BtnTextHoloDisabled"))
+			wndPetButton:FindChild("PetName"):SetTextColor(ApolloColor.new("UI_BtnTextHoloDisabled"))
 			wndPet:FindChild("ActionBarButton"):Enable(false)
 		end
 	end
@@ -168,15 +174,16 @@ function VanityPets:UpdatePetLists()
 end
 
 function VanityPets:OnPetItemClick(wndHandler, wndControl)
-	local tPetData = wndHandler:GetData()
 	local wndParent = wndHandler:GetParent()
+	local tPetData = wndParent:GetData()
 
 	self.wndMain:FindChild("PetName"):SetText(tPetData.strName)
 	self.wndMain:FindChild("PetPreview"):SetCostumeToCreatureId(tPetData.nPreviewCreatureId)
 	self.wndMain:FindChild("PetPreview"):SetModelSequence(150)
 	
 	self.nSelectedId = tPetData.nId
-	self.wndMain:FindChild("PortraitContainer"):Show(true)	
+	self.wndMain:FindChild("PortraitContainer"):Show(true)
+	self.wndMain:FindChild("LoadingSymbol"):Show(true)
 
 	local arPets = GameLib.GetPlayerPets()
 	local bPetSummoned = false
@@ -199,14 +206,22 @@ function VanityPets:OnPetItemClick(wndHandler, wndControl)
 	wndDismiss:Show(bPetSummoned)
 end
 
-function VanityPets:OnSummonPet(wndHandler, wndControl)
+function VanityPets:SummonPet(nPetId)
 	if GameLib.GetPlayerUnit():IsCasting() then
 		return
 	end
 	
-	GameLib.SummonVanityPet(self.nSelectedId)
+	GameLib.SummonVanityPet(nPetId)
 	
 	Event_FireGenericEvent("GenericEvent_CloseCollectablesWindow")
+end
+
+function VanityPets:OnSummonPet(wndHandler, wndControl)
+	self:SummonPet(self.nSelectedId)
+end
+
+function VanityPets:OnModelLoaded( wndHandler, wndControl )
+	self.wndMain:FindChild("LoadingSymbol"):Show(false)
 end
 
 -----------------------------------------------------------------------------------------------
@@ -253,6 +268,12 @@ function VanityPets:OnPetBeginDragDrop(wndHander, wndControl)
 	Apollo.BeginDragDrop(wndHander, "DDNonCombat", wndHander:GetSprite(), wndHander:GetData())
 end
 
+function VanityPets:OnPetThumbMouseButtonUp(wndHander, wndControl, eMouseButton)
+	if (eMouseButton == GameLib.CodeEnumInputMouse.Right) then
+		self:SummonPet(wndHander:GetData())
+	end
+end
+
 function VanityPets:OnSearchFieldChanged(wndHandler, wndControl, strText)
 	local wndPetList = self.wndMain:FindChild("PetList")
 	
@@ -286,6 +307,26 @@ function VanityPets:ArrangeList()
 	
 	wndPetList:SetVScrollPos(0)
 	wndPetList:RecalculateContentExtents()
+end
+
+-----------------------------------------------------------------------------------------------
+-- Store / Upsell Management
+-----------------------------------------------------------------------------------------------
+
+function VanityPets:RefreshStoreLink()
+	if not self.wndMain then
+		return
+	end
+	
+	if StorefrontLib.IsLinkValid(StorefrontLib.CodeEnumStoreLink.Pets) then
+		self.wndMain:FindChild("PurchaseMorePetsBtn"):Show(not CollectiblesLib.HasPurchasedAllStorePets())
+	else
+		self.wndMain:FindChild("PurchaseMorePetsBtn"):Show(false)
+	end
+end
+
+function VanityPets:OnPurchaseMorePets()
+	StorefrontLib.OpenLink(StorefrontLib.CodeEnumStoreLink.Pets)
 end
 
 -----------------------------------------------------------------------------------------------

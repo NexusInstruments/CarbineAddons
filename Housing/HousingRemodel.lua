@@ -5,6 +5,7 @@
 
 require "Window"
 require "HousingLib"
+require "Residence"
 
 -----------------------------------------------------------------------------------------------
 -- HousingRemodel Module Definition
@@ -24,6 +25,8 @@ local gtRemodelTrueValues = {}
 -----------------------------------------------------------------------------------------------
 local knExtRemodelTabs 		= 7
 local knIntRemodelTabs 		= 6
+local knCommunityRemodelTabs = 3
+local kstrXML = "HousingRemodel.xml"
 
 local kcrDarkBlue 	= CColor.new(47/255,148/255,172/255,1.0)
 --local kBrightBlue = CColor.new(49/255,252/255,246/255,1.0)
@@ -45,6 +48,9 @@ local ktTypeStrings =
 	["Trim"] 			= "HousingRemodel_Trim", 
 	["Lighting"] 		= "HousingRemodel_Lighting",
 	["IntMusic"]        = "HousingRemodel_Music",
+	["CommunitySky"]	= "HousingRemodel_Sky",
+	["CommunityMusic"]  = "HousingRemodel_Music",
+	["CommunityGround"] = "HousingRemodel_Ground",
 }
  ---------------------------------------------------------------------------------------------------
 -- RemodelPreviewControl methods
@@ -60,16 +66,23 @@ function RemodelPreviewControl:new(o)
 	o.wndRemodelTotalCostCash = nil
 	o.wndAcceptBtn 			= nil
 	o.wndCancelBtn 			= nil
+	o.rResidence            = nil
 
 	return o
 end
 
 function RemodelPreviewControl:OnLoad(strPreviewType, wndParentFrame, wndParent, tChildNamesList)
 	self.strType = strPreviewType;
+	
+	self.rResidence = HousingLib.GetResidence()
 
 	local tBakedList = {}
-	if self.strType == "exterior" then
-		tBakedList = HousingLib.GetBakedDecorDetails()
+	if self.strType == "exterior" or self.strType == "community" then
+	    if self.rResidence ~= nil then
+		    tBakedList = self.rResidence:GetBakedDecorDetails()
+		else
+            tBakedList = {}
+        end
 	else
 		-- "interior" items aren't on a baked list
 		--  this loading process will set them up w/ default text/colors
@@ -85,14 +98,20 @@ function RemodelPreviewControl:OnLoad(strPreviewType, wndParentFrame, wndParent,
 	self.wndRemodelTotalCostCash 	= wndParent:FindChild("RemodelPreviewCashWindow")
 	self.wndAcceptBtn 				= wndParent:FindChild("ReplaceBtn")
 	self.wndCancelBtn 				= wndParent:FindChild("CancelBtn")
-
+	self.wndPurchaseError			= wndParent:FindChild("PurchaseErrorText")
+	self.wndCostContainer			= wndParent:FindChild("RemodelCostContainer")
 end
 
 function RemodelPreviewControl:OnResidenceChange(idZone)
+    self.rResidence = HousingLib.GetResidence()
+	if self.rResidence == nil then
+		return
+	end
+	
 	if self.strType == "exterior" then
 	    local tRemodelValues = {}
 		local tBakedList	= {}
-		tBakedList = HousingLib.GetBakedDecorDetails()
+		tBakedList = self.rResidence:GetBakedDecorDetails()
 		for key, tData in pairs(tBakedList) do
 		    if tData.eHookType ~= nil and tData.eHookType == HousingLib.CodeEnumDecorHookType.Roof then
 		        tRemodelValues[HousingLib.RemodelOptionTypeExterior.Roof] = tData
@@ -115,9 +134,27 @@ function RemodelPreviewControl:OnResidenceChange(idZone)
 		    local tData = tRemodelValues[eType]
 			self.tRemodelPreviewItems[eType]:OnResidenceChange(tData)
 		end
+	elseif self.strType == "community" then	    
+	    local tRemodelValues = {}
+		local tBakedList	= {}
+		tBakedList = self.rResidence:GetBakedDecorDetails()
+		for key, tData in pairs(tBakedList) do
+		    if tData.eType ~= nil and tData.eType == HousingLib.RemodelOptionTypeCommunity.Sky then
+		        tRemodelValues[HousingLib.RemodelOptionTypeCommunity.Sky] = tData
+		    elseif tData.eType ~= nil and tData.eType == HousingLib.RemodelOptionTypeCommunity.Music then
+		        tRemodelValues[HousingLib.RemodelOptionTypeCommunity.Music] = tData
+            elseif tData.eType ~= nil and tData.eType == HousingLib.RemodelOptionTypeCommunity.Ground then
+		        tRemodelValues[HousingLib.RemodelOptionTypeCommunity.Ground] = tData
+		    end
+		end
+
+		for eType = HousingLib.RemodelOptionTypeCommunity.Sky, HousingLib.RemodelOptionTypeCommunity.Ground do
+		    local tData = tRemodelValues[eType]
+			self.tRemodelPreviewItems[eType]:OnResidenceChange(tData)
+		end
 	else
 	    gtRemodelTrueValues = {}
-		local tSectorDecorList = HousingLib.GetDecorDetailsBySector(idZone)
+		local tSectorDecorList = self.rResidence:GetDecorDetailsBySector(idZone)
 		for key, tData in pairs(tSectorDecorList) do
 			--self.tRemodelPreviewItems[tData.eType]:OnResidenceChange(tData)
 			gtRemodelTrueValues[tData.eType] = tData
@@ -171,6 +208,10 @@ function RemodelPreviewControl:ThereArePreviewItems()
 end
 
 function RemodelPreviewControl:SetClientPreviewItems()
+    if self.rResidence == nil then
+        return
+    end
+
 	if self.strType == "exterior" then
 
 		local idRoof		= self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Roof]:GetPreviewValue()
@@ -182,8 +223,16 @@ function RemodelPreviewControl:SetClientPreviewItems()
 		local idGround     	= self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Ground]:GetPreviewValue()
 
 		if 	self:ThereArePreviewItems() then
-			HousingLib.PreviewResidenceBakedDecor(idRoof, idWallpaper, idEntry, idDoor, idSky, idMusic, idGround )
+			self.rResidence:PreviewResidenceBakedDecor(idRoof, idWallpaper, idEntry, idDoor, idSky, idMusic, idGround )
 		end
+	elseif self.strType == "community" then
+	    local idSky     	= self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeCommunity.Sky]:GetPreviewValue()
+		local idMusic     	= self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeCommunity.Music]:GetPreviewValue()
+		local idGround     	= self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeCommunity.Ground]:GetPreviewValue()
+
+		if 	self:ThereArePreviewItems() then
+			self.rResidence:PreviewResidenceBakedDecor(0, 0, 0, 0, idSky, idMusic, idGround )
+		end	
 	else -- "interior"
 		local idCeiling 	= self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeInterior.Ceiling]:GetPreviewValue()
 		local idTrim 		= self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeInterior.Trim]:GetPreviewValue()
@@ -193,12 +242,16 @@ function RemodelPreviewControl:SetClientPreviewItems()
 		local idMusic 	    = self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeInterior.Music]:GetPreviewValue()
 
 		if 	self:ThereArePreviewItems() then
-			HousingLib.PreviewResidenceSectorDecor(gidZone, idCeiling, idTrim, idWallpaper, idFloor, idLighting, idMusic)
+			self.rResidence:PreviewResidenceSectorDecor(gidZone, idCeiling, idTrim, idWallpaper, idFloor, idLighting, idMusic)
 		end
 	end
 end
 
 function RemodelPreviewControl:ClearClientPreviewItems()
+    if self.rResidence == nil then
+        return
+    end
+       
 	if self.strType == "exterior" then
 		local idRoof		= self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Roof]:GetPreviewValue()
 		local idWallpaper	= self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Wallpaper]:GetPreviewValue()
@@ -208,7 +261,13 @@ function RemodelPreviewControl:ClearClientPreviewItems()
 		local idMusic     	= self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Music]:GetPreviewValue()
 		local idGround      = self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Ground]:GetPreviewValue()
 		
-		HousingLib.PreviewResidenceBakedDecor(idRoof, idWallpaper, idEntry, idDoor, idSky, idMusic, idGround)
+		self.rResidence:PreviewResidenceBakedDecor(idRoof, idWallpaper, idEntry, idDoor, idSky, idMusic, idGround)
+	elseif self.strType == "community" then
+		local idSky     	= self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeCommunity.Sky]:GetPreviewValue()
+		local idMusic     	= self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeCommunity.Music]:GetPreviewValue()
+		local idGround      = self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeCommunity.Ground]:GetPreviewValue()
+		
+		self.rResidence:PreviewResidenceBakedDecor(0, 0, 0, 0, idSky, idMusic, idGround)
 	else
 		local idCeiling 	= self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeInterior.Ceiling]:GetPreviewValue()
 		local idTrim 		= self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeInterior.Trim]:GetPreviewValue()
@@ -217,49 +276,94 @@ function RemodelPreviewControl:ClearClientPreviewItems()
 		local idLighting 	= self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeInterior.Lighting]:GetPreviewValue()
 		local idMusic 	    = self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeInterior.Music]:GetPreviewValue()
 
-		HousingLib.PreviewResidenceSectorDecor(gidZone, idCeiling, idTrim, idWallpaper, idFloor, idLighting, idMusic)
+		self.rResidence:PreviewResidenceSectorDecor(gidZone, idCeiling, idTrim, idWallpaper, idFloor, idLighting, idMusic)
 	end
 end
 
 function RemodelPreviewControl:SetTotalPrice()
-
-	local nTotalCostCash = 0
-	local nTotalCostRenown = 0
-	if self:ThereArePreviewItems() then
+	local tTotalCost = {}	
+	local bItemsNotUnlocked = false
+	local bHasPreview = self:ThereArePreviewItems()
+	
+	if bHasPreview then
         for key, value in pairs(self.tRemodelPreviewItems) do
-            if self.tRemodelPreviewItems[key].wndCost:GetCurrency():GetMoneyType() == Money.CodeEnumCurrencyType.Credits then
-                nTotalCostCash = nTotalCostCash + self.tRemodelPreviewItems[key].wndCost:GetAmount()
-            else
-                nTotalCostRenown = nTotalCostRenown + self.tRemodelPreviewItems[key].wndCost:GetAmount()
-            end
+			local monCost = self.tRemodelPreviewItems[key].wndCost:GetCurrency()
+			local eCurrencyType = monCost:GetMoneyType()
+			
+			if not tTotalCost[eCurrencyType] then
+				tTotalCost[eCurrencyType] = monCost:GetAmount()
+			else
+				tTotalCost[eCurrencyType] = tTotalCost[eCurrencyType] + monCost:GetAmount()
+			end
+			
+			if self.tRemodelPreviewItems[key].idSelectedChoice ~= nil and self.tRemodelPreviewItems[key].idSelectedChoice > 0 and 
+               self.tRemodelPreviewItems[key].idUpsellLink ~= nil and self.tRemodelPreviewItems[key].idUpsellLink > 0 then
+				bItemsNotUnlocked = true
+			end
         end
 	end
 	
-	local strDoc = self.wndRemodelTotalCostCash:GetAMLDocForPrice(nTotalCostCash, Money.CodeEnumCurrencyType.Credits, nTotalCostRenown, Money.CodeEnumCurrencyType.Renown, true)
-    self.wndRemodelTotalCostML:SetAML(string.format("<P Align=\"Center\" Font=\"CRB_Header9\">%s</P>", strDoc))
+	self.wndCostContainer:DestroyChildren()
+	
+	local bValid = bHasPreview
+	if bItemsNotUnlocked then
+		self.wndCostContainer:Show(false)
+		self.wndPurchaseError:Show(true)
+	else
+		local strDoc = ""
+		for eCurrencyType, nAmount in pairs(tTotalCost) do
+			if nAmount > 0 then
+				local wndCost = Apollo.LoadForm(kstrXML, "RemodelCost", self.wndCostContainer, self)
+				wndCost:SetMoneySystem(eCurrencyType)
+				wndCost:SetAmount(nAmount, true)
+				
+				if GameLib.GetPlayerCurrency(eCurrencyType):GetAmount() < nAmount then
+					bValid = false
+					wndCost:SetTextColor("UI_WindowTextRed")
+				end
+				
+				local nLeft, nTop, nRight, nBottom = wndCost:GetAnchorOffsets()
+				local nWidth = wndCost:GetDisplayWidth() + nLeft
+				
+				wndCost:SetAnchorOffsets(nLeft, nTop, nWidth, nBottom)
+			end
+		end
+		
+		self.wndCostContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.Middle)
+	
+		self.wndCostContainer:Show(true)
+		self.wndPurchaseError:Show(false)
+	end
 
 	-- adjust the accept & cancel buttons based on totalCost
-	--local bEnable = nTotalCostCash > 0 and nTotalCostCash <= GameLib.GetPlayerCurrency():GetAmount()
-	local bInvalidCash = nTotalCostCash > 0 and nTotalCostCash > GameLib.GetPlayerCurrency():GetAmount()
-	local bInvalidRenown = nTotalCostRenown > 0 and nTotalCostRenown > GameLib.GetPlayerCurrency(Money.CodeEnumCurrencyType.Renown):GetAmount()
-	local bDisable = not self:ThereArePreviewItems() or bInvalidCash or bInvalidRenown
-	self.wndAcceptBtn:Enable(not bDisable)
-	self.wndCancelBtn:Enable(not bDisable)
-
+	self.wndAcceptBtn:Enable(bValid and not bItemsNotUnlocked)
+	self.wndCancelBtn:Enable(bHasPreview)
 end
 
 function RemodelPreviewControl:PurchaseRemodelChanges()
+    if self.rResidence == nil then
+        return
+    end
+
 	--print("purchaseRemodelChanges type: " .. self.type)
 	if self.strType == "exterior" then
-			HousingLib.ModifyResidenceDecor(self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Roof].idSelectedChoice,
+			self.rResidence:ModifyResidenceDecor(self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Roof].idSelectedChoice,
 											self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Wallpaper].idSelectedChoice,
 											self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Entry].idSelectedChoice,
                                             self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Door].idSelectedChoice,
                                             self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Sky].idSelectedChoice,
                                             self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Music].idSelectedChoice,
                                             self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Ground].idSelectedChoice)
+    elseif self.strType == "community" then   
+        self.rResidence:ModifyResidenceDecor(0,
+											0,
+											0,
+                                            0,
+                                            self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeCommunity.Sky].idSelectedChoice,
+                                            self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeCommunity.Music].idSelectedChoice,
+                                            self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeCommunity.Ground].idSelectedChoice)                                     
 	else
-		HousingLib.PurchaseInteriorWallpaper(self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeInterior.Wallpaper].idSelectedChoice,
+		self.rResidence:PurchaseInteriorWallpaper(self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeInterior.Wallpaper].idSelectedChoice,
 											 self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeInterior.Floor].idSelectedChoice,
 											 self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeInterior.Ceiling].idSelectedChoice,
 											 self.tRemodelPreviewItems[HousingLib.RemodelOptionTypeInterior.Trim].idSelectedChoice,
@@ -292,21 +396,24 @@ function RemodelPreviewItem:new(o)
 	o.tCurrentItem 			= {}
 	o.strType               = nil
 	o.idSelectedChoice 		= 0
+	o.idUpsellLink 			= 0
 
 	return o
 end
 
 function RemodelPreviewItem:OnLoad(wndParent, tRemodelOption, strName)
 	local wndPreview = wndParent:FindChild(strName .. "Window")
-	self.wndRemodelPreviewParent = wndParent
+	self.wndRemodelPreviewParent = wndParent 
 
 	self.wndCost = wndPreview:FindChild("Cost")
 	self.wndPreviewContainer = wndPreview
 	self.wndDescription = wndPreview:FindChild("Description")
 	self.wndCancelBtn = wndPreview:FindChild("CanceBtn")
 	self.wndPreviewCheckbox = wndPreview:FindChild(strName .. "PreviewBtn")
+	self.wndUpsellBtn = wndPreview:FindChild("Upsell")
 
 	self.idSelectedChoice = 0
+	self.idUpsellLink = 0
 	self.strType = strName
 	self:OnResidenceChange(tRemodelOption)
 end
@@ -332,11 +439,13 @@ function RemodelPreviewItem:OnResidenceChange(tCurrentItem)
 	nDescHeight = self.wndDescription:GetHeight()
 	nLeft, nTop, nRight, nBottom = self.wndPreviewContainer:GetAnchorOffsets()
 	self.wndPreviewContainer:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nDescHeight + 70)
-	self.wndRemodelPreviewParent:ArrangeChildrenVert(0)
+	self.wndRemodelPreviewParent:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	self.wndPreviewCheckbox:Show(false)
 	self.wndPreviewCheckbox:SetCheck(false)
 	self.wndCancelBtn:Enable(false)
-
+	if self.wndUpsellBtn ~= nil then
+		self.wndUpsellBtn:Show(false)
+	end
 end
 
 function RemodelPreviewItem:OnChoiceMade(idItem, tList )
@@ -349,13 +458,16 @@ function RemodelPreviewItem:OnChoiceMade(idItem, tList )
 		nDescHeight = self.wndDescription:GetHeight()
 		nLeft, nTop, nRight, nBottom = self.wndPreviewContainer:GetAnchorOffsets()
 		self.wndPreviewContainer:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nDescHeight + 70)
-		self.wndRemodelPreviewParent:ArrangeChildrenVert(0)
+		self.wndRemodelPreviewParent:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 		self.wndRemodelPreviewParent:SetVScrollPos(nTop)	
         self.wndPreviewCheckbox:Show(true)
         self.wndCancelBtn:Enable(true)
         self.wndPreviewCheckbox:SetCheck(true)
+		if self.wndUpsellBtn ~= nil then
+			self.wndUpsellBtn:Show(tItemData ~= nil and tItemData.kUpsellLink ~= 0 or false)
+		end
         self.idSelectedChoice = tItemData.nId
-
+		self.idUpsellLink = tItemData.kUpsellLink
 	end
 end
 
@@ -368,11 +480,15 @@ function RemodelPreviewItem:OnChoiceCanceled()
 	nDescHeight = self.wndDescription:GetHeight()
 	nLeft, nTop, nRight, nBottom = self.wndPreviewContainer:GetAnchorOffsets()
 	self.wndPreviewContainer:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nDescHeight + 70)
-	self.wndPreviewContainer:GetParent():ArrangeChildrenVert(0)
+	self.wndPreviewContainer:GetParent():ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	self.wndPreviewCheckbox:Show(false)
 	self.wndPreviewCheckbox:SetCheck(false)
 	self.wndCancelBtn:Enable(false)
+	if self.wndUpsellBtn ~= nil then
+		self.wndUpsellBtn:Show(false)
+	end
 	self.idSelectedChoice = 0
+	self.idUpsellLink = 0
 end
 
 function RemodelPreviewItem:GetPreviewValue()
@@ -404,9 +520,11 @@ function HousingRemodel:new(o)
 
 	o.tExtRemodelTabs = {}
 	o.tIntRemodelTabs = {}
+	o.tCommunityRemodelTabs = {}
 
 	o.luaExtRemodelPreviewControl = RemodelPreviewControl:new()
 	o.luaIntRemodelPreviewControl = RemodelPreviewControl:new()
+	o.luaCommunityRemodelPreviewControl = RemodelPreviewControl:new()
 
     return o
 end
@@ -419,9 +537,7 @@ end
 -----------------------------------------------------------------------------------------------
 -- HousingRemodel OnLoad
 -----------------------------------------------------------------------------------------------
-function HousingRemodel:OnLoad()
-	Apollo.RegisterEventHandler("WindowManagementReady", 	"OnWindowManagementReady", self)
-	
+function HousingRemodel:OnLoad()	
 	Apollo.RegisterEventHandler("HousingButtonRemodel", 			"OnHousingButtonRemodel", self)
 	Apollo.RegisterEventHandler("HousingButtonLandscape", 			"OnHousingButtonLandscape", self)
 	Apollo.RegisterEventHandler("HousingButtonCrate", 				"OnHousingButtonCrate", self)
@@ -438,7 +554,9 @@ function HousingRemodel:OnLoad()
 
 	Apollo.RegisterTimerHandler("HousingRemodelTimer", 				"OnRemodelTimer", self)
 	Apollo.RegisterTimerHandler("HousingIntRemodelTimer", 			"OnIntRemodelTimer", self)
-	Apollo.RegisterEventHandler("ChangeWorld", 							"OnChangeWorld", self)
+	Apollo.RegisterEventHandler("ChangeWorld", 						"OnChangeWorld", self)
+	Apollo.RegisterEventHandler("UpdateInventory", 					"OnUpdateInventory", self)
+	Apollo.RegisterEventHandler("StoreLinksRefresh",				"OnStoreLinksRefresh", self)
 
 	Apollo.CreateTimer("HousingRemodelTimer", 0.200, false)
 	Apollo.StopTimer("HousingRemodelTimer")
@@ -447,7 +565,7 @@ function HousingRemodel:OnLoad()
 	Apollo.StopTimer("HousingIntRemodelTimer")
 
     -- load our forms
-    self.xmlDoc                     = XmlDoc.CreateFromFile("HousingRemodel.xml")
+    self.xmlDoc                     = XmlDoc.CreateFromFile(kstrXML)
 	self.wndConfigure				= Apollo.LoadForm(self.xmlDoc, "HousingConfigureWindow", nil, self)
     self.wndRemodel 				= Apollo.LoadForm(self.xmlDoc, "HousingRemodelWindow", nil, self)
 	self.wndListView 				= self.wndRemodel:FindChild("StructureList")
@@ -456,9 +574,11 @@ function HousingRemodel:OnLoad()
 	self.wndCashRemodel 			= self.wndRemodel:FindChild("CashWindow")
 	self.wndExtRemodelHeaderFrame 	= self.wndRemodel:FindChild("ExtHeaderWindow")
 	self.wndIntRemodelHeaderFrame 	= self.wndRemodel:FindChild("IntHeaderWindow")
+	self.wndCommunityRemodelHeaderFrame 	= self.wndRemodel:FindChild("CommunityHeaderWindow")
 	self.wndRemodelHeaderFrameTitle	= self.wndRemodel:FindChild("BGArt:RoomConfigurationTitle")
 	self.wndExtPreviewWindow 		= self.wndRemodel:FindChild("ExtPreviewWindow")
 	self.wndIntPreviewWindow 		= self.wndRemodel:FindChild("IntPreviewWindow")
+	self.wndCommunityPreviewWindow 		= self.wndRemodel:FindChild("CommunityPreviewWindow")
 	self.wndIntRemodelRemoveBtn 	= self.wndRemodel:FindChild("RemoveIntOption")
 	self.wndCurrentUpgradeLabel		= self.wndRemodel:FindChild("CurrentOptionDisplayString")
 	self.wndSearchWindow 			= self.wndRemodel:FindChild("SearchBox")
@@ -466,6 +586,17 @@ function HousingRemodel:OnLoad()
 
 	self.wndPropertySettingsPopup	= Apollo.LoadForm(self.xmlDoc, "PropertySettingsPanel", nil, self)
 	self.wndPropertyRenamePopup 	= Apollo.LoadForm(self.xmlDoc, "PropertyRenamePanel", nil, self)
+	
+	self.wndCommunitySettingsBtn    = self.wndConfigure:FindChild("CommunitySettingsBtn")
+	--self.wndCommunitySettingsBtn:Show(false)
+	self.wndCommunityVisitBtn       = self.wndConfigure:FindChild("VisitCommunityBtn")
+	--self.wndCommunityVisitBtn:Show(false)
+	
+	self.wndCommunitySettingsPopup  = Apollo.LoadForm(self.xmlDoc, "CommunitySettingsPanel", nil, self)
+	self.wndCommunityVisitPopup     = Apollo.LoadForm(self.xmlDoc, "CommunityVisitPanel", nil, self)
+	self.wndCommunityVisitPopup:Show(false)
+	self.wndCommunityVisitPopup:FindChild("QueueNextAvailableBtn"):AttachWindow(self.wndCommunityVisitPopup:FindChild("QueueNextAvailableBtn"):FindChild("ConfirmWindow"))
+	self.wndCommunityVisitPopup:FindChild("QueueBtn"):AttachWindow(self.wndCommunityVisitPopup:FindChild("QueueBtn"):FindChild("ConfirmWindow"))
 
 	self.wndListView:SetColumnText(1, Apollo.GetString("HousingRemodel_UpgradeColumn"))
 	self.wndListView:SetColumnText(2, Apollo.GetString("HousingRemodel_Cost"))
@@ -482,31 +613,56 @@ function HousingRemodel:OnLoad()
 		self.tIntRemodelTabs[idx] = self.wndIntRemodelHeaderFrame:FindChild("IntRemodelTab" .. tostring(idx))
 	end
 	
+	for idx = 1, knCommunityRemodelTabs do
+		self.tCommunityRemodelTabs[idx] = self.wndCommunityRemodelHeaderFrame:FindChild("CommunityRemodelTab" .. tostring(idx))
+	end
+	
 	self.wndExtRemodelHeaderFrame:SetRadioSel("ExtRemodelTab", 1)
 	self.wndIntRemodelHeaderFrame:SetRadioSel("IntRemodelTab", 1)
+	self.wndCommunityRemodelHeaderFrame:SetRadioSel("CommunityRemodelTab", 1)
 	self.luaExtRemodelPreviewControl:OnLoad("exterior", self.wndRemodel:FindChild("ExtPreviewWindow"), self.wndRemodel, {"Roof", "Wallpaper", "Entry", "Door", "Sky", "Music", "Ground"})
 	self.luaIntRemodelPreviewControl:OnLoad("interior", self.wndRemodel:FindChild("IntPreviewWindow"), self.wndRemodel, {"IntWallpaper", "Floor", "Ceiling", "Trim", "Lighting", "IntMusic"})
+	self.luaCommunityRemodelPreviewControl:OnLoad("community", self.wndRemodel:FindChild("CommunityPreviewWindow"), self.wndRemodel, {"CommunitySky", "CommunityMusic", "CommunityGround"})
 
 	self.wndReplaceButton:Enable(false)
 	self.wndReplaceButton:Show(true)
 	self.wndCancelButton:Enable(false)
 	self.wndClearSearchBtn:Show(false)
+	
+	self.rResidence = HousingLib.GetResidence()
 
 	self:ResetPopups()
 	self.wndCashRemodel:SetAmount(GameLib.GetPlayerCurrency(), true)
 	HousingLib.RefreshUI()
+
+	Apollo.RegisterEventHandler("WindowManagementReady", 	"OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 end
 
 function HousingRemodel:OnWindowManagementReady()
-	local strNameRemodel = string.format("%s: %s", Apollo.GetString("CRB_Housing"), Apollo.GetString("CRB_Remodel"))	
+	local strNameRemodel = String_GetWeaselString(Apollo.GetString("Tooltips_ItemSpellEffect"), Apollo.GetString("CRB_Housing"), Apollo.GetString("CRB_Remodel"))
+	Event_FireGenericEvent("WindowManagementRegister", {strName = strNameRemodel, nSaveVersion=2})
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndRemodel, strName = strNameRemodel, nSaveVersion=2})
 	
-	local strNameNeighbors = string.format("%s: %s", Apollo.GetString("CRB_Housing"), Apollo.GetString("InterfaceMenu_Neighbors"))	
+	local strNameNeighbors = String_GetWeaselString(Apollo.GetString("Tooltips_ItemSpellEffect"), Apollo.GetString("CRB_Housing"), Apollo.GetString("InterfaceMenu_Neighbors"))
+	Event_FireGenericEvent("WindowManagementRegister", {strName = strNameNeighbors, nSaveVersion=2})
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndRandomList, strName = strNameNeighbors, nSaveVersion=2})
 end
 
 function HousingRemodel:OnChangeWorld()
 	self.wndRandomList:Show(false)
+end
+
+function HousingRemodel:OnUpdateInventory()
+	if self.wndRemodel:IsVisible() then
+        Apollo.StartTimer("HousingRemodelTimer")
+	end
+end
+
+function HousingRemodel:OnStoreLinksRefresh()
+	if self.wndRemodel:IsVisible() then
+		self:OnCancelBtn()
+	end
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -618,8 +774,8 @@ end
 -----------------------------------------------------------------------------------------------
 
 function HousingRemodel:ResetPopups()
-	self.wndPropertyRenamePopup:Show(false)
-	self.wndPropertySettingsPopup:Show(false)
+	self.wndPropertyRenamePopup:Close()
+	self.wndPropertySettingsPopup:Close()
 end
 
 function HousingRemodel:OnSortByUncheck()
@@ -641,17 +797,50 @@ end
 ---------------------------------------------------------------------------------------------------
 function HousingRemodel:OnHousingButtonRemodel()
 	if not self.wndRemodel:IsVisible() then
-        self.wndRemodel:Show(true)
-        self:ShowAppropriateRemodelTab()
-        self.wndRemodel:ToFront()
-		
-		if self.bPlayerIsInside then
-		    Event_ShowTutorial(GameLib.CodeEnumTutorial.Housing_Room)
-		else
-            Event_ShowTutorial(GameLib.CodeEnumTutorial.Housing_House)
-        end    
+        self.wndRemodel:Invoke()
+        self:ShowAppropriateRemodelTab()  
+		self:DisableUnusableTabs()
 	else
 	    self:OnCloseHousingRemodelWindow()
+	end
+end
+
+---------------------------------------------------------------------------------------------------
+function HousingRemodel:DisableUnusableTabs()
+	local tPlotHouse = HousingLib.GetPlot(1)--Get housing plot.
+	if tPlotHouse then
+		local nFirstEnabled = nil
+		for idx = 1, knExtRemodelTabs do
+			local wndBtn = self.tExtRemodelTabs[idx]
+			local tData = nil
+			if idx == 1 then
+		        tData = HousingLib.GetRemodelRoofList()
+		    elseif idx == 2 then
+		        tData = HousingLib.GetRemodelWallpaperExteriorList()
+		    elseif idx == 3 then
+		        tData = HousingLib.GetRemodelEntryList()
+		    elseif idx == 4 then
+		        tData = HousingLib.GetRemodelDoorList()
+		    elseif idx == 5 then
+		        tData = HousingLib.GetRemodelSkyExteriorList()
+		    elseif idx == 6 then
+		        tData = HousingLib.GetRemodelMusicExteriorList()
+		    else
+		        tData = HousingLib.GetRemodelGroundList()
+			end
+
+			local bEnabled = tData ~= nil and next(tData) ~= nil
+			wndBtn:Enable(bEnabled)
+			if nFirstEnabled == nil and bEnabled then
+				nFirstEnabled = idx
+			end
+		end
+
+		if nFirstEnabled ~= nil then
+			local wndEnabled = self.tExtRemodelTabs[nFirstEnabled]
+			self.wndExtRemodelHeaderFrame:SetRadioSel("ExtRemodelTab", nFirstEnabled)
+			self:OnRemodelTabBtn(wndEnabled, wndEnabled)
+		end
 	end
 end
 
@@ -685,6 +874,8 @@ function HousingRemodel:OnOpenPanelControl(idPropertyInfo, idZone, bPlayerIsInsi
     if gidZone ~= idZone then
 		self.luaIntRemodelPreviewControl:OnAllChoicesCanceled(false)
 	end
+	
+	self.rResidence = HousingLib.GetResidence()
 
 	gidZone = idZone
 	self.idPropertyInfo = idPropertyInfo
@@ -697,6 +888,7 @@ function HousingRemodel:OnOpenPanelControl(idPropertyInfo, idZone, bPlayerIsInsi
 	    self:ShowAppropriateRemodelTab()
 	else
 	    self.luaExtRemodelPreviewControl:OnResidenceChange(gidZone)
+	    self.luaCommunityRemodelPreviewControl:OnResidenceChange(gidZone)
 	    self:ShowAppropriateRemodelTab()
 	end
 end
@@ -709,22 +901,29 @@ function HousingRemodel:OnClosePanelControl()
 end
 
 function HousingRemodel:HelperShowHeader()
-	self.wndConfigure:Show(HousingLib.IsHousingWorld() and not HousingLib.IsWarplotResidence())
-	self.wndConfigure:FindChild("PropertyName"):SetText(HousingLib.GetPropertyName())
-	--self.wndConfigure:FindChild("PropertyName"):SetText(HousingLib.GetPropertyName())
-	self.wndConfigure:FindChild("PropertyName"):SetText(GetCurrentZoneName())
+	local resCurrent = HousingLib.GetResidence()
+	self.wndConfigure:Show(HousingLib.IsHousingWorld() and (resCurrent ~= nil and not resCurrent:IsWarplotResidence() or true))
+	self.wndConfigure:FindChild("PropertyName"):SetText(resCurrent ~= nil and resCurrent:GetPropertyName() or "")
 	self.wndConfigure:FindChild("PropertySettingsBtn"):Show(HousingLib.IsOnMyResidence())
 	self.wndConfigure:FindChild("TeleportHomeBtn"):Show(not HousingLib.IsOnMyResidence())
 end
 
 ---------------------------------------------------------------------------------------------------
 function HousingRemodel:OnReplaceBtn(wndControl, wndHandler)
+    if self.rResidence == nil then
+        return
+    end
+
     if self.bPlayerIsInside then
 	    self.luaIntRemodelPreviewControl:PurchaseRemodelChanges()
 	    -- call this to refresh our windows
 	    self:ShowAppropriateIntRemodelTab()
 	else
-	    self.luaExtRemodelPreviewControl:PurchaseRemodelChanges()
+	    if self.rResidence:IsCommunityResidence() then
+	        self.luaCommunityRemodelPreviewControl:PurchaseRemodelChanges()
+	    else
+	        self.luaExtRemodelPreviewControl:PurchaseRemodelChanges()
+	    end
 	    
 	    self.idUniqueItem = nil
 
@@ -791,6 +990,15 @@ function HousingRemodel:SwitchRemodelTab()
 	if nRemodelSel >= 1 and nRemodelSel <= knIntRemodelTabs then
 		self.tIntRemodelTabs[nRemodelSel]:SetTextColor(kcrWhite)
 	end
+	
+	for idx = 1, knCommunityRemodelTabs do
+		self.tCommunityRemodelTabs[idx]:SetTextColor(kcrDarkBlue)
+	end
+
+	local nRemodelSel = self.wndCommunityRemodelHeaderFrame:GetRadioSel("CommunityRemodelTab")
+	if nRemodelSel >= 1 and nRemodelSel <= knCommunityRemodelTabs then
+		self.tCommunityRemodelTabs[nRemodelSel]:SetTextColor(kcrWhite)
+	end
 
 	self:ShowAppropriateRemodelTab()
 end
@@ -840,26 +1048,38 @@ function HousingRemodel:OnDoorOptionsBtn(wndHandler, wndControl)
 end
 
 function HousingRemodel:OnSkyOptionsBtn(wndHandler, wndControl)
-	if wndHandler:GetId() ~= wndControl:GetId() then
+	if wndHandler:GetId() ~= wndControl:GetId() or self.rResidence == nil then
 		return
 	end
-	self.wndExtRemodelHeaderFrame:SetRadioSel("ExtRemodelTab", 5)
+	if self.rResidence:IsCommunityResidence() then
+	    self.wndCommunityRemodelHeaderFrame:SetRadioSel("CommunityRemodelTab", 1)
+	else
+	    self.wndExtRemodelHeaderFrame:SetRadioSel("ExtRemodelTab", 5)
+	end
 	self:SwitchRemodelTab()
 end
 
 function HousingRemodel:OnMusicOptionsBtn(wndHandler, wndControl)
-	if wndHandler:GetId() ~= wndControl:GetId() then
+	if wndHandler:GetId() ~= wndControl:GetId() or self.rResidence == nil then
 		return
 	end
-	self.wndExtRemodelHeaderFrame:SetRadioSel("ExtRemodelTab", 6)
+	if self.rResidence:IsCommunityResidence() then
+	    self.wndCommunityRemodelHeaderFrame:SetRadioSel("CommunityRemodelTab", 2)
+	else
+	    self.wndExtRemodelHeaderFrame:SetRadioSel("ExtRemodelTab", 6)
+	end
 	self:SwitchRemodelTab()
 end
 
 function HousingRemodel:OnGroundOptionsBtn(wndHandler, wndControl)
-	if wndHandler:GetId() ~= wndControl:GetId() then
+	if wndHandler:GetId() ~= wndControl:GetId() or self.rResidence == nil then
 		return
 	end
-	self.wndExtRemodelHeaderFrame:SetRadioSel("ExtRemodelTab", 7)
+	if self.rResidence:IsCommunityResidence() then
+	    self.wndCommunityRemodelHeaderFrame:SetRadioSel("CommunityRemodelTab", 3)
+	else
+	    self.wndExtRemodelHeaderFrame:SetRadioSel("ExtRemodelTab", 7)
+	end
 	self:SwitchRemodelTab()
 end
 
@@ -918,16 +1138,15 @@ function HousingRemodel:OnHousingNameProperty()
 	self.wndPropertyRenamePopup:FindChild("CostWindow"):SetMoneySystem(Money.CodeEnumCurrencyType.Renown)
 	self.wndPropertyRenamePopup:FindChild("CostWindow"):SetAmount(0)
 
-	self.wndPropertyRenamePopup:FindChild("OldNameEntry"):SetText(HousingLib.GetPropertyName())
+	self.wndPropertyRenamePopup:FindChild("OldNameEntry"):SetText(self.rResidence ~= nil and self.rResidence:GetPropertyName() or "")
 	self.wndPropertyRenamePopup:FindChild("NewNameEntry"):SetText("")
 	self.wndPropertyRenamePopup:FindChild("ClearNameEntryBtn"):Show(false)
 
 	self:CheckPropertyNameChange()
 
-	self.wndRemodel:Show(false)
+	self.wndRemodel:Close()
 	self:ResetPopups()
-	self.wndPropertyRenamePopup:Show(true)
-	self.wndPropertyRenamePopup:ToFront()
+	self.wndPropertyRenamePopup:Invoke()
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -936,26 +1155,28 @@ function HousingRemodel:OnPropertyNameBtn(wndHandler, wndControl)
 		return
 	end
 	
-	local nRenameCost = HousingLib.GetPropertyName() ~= "" and HousingLib.PropertyRenameCost or 0
+	local nRenameCost = self.rResidence ~= nil and self.rResidence:GetPropertyName() ~= "" and HousingLib.PropertyRenameCost or 0
 
 	self.wndPropertyRenamePopup:FindChild("CostWindow"):SetMoneySystem(Money.CodeEnumCurrencyType.Renown)
 	self.wndPropertyRenamePopup:FindChild("CostWindow"):SetAmount(nRenameCost)
 
-	self.wndPropertyRenamePopup:FindChild("OldNameEntry"):SetText(HousingLib.GetPropertyName())
+	self.wndPropertyRenamePopup:FindChild("OldNameEntry"):SetText(self.rResidence ~= nil and self.rResidence:GetPropertyName() or "")
 	self.wndPropertyRenamePopup:FindChild("NewNameEntry"):SetText("")
 	self.wndPropertyRenamePopup:FindChild("ClearNameEntryBtn"):Show(false)
 
 	self:CheckPropertyNameChange()
 
-	self.wndRemodel:Show(false)
+	self.wndRemodel:Close()
 	self:ResetPopups()
-	self.wndPropertyRenamePopup:Show(true)
-	self.wndPropertyRenamePopup:ToFront()
+	self.wndPropertyRenamePopup:Invoke()
 end
 
 function HousingRemodel:CheckPropertyNameChange(wndHandler, wndControl)
 	local strProposed = self.wndPropertyRenamePopup:FindChild("NewNameEntry"):GetText()
-	local bCanAfford = GameLib.GetPlayerCurrency(Money.CodeEnumCurrencyType.Renown):GetAmount() >= HousingLib.PropertyRenameCost or HousingLib.GetPropertyName() == ""
+	local bCanAfford = false
+	if self.rResidence ~= nil then
+		bCanAfford = GameLib.GetPlayerCurrency(Money.CodeEnumCurrencyType.Renown):GetAmount() >= HousingLib.PropertyRenameCost or self.rResidence:GetPropertyName() == ""
+	end
 	local bTextValid = GameLib.IsTextValid(strProposed, GameLib.CodeEnumUserText.HousingResidenceName, GameLib.CodeEnumUserTextFilterClass.Strict)
 	
 	
@@ -971,14 +1192,15 @@ function HousingRemodel:OnClearNameEntryBtn(wndHandler, wndControl)
 end
 
 function HousingRemodel:OnRenameAccept(wndHandler, wndControl)
-	if wndHandler:GetId() ~= wndControl:GetId() then
+	if wndHandler:GetId() ~= wndControl:GetId() or self.rResidence == nil then
 		return
 	end
 
-	HousingLib.RenameProperty(self.wndPropertyRenamePopup:FindChild("NewNameEntry"):GetText())
-	--HousingLib.RenameProperty(self.winNameTextBox:GetText())
+	self.rResidence:RenameProperty(self.wndPropertyRenamePopup:FindChild("NewNameEntry"):GetText())
 
-	self.wndPropertyRenamePopup:Show(false)
+	self.wndPropertyRenamePopup:Close()
+	
+	self:HelperShowHeader()
 end
 
 function HousingRemodel:OnRenameCancel(wndHandler, wndControl)
@@ -986,11 +1208,12 @@ function HousingRemodel:OnRenameCancel(wndHandler, wndControl)
 		return
 	end
     
-    self.wndPropertyRenamePopup:Show(false)
+    self.wndPropertyRenamePopup:Close()
 end
 
 function HousingRemodel:OnRemodelTimer()
 	self.luaExtRemodelPreviewControl:OnResidenceChange(gidZone)
+	self.luaCommunityRemodelPreviewControl:OnResidenceChange(gidZone)
     -- call this to refresh our windows
     self:ShowAppropriateExtRemodelTab()
 end
@@ -1074,42 +1297,63 @@ function HousingRemodel:OnRemodelListItemChange(wndControl, wndHandler, nX, nY)
 			end
 		end
 	else
-		local nSel = self.wndExtRemodelHeaderFrame:GetRadioSel("ExtRemodelTab")
-		if nSel == 1 then
-			Sound.Play(Sound.PlayUIHousingHardwareAddition)
-			self.luaExtRemodelPreviewControl:OnChoiceMade(HousingLib.RemodelOptionTypeExterior.Roof, idItem, self.tRemodelRoofList)
-			wndCheckButton = self.wndRemodel:FindChild("RoofPreviewBtn")
-			tItemList = self.tRemodelRoofList
-		elseif nSel == 2 then
-			Sound.Play(Sound.PlayUIHousingDecor)
-			self.luaExtRemodelPreviewControl:OnChoiceMade(HousingLib.RemodelOptionTypeExterior.Wallpaper, idItem, self.tRemodelVendorWallpaperList)
-			wndCheckButton = self.wndRemodel:FindChild("WallpaperPreviewBtn")
-			tItemList = self.tRemodelVendorWallpaperList
-		elseif nSel == 3 then
-			Sound.Play(Sound.PlayUIHousingHardwareAddition)
-			self.luaExtRemodelPreviewControl:OnChoiceMade(HousingLib.RemodelOptionTypeExterior.Entry, idItem, self.tRemodelEntryList)
-			wndCheckButton = self.wndRemodel:FindChild("EntryPreviewBtn")
-			tItemList = self.tRemodelEntryList
-		elseif nSel == 4 then
-			Sound.Play(Sound.PlayUIHousingHardwareAddition)
-			self.luaExtRemodelPreviewControl:OnChoiceMade(HousingLib.RemodelOptionTypeExterior.Door, idItem, self.tRemodelDoorList)
-			wndCheckButton = self.wndRemodel:FindChild("DoorPreviewBtn")
-			tItemList =  self.tRemodelDoorList
-		elseif nSel == 5 then
-			Sound.Play(Sound.PlayUIHousingHardwareAddition)
-			self.luaExtRemodelPreviewControl:OnChoiceMade(HousingLib.RemodelOptionTypeExterior.Sky, idItem, self.tRemodelVendorWallpaperList)
-			wndCheckButton = self.wndRemodel:FindChild("SkyPreviewBtn")
-			tItemList = self.tRemodelVendorWallpaperList
-		elseif nSel == 6 then
-		    Sound.Play(Sound.PlayUIHousingHardwareAddition)
-			self.luaExtRemodelPreviewControl:OnChoiceMade(HousingLib.RemodelOptionTypeExterior.Music, idItem, self.tRemodelVendorWallpaperList)
-			wndCheckButton = self.wndRemodel:FindChild("MusicPreviewBtn")
-			tItemList = self.tRemodelVendorWallpaperList
+	    if not self.rResidence or not self.rResidence:IsCommunityResidence() then
+            local nSel = self.wndExtRemodelHeaderFrame:GetRadioSel("ExtRemodelTab")
+            if nSel == 1 then
+                Sound.Play(Sound.PlayUIHousingHardwareAddition)
+                self.luaExtRemodelPreviewControl:OnChoiceMade(HousingLib.RemodelOptionTypeExterior.Roof, idItem, self.tRemodelRoofList)
+                wndCheckButton = self.wndRemodel:FindChild("RoofPreviewBtn")
+                tItemList = self.tRemodelRoofList
+            elseif nSel == 2 then
+                Sound.Play(Sound.PlayUIHousingDecor)
+                self.luaExtRemodelPreviewControl:OnChoiceMade(HousingLib.RemodelOptionTypeExterior.Wallpaper, idItem, self.tRemodelVendorWallpaperList)
+                wndCheckButton = self.wndRemodel:FindChild("WallpaperPreviewBtn")
+                tItemList = self.tRemodelVendorWallpaperList
+            elseif nSel == 3 then
+                Sound.Play(Sound.PlayUIHousingHardwareAddition)
+                self.luaExtRemodelPreviewControl:OnChoiceMade(HousingLib.RemodelOptionTypeExterior.Entry, idItem, self.tRemodelEntryList)
+                wndCheckButton = self.wndRemodel:FindChild("EntryPreviewBtn")
+                tItemList = self.tRemodelEntryList
+            elseif nSel == 4 then
+                Sound.Play(Sound.PlayUIHousingHardwareAddition)
+                self.luaExtRemodelPreviewControl:OnChoiceMade(HousingLib.RemodelOptionTypeExterior.Door, idItem, self.tRemodelDoorList)
+                wndCheckButton = self.wndRemodel:FindChild("DoorPreviewBtn")
+                tItemList =  self.tRemodelDoorList
+            elseif nSel == 5 then
+                Sound.Play(Sound.PlayUIHousingHardwareAddition)
+                self.luaExtRemodelPreviewControl:OnChoiceMade(HousingLib.RemodelOptionTypeExterior.Sky, idItem, self.tRemodelVendorWallpaperList)
+                wndCheckButton = self.wndRemodel:FindChild("SkyPreviewBtn")
+                tItemList = self.tRemodelVendorWallpaperList
+            elseif nSel == 6 then
+                Sound.Play(Sound.PlayUIHousingHardwareAddition)
+                self.luaExtRemodelPreviewControl:OnChoiceMade(HousingLib.RemodelOptionTypeExterior.Music, idItem, self.tRemodelVendorWallpaperList)
+                wndCheckButton = self.wndRemodel:FindChild("MusicPreviewBtn")
+                tItemList = self.tRemodelVendorWallpaperList
+            else
+                Sound.Play(Sound.PlayUIHousingHardwareAddition)
+                self.luaExtRemodelPreviewControl:OnChoiceMade(HousingLib.RemodelOptionTypeExterior.Ground, idItem, self.tRemodelVendorWallpaperList)
+                wndCheckButton = self.wndRemodel:FindChild("GroundPreviewBtn")
+                tItemList = self.tRemodelVendorWallpaperList	
+            end
 		else
-		    Sound.Play(Sound.PlayUIHousingHardwareAddition)
-			self.luaExtRemodelPreviewControl:OnChoiceMade(HousingLib.RemodelOptionTypeExterior.Ground, idItem, self.tRemodelVendorWallpaperList)
-			wndCheckButton = self.wndRemodel:FindChild("GroundPreviewBtn")
-			tItemList = self.tRemodelVendorWallpaperList	
+            local nSel = self.wndCommunityRemodelHeaderFrame:GetRadioSel("CommunityRemodelTab")
+            if nSel == 1 then
+                Sound.Play(Sound.PlayUIHousingHardwareAddition)
+                self.luaCommunityRemodelPreviewControl:OnChoiceMade(HousingLib.RemodelOptionTypeCommunity.Sky, idItem, self.tRemodelVendorWallpaperList)
+                wndCheckButton = self.wndRemodel:FindChild("CommunitySkyPreviewBtn")
+                tItemList = self.tRemodelVendorWallpaperList
+            elseif nSel == 2 then
+                Sound.Play(Sound.PlayUIHousingHardwareAddition)
+                self.luaCommunityRemodelPreviewControl:OnChoiceMade(HousingLib.RemodelOptionTypeCommunity.Music, idItem, self.tRemodelVendorWallpaperList)
+                wndCheckButton = self.wndRemodel:FindChild("CommunityMusicPreviewBtn")
+                tItemList = self.tRemodelVendorWallpaperList
+            else
+                Sound.Play(Sound.PlayUIHousingHardwareAddition)
+                self.luaCommunityRemodelPreviewControl:OnChoiceMade(HousingLib.RemodelOptionTypeCommunity.Ground, idItem, self.tRemodelVendorWallpaperList)
+                wndCheckButton = self.wndRemodel:FindChild("CommunityGroundPreviewBtn")
+                tItemList = self.tRemodelVendorWallpaperList	
+            end
+	
 		end
 	end
 
@@ -1143,18 +1387,23 @@ function HousingRemodel:ShowAppropriateRemodelTab()
 		self:ShowAppropriateIntRemodelTab()
 		self.wndExtPreviewWindow:Show(false)
 		self.wndIntPreviewWindow:Show(true)
+		self.wndCommunityPreviewWindow:Show(false)
 		self.wndExtRemodelHeaderFrame:Show(false)
 		self.wndIntRemodelHeaderFrame:Show(true)
+		self.wndCommunityRemodelHeaderFrame:Show(false)
 		self.wndRemodelHeaderFrameTitle:SetText(Apollo.GetString("HousingRemodel_RoomConfig"))
 		self.wndReplaceButton:Show(true)
 		self.wndIntRemodelRemoveBtn:Show(false)
 		self.wndSortByList = self.wndRemodel:FindChild("IntSortByList")
 	else
 		self:ShowAppropriateExtRemodelTab()
-		self.wndExtPreviewWindow:Show(true)
+		local bIsCommunity = self.rResidence and self.rResidence:IsCommunityResidence()
+		self.wndExtPreviewWindow:Show(not bIsCommunity)
 		self.wndIntPreviewWindow:Show(false)
-		self.wndExtRemodelHeaderFrame:Show(true)
+		self.wndCommunityPreviewWindow:Show(bIsCommunity)
+		self.wndExtRemodelHeaderFrame:Show(not bIsCommunity)
 		self.wndIntRemodelHeaderFrame:Show(false)
+		self.wndCommunityRemodelHeaderFrame:Show(bIsCommunity)
 		self.wndRemodelHeaderFrameTitle:SetText(Apollo.GetString("HousingRemodel_HouseConfig"))
 		self.wndSortByList = self.wndRemodel:FindChild("ExtSortByList")
 	end
@@ -1188,24 +1437,25 @@ function HousingRemodel:ShowAppropriateIntRemodelTab()
 	end
 
 	local eType
+	local strSearchText = self.wndSearchWindow:GetText()
 	if nSel == 1 then --ceiling
 	    eType = HousingLib.RemodelOptionTypeInterior.Ceiling
-		self.tRemodelVendorWallpaperList = HousingLib.GetRemodelWallpaperInteriorList(eType)
+		self.tRemodelVendorWallpaperList = HousingLib.GetRemodelWallpaperInteriorList(eType, strSearchText)
 	elseif nSel == 2 then -- trim
 	    eType = HousingLib.RemodelOptionTypeInterior.Trim
-		self.tRemodelVendorWallpaperList = HousingLib.GetRemodelWallpaperInteriorList(eType)
+		self.tRemodelVendorWallpaperList = HousingLib.GetRemodelWallpaperInteriorList(eType, strSearchText)
 	elseif nSel == 3 then -- walls
 	    eType = HousingLib.RemodelOptionTypeInterior.Wallpaper
-		self.tRemodelVendorWallpaperList = HousingLib.GetRemodelWallpaperInteriorList(eType)
+		self.tRemodelVendorWallpaperList = HousingLib.GetRemodelWallpaperInteriorList(eType, strSearchText)
 	elseif nSel == 4 then -- floor
 	    eType = HousingLib.RemodelOptionTypeInterior.Floor
-		self.tRemodelVendorWallpaperList = HousingLib.GetRemodelWallpaperInteriorList(eType)
+		self.tRemodelVendorWallpaperList = HousingLib.GetRemodelWallpaperInteriorList(eType, strSearchText)
 	elseif nSel == 5 then -- lighting
 	    eType = HousingLib.RemodelOptionTypeInterior.Lighting
-		self.tRemodelVendorWallpaperList = HousingLib.GetRemodelWallpaperInteriorList(eType)
+		self.tRemodelVendorWallpaperList = HousingLib.GetRemodelWallpaperInteriorList(eType, strSearchText)
 	elseif nSel == 6 then -- music
 	    eType = HousingLib.RemodelOptionTypeInterior.Music
-		self.tRemodelVendorWallpaperList = HousingLib.GetRemodelWallpaperInteriorList(eType)
+		self.tRemodelVendorWallpaperList = HousingLib.GetRemodelWallpaperInteriorList(eType, strSearchText)
 	end
 
 	if gtRemodelTrueValues[eType] ~= nil then
@@ -1222,74 +1472,132 @@ end
 
 ---------------------------------------------------------------------------------------------------
 function HousingRemodel:ShowAppropriateExtRemodelTab()
-	local idPruneItem = 0
-	local nSel = self.wndExtRemodelHeaderFrame:GetRadioSel("ExtRemodelTab")
-	if nSel < 1 or nSel > #self.tExtRemodelTabs then
+	if not self.rResidence then
+		self:SetRemodelCurrentDetails(nil)
 		return
 	end
-	self.tExtRemodelTabs[nSel]:SetTextColor(kcrWhite)
-	self.wndListView:SetSortColumn(1, true)
-	
-	local wndHideClutterBtn = self.wndExtPreviewWindow:FindChild("HideGroundClutterBtn")
-	wndHideClutterBtn:SetCheck(HousingLib.IsGroundClutterHidden())
 
-	local strCurrentItemText
-	if nSel == 1 then
-		self.tRemodelRoofList = HousingLib.GetRemodelRoofList()
-		-- Here we have an example of a nameless function being declared within another function's parameter list!
-		table.sort(self.tRemodelRoofList, function(a,b)	return (a.strName < b.strName)	end)
-		
-		idPruneItem = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Roof].tCurrentItem.nId
-		strCurrentItemText = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Roof].tCurrentItem.strName
-		self:ShowItems(self.wndListView, self.tRemodelRoofList, idPruneItem)
-	elseif nSel == 2 then
-		self.tRemodelVendorWallpaperList = HousingLib.GetRemodelWallpaperExteriorList()
-		-- Here we have an example of a nameless function being declared within another function's parameter list!
-		table.sort(self.tRemodelVendorWallpaperList, function(a,b)	return (a.strName < b.strName)	end)
-		
-		idPruneItem = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Wallpaper].tCurrentItem.nId
-		strCurrentItemText = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Wallpaper].tCurrentItem.strName
-		self:ShowItems(self.wndListView, self.tRemodelVendorWallpaperList, idPruneItem)
-	elseif nSel == 3 then
-		self.tRemodelEntryList = HousingLib.GetRemodelEntryList()
-		-- Here we have an example of a nameless function being declared within another function's parameter list!
-		table.sort(self.tRemodelEntryList, function(a,b)	return (a.strName < b.strName)	end)
-		
-		idPruneItem = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Entry].tCurrentItem.nId
-		strCurrentItemText = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Entry].tCurrentItem.strName
-		self:ShowItems(self.wndListView, self.tRemodelEntryList, idPruneItem)
-	elseif nSel == 4 then
-		self.tRemodelDoorList = HousingLib.GetRemodelDoorList()
-		-- Here we have an example of a nameless function being declared within another function's parameter list!
-		table.sort(self.tRemodelDoorList, function(a,b)	return (a.strName < b.strName)	end)
-		
-		idPruneItem = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Door].tCurrentItem.nId
-		strCurrentItemText = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Door].tCurrentItem.strName
-		self:ShowItems(self.wndListView, self.tRemodelDoorList, idPruneItem)
-	elseif nSel == 5 then
-		self.tRemodelVendorWallpaperList = HousingLib.GetRemodelSkyExteriorList()
-		-- Here we have an example of a nameless function being declared within another function's parameter list!
-		table.sort(self.tRemodelVendorWallpaperList, function(a,b)	return (a.strName < b.strName)	end)
-		
-		idPruneItem = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Sky].tCurrentItem.nId
-		strCurrentItemText = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Sky].tCurrentItem.strName
-		self:ShowItems(self.wndListView, self.tRemodelVendorWallpaperList, idPruneItem)
-	elseif nSel == 6 then
-	    self.tRemodelVendorWallpaperList = HousingLib.GetRemodelMusicExteriorList()
-		-- Here we have an example of a nameless function being declared within another function's parameter list!
-		table.sort(self.tRemodelVendorWallpaperList, function(a,b)	return (a.strName < b.strName)	end)
-		
-		idPruneItem = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Music].tCurrentItem.nId
-		strCurrentItemText = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Music].tCurrentItem.strName
-		self:ShowItems(self.wndListView, self.tRemodelVendorWallpaperList, idPruneItem)
+	local idPruneItem = 0
+	local strSearchText = self.wndSearchWindow:GetText()
+	if not self.rResidence:IsCommunityResidence() then
+        local nSel = self.wndExtRemodelHeaderFrame:GetRadioSel("ExtRemodelTab")
+        if nSel < 1 or nSel > #self.tExtRemodelTabs then
+            return
+        end
+        self.tExtRemodelTabs[nSel]:SetTextColor(kcrWhite)
+        self.wndListView:SetSortColumn(1, true)
+        
+        local wndHideClutterBtn = self.wndExtPreviewWindow:FindChild("HideGroundClutterBtn")
+        wndHideClutterBtn:SetCheck(self.rResidence:IsGroundClutterHidden())
+        
+        local wndHideSkyplotsBtn = self.wndExtPreviewWindow:FindChild("HideSkyplotsBtn")
+        wndHideSkyplotsBtn:SetCheck(self.rResidence:AreSkyplotsHidden())
+
+        local strCurrentItemText
+        if nSel == 1 then
+            self.tRemodelRoofList = HousingLib.GetRemodelRoofList(strSearchText)
+            if self.tRemodelRoofList ~= nil then
+	            table.sort(self.tRemodelRoofList, function(a,b)	return (a.strName < b.strName)	end)
+            
+	            idPruneItem = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Roof].tCurrentItem.nId
+	            strCurrentItemText = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Roof].tCurrentItem.strName
+	            self:ShowItems(self.wndListView, self.tRemodelRoofList, idPruneItem)
+	        end
+        elseif nSel == 2 then
+            self.tRemodelVendorWallpaperList = HousingLib.GetRemodelWallpaperExteriorList(strSearchText)
+            if self.tRemodelVendorWallpaperList ~= nil then
+	            table.sort(self.tRemodelVendorWallpaperList, function(a,b)	return (a.strName < b.strName)	end)
+	            
+	            idPruneItem = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Wallpaper].tCurrentItem.nId
+	            strCurrentItemText = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Wallpaper].tCurrentItem.strName
+	            self:ShowItems(self.wndListView, self.tRemodelVendorWallpaperList, idPruneItem)
+      	  end
+        elseif nSel == 3 then
+            self.tRemodelEntryList = HousingLib.GetRemodelEntryList(strSearchText)
+            if self.tRemodelEntryList ~= nil then
+	            table.sort(self.tRemodelEntryList, function(a,b)	return (a.strName < b.strName)	end)
+	            
+	            idPruneItem = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Entry].tCurrentItem.nId
+	            strCurrentItemText = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Entry].tCurrentItem.strName
+	            self:ShowItems(self.wndListView, self.tRemodelEntryList, idPruneItem)
+	        end
+        elseif nSel == 4 then
+            self.tRemodelDoorList = HousingLib.GetRemodelDoorList(strSearchText)
+            if self.tRemodelDoorList ~= nil then
+	            table.sort(self.tRemodelDoorList, function(a,b)	return (a.strName < b.strName)	end)
+	            
+	            idPruneItem = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Door].tCurrentItem.nId
+	            strCurrentItemText = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Door].tCurrentItem.strName
+	            self:ShowItems(self.wndListView, self.tRemodelDoorList, idPruneItem)
+	        end
+        elseif nSel == 5 then
+            self.tRemodelVendorWallpaperList = HousingLib.GetRemodelSkyExteriorList(strSearchText)
+            if self.tRemodelVendorWallpaperList ~= nil then
+	            table.sort(self.tRemodelVendorWallpaperList, function(a,b)	return (a.strName < b.strName)	end)
+	            
+	            idPruneItem = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Sky].tCurrentItem.nId
+	            strCurrentItemText = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Sky].tCurrentItem.strName
+	            self:ShowItems(self.wndListView, self.tRemodelVendorWallpaperList, idPruneItem)
+	        end
+        elseif nSel == 6 then
+            self.tRemodelVendorWallpaperList = HousingLib.GetRemodelMusicExteriorList(strSearchText)
+            if self.tRemodelVendorWallpaperList then
+	            table.sort(self.tRemodelVendorWallpaperList, function(a,b)	return (a.strName < b.strName)	end)
+	            
+	            idPruneItem = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Music].tCurrentItem.nId
+	            strCurrentItemText = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Music].tCurrentItem.strName
+	            self:ShowItems(self.wndListView, self.tRemodelVendorWallpaperList, idPruneItem)
+	        end
+        else
+            self.tRemodelVendorWallpaperList = HousingLib.GetRemodelGroundList(strSearchText)
+            if self.tRemodelVendorWallpaperList then
+	            table.sort(self.tRemodelVendorWallpaperList, function(a,b)	return (a.strName < b.strName)	end)
+	            
+	            idPruneItem = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Ground].tCurrentItem.nId
+	            strCurrentItemText = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Ground].tCurrentItem.strName
+	            self:ShowItems(self.wndListView, self.tRemodelVendorWallpaperList, idPruneItem)	
+	        end
+        end
 	else
-    	self.tRemodelVendorWallpaperList = HousingLib.GetRemodelGroundList()
-		-- Here we have an example of a nameless function being declared within another function's parameter list!
-		table.sort(self.tRemodelVendorWallpaperList, function(a,b)	return (a.strName < b.strName)	end)
-		
-		idPruneItem = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Ground].tCurrentItem.nId
-		strCurrentItemText = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Ground].tCurrentItem.strName
-		self:ShowItems(self.wndListView, self.tRemodelVendorWallpaperList, idPruneItem)	
+        local nSel = self.wndCommunityRemodelHeaderFrame:GetRadioSel("CommunityRemodelTab")
+        if nSel < 1 or nSel > #self.tCommunityRemodelTabs then
+            return
+        end
+        self.tCommunityRemodelTabs[nSel]:SetTextColor(kcrWhite)
+        self.wndListView:SetSortColumn(1, true)
+        
+        local wndHideClutterBtn = self.wndCommunityPreviewWindow:FindChild("HideGroundClutterBtn")
+        wndHideClutterBtn:SetCheck(self.rResidence:IsGroundClutterHidden())
+
+        local strCurrentItemText
+        if nSel == 1 then
+            self.tRemodelVendorWallpaperList = HousingLib.GetRemodelSkyExteriorList(strSearchText)
+            if  self.tRemodelVendorWallpaperList ~= nil then
+	            table.sort(self.tRemodelVendorWallpaperList, function(a,b)	return (a.strName < b.strName)	end)
+	            
+	            idPruneItem = self.luaCommunityRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeCommunity.Sky].tCurrentItem.nId
+	            strCurrentItemText = self.luaCommunityRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeCommunity.Sky].tCurrentItem.strName
+	            self:ShowItems(self.wndListView, self.tRemodelVendorWallpaperList, idPruneItem)
+	        end
+        elseif nSel == 2 then
+            self.tRemodelVendorWallpaperList = HousingLib.GetRemodelMusicExteriorList(strSearchText)
+            if self.tRemodelVendorWallpaperList ~= nil then
+	            table.sort(self.tRemodelVendorWallpaperList, function(a,b)	return (a.strName < b.strName)	end)
+	            
+	            idPruneItem = self.luaCommunityRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeCommunity.Music].tCurrentItem.nId
+	            strCurrentItemText = self.luaCommunityRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeCommunity.Music].tCurrentItem.strName
+	            self:ShowItems(self.wndListView, self.tRemodelVendorWallpaperList, idPruneItem)
+	        end
+        else
+            self.tRemodelVendorWallpaperList = HousingLib.GetRemodelGroundList(strSearchText)
+            if self.tRemodelVendorWallpaperList ~= nil then
+	            table.sort(self.tRemodelVendorWallpaperList, function(a,b)	return (a.strName < b.strName)	end)
+	            
+	            idPruneItem = self.luaCommunityRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeCommunity.Ground].tCurrentItem.nId
+	            strCurrentItemText = self.luaCommunityRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeCommunity.Ground].tCurrentItem.strName
+	            self:ShowItems(self.wndListView, self.tRemodelVendorWallpaperList, idPruneItem)	
+	        end
+        end
 	end
 
 	if strCurrentItemText ~= nil then
@@ -1335,27 +1643,6 @@ function HousingRemodel:ShowItems(wndListControl, tItemList, idPrune)
 		local crWhite = CColor.new(1.0, 1.0, 1.0, 1.0)
 		local crGrey = CColor.new(0.2,0.2,0.2,1.0)
 
-		-- check for, and handle search filters
-        local strSearch = self.wndSearchWindow:GetText()
-
-        if strSearch ~= nil and strSearch ~= "" and not strSearch:match("%W") then
-            local tFilteredList = {}
-            local nFilteredItems = 0
-            for idx = 1, #tItemList do
-                local strItemName = Apollo.StringToLower(tItemList[idx].strName)
-                strSearch = Apollo.StringToLower(strSearch)
-				if string.find(strItemName, strSearch) ~= nil then
-                    nFilteredItems = nFilteredItems + 1
-                    tFilteredList[nFilteredItems] = tItemList[idx]
-                end
-            end
-            if #tFilteredList > 0 then
-                tItemList = tFilteredList
-            else
-                return
-            end
-        end
-
 	    -- populate the buttons with the item data
 		for idx = 1, #tItemList do
 			local tItemData = tItemList[idx]
@@ -1391,8 +1678,12 @@ function HousingRemodel:ShowItems(wndListControl, tItemList, idPrune)
 				strDoc = self.wndCashRemodel:GetAMLDocForAmount(tItemData.nCost, true, crWhite)
 			end
 
-			wndListControl:SetCellData(idx, 2, "", "", tItemData.nCost)
-			wndListControl:SetCellDoc(idx, 2, strDoc)
+			if tItemData.kUpsellLink ~= nil and tItemData.kUpsellLink ~= 0 then
+				wndListControl:SetCellImage(idx, 2, "BK3:UI_BK3_PremiumCalloutBanner_05")
+			else
+				wndListControl:SetCellData(idx, 2, "", "", tItemData.nCost)
+				wndListControl:SetCellDoc(idx, 2, strDoc)
+			end
 		end
 
         self.wndCashRemodel:SetMoneySystem(Money.CodeEnumCurrencyType.Credits)
@@ -1439,12 +1730,12 @@ end
 
 ---------------------------------------------------------------------------------------------------
 function HousingRemodel:OnRemoveRoofUpgrade()
-	self.luaExtRemodelPreviewControl:OnChoiceCanceled(HousingLib.RemodelOptionTypeExterior.Roof)
-	self.wndSearchWindow:ClearFocus()
-	local nSel = self.wndExtRemodelHeaderFrame:GetRadioSel("ExtRemodelTab")
-	if nSel == 1 then
-	    self.wndListView:SetCurrentRow(0)
-	end
+    self.luaExtRemodelPreviewControl:OnChoiceCanceled(HousingLib.RemodelOptionTypeExterior.Roof)
+    self.wndSearchWindow:ClearFocus()
+    local nSel = self.wndExtRemodelHeaderFrame:GetRadioSel("ExtRemodelTab")
+    if nSel == 1 then
+        self.wndListView:SetCurrentRow(0)
+    end
 end
 
 function HousingRemodel:OnRemoveWallUpgrade()
@@ -1475,29 +1766,56 @@ function HousingRemodel:OnRemoveDoorUpgrade()
 end
 
 function HousingRemodel:OnRemoveSkyUpgrade()
-	self.luaExtRemodelPreviewControl:OnChoiceCanceled(HousingLib.RemodelOptionTypeExterior.Sky)
-	self.wndSearchWindow:ClearFocus()
-	local nSel =self.wndExtRemodelHeaderFrame:GetRadioSel("ExtRemodelTab")
-	if nSel == 5 then
-	    self.wndListView:SetCurrentRow(0)
+    if self.rResidence and self.rResidence:IsCommunityResidence() then
+        self.luaCommunityRemodelPreviewControl:OnChoiceCanceled(HousingLib.RemodelOptionTypeCommunity.Sky)
+        self.wndSearchWindow:ClearFocus()
+        local nSel =self.wndCommunityRemodelHeaderFrame:GetRadioSel("CommunityRemodelTab")
+        if nSel == 1 then
+            self.wndListView:SetCurrentRow(0)
+        end
+	else
+        self.luaExtRemodelPreviewControl:OnChoiceCanceled(HousingLib.RemodelOptionTypeExterior.Sky)
+        self.wndSearchWindow:ClearFocus()
+        local nSel =self.wndExtRemodelHeaderFrame:GetRadioSel("ExtRemodelTab")
+        if nSel == 5 then
+        self.wndListView:SetCurrentRow(0)
+        end
 	end
 end
 
 function HousingRemodel:OnRemoveExtMusicUpgrade()
-	self.luaExtRemodelPreviewControl:OnChoiceCanceled(HousingLib.RemodelOptionTypeExterior.Music)
-	self.wndSearchWindow:ClearFocus()
-	local nSel =self.wndExtRemodelHeaderFrame:GetRadioSel("ExtRemodelTab")
-	if nSel == 6 then
-	    self.wndListView:SetCurrentRow(0)
-	end
+    if self.rResidence and self.rResidence:IsCommunityResidence() then
+        self.luaCommunityRemodelPreviewControl:OnChoiceCanceled(HousingLib.RemodelOptionTypeCommunity.Music)
+        self.wndSearchWindow:ClearFocus()
+        local nSel =self.wndCommunityRemodelHeaderFrame:GetRadioSel("CommunityRemodelTab")
+        if nSel == 2 then
+            self.wndListView:SetCurrentRow(0)
+        end
+    else
+        self.luaExtRemodelPreviewControl:OnChoiceCanceled(HousingLib.RemodelOptionTypeExterior.Music)
+        self.wndSearchWindow:ClearFocus()
+        local nSel =self.wndExtRemodelHeaderFrame:GetRadioSel("ExtRemodelTab")
+        if nSel == 6 then
+            self.wndListView:SetCurrentRow(0)
+        end
+    end    
 end
 
 function HousingRemodel:OnRemoveGroundUpgrade()
-	self.luaExtRemodelPreviewControl:OnChoiceCanceled(HousingLib.RemodelOptionTypeExterior.Ground)
-	self.wndSearchWindow:ClearFocus()
-	local nSel = self.wndExtRemodelHeaderFrame:GetRadioSel("ExtRemodelTab")
-	if nSel == 7 then
-	    self.wndListView:SetCurrentRow(0)
+    if self.rResidence and self.rResidence:IsCommunityResidence() then
+        self.luaCommunityRemodelPreviewControl:OnChoiceCanceled(HousingLib.RemodelOptionTypeCommunity.Ground)
+        self.wndSearchWindow:ClearFocus()
+        local nSel =self.wndCommunityRemodelHeaderFrame:GetRadioSel("CommunityRemodelTab")
+        if nSel == 3 then
+            self.wndListView:SetCurrentRow(0)
+        end
+    else
+        self.luaExtRemodelPreviewControl:OnChoiceCanceled(HousingLib.RemodelOptionTypeExterior.Ground)
+        self.wndSearchWindow:ClearFocus()
+        local nSel = self.wndExtRemodelHeaderFrame:GetRadioSel("ExtRemodelTab")
+        if nSel == 7 then
+            self.wndListView:SetCurrentRow(0)
+        end
 	end
 end
 
@@ -1509,11 +1827,21 @@ function HousingRemodel:ResetExtRemodelPreview(bOmitSound)
 	end
 
 	self.luaExtRemodelPreviewControl:OnAllChoicesCanceled(false)
+	self.luaCommunityRemodelPreviewControl:OnAllChoicesCanceled(false)
 end
 
-function HousingRemodel:OnHideClutterOnCheck(wndControl, wndHandler, iButton, nX, nY)
+function HousingRemodel:OnHideClutterOnCheck(wndControl, wndHandler, iButton, nX, nY) 
     self.wndSearchWindow:ClearFocus()
-    HousingLib.SetGroundClutterHidden(wndControl:IsChecked())
+	if self.rResidence then
+		self.rResidence:SetGroundClutterHidden(wndControl:IsChecked())
+	end
+end
+
+function HousingRemodel:OnHideSkyplotsOnCheck(wndControl, wndHandler, iButton, nX, nY)
+    self.wndSearchWindow:ClearFocus()
+	if self.rResidence then
+		self.rResidence:SetSkyplotsHidden(wndControl:IsChecked())
+	end
 end
 
 function HousingRemodel:OnComponentPreviewOnCheck(wndControl, wndHandler, iButton, nX, nY)
@@ -1534,7 +1862,7 @@ function HousingRemodel:OnComponentPreviewOnCheck(wndControl, wndHandler, iButto
         elseif wndControl == self.wndRemodel:FindChild("IntMusicPreviewBtn") then
             self.luaIntRemodelPreviewControl:OnPreviewCheck(HousingLib.RemodelOptionTypeInterior.Music)
         end
-	else
+	elseif self.rResidence ~= nil and not self.rResidence:IsCommunityResidence() then
         if wndControl == self.wndRemodel:FindChild("RoofPreviewBtn") then
             self.luaExtRemodelPreviewControl:OnPreviewCheck(HousingLib.RemodelOptionTypeExterior.Roof)
         elseif wndControl == self.wndRemodel:FindChild("WallpaperPreviewBtn") then
@@ -1549,6 +1877,14 @@ function HousingRemodel:OnComponentPreviewOnCheck(wndControl, wndHandler, iButto
             self.luaExtRemodelPreviewControl:OnPreviewCheck(HousingLib.RemodelOptionTypeExterior.Music)
         elseif wndControl == self.wndRemodel:FindChild("GroundPreviewBtn") then  
             self.luaExtRemodelPreviewControl:OnPreviewCheck(HousingLib.RemodelOptionTypeExterior.Ground)  
+        end
+    else
+        if wndControl == self.wndRemodel:FindChild("CommunitySkyPreviewBtn") then
+            self.luaCommunityRemodelPreviewControl:OnPreviewCheck(HousingLib.RemodelOptionTypeCommunity.Sky)
+        elseif wndControl == self.wndRemodel:FindChild("CommunityMusicPreviewBtn") then
+            self.luaCommunityRemodelPreviewControl:OnPreviewCheck(HousingLib.RemodelOptionTypeCommunity.Music)
+        elseif wndControl == self.wndRemodel:FindChild("CommunityGroundPreviewBtn") then  
+            self.luaCommunityRemodelPreviewControl:OnPreviewCheck(HousingLib.RemodelOptionTypeCommunity.Ground)  
         end
 	end
 
@@ -1629,7 +1965,9 @@ function HousingRemodel:OnRemoveIntOption()
         eType = HousingLib.RemodelOptionTypeInterior.Music
     end
 
-    HousingLib.RemoveInteriorWallpaper(eType)
+	if self.rResidence then
+		self.rResidence:RemoveInteriorWallpaper(eType)
+	end
     self.luaIntRemodelPreviewControl:OnResidenceChange(gidZone)
 end
 
@@ -1640,6 +1978,56 @@ end
 
 function HousingRemodel:PurchaseIntRemodelChanges()
 	self.luaIntRemodelPreviewControl:PurchaseRemodelChanges()
+end
+
+function HousingRemodel:OnCeilingUpsellBtn()
+	local idUpsellLink = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeInterior.Ceiling].idUpsellLink
+	StorefrontLib.OpenLink(idUpsellLink)
+end
+
+function HousingRemodel:OnTrimUpsellBtn()
+	local idUpsellLink = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeInterior.Trim].idUpsellLink
+	StorefrontLib.OpenLink(idUpsellLink)
+end
+
+function HousingRemodel:OnIntWallpaperUpsellBtn()
+	local idUpsellLink = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeInterior.Wallpaper].idUpsellLink
+	StorefrontLib.OpenLink(idUpsellLink)
+end
+
+function HousingRemodel:OnFloorUpsellBtn()
+	local idUpsellLink = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeInterior.Floor].idUpsellLink
+	StorefrontLib.OpenLink(idUpsellLink)
+end
+
+function HousingRemodel:OnLightingUpsellBtn()
+	local idUpsellLink = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeInterior.Lighting].idUpsellLink
+	StorefrontLib.OpenLink(idUpsellLink)
+end
+
+function HousingRemodel:OnIntMusicUpsellBtn()
+	local idUpsellLink = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeInterior.Music].idUpsellLink
+	StorefrontLib.OpenLink(idUpsellLink)
+end
+
+function HousingRemodel:OnWallpaperUpsellBtn()
+	local idUpsellLink = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Wallpaper].idUpsellLink
+	StorefrontLib.OpenLink(idUpsellLink)
+end
+
+function HousingRemodel:OnSkyUpsellBtn()
+	local idUpsellLink = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Sky].idUpsellLink
+	StorefrontLib.OpenLink(idUpsellLink)
+end
+
+function HousingRemodel:OnMusicUpsellBtn()
+	local idUpsellLink = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Music].idUpsellLink
+	StorefrontLib.OpenLink(idUpsellLink)
+end
+
+function HousingRemodel:OnGroundUpsellBtn()
+	local idUpsellLink = self.luaExtRemodelPreviewControl.tRemodelPreviewItems[HousingLib.RemodelOptionTypeExterior.Ground].idUpsellLink
+	StorefrontLib.OpenLink(idUpsellLink)
 end
 
 function HousingRemodel:OnResidenceDecorChanged()
@@ -1683,35 +2071,34 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function HousingRemodel:OnPropertySettingsBtn(wndHandler, wndControl, eMouseButton)
-	if wndHandler:GetId() ~= wndControl:GetId() then
+	if wndHandler:GetId() ~= wndControl:GetId() or self.rResidence == nil then
 		return
 	end
 	
 	if self.wndPropertySettingsPopup:IsShown() then
-		self.wndPropertySettingsPopup:Show(false)
+		self.wndPropertySettingsPopup:Close()
 	else
-		self.wndPropertySettingsPopup:FindChild("ResidenceName"):SetText(HousingLib.GetPropertyName())
+		self.wndPropertySettingsPopup:FindChild("ResidenceName"):SetText(self.rResidence:GetPropertyName())
 
-		local split = HousingLib.GetNeighborHarvestSplit()+1
+		local split = self.rResidence:GetNeighborHarvestSplit()+1
 		self.wndPropertySettingsPopup:FindChild("HarvestSharingDropdownWindow"):SetRadioSel("NeighborHarvestBtn", split)
 
 		local wndDropdown = self.wndPropertySettingsPopup:FindChild("HarvestSharingDropdownWindow")
 		self.wndPropertySettingsPopup:FindChild("HarvestSharingDropdownLabel"):SetText(wndDropdown:FindChild("NeighborHarvestBtn"..split):GetText())
 		
-		local kGardenSplit = HousingLib.GetNeighborGardenSplit()+1
+		local kGardenSplit = self.rResidence:GetNeighborGardenSplit()+1
 		self.wndPropertySettingsPopup:FindChild("GardenSharingDropdownWindow"):SetRadioSel("NeighborHarvestBtn", kGardenSplit)
 
 		local wndDropdown = self.wndPropertySettingsPopup:FindChild("GardenSharingDropdownWindow")
 		self.wndPropertySettingsPopup:FindChild("GardenSharingDropdownLabel"):SetText(wndDropdown:FindChild("NeighborHarvestBtn"..kGardenSplit):GetText())
 
-		local kPrivacyLevel = HousingLib.GetResidencePrivacyLevel()+1
+		local kPrivacyLevel = self.rResidence:GetResidencePrivacyLevel()+1
 		self.wndPropertySettingsPopup:FindChild("PermissionsDropdownWindow"):SetRadioSel("PermissionsSettingsBtn", kPrivacyLevel)
 
 		local wndDropdown = self.wndPropertySettingsPopup:FindChild("PermissionsDropdownWindow")
 		self.wndPropertySettingsPopup:FindChild("PermissionsDropdownLabel"):SetText(wndDropdown:FindChild("PermissionsSettingsBtn"..kPrivacyLevel):GetText())
 
-		self.wndPropertySettingsPopup:Show(true)
-		self.wndPropertySettingsPopup:ToFront()
+		self.wndPropertySettingsPopup:Invoke()
 	end
 end
 
@@ -1727,6 +2114,28 @@ function HousingRemodel:OnRandomBtn(wndHandler, wndControl)
 	end
 end
 
+function HousingRemodel:OnCommunitySettingsBtn(wndHandler, wndControl, eMouseButton)
+	if wndHandler:GetId() ~= wndControl:GetId() then
+		return
+	end
+	
+	if self.wndCommunitySettingsPopup:IsShown() then
+		self.wndCommunitySettingsPopup:Close()
+	else
+	    self.wndCommunitySettingsPopup:Invoke()
+	end
+end
+
+function HousingRemodel:OnVisitCommunityBtn(wndHandler, wndControl, eMouseButton)
+	if self.wndCommunityVisitPopup:IsShown() then
+		self.wndCommunityVisitPopup:Close()
+	else
+	    self.wndCommunityVisitPopup:Invoke()
+		self.wndCommunityVisitPopup:FindChild("QueueBtn"):Enable(false)
+		self.wndCommunityVisitPopup:FindChild("PropertyFrame"):SetRadioSel("PlotGroup", 0)
+	end
+end
+
 function HousingRemodel:OnHarvestSettingsDropdownBtnCheck( wndHandler, wndControl, eMouseButton )
     self.wndPropertySettingsPopup:FindChild("HarvestSharingDropdownWindow"):Show(true)
 end
@@ -1736,8 +2145,12 @@ function HousingRemodel:OnHarvestSettingsDropdownBtnUncheck( wndHandler, wndCont
 end
 
 function HousingRemodel:OnHarvestSettingsBtnChecked( wndHandler, wndControl, eMouseButton )
+	if self.rResidence == nil then
+		return
+	end
+
 	local split = self.wndPropertySettingsPopup:FindChild("HarvestSharingDropdownWindow"):GetRadioSel("NeighborHarvestBtn")
-	HousingLib.SetNeighborHarvestSplit(split-1)
+	self.rResidence:SetNeighborHarvestSplit(split-1)
 
 	local wndDropdown = self.wndPropertySettingsPopup:FindChild("HarvestSharingDropdownWindow")
     self.wndPropertySettingsPopup:FindChild("HarvestSharingDropdownLabel"):SetText(wndDropdown:FindChild("NeighborHarvestBtn"..split):GetText())
@@ -1756,8 +2169,12 @@ function HousingRemodel:OnGardenSettingsDropdownBtnUncheck( wndHandler, wndContr
 end
 
 function HousingRemodel:OnGardenSettingsBtnChecked( wndHandler, wndControl, eMouseButton )
+	if self.rResidence == nil then
+		return
+	end
+
 	local split = self.wndPropertySettingsPopup:FindChild("GardenSharingDropdownWindow"):GetRadioSel("NeighborHarvestBtn")
-	HousingLib.SetNeighborGardenSplit(split-1)
+	self.rResidence:SetNeighborGardenSplit(split-1)
 
 	local wndDropdown = self.wndPropertySettingsPopup:FindChild("GardenSharingDropdownWindow")
     self.wndPropertySettingsPopup:FindChild("GardenSharingDropdownLabel"):SetText(wndDropdown:FindChild("NeighborHarvestBtn"..split):GetText())
@@ -1782,8 +2199,12 @@ function HousingRemodel:OnPermissionsDropdownBtnUncheck( wndHandler, wndControl,
 end
 
 function HousingRemodel:OnPermissionsBtnChecked( wndHandler, wndControl, eMouseButton )
+	if self.rResidence == nil then
+		return
+	end
+
 	local kPrivacyLevel = self.wndPropertySettingsPopup:FindChild("PermissionsDropdownWindow"):GetRadioSel("PermissionsSettingsBtn")
-	HousingLib.SetResidencePrivacyLevel(kPrivacyLevel-1)
+	self.rResidence:SetResidencePrivacyLevel(kPrivacyLevel-1)
 
 	local wndDropdown = self.wndPropertySettingsPopup:FindChild("PermissionsDropdownWindow")
     self.wndPropertySettingsPopup:FindChild("PermissionsDropdownLabel"):SetText(wndDropdown:FindChild("PermissionsSettingsBtn"..kPrivacyLevel):GetText())
@@ -1799,8 +2220,53 @@ function HousingRemodel:OnSettingsCancel( wndHandler, wndControl, eMouseButton )
 		return
 	end
 
-	self.wndPropertySettingsPopup:Show(false)
+	self.wndPropertySettingsPopup:Close()
 end
+
+function HousingRemodel:OnCommunitySettingsCancel(wndHandler, wndControl, eMouseButton )
+	if wndHandler:GetId() ~= wndControl:GetId() then
+		return
+	end
+
+	self.wndCommunitySettingsPopup:Close()
+end
+
+function HousingRemodel:OnCommunityVisitCancel(wndHandler, wndControl, eMouseButton )
+	if wndHandler:GetId() ~= wndControl:GetId() then
+		return
+	end
+
+	self.wndCommunityVisitPopup:Close()
+end
+
+function HousingRemodel:OnCommunityVisitConfirmBtn(wndHandler, wndControl, eMouseButton )
+	if wndHandler:GetId() ~= wndControl:GetId() then
+		return
+	end
+	
+	local iPropertyIndex = tonumber(self.wndCommunityVisitPopup:FindChild("PropertyFrame"):GetRadioSel("PlotGroup"))
+
+    HousingLib.RequestCommunityPlacement(iPropertyIndex)
+	self.wndCommunityVisitPopup:Close()
+end
+
+function HousingRemodel:OnCommunityVisitNextConfirmBtn(wndHandler, wndControl, eMouseButton )
+	if wndHandler:GetId() ~= wndControl:GetId() then
+		return
+	end
+
+    HousingLib.RequestCommunityPlacement()
+	self.wndCommunityVisitPopup:Close()
+end
+
+function HousingRemodel:OnPropertySelection(wndHandler, wndControl, eMouseButton )
+	if wndHandler:GetId() ~= wndControl:GetId() then
+		return
+	end
+	
+	self.wndCommunityVisitPopup:FindChild("QueueBtn"):Enable(true)
+end
+
 
 -----------------------------------------------------------------------------------------------
 -- HousingDecorate Category Dropdown functions

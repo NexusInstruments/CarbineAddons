@@ -40,6 +40,8 @@ function WarpartyRegister:new(o)
     setmetatable(o, self)
     self.__index = self
 
+	o.tWndRefs = {}
+
     return o
 end
 
@@ -65,22 +67,6 @@ function WarpartyRegister:OnDocumentReady()
 	Apollo.RegisterEventHandler("GenericEvent_RegisterWarparty", 	"OnWarpartyRegistration", self)
 	Apollo.RegisterEventHandler("Event_ShowWarpartyInfo", 			"OnCancel", self)
 	Apollo.RegisterEventHandler("LFGWindowHasBeenClosed", 			"OnCancel", self)
-
-    -- load our forms
-    self.wndMain = Apollo.LoadForm(self.xmlDoc, 			"WarpartyRegistrationForm", nil, self)
-    self.xmlDoc = nil
-    self.wndMain:Show(false)
-
-	self.wndWarpartyName = self.wndMain:FindChild("WarpartyNameString")
-	self.WndWarpartyNameLimit = self.wndMain:FindChild("WarpartyNameLimit")
-	self.wndRegister = self.wndMain:FindChild("RegisterBtn")
-
-	self.wndAlert = self.wndMain:FindChild("AlertMessage")
-
-	self.tCreate = {}
-	self.tCreate.strName = ""
-
-	self:ResetOptions()
 end
 
 -----------------------------------------------------------------------------------------------
@@ -94,27 +80,42 @@ function WarpartyRegister:OnWarpartyRegistration(tPos)
 			return
 		end
 	end
+	
+	if self.tWndRefs.wndMain == nil or not self.tWndRefs.wndMain:IsValid() then
+		local wndMain = Apollo.LoadForm(self.xmlDoc, "WarpartyRegistrationForm", nil, self)
+	    self.tWndRefs.wndMain = wndMain
+		self.tWndRefs.wndWarpartyName = wndMain:FindChild("WarpartyNameString")
+		self.tWndRefs.wndWarpartyNameLimit = wndMain:FindChild("WarpartyNameLimit")
+		self.tWndRefs.wndRegister = wndMain:FindChild("RegisterBtn")
+		self.tWndRefs.wndAlert = wndMain:FindChild("AlertMessage")
+	
+		self.tCreate = {}
+		self.tCreate.strName = ""
+	
+		self:ResetOptions()
+	end
 
-	self.wndMain:FindChild("WarpartyNameLabel"):SetText(Apollo.GetString("Warparty_NameYourWarparty"))
+	self.tWndRefs.wndWarpartyName:SetFocus()
+	
+	self.tWndRefs.wndMain:FindChild("WarpartyNameLabel"):SetText(Apollo.GetString("Warparty_NameYourWarparty"))
 
-	self.wndRegister:Enable(true)
-	self.wndMain:Show(true)
-	self.wndMain:ToFront()
+	self.tWndRefs.wndRegister:Enable(true)
+	self.tWndRefs.wndMain:Invoke()
 	self:Validate()
 end
 
 function WarpartyRegister:ResetOptions()
 	self.tCreate.strName = ""
-	self.wndAlert:Show(false)
-	self.wndAlert:FindChild("MessageAlertText"):SetText("")
-	self.wndAlert:FindChild("MessageBodyText"):SetText("")
-	self.wndWarpartyName:SetText("")
+	self.tWndRefs.wndAlert:Show(false)
+	self.tWndRefs.wndAlert:FindChild("MessageAlertText"):SetText("")
+	self.tWndRefs.wndAlert:FindChild("MessageBodyText"):SetText("")
+	self.tWndRefs.wndWarpartyName:SetText("")
 	self:HelperClearFocus()
 	self:Validate()
 end
 
 function WarpartyRegister:OnNameChanging(wndHandler, wndControl)
-	self.tCreate.strName = self.wndWarpartyName:GetText()
+	self.tCreate.strName = self.tWndRefs.wndWarpartyName:GetText()
 	self:Validate()
 end
 
@@ -122,18 +123,18 @@ function WarpartyRegister:Validate()
 	local bIsTextValid = GameLib.IsTextValid(self.tCreate.strName, GameLib.CodeEnumUserText.GuildName, GameLib.CodeEnumUserTextFilterClass.Strict)
 	local bValid = self:HelperCheckForEmptyString(self.tCreate.strName) and bIsTextValid
 
-	self.wndRegister:Enable(bValid)
-	self.wndMain:FindChild("ValidAlert"):Show(not bValid)
+	self.tWndRefs.wndRegister:Enable(bValid)
+	self.tWndRefs.wndMain:FindChild("ValidAlert"):Show(not bValid)
 	
 
 	local nNameLength = string.len(self.tCreate.strName or "")
 	if nNameLength < 3 or nNameLength > GameLib.GetTextTypeMaxLength(GameLib.CodeEnumUserText.GuildName) then
-		self.WndWarpartyNameLimit:SetTextColor(crGuildNameLengthError)
+		self.tWndRefs.wndWarpartyNameLimit:SetTextColor(crGuildNameLengthError)
 	else
-		self.WndWarpartyNameLimit:SetTextColor(crGuildNameLengthGood)
+		self.tWndRefs.wndWarpartyNameLimit:SetTextColor(crGuildNameLengthGood)
 	end
 
-	self.WndWarpartyNameLimit:SetText(String_GetWeaselString(Apollo.GetString("CRB_Progress"), nNameLength, GameLib.GetTextTypeMaxLength(GameLib.CodeEnumUserText.GuildName)))
+	self.tWndRefs.wndWarpartyNameLimit:SetText(String_GetWeaselString(Apollo.GetString("CRB_Progress"), nNameLength, GameLib.GetTextTypeMaxLength(GameLib.CodeEnumUserText.GuildName)))
 end
 
 function WarpartyRegister:HelperCheckForEmptyString(strText) -- make sure there's a valid string
@@ -147,7 +148,7 @@ function WarpartyRegister:HelperCheckForEmptyString(strText) -- make sure there'
 end
 
 function WarpartyRegister:HelperClearFocus(wndHandler, wndControl)
-	self.wndWarpartyName:ClearFocus()
+	self.tWndRefs.wndWarpartyName:ClearFocus()
 end
 
 -----------------------------------------------------------------------------------------------
@@ -162,40 +163,50 @@ function WarpartyRegister:OnRegisterBtn(wndHandler, wndControl)
 									 GuildLib.GuildResult_YouCreated, GuildLib.GuildResult_MaxArenaTeamCount, GuildLib.GuildResult_MaxWarPartyCount,
 									 GuildLib.GuildResult_AtMaxCircleCount, GuildLib.GuildResult_VendorOutOfRange, GuildLib.GuildResult_CannotCreateWhileInQueue }
 
-	Event_FireGenericEvent("GuildResultInterceptRequest", GuildLib.GuildType_WarParty, self.wndMain, arGuldResultsExpected )
+	Event_FireGenericEvent("GuildResultInterceptRequest", GuildLib.GuildType_WarParty, self.tWndRefs.wndMain, arGuldResultsExpected )
 
 	GuildLib.Create(tGuildInfo.strName, GuildLib.GuildType_WarParty)
 	self:HelperClearFocus()
-	self.wndRegister:Enable(false)
+	self.tWndRefs.wndRegister:Enable(false)
 	--NOTE: Requires a server response to progress
 end
 
 function WarpartyRegister:OnCancel(wndHandler, wndControl)
-	self.wndMain:Show(false) -- hide the window
-	self:HelperClearFocus()
-	self:ResetOptions()
+	if self.tWndRefs.wndMain ~= nil and self.tWndRefs.wndMain:IsValid() then
+		self.tWndRefs.wndMain:Close()
+		self:HelperClearFocus()
+		self:ResetOptions()
+		self.tWndRefs.wndMain:Destroy()
+		self.tWndRefs = {}
+	end
 end
 
 function WarpartyRegister:OnGuildResultInterceptResponse( guildCurr, eGuildType, eResult, wndRegistration, strAlertMessage )
 
-	if eGuildType ~= GuildLib.GuildType_WarParty or wndRegistration ~= self.wndMain then
+	if eGuildType ~= GuildLib.GuildType_WarParty or wndRegistration ~= self.tWndRefs.wndMain or self.tWndRefs.wndMain == nil or not self.tWndRefs.wndMain:IsValid() then
 		return
 	end
 
 	if eResult == GuildLib.GuildResult_YouCreated or eResult == GuildLib.GuildResult_YouJoined then
 		Event_FireGenericEvent("Event_ShowWarpartyInfo")
 		self:OnCancel()
+		return
 	end
 
-	self.wndAlert:FindChild("MessageAlertText"):SetText(Apollo.GetString("Warparty_Whoops"))
+	self.tWndRefs.wndAlert:FindChild("MessageAlertText"):SetText(Apollo.GetString("Warparty_Whoops"))
 	Apollo.CreateTimer("ErrorMessageTimer", 3.00, false)
-	self.wndAlert:FindChild("MessageBodyText"):SetText(strAlertMessage)
-	self.wndAlert:Show(true)
+	self.tWndRefs.wndAlert:FindChild("MessageBodyText"):SetText(strAlertMessage)
+	self.tWndRefs.wndAlert:Show(true)
 end
 
 function WarpartyRegister:OnErrorMessageTimer()
-	self.wndAlert:Show(false)
-	self.wndRegister:Enable(true) -- safe to assume since it was clicked once
+	if self.tWndRefs.wndAlert ~= nil and self.tWndRefs.wndAlert:IsValid() then
+		self.tWndRefs.wndAlert:Show(false)
+	end
+
+	if self.tWndRefs.wndRegister and self.tWndRefs.wndRegister:IsValid() then
+		self.tWndRefs.wndRegister:Enable(true) -- safe to assume since it was clicked once
+	end
 end
 
 -----------------------------------------------------------------------------------------------

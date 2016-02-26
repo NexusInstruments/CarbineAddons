@@ -36,8 +36,13 @@ local karEvalColors =
 }
 
 --[[ For reference, Permissions also attached to GetRanks()
-bDisband, bRankCreate, bChangeRankPermissions, bSpendInfluence, bRankRename, bVote, bChangeMemberRank
-bInvite, bKick, bEmblemAndStandard, bMemberChat, bCouncilChat, bBankTabRename, bNeighborhood
+bRankCreate, bChangeRankPermissions, bSpendInfluence, bRankRename, bVote, bChangeMemberRank,
+bInvite, bKick, bEmblemAndStandard, bMemberChat, bCouncilChat, bBankTabRename,
+bMessageOfTheDay, bRecruit, bBankTabLog, bCanActivatePlugs, bCanAddDeployablesHousing,
+bCanAddPlugHousing, bCanUpgradePlugWarplot, bCanRemovePlugHousing, bCanPayUpkeepPlugsHousing,
+bCanRepairPlugsInMatch, bCanIssueASurrenderVoteForAWarplot, bCanQueueTheWarparty,
+bCanUseWarplotVehicles, bCanKickPlayersFromWarplot, bCanDecorateCommunity,
+bCanChangeCommunityRemodelOptions, bCanReserveCommunityPlot, bCanRemoveCommunityPlotReservation
 ]]--
 
 function GuildBank:new(o)
@@ -64,6 +69,9 @@ function GuildBank:OnDocumentReady()
 		return
 	end
 
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
+
 	Apollo.RegisterEventHandler("GuildBankerOpen", 			"GuildInitialize", self) -- notification you opened the bank.
 	Apollo.RegisterEventHandler("GuildBankTab", 			"OnGuildBankTab", self) -- noficiation that a guild bank tab is loaded.
 	Apollo.RegisterEventHandler("GuildBankItem", 			"OnGuildBankItem", self) -- noficiation of a change to a specific item that exists on a tab.
@@ -81,12 +89,11 @@ function GuildBank:OnDocumentReady()
 	self.tTabPerks = {}
 end
 
-function GuildBank:GuildInitialize()
-	if self.tWndRefs.wndMain and self.tWndRefs.wndMain:IsValid() then
-		self.tWndRefs.wndMain:Destroy()
-		self.tWndRefs = {}
-	end
+function GuildBank:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("GuildBank_Title")})
+end
 
+function GuildBank:GuildInitialize()
 	self.tWndRefs.wndSplit = nil
 
 	local guildSelected = nil
@@ -111,12 +118,16 @@ function GuildBank:GuildInitialize()
 		return
 	end
 
-	self.tWndRefs.wndMain = Apollo.LoadForm(self.xmlDoc, "GuildBankForm", nil, self)
-	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.tWndRefs.wndMain, strName = Apollo.GetString("GuildBank_Title")})
+	if not self.tWndRefs.wndMain or not self.tWndRefs.wndMain:IsValid() then
+		self.tWndRefs.wndMain = Apollo.LoadForm(self.xmlDoc, "GuildBankForm", nil, self)
+		Event_FireGenericEvent("WindowManagementAdd", {wnd = self.tWndRefs.wndMain, strName = Apollo.GetString("GuildBank_Title")})
+	end
 
+	self.tWndRefs.wndMain:Invoke()
 	self.tWndRefs.wndMain:SetData(guildSelected)
 	self.tWndRefs.wndMain:FindChild("PermissionsMain"):SetData(nMyRank)
 	self.tWndRefs.wndMain:FindChild("BankTabBtnMgmt"):Enable(tMyRankData and (tMyRankData.bBankTabRename or tMyRankData.bSpendInfluence))
+	self.tWndRefs.wndMain:FindChild("BankTabBtnLog"):Enable(tMyRankData and tMyRankData.bBankTabLog)
 
 	self:Initialize(guildSelected)
 end
@@ -154,7 +165,7 @@ function GuildBank:Reinitialize(guildToInit)
 			end
 		end
 	elseif self.tWndRefs.wndMain and self.tWndRefs.wndMain:IsValid() then
-		self.tWndRefs.wndMain:Destroy()
+		self.tWndRefs.wndMain:Close()
 		self.tWndRefs = {}
 	end
 end
@@ -193,7 +204,6 @@ function GuildBank:Initialize(guildOwner)
 	self.strTransferType = nil
 	self.tCurrentDragData = nil
 
-	self.tWndRefs.wndMain:FindChild("BankTabBtnLog"):Enable(true)
 	self.tWndRefs.wndMain:FindChild("BankTabBtnVault"):Enable(true)
 	self.tWndRefs.wndMain:FindChild("BankTabBtnPermissions"):Enable(true)
 	self.tWndRefs.wndMain:FindChild("PermissionsMoneyCashWindow"):SetAmountLimit(knMaxTransactionLimit)
@@ -316,7 +326,8 @@ function GuildBank:OnGuildBankTab(guildOwner, nTab)
 	-- Withdraw Limit
 	local nWithdrawalAmount = ktWithdrawLimit[tMyRankDataPermissions.idWithdrawLimit]
 
-	local strHeaderText = String_GetWeaselString(Apollo.GetString("GuildBank_TitleWithTabName"), guildOwner:GetBankTabName(nTab))
+	local strName = guildOwner:GetBankTabName(nTab)
+	local strHeaderText = String_GetWeaselString(Apollo.GetString("GuildBank_TitleWithTabName"), strName ~= "" and strName or Apollo.GetString("GuildBank_BankTab"))
 	if nWithdrawalAmount ~= -1 then
 		local nAmountWithdrawnToday = guildOwner:GetBankTabItemWithdrawnToday(nTab)
 		local tWithdrawalInfo =
@@ -335,7 +346,7 @@ function GuildBank:OnGuildBankTab(guildOwner, nTab)
 	for idx, tCurrData in ipairs(guildOwner:GetBankTab(nTab)) do -- This doesn't hit the server, but we can still use GuildBankItem for updating afterwards
 		self:HelperDrawBankItem(tCurrData.itemInSlot, nTab, tCurrData.nIndex)
 	end
-	self.tWndRefs.wndMain:FindChild("MainBankScrollbar"):ArrangeChildrenTiles(0)
+	self.tWndRefs.wndMain:FindChild("MainBankScrollbar"):ArrangeChildrenTiles(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function GuildBank:HelperDrawBankItem(itemDrawing, nTab, nInventorySlot)
@@ -773,7 +784,7 @@ function GuildBank:DrawTabPermissions()
 	for idx = 1, nTabCount do
 		self:BuildPermissionIndividualTab(wndParent, guildOwner, bCanEditRanks, tCurrRankData, idx)
 	end
-	wndParent:FindChild("PermissionsGridRowItems"):ArrangeChildrenTiles(1)
+	wndParent:FindChild("PermissionsGridRowItems"):ArrangeChildrenTiles(Window.CodeEnumArrangeOrigin.Middle)
 end
 
 function GuildBank:BuildPermissionIndividualTab(wndParent, guildOwner, bCanEditRanks, tCurrRankData, nBankTab)
@@ -1026,7 +1037,7 @@ function GuildBank:OnBankTabBtnMgmt()
 			-- end
 		end
 	end
-	wndParent:FindChild("MgmtBankTabContainer"):ArrangeChildrenVert(0)
+	wndParent:FindChild("MgmtBankTabContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function GuildBank:OnBankTabBtnMgmtAssist()

@@ -73,7 +73,7 @@ function ItemWindowSubclass:OnMouseButtonUp(wndHandler, wndControl, eMouseButton
 	if wndHandler and wndHandler == wndControl then
 		local itemArg = self.wnd:GetData()
 		local bCorrectKey = eMouseButton == GameLib.CodeEnumInputMouse.Right and (Apollo.IsShiftKeyDown() or Apollo.IsControlKeyDown() or Apollo.IsAltKeyDown())
-		if bCorrectKey and itemArg and (Item.isInstance(itemArg) or Item.isData(itemCurr)) then
+		if bCorrectKey and itemArg and (Item.isInstance(itemArg) or Item.isData(itemArg)) then
 			Event_FireGenericEvent("GenericEvent_ContextMenuItem", itemArg)
 			return
 		end

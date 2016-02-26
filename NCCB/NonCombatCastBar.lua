@@ -18,7 +18,7 @@ function NCCB:Init()
 end
 
 function NCCB:OnLoad()
-	Apollo.RegisterEventHandler("VarChange_FrameCount", "OnUpdate", self)
+	Apollo.RegisterEventHandler("NextFrame", "OnUpdate", self)
 	Apollo.RegisterEventHandler("Interaction", "Interact",self)
 
 	Apollo.LoadSprites("NonCombatCastBarSprites.xml")

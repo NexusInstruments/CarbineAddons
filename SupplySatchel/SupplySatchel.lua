@@ -39,15 +39,24 @@ function SupplySatchel:OnDocumentReady()
 	if  self.xmlDoc == nil then
 		return
 	end
+
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
+
 	Apollo.RegisterEventHandler("UpdateInventory", 					"OnUpdateInventory", self)
 	Apollo.RegisterEventHandler("ToggleTradeSkillsInventory", 		"OnToggleVisibility", self)
 	Apollo.RegisterEventHandler("ToggleTradeskillInventoryFromBag", "OnToggleVisibility", self)
+	Apollo.RegisterEventHandler("PlayerEnteredWorld", 				"OnPlayerEnteredWorld", self)
 
 	Apollo.RegisterTimerHandler("InitializeSatchelPart2", "OnInitializeSatchelPart2", self)
 	Apollo.RegisterTimerHandler("UnloadSatchel", "OnUnloadSatchel", self)
 	Apollo.RegisterEventHandler("LootStackItemSentToTradeskillBag", "OnLootstackItemSentToTradeskillBag", self)
 	self.tNewlyAddedItems = {}
 	self.tNewlyAddedItemsWindows = {}
+end
+
+function SupplySatchel:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("SupplySatchel_Title")})
 end
 
 -----------------------------------------------------------------------------------------------
@@ -59,6 +68,12 @@ function SupplySatchel:OnLootstackItemSentToTradeskillBag(tItem)
 		if self.wndMain and self.wndMain:IsValid() and self.wndMain:IsShown() then
 			self:PopulateSatchel(false)
 		end
+	end
+end
+
+function SupplySatchel:OnPlayerEnteredWorld()
+	if self.wndMain and self.wndMain:IsValid() and self.wndMain:IsShown() then
+		self:PopulateSatchel(false)
 	end
 end
 
@@ -192,7 +207,7 @@ function SupplySatchel:ResizeCategory(tCat)
 	local nNewHeight = 51 + nRows * knItemWndHeight
 	tCat.wndCat:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nNewHeight)
 
-	wndItemList:ArrangeChildrenTiles(0)
+	wndItemList:ArrangeChildrenTiles(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	wndItemList:RecalculateContentExtents()
 	self.wndCategoryList:ArrangeChildrenVert()
 	self.wndCategoryList:RecalculateContentExtents()
@@ -251,6 +266,11 @@ function SupplySatchel:OnSearchClearBtn(wndHandler, wndControl)
 end
 
 function SupplySatchel:PopulateSatchel(bRescroll)
+	local unitPlayer = GameLib.GetPlayerUnit()
+	if unitPlayer == nil and unitPlayer:IsValid() then
+		return
+	end
+	
 	local nVScrollPos = self.wndCategoryList:GetVScrollPos()
 	if bRescroll then
 		nVScrollPos = 0
@@ -265,7 +285,7 @@ function SupplySatchel:PopulateSatchel(bRescroll)
 	local bSearchString = string.len(strSearchString) > 0
 	self.wndMain:FindChild("SearchClearBtn"):Show(bSearchString)
 
-	for strCategory, arItems in pairs(GameLib.GetPlayerUnit():GetSupplySatchelItems(0)) do
+	for strCategory, arItems in pairs(unitPlayer:GetSupplySatchelItems(0)) do
 		local tCacheCategory = self.tItemCache[strCategory]
 		if tCacheCategory then
 			tCacheCategory.nVisibleItems = 0

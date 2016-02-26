@@ -19,10 +19,11 @@ function PlugPreview:new(o)
     setmetatable(o, self)
     self.__index = self 
 
-	-- initialize our variables
+	o.tWndRefs = {}
 	o.plugItem = nil
 	o.numScreenshots = 0
 	o.currScreen = 0
+	
     return o
 end
 
@@ -38,21 +39,21 @@ function PlugPreview:OnLoad()
     -- Register events
 	Apollo.RegisterEventHandler("PlugPreviewOpen", "OnOpenPreviewPlug", self)
 	Apollo.RegisterEventHandler("PlugPreviewClose", "OnClosePlugPreviewWindow", self)
-    
-    -- load our forms
-    self.winPlugPreview = Apollo.LoadForm("PlugPreview.xml", "PlugPreviewWindow", nil, self)
-    self.winScreen = self.winPlugPreview:FindChild("Screenshot01")
-    self.btnPrevious = self.winPlugPreview:FindChild("PreviousButton")
-    self.btnNext = self.winPlugPreview:FindChild("NextButton")
 end
-
 
 -----------------------------------------------------------------------------------------------
 -- PlugPreview Functions
 -----------------------------------------------------------------------------------------------
 
 function PlugPreview:OnOpenPreviewPlug(plugItemId)
-    self.winPlugPreview:Show(true)
+	if self.tWndRefs.winPlugPreview == nil or not self.tWndRefs.winPlugPreview:IsValid() then
+		local winPlugPreview = Apollo.LoadForm("PlugPreview.xml", "PlugPreviewWindow", nil, self)
+	    self.tWndRefs.winPlugPreview = winPlugPreview
+	    self.tWndRefs.winScreen = winPlugPreview:FindChild("Screenshot01")
+	    self.tWndRefs.btnPrevious = winPlugPreview:FindChild("PreviousButton")
+	    self.tWndRefs.btnNext = winPlugPreview:FindChild("NextButton")
+	end
+
     local itemList = HousingLib.GetPlugItem(plugItemId)
     local ix, item
     for ix = 1, #itemList do
@@ -63,22 +64,22 @@ function PlugPreview:OnOpenPreviewPlug(plugItemId)
     end
 
     self:ShowPlugPreviewWindow()
-    self.winPlugPreview:ToFront()
+    self.tWndRefs.winPlugPreview:Invoke()
 end
 
 ---------------------------------------------------------------------------------------------------
 function PlugPreview:ShowPlugPreviewWindow()
     -- don't do any of this if the Housing List isn't visible
-	if self.winPlugPreview:IsVisible() then
+	if self.tWndRefs.winPlugPreview:IsVisible() then
 		self.numScreenshots = #self.plugItem["screenshots"]
 	    self.currScreen = 1
 
         if self.numScreenshots > 1 then
-            self.btnPrevious:Enable(true)
-            self.btnNext:Enable(true)
+            self.tWndRefs.btnPrevious:Enable(true)
+            self.tWndRefs.btnNext:Enable(true)
         else
-            self.btnPrevious:Enable(false)
-            self.btnNext:Enable(false)
+            self.tWndRefs.btnPrevious:Enable(false)
+            self.tWndRefs.btnNext:Enable(false)
         end
 	    
 	    self:DrawScreenshot()
@@ -94,13 +95,17 @@ function PlugPreview:OnWindowClosed()
 	--  hitting ESC or
 	--  C++ calling Event_ClosePlugPreviewWindow()
 	
-	Sound.Play(Sound.PlayUIWindowClose)
+	if self.tWndRefs.winPlugPreview ~= nil and self.tWndRefs.winPlugPreview:IsValid() then
+		self.tWndRefs.winPlugPreview:Destroy()
+		self.tWndRefs = {}
+		Sound.Play(Sound.PlayUIWindowClose)
+	end
 end
 
 ---------------------------------------------------------------------------------------------------
 function PlugPreview:OnClosePlugPreviewWindow()
 	-- close the window which will trigger OnWindowClosed
-	self.winPlugPreview:Close()
+	self.tWndRefs.winPlugPreview:Close()
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -128,9 +133,9 @@ function PlugPreview:DrawScreenshot()
     if self.numScreenshots > 0 and self.plugItem ~= nil then
         local spriteList = self.plugItem["screenshots"]
         local sprite = spriteList[self.currScreen].sprite
-        self.winScreen:SetSprite("ClientSprites:"..sprite)
+        self.tWndRefs.winScreen:SetSprite("ClientSprites:"..sprite)
     else
-        self.winScreen:SetSprite("")
+        self.tWndRefs.winScreen:SetSprite("")
     end
 end
 

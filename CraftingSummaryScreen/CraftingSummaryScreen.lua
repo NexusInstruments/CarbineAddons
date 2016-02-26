@@ -45,7 +45,6 @@ function CraftingSummaryScreen:OnDocumentReady()
 
 	math.randomseed(os.time())
 
-	Apollo.RegisterEventHandler("GenericEvent_BotchCraft", 			"OnGenericEvent_BotchCraft", self)
 	Apollo.RegisterEventHandler("GenericEvent_CraftSummaryMsg", 	"OnGenericEvent_CraftSummaryMsg", self)
 	Apollo.RegisterEventHandler("GenericEvent_ClearCraftSummary", 	"OnGenericEvent_ClearCraftSummary", self)
 	Apollo.RegisterEventHandler("GenericEvent_StartCraftCastBar", 	"OnGenericEvent_StartCraftCastBar", self)
@@ -63,7 +62,6 @@ function CraftingSummaryScreen:OnDocumentReady()
 	self.tWndRefs.wndCraftingCastBar = nil
 
 	self.itemTooltipOverride = nil
-	self.bBotchCraft = false
 	self.strOnGoingMessage = ""
 end
 
@@ -80,8 +78,8 @@ function CraftingSummaryScreen:OnCraftingSummary_StationTimer() -- Hackish: Thes
 	if not CraftingLib.IsAtCraftingStation() then
 		bResult = false
 	elseif tSchematicInfo then
-		for idx, tMaterialData in pairs(tSchematicInfo.tMaterials) do
-			if tMaterialData.nAmount > (tMaterialData.itemMaterial:GetBackpackCount() + tMaterialData.itemMaterial:GetBankCount()) then
+		for idx, tMaterialData in pairs(tSchematicInfo.arMaterials) do
+			if tMaterialData.nNeeded > tMaterialData.nOwned then
 				bResult = false
 				break
 			end
@@ -134,11 +132,10 @@ function CraftingSummaryScreen:OnCraftingInterrupted()
 
 	Event_FireGenericEvent("GenericEvent_LootChannelMessage", Apollo.GetString("CoordCrafting_MovementInterrupt"))
 
-	self.bBotchCraft = true
 	self:OnClose()
 end
 
-function CraftingSummaryScreen:OnCraftingSchematicComplete(idSchematic, bPass, nEarnedXp, arMaterialReturnedIds, idSchematicCrafted, idItemCrafted) -- Main starting method
+function CraftingSummaryScreen:OnCraftingSchematicComplete(idSchematic, bPass, nEarnedXP, arMaterialReturnedIds, idSchematicCrafted, idItemCrafted) -- Main starting method
 	if idItemCrafted == 0 then -- No item was made
 		return
 	end
@@ -150,11 +147,6 @@ function CraftingSummaryScreen:OnCraftingSchematicComplete(idSchematic, bPass, n
 
 	if not self.tWndRefs.wndMain or not self.tWndRefs.wndMain:IsValid() then -- GOTCHA: This is possible if the parent UI was deleted
 		self.tWndRefs.wndMain = Apollo.LoadForm(self.xmlDoc, "CraftingSummaryScreenForm", nil, self)
-	end
-
-	if self.bBotchCraft then -- Skip entire UI if botch craft (e.g. Abandon Button)
-		self.bBotchCraft = false
-		return
 	end
 
 	self.tWndRefs.wndMain:Invoke()
@@ -174,7 +166,7 @@ function CraftingSummaryScreen:OnCraftingSchematicComplete(idSchematic, bPass, n
 			Sound.Play(Sound.PlayUICraftingSuccess)
 		else
 			self.tWndRefs.wndMain:FindChild("CraftingSummaryItemIcon"):SetSprite("ClientSprites:LootCloseBox")
-			self.tWndRefs.wndMain:FindChild("CraftingSummaryResultsTitle"):SetTextColor("xkcdReddish")
+			self.tWndRefs.wndMain:FindChild("CraftingSummaryResultsTitle"):SetTextColor("Reddish")
 			self.tWndRefs.wndMain:FindChild("CraftingSummaryResultsTitle"):SetText(String_GetWeaselString(Apollo.GetString("CraftingSummary_CraftFailedText"), tSchemInfo.itemOutput:GetName()))
 			self.tWndRefs.wndMain:FindChild("CraftingSummaryItemIcon"):SetTooltip(Apollo.GetString("CraftingSummary_CraftFailedTooltip"))
 			Sound.Play(Sound.PlayUICraftingFailure)
@@ -182,12 +174,12 @@ function CraftingSummaryScreen:OnCraftingSchematicComplete(idSchematic, bPass, n
 
 		-- XP Bar
 		local tTradeskillInfo = CraftingLib.GetTradeskillInfo(tSchemInfo.eTradeskillId)
-		self.tWndRefs.wndMain:FindChild("CraftingSummaryXPProgBG"):Show(nEarnedXp > 0)
+		self.tWndRefs.wndMain:FindChild("CraftingSummaryXPProgBG"):Show(nEarnedXP > 0)
 
-		if nEarnedXp > 0 then -- Assume crafts will always give > 0 xp at non-max tiers
-			local nCurrXP = tTradeskillInfo.nXp
+		if nEarnedXP > 0 then -- Assume crafts will always give > 0 xp at non-max tiers
+			local nCurrXP = tTradeskillInfo.nXp + nEarnedXP
 			local nNextXP = tTradeskillInfo.nXpForNextTier
-			local strProgText = String_GetWeaselString(Apollo.GetString("CraftingSummary_ProgressText"), nEarnedXp, tTradeskillInfo.strName, nCurrXP + nEarnedXp, nNextXP)
+			local strProgText = String_GetWeaselString(Apollo.GetString("CraftingSummary_ProgressText"), nEarnedXP, tTradeskillInfo.strName, nCurrXP, nNextXP)
 			self.tWndRefs.wndMain:FindChild("CraftingSummaryXPProgBar"):SetMax(nNextXP)
 			self.tWndRefs.wndMain:FindChild("CraftingSummaryXPProgBar"):SetProgress(nCurrXP)
 			self.tWndRefs.wndMain:FindChild("CraftingSummaryXPProgBar"):EnableGlow(nCurrXP > 0 and nCurrXP < nNextXP)
@@ -319,10 +311,6 @@ end
 
 function CraftingSummaryScreen:OnGenericEvent_CraftSummaryMsg(strMessage) -- From Lua
 	self:HelperWriteToCraftingSummaryDetails(strMessage)
-end
-
-function CraftingSummaryScreen:OnGenericEvent_BotchCraft()
-	self.bBotchCraft = true -- Skip entire UI if botch craft (e.g. Abandon Button)
 end
 
 local CraftingSummaryScreenInst = CraftingSummaryScreen:new()

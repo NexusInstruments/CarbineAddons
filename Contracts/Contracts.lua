@@ -6,11 +6,14 @@
 require "Window"
 require "Contract"
 require "ContractsLib"
+require "GameLib"
 require "RewardTrack"
 require "RewardTrackLib"
 require "Quest"
 
 local Contracts = {}
+
+local knContractMinLevel = GameLib.GetLevelUpUnlock(GameLib.LevelUpUnlock.Contracts).nLevel
 
 local ktContractQualityArt =
 {
@@ -60,11 +63,12 @@ function Contracts:OnDocLoaded()
 	if self.xmlDoc ~= nil and self.xmlDoc:IsLoaded() then
 		Apollo.RegisterSlashCommand("contracts", "ToggleContracts", self)
 
+		Apollo.RegisterEventHandler("ToggleContractsWindow", 						"OnToggleContractsWindow", self)
 		Apollo.RegisterEventHandler("ContractBoardOpen", 							"OpenContracts", self)
 		Apollo.RegisterEventHandler("ContractBoardClose", 							"CloseContracts", self)
 		Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded", 					"OnInterfaceMenuListHasLoaded", self)
 		Apollo.RegisterEventHandler("GenericEvent_InterfaceMenu_OpenContracts", 	"ToggleContracts", self)
-		Apollo.RegisterEventHandler("LevelUpUnlock_PvE_Contracts", 	"OpenContracts", self)
+		Apollo.RegisterEventHandler("LevelUpUnlock_PvE_Contracts", 					"OpenContracts", self)
 
 		Apollo.RegisterEventHandler("ContractStateChanged", 						"OnContractStateChanged", self)
 		Apollo.RegisterEventHandler("ContractGoodQualityChanged", 					"RedrawAll", self)
@@ -83,14 +87,25 @@ function Contracts:OnDocLoaded()
 end
 
 function Contracts:OnInterfaceMenuListHasLoaded()
-	local tData = { "GenericEvent_InterfaceMenu_OpenContracts", "", "Icon_Windows32_UI_CRB_InterfaceMenu_Contracts"
- }
+	local tData = { "GenericEvent_InterfaceMenu_OpenContracts", "", "Icon_Windows32_UI_CRB_InterfaceMenu_Contracts" }
 	Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("CRB_Contracts"), tData)
+end
+
+function Contracts:OnToggleContractsWindow()
+	if self.tWndRefs.wndMain ~= nil and self.tWndRefs.wndMain:IsValid() and self.tWndRefs.wndMain:IsShown() then
+		self:CloseContracts()
+	else
+		self:OpenContracts()
+	end
 end
 
 function Contracts:OpenContracts()
 	if self.tWndRefs.wndMain ~= nil and self.tWndRefs.wndMain:IsValid() then
 		return
+	end
+
+	if self.contractViewed and not self.contractViewed:IsAvailable() and not self.contractViewed:IsAccepted() then
+		self.contractViewed = nil
 	end
 	
 	self.wndAbandonConfirm = nil
@@ -209,7 +224,7 @@ function Contracts:OnContractStateChanged(contract, eState)
 			
 			local contractSelected = wndContractSelected:GetData()
 			if wndContractSelected:IsShown() and contract:GetId() == contractSelected:GetId() then
-				if eState == Quest.QuestState_Abandoned then
+				if eState == Quest.QuestState_Abandoned or (not contract:IsAvailable() and not contract:IsAccepted()) then
 					self:DrawContractOverview(wndContract, nil)
 				else
 					self:DrawContractOverview(wndContract, contract)
@@ -339,11 +354,12 @@ function Contracts:DrawActiveContracts(wndContainer, eContractType, eRewardType,
 	for idx, contractActive in pairs(tActiveContractList) do
 		tActiveContractsById[contractActive:GetId()] = contractActive
 	end
-	
+
 	for idx, wndActiveCandidate in pairs(wndActiveContractContainer:GetChildren()) do
 		local contractOnWindow = wndActiveCandidate:GetData()
 		if contractOnWindow ~= nil then
-			if tActiveContractsById[contractOnWindow:GetId()] ~= nil then
+
+			if Contract.is(contractOnWindow) and tActiveContractsById[contractOnWindow:GetId()] ~= nil then
 				tActiveContractsOnWindowsById[contractOnWindow:GetId()] = contractOnWindow
 			end
 		end
@@ -362,22 +378,22 @@ function Contracts:DrawActiveContracts(wndContainer, eContractType, eRewardType,
 				end
 			end
 		else
-			if tActiveContractsById[contractOnWindow:GetId()] ~= nil then
+			if Contract.is(contractOnWindow) and tActiveContractsById[contractOnWindow:GetId()] ~= nil then
 				contractActive = contractOnWindow
 			end
 		end
 		
 		if contractActive == nil then
-			if contractOnWindow ~= nil then
+			if contractOnWindow ~= nil and Contract.is(contractOnWindow) then
 				if contractOnWindow:GetQuest():GetState() == Quest.QuestState_Completed then
 					local wndActivatedContractFlash = wndActive:FindChild("TurnInContractFlash")
 					wndActivatedContractFlash:Show(true)
 					wndActivatedContractFlash:SetSprite("Contracts:sprContracts_SlottedTurnIn")
-				else
-					local wndAbandonedContractFlash = wndActive:FindChild("AbandonedContractFlash")
-					wndAbandonedContractFlash:Show(true)
-					wndAbandonedContractFlash:SetSprite("Contracts:sprContracts_SlottedReverse")
 				end
+
+				local wndAbandonedContractFlash = wndActive:FindChild("AbandonedContractFlash")
+				wndAbandonedContractFlash:Show(true)
+				wndAbandonedContractFlash:SetSprite("Contracts:sprContracts_SlottedReverse")
 				
 				local strCallbackFunctionName = "Contracts_ActiveCloseTimerCallback" .. contractOnWindow:GetId()
 				self[strCallbackFunctionName] = function()
@@ -389,6 +405,7 @@ function Contracts:DrawActiveContracts(wndContainer, eContractType, eRewardType,
 						wndActive:FindChild("AchievedGlow"):Show(false)
 						wndActive:FindChild("SelectBtn"):Show(false)
 						wndActive:FindChild("ActivatedContractFlash"):Show(false)
+						wndActive:FindChild("TypeRepeatable"):Show(false)
 					end
 					
 					self[strCallbackFunctionName] = nil
@@ -396,6 +413,10 @@ function Contracts:DrawActiveContracts(wndContainer, eContractType, eRewardType,
 				
 				wndActive:SetData(ApolloTimer.Create(0.5, false, strCallbackFunctionName, self))
 			else
+				if ApolloTimer.is(contractOnWindow) then--This is a timer not a contract
+					contractOnWindow:Stop()
+				end
+
 				wndActive:SetData(nil)
 				wndActive:SetTooltip(Apollo.GetString("Contracts_EmptyActiveContractTooltip"))
 				wndActive:FindChild("QualityIcon"):Show(false)
@@ -403,6 +424,7 @@ function Contracts:DrawActiveContracts(wndContainer, eContractType, eRewardType,
 				wndActive:FindChild("AchievedGlow"):Show(false)
 				wndActive:FindChild("SelectBtn"):Show(false)
 				wndActive:FindChild("ActivatedContractFlash"):Show(false)
+				wndActive:FindChild("TypeRepeatable"):Show(false)
 			end
 			
 		else
@@ -415,7 +437,9 @@ function Contracts:DrawActiveContracts(wndContainer, eContractType, eRewardType,
 			local wndTypeIcon = wndActive:FindChild("TypeIcon")
 			wndTypeIcon:Show(true)
 			wndTypeIcon:SetSprite(ktContractTypeArt[contractActive:GetQuest():GetSubType()].strActive)
-
+			
+			wndActive:FindChild("TypeRepeatable"):Show(contractActive:GetQuality() == ContractsLib.ContractQuality.Good)
+			
 			local wndSelectBtn = wndActive:FindChild("SelectBtn")
 			wndSelectBtn:SetData({ ["wndContainer"] = wndContainer, ["contract"] = contractActive })
 			wndSelectBtn:Show(true)
@@ -583,13 +607,12 @@ function Contracts:DrawRewardPoint(wndContainer, wndRewardPoint, rtRewardTrack, 
 	-- Tooltip items
 	local wndItemContainer = wndTooltip:FindChild("ItemRewards")
 	wndItemContainer:DestroyChildren()
-	for idx, tItemChoice in pairs(tReward.tItemChoices) do
-		local wndItem = Apollo.LoadForm(self.xmlDoc, "RewardPointTooltipItem", wndItemContainer, self)
-		
-		wndItem:FindChild("ItemCantUse"):Show(tItemChoice.itemReward:IsEquippable() and not tItemChoice.itemReward:CanEquip())
-		wndItem:FindChild("ItemIcon"):GetWindowSubclass():SetItem(tItemChoice.itemReward)
-		if tItemChoice.nItemAmount > 1 then
-			wndItem:FindChild("ItemStackCount"):SetText(tItemChoice.nItemAmount)
+	for idx, tItemChoice in pairs(tReward.tRewardChoices) do
+		if tItemChoice.eRewardType == RewardTrack.RewardTrackRewardType.Item then
+			local wndItem = Apollo.LoadForm(self.xmlDoc, "RewardPointTooltipItem", wndItemContainer, self)
+			
+			wndItem:FindChild("ItemCantUse"):Show(tItemChoice.itemReward:IsEquippable() and not tItemChoice.itemReward:CanEquip())
+			wndItem:FindChild("ItemIcon"):GetWindowSubclass():SetItem(tItemChoice.itemReward)
 		end
 	end
 	wndItemContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
@@ -606,7 +629,7 @@ function Contracts:DrawRewardListEntry(wndEntry, rtRewardTrack, tReward)
 	wndRewardListClaimBtn:SetData({ ["tReward"] = tReward, ["rtRewardTrack"] = rtRewardTrack })
 	
 	wndRewardListClaimBtn:Show(tReward.bCanClaim and not tReward.bIsClaimed)
-	wndRewardListClaimBtn:Enable(#tReward.tItemChoices == 0)
+	wndRewardListClaimBtn:Enable(#tReward.tRewardChoices == 0)
 	
 	if tReward.bIsClaimed then
 		wndEntryContainer:FindChild("RewardLabel"):SetText(String_GetWeaselString(Apollo.GetString("Contracts_RewardAlreadyClaimed"), nDisplayRewardIdx))
@@ -631,21 +654,20 @@ function Contracts:DrawRewardListEntry(wndEntry, rtRewardTrack, tReward)
 	local wndItemRewardContainer = wndEntryContainer:FindChild("ItemRewardContainer")
 	local wndItemContainer = wndItemRewardContainer:FindChild("ItemRewards")
 	wndItemContainer:DestroyChildren()
-	for idx, tItemChoice in pairs(tReward.tItemChoices) do
-		local wndItem = Apollo.LoadForm(self.xmlDoc, "RewardSelectionItem", wndItemContainer, self)
-		
-		wndItem:FindChild("ItemCantUse"):Show(tItemChoice.itemReward:IsEquippable() and not tItemChoice.itemReward:CanEquip())
-		wndItem:FindChild("ItemIcon"):GetWindowSubclass():SetItem(tItemChoice.itemReward)
-		if tItemChoice.nItemAmount > 1 then
-			wndItem:FindChild("ItemStackCount"):SetText(tItemChoice.nItemAmount)
+	for idx, tItemChoice in pairs(tReward.tRewardChoices) do
+		if tItemChoice.eRewardType == RewardTrack.RewardTrackRewardType.Item then
+			local wndItem = Apollo.LoadForm(self.xmlDoc, "RewardSelectionItem", wndItemContainer, self)
+			
+			wndItem:FindChild("ItemCantUse"):Show(tItemChoice.itemReward:IsEquippable() and not tItemChoice.itemReward:CanEquip())
+			wndItem:FindChild("ItemIcon"):GetWindowSubclass():SetItem(tItemChoice.itemReward)
+			wndItem:FindChild("ItemIcon"):SetData(tItemChoice)
+			local wndSelectionBtn = wndItem:FindChild("SelectionBtn")
+			wndSelectionBtn:SetData({ ["tItemChoice"] = tItemChoice, ["wndRewardListClaimBtn"] = wndRewardListClaimBtn })
+			wndSelectionBtn:Enable(tReward.bCanClaim and not tReward.bIsClaimed)
 		end
-		wndItem:FindChild("ItemIcon"):SetData(tItemChoice)
-		local wndSelectionBtn = wndItem:FindChild("SelectionBtn")
-		wndSelectionBtn:SetData({ ["tItemChoice"] = tItemChoice, ["wndRewardListClaimBtn"] = wndRewardListClaimBtn })
-		wndSelectionBtn:Enable(tReward.bCanClaim and not tReward.bIsClaimed)
 	end
 	wndItemContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
-	wndItemRewardContainer:Show(#tReward.tItemChoices > 0)
+	wndItemRewardContainer:Show(#tReward.tRewardChoices > 0)
 	
 	local nHeight = wndEntryContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	local nLeft, nTop, nRight, nBottom = wndEntry:GetAnchorOffsets()
@@ -686,6 +708,8 @@ function Contracts:DrawPeriodicContracts(wndContainer, tAvailableContracts, nAct
 			
 			local wndTypeIcon = wndContract:FindChild("Container:TypeIcon")
 			wndTypeIcon:SetSprite(ktContractTypeArt[contractAvailable:GetQuest():GetSubType()].strAvailable)
+			
+			wndContract:FindChild("TypeRepeatable"):Show(contractAvailable:GetQuality() == ContractsLib.ContractQuality.Good)
 		end
 	end
 	
@@ -695,6 +719,16 @@ end
 function Contracts:DrawContractOverview(wndContainer, contract)
 	local wndNoContractSelected = wndContainer:FindChild("NoContractSelected")
 	local wndContractSelected = wndContainer:FindChild("ContractSelected")
+	local bPlayerLevel = GameLib.GetPlayerLevel()
+	local bHasValidLevel = bPlayerLevel ~= nil and bPlayerLevel >= knContractMinLevel 
+		
+	if not bHasValidLevel then
+		local wndOverviewText = wndNoContractSelected:FindChild("DescriptionLevelReq")
+		wndNoContractSelected:FindChild("Description"):Show(false)
+		wndOverviewText:Show(true)
+		wndOverviewText:SetText(String_GetWeaselString(Apollo.GetString("Contracts_LevelRequirement"),knContractMinLevel,Apollo.GetString("Contracts_Title")))
+		wndOverviewText:SetTextColor("Reddish")
+	end	
 	
 	wndContractSelected:SetData(contract)
 	self.contractViewed = contract
@@ -782,7 +816,7 @@ function Contracts:DrawContractOverview(wndContainer, contract)
 		
 		local bIsAtContractBoard = ContractsLib.IsAtContractBoard()
 		local wndAcceptBtn = wndContractSelected:FindChild("AcceptBtn")
-		wndAcceptBtn:Show(bIsAtContractBoard and contract:IsAvailable())
+		wndAcceptBtn:Show(bIsAtContractBoard and contract:IsAvailable() and bHasValidLevel)
 		wndAcceptBtn:SetData(contract)
 		
 		local wndAbandonBtn = wndContractSelected:FindChild("AbandonBtn")
@@ -793,11 +827,21 @@ function Contracts:DrawContractOverview(wndContainer, contract)
 		wndTurnInBtn:Show(bIsAtContractBoard and contract:IsAchieved())
 		wndTurnInBtn:SetData(contract)
 		
-		wndContractSelected:FindChild("AcceptReminder"):Show(not bIsAtContractBoard and contract:IsAvailable())
-		wndContractSelected:FindChild("TurnInReminder"):Show(not bIsAtContractBoard and contract:IsAchieved())
-		wndContractSelected:FindChild("MaxActiveReminder"):Show(not contract:IsAvailable() and not contract:IsAccepted() and not contract:IsAchieved() and not contract:IsCompleted())
-		wndContractSelected:FindChild("DoneReminder"):Show(contract:IsCompleted())
-
+		local contractMessaging = wndContractSelected:FindChild("ContractMessaging")
+		
+		if not bIsAtContractBoard and contract:IsAvailable() and bHasValidLevel then 
+			contractMessaging:SetText(Apollo.GetString("Contracts_ReturnForMoreContracts"))
+		elseif not bIsAtContractBoard and contract:IsAchieved() then
+			contractMessaging:SetText(Apollo.GetString("Contracts_ReturnCompletedContracts"))		
+		elseif not contract:IsAvailable() and not contract:IsAccepted() and not contract:IsAchieved() and not contract:IsCompleted() then
+			contractMessaging:SetText(Apollo.GetString("Contracts_CompleteContractsFirst"))		
+		elseif contract:IsCompleted() then
+			contractMessaging:SetText(Apollo.GetString("Contracts_ContractAlreadyDone"))
+		elseif not bHasValidLevel then
+			contractMessaging:SetText(String_GetWeaselString(Apollo.GetString("Contracts_LevelRequirement"),knContractMinLevel,Apollo.GetString("Contracts_Title")))			
+		else 
+			contractMessaging:SetText("")
+		end
 	end
 	
 	wndNoContractSelected:Show(contract == nil)
@@ -1108,7 +1152,6 @@ function Contracts:OnGenerateRewardItemTooltip(wndHandler, wndControl, eToolTipT
 	local tPrimaryTooltipOpts =
 	{
 		bPrimary = true,
-		nStackCount = tData.nItemAmount,
 		itemCompare = tData.itemReward:GetEquippedItemForItemType()
 	}
 	

@@ -7,9 +7,9 @@ require "Window"
 require "PetFlair"
 require "PetCustomization"
 require "PetCustomizationLib"
+require "ScientistScanBotProfile"
 
 local PathScientistCustomize = {}
-local knDurationOfCast = 7.5
 local knSaveVersion = 2
 
 function PathScientistCustomize:new(o)
@@ -63,7 +63,7 @@ function PathScientistCustomize:OnDocumentReady()
 	end
 	Apollo.RegisterEventHandler("PetFlairUnlocked", "OnPetFlairUnlocked", self)
 	Apollo.RegisterEventHandler("GenericEvent_ToggleScanBotCustomize", "Initialize", self)
-	Apollo.RegisterEventHandler("PlayerPathScientistScanBotCooldown",	"OnScanBotCooldown", self)
+	Apollo.RegisterEventHandler("PlayerPathScientistScanBotCooldown",	"OnPlayerPathScientistScanBotCooldown", self)
 	Apollo.RegisterTimerHandler("ScanBotCooldownCastBar",				"OnScanBotCooldownProgress", self)
 end
 
@@ -90,13 +90,11 @@ function PathScientistCustomize:Initialize(bShow)
 		Apollo.RegisterEventHandler("PetCustomizationUpdated", 	"OnPetCustomizationUpdated", self)
 		Apollo.RegisterEventHandler("PlayerPathScientistScanBotDeployed",	"OnScanBotDeployed", self)
 		Apollo.RegisterEventHandler("PlayerPathScientistScanBotDespawned",	"OnScanBotDespawned", self)
-		Apollo.RegisterEventHandler("ScanBotCooldownComplete",				"OnScanBotCooldownComplete", self)
-		--Apollo.RegisterEventHandler("PetFlairCleared", "OnPetFlairCleared", self) -- Deprecated? Not used?
+		Apollo.RegisterEventHandler("ScanBotCooldownComplete",				"OnDoneScanBotCastBar", self)
 
 		Apollo.RegisterTimerHandler("RedrawAllTimer", 						"RedrawAll", self)
 		Apollo.RegisterTimerHandler("ScanBotCustomize_ErrorMessageTimer", 	"OnScanBotCustomize_ErrorMessageTimer", self)
-		Apollo.RegisterTimerHandler("IncrementScanBotCastBar", 				"OnIncrementScanBotCastBar", self)
-		Apollo.RegisterTimerHandler("DoneScanBotCastBar", 					"OnDoneScanBotCastBar", self)
+
 	end
 
 	-- Summon the bot (for portrait and data)
@@ -165,7 +163,7 @@ function PathScientistCustomize:RedrawAll()
 			end
 		end
 	end
-	self.wndMain:FindChild("ProfileDropdownList"):ArrangeChildrenVert(0)
+	self.wndMain:FindChild("ProfileDropdownList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 	-- Slots (Vanity and ROM)
 	local tScanBotData = PlayerPathLib.ScientistGetScanBotProfile():GetCustomization()
@@ -197,7 +195,7 @@ function PathScientistCustomize:RedrawAll()
 			end
 		end
 	end
-	self.wndMain:FindChild("CurrentList"):ArrangeChildrenHorz(1)
+	self.wndMain:FindChild("CurrentList"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.Middle)
 
 	-- Vanity
 	local nVanityScrollPos = self.wndMain:FindChild("AvailableVanityList"):GetVScrollPos()
@@ -210,7 +208,7 @@ function PathScientistCustomize:RedrawAll()
 		wndCurr:FindChild("FlairItemIcon"):SetSprite(tFlairData:GetIconPath())
 		wndCurr:FindChild("FlairItemName"):SetText(tFlairData:GetName())
 	end
-	self.wndMain:FindChild("AvailableVanityList"):ArrangeChildrenVert(0)
+	self.wndMain:FindChild("AvailableVanityList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	self.wndMain:FindChild("AvailableVanityList"):SetVScrollPos(nVanityScrollPos)
 
 	-- ROMs
@@ -228,7 +226,7 @@ function PathScientistCustomize:RedrawAll()
 		wndCurr:FindChild("FlairItemBtn"):SetBGColor("ffffff00")
 		wndCurr:FindChild("FlairItemName"):SetTextColor("ff7fffb9")
 	end
-	self.wndMain:FindChild("AvailableROMList"):ArrangeChildrenVert(0)
+	self.wndMain:FindChild("AvailableROMList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	self.wndMain:FindChild("AvailableROMList"):SetVScrollPos(nROMScrollPos)
 
 	self.wndMain:FindChild("AvailableROMEmptyLabel"):Show(self.wndMain:FindChild("AvailableROMList"):IsVisible() and #self.wndMain:FindChild("AvailableROMList"):GetChildren() == 0)
@@ -267,22 +265,16 @@ function PathScientistCustomize:OnPetCustomizationUpdated(tCustomize, tFlairData
 	Apollo.CreateTimer("RedrawAllTimer", 0.25, false) -- For animations to fully play
 end
 
--- Fake Progress Bar
-function PathScientistCustomize:OnIncrementScanBotCastBar()
-	if self.wndMain and self.wndMain:IsValid() then
-		local nCurrent = math.min(1, self.wndMain:FindChild("CraftingCastBarMove"):GetData() or 0)
-		self.wndMain:FindChild("CraftingCastBarMove"):SetMax(1)
-		self.wndMain:FindChild("CraftingCastBarMove"):SetProgress(nCurrent + 0.02)
-		self.wndMain:FindChild("CraftingCastBarMove"):SetData(nCurrent + 0.02)
-	end
-end
-
 function PathScientistCustomize:OnDoneScanBotCastBar() -- Extract also routes here, as extract is instant
-	Apollo.StopTimer("DoneScanBotCastBar")
-	Apollo.StopTimer("IncrementScanBotCastBar")
 	if self.wndMain and self.wndMain:IsValid() then
-		self.wndMain:FindChild("CraftingCastBarMove"):SetData(0)
+		self.wndMain:FindChild("CraftingCastBarMove"):SetProgress(0)
 	end
+
+	if self.bSelectedProfile then
+		PlayerPathLib.ScientistToggleScanBot()
+	end
+
+	self.bSelectedProfile = false
 end
 
 function PathScientistCustomize:OnScanBotDeployed()
@@ -302,31 +294,6 @@ function PathScientistCustomize:OnScanBotDespawned()
 		self.wndMain:FindChild("ScanBotPortrait"):Show(false)
 		self.wndMain:FindChild("CurrentList"):Show(false)
 		self.wndMain:FindChild("ScanBotPortraitSummonWaiting"):Show(true)
-	end
-end
-
-function PathScientistCustomize:OnScanBotCooldown(fCooldown)
-	fCooldown = math.max(1, fCooldown)
-	Apollo.CreateTimer("ScanBotCooldownCastBar", fCooldown / 100, true) -- We want to update 1% at a time
-end
-
-function PathScientistCustomize:OnScanBotCooldownProgress()
-	self.fCooldownProgress = math.min(1, self.fCooldownProgress or 0)
-	self.fCooldownProgress = self.fCooldownProgress + 0.013
-	if self.wndMain and self.wndMain:IsValid() then
-		self.wndMain:FindChild("CraftingCastBarMove"):SetMax(1)
-		self.wndMain:FindChild("CraftingCastBarMove"):SetProgress(self.fCooldownProgress)
-		self.wndMain:FindChild("CraftingCastBarMove"):SetData(self.fCooldownProgress)
-	end
-end
-
-function PathScientistCustomize:OnScanBotCooldownComplete()
-	Apollo.StopTimer("ScanBotCooldownCastBar")
-	self.fCooldownProgress = 0
-	if self.wndMain and self.wndMain:IsValid() then
-		self.wndMain:FindChild("ScanBotPortraitSummonBtn"):Show(true)
-		self.wndMain:FindChild("ScanBotPortraitSummonWaiting"):Show(false)
-		self.wndMain:FindChild("CraftingCastBarMove"):SetProgress(0)
 	end
 end
 
@@ -417,12 +384,18 @@ function PathScientistCustomize:OnPickProfileBtn(wndHandler, wndControl) -- Pick
 
 	self.wndMain:FindChild("ProfileDropdownBG"):Show(false)
 	self:RedrawAll() -- No update event?
+	self.bSelectedProfile = true
+end
 
-	Apollo.StopTimer("DoneScanBotCastBar")
-	Apollo.StopTimer("IncrementScanBotCastBar")
-	Apollo.CreateTimer("IncrementScanBotCastBar", knDurationOfCast / 50, true)
-	Apollo.CreateTimer("DoneScanBotCastBar", knDurationOfCast, false)
-	self.wndMain:FindChild("CraftingCastBarMove"):SetData(0)
+function PathScientistCustomize:OnPlayerPathScientistScanBotCooldown(nTime)
+	if not self.wndMain or not self.wndMain:IsValid() then
+		return
+	end
+
+	local nMinCoolDownTime = nTime
+	self.wndMain:FindChild("CraftingCastBarMove"):SetMax(nMinCoolDownTime)
+	self.wndMain:FindChild("CraftingCastBarMove"):SetProgress(nMinCoolDownTime, 1)
+	self.timerRespawn = ApolloTimer.Create(nMinCoolDownTime, false, "OnDoneScanBotCastBar", self)
 end
 
 -- Renaming

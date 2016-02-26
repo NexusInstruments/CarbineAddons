@@ -28,7 +28,7 @@ function RuneSets:OnDocumentReady()
 		return
 	end
 
-	Apollo.RegisterEventHandler("InterfaceMenu_ToggleSets", 	"RedrawSets", self)
+	Apollo.RegisterEventHandler("UpdateRuneSets", 				"RedrawSets", self)
 	Apollo.RegisterEventHandler("PlayerEquippedItemChanged", 	"OnUpdateEvent", self)
 	Apollo.RegisterEventHandler("ItemModified", 				"OnUpdateEvent", self)
 	Apollo.RegisterEventHandler("ToggleCharacterWindow", 		"OnToggleCharacterWindow", self)
@@ -47,27 +47,7 @@ function RuneSets:RedrawSets(wndParent)
 	end
 
 	-- Sets from equipped items only
-	local tListOfSets = {}
-	local bHeaderBag = true -- TODO
-	local bHeaderEquipped = true -- TODO
-	for idx, itemCurr in pairs(CraftingLib.GetItemsWithRuneSlots(bHeaderEquipped, bHeaderBag)) do
-		for idx2, tSetInfo in ipairs(itemCurr:GetSetBonuses()) do
-			if tSetInfo and tSetInfo.strName and not tListOfSets[tSetInfo.strName] then
-				tListOfSets[tSetInfo.strName] = tSetInfo
-			end
-		end
-	end
-
-	-- Current Runes
-	for idx, itemRune in pairs(CraftingLib.GetValidRuneItems()) do
-		local tMicrochipData = itemRune:GetMicrochipInfo()
-		for idx, tSetInfo in pairs(tMicrochipData.tSet or {}) do
-			if tSetInfo and tSetInfo.strName and not tListOfSets[tSetInfo.strName] then
-				tSetInfo.nPower = 0 -- HACK
-				tListOfSets[tSetInfo.strName] = tSetInfo
-			end
-		end
-	end
+	local tListOfSets = Item.GetSetBonuses()
 
 	-- Draw sets now
 	local strFullText = ""
@@ -80,11 +60,26 @@ function RuneSets:RedrawSets(wndParent)
 		table.sort(tBonuses, function(a,b) return a.nPower < b.nPower end)
 
 		for idx3, tBonusInfo in pairs(tBonuses) do
-			-- tBonusInfo.active, tBonusInfo.power, tBonusInfo.spell:GetFlavor()
 			local strLocalColor = tBonusInfo.bIsActive and "ItemQuality_Good" or "UI_TextHoloBody"
-			strLocalSetText = string.format("%s<P Font=\"CRB_InterfaceMedium\" TextColor=\"%s\">%s</P><P TextColor=\"0\">.</P>", strLocalSetText, strLocalColor,
-			String_GetWeaselString(Apollo.GetString("Tooltips_RuneDetails"), tBonusInfo.nPower, tBonusInfo.splBonus:GetName(), tBonusInfo.splBonus:GetFlavor() or ""))
-
+			if tBonusInfo.splBonus then
+				strLocalSetText = string.format("%s<P Font=\"CRB_InterfaceMedium\" TextColor=\"%s\">%s</P><P TextColor=\"0\">.</P>", strLocalSetText, strLocalColor,
+					String_GetWeaselString(Apollo.GetString("Tooltips_RuneDetails"), tBonusInfo.nPower, tBonusInfo.splBonus:GetName(), tBonusInfo.splBonus:GetFlavor()))
+			end
+			
+			if tBonusInfo.eProperty then
+				local nValue = 0
+				local nScalar = 0
+				if tBonusInfo.nValue ~= nil then
+					nValue = tBonusInfo.nValue * 100
+				else
+					nScalar = (tBonusInfo.nScalar - 1) * 100
+				end
+				strLocalSetText = string.format("%s<P Font=\"CRB_InterfaceMedium\" TextColor=\"%s\">%s</P>", strLocalSetText, strLocalColor,
+					String_GetWeaselString(Apollo.GetString("RuneSets_PropertyInfo"), tBonusInfo.nPower, Apollo.FormatNumber(nValue + nScalar, 2, true), Item.GetPropertyName(tBonusInfo.eProperty)))
+			else
+				strLocalSetText = string.format("%s<P Font=\"CRB_InterfaceMedium\" TextColor=\"%s\">%s</P>", strLocalSetText, strLocalColor, 
+					String_GetWeaselString(Apollo.GetString("RuneSets_Specials"), tBonusInfo.nPower, tBonusInfo.strName, tBonusInfo.strFlavor))
+			end
 		end
 
 		strFullText = strFullText .. kstrLineBreak .. strLocalSetText
@@ -93,7 +88,7 @@ function RuneSets:RedrawSets(wndParent)
 	self.wndMain:FindChild("SetsListNormalText"):SetAML(strFullText)
 	self.wndMain:FindChild("SetsListNormalText"):SetHeightToContentHeight()
 	self.wndMain:FindChild("SetsListContainer"):RecalculateContentExtents()
-	self.wndMain:FindChild("SetsListContainer"):ArrangeChildrenVert(0)
+	self.wndMain:FindChild("SetsListContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	self.wndMain:FindChild("SetsListEmptyText"):Show(strFullText == "")
 end
 

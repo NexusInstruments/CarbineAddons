@@ -57,6 +57,8 @@ function Circles:OnDocumentReady()
 	Apollo.RegisterEventHandler("GuildMemberChange", 				"OnGuildMemberChange", self)  -- General purpose update method
 	Apollo.RegisterEventHandler("GuildRankChange",					"OnGuildRankChange", self)
 	Apollo.RegisterEventHandler("GuildInvite",						"OnCircleInvite", self)
+	Apollo.RegisterEventHandler("CharacterEntitlementUpdate",		"OnEntitlementUpdate", self)
+	Apollo.RegisterEventHandler("AccountEntitlementUpdate",			"OnEntitlementUpdate", self)
 
 	self.timerUpdateOffline = ApolloTimer.Create(30.000, true, "OnOfflineTimeUpdate", self)
 	self.timerUpdateOffline:Stop()
@@ -64,6 +66,7 @@ function Circles:OnDocumentReady()
 	self.timerAlert = ApolloTimer.Create(3.0, false, "OnCircleAlertDisplayTimer", self)
 	self.timerAlert:Stop()
 	
+	self.bHasFullCircleAccess = (AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0 or AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.FullGuildsAccess) > 0)
 end
 
 function Circles:OnGenericEvent_InitializeCircles(wndParent, guildCurr)
@@ -76,7 +79,7 @@ function Circles:OnGenericEvent_InitializeCircles(wndParent, guildCurr)
 	local wndRosterEditNotesBtn = wndRosterScreen:FindChild("RosterOptionBtnEditNotes")
 	local wndRosterRemoveBtn = wndRosterBottom:FindChild("RosterOptionBtnRemove")
 	local wndRosterAddBtn = wndRosterBottom:FindChild("RosterOptionBtnAdd")
-	wndRosterBottom:ArrangeChildrenHorz(2)
+	wndRosterBottom:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.RightOrBottom)
 	
 	wndRosterAddBtn:AttachWindow(wndRosterAddBtn:FindChild("AddMemberContainer"))
 	self.tWndRefs.wndMain:FindChild("RosterOptionBtnLeaveFlyout"):AttachWindow(self.tWndRefs.wndMain:FindChild("LeaveFlyoutBtnContainer"))
@@ -182,7 +185,6 @@ function Circles:OnGuildRoster(guildCurr, tRoster) -- Event from CPP
 	end
 	
 	if guildCurr == self.tWndRefs.wndMain:GetData() then -- Since Circles and Guild can be up at the same time
-		self.tWndRefs.wndMain:FindChild("RosterScreen:RosterGrid"):DeleteAll()
 		self:BuildRosterList(guildCurr, self:SortRoster(tRoster, "RosterSortBtnName")) -- "RosterSortBtnName" is the default sort method to use
 	end
 
@@ -196,6 +198,7 @@ function Circles:BuildRosterList(guildCurr, tRoster)
 
 	local tRanks = guildCurr:GetRanks()
 	local wndGrid = self.tWndRefs.wndMain:FindChild("RosterScreen:RosterGrid")
+	local wndData = wndGrid:GetData()
 	wndGrid:DeleteAll() -- TODO remove this for better performance eventually
 
 	for key, tCurr in pairs(tRoster) do
@@ -238,6 +241,13 @@ function Circles:BuildRosterList(guildCurr, tRoster)
 			
 			wndGrid:SetCellDoc(iCurrRow, 8, "<T Font=\"CRB_InterfaceSmall\" TextColor=\""..strTextColor.."\">".. FixXMLString(tCurr.strNote) .."</T>")
 			wndGrid:SetCellLuaData(iCurrRow, 8, String_GetWeaselString(Apollo.GetString("GuildRoster_ActiveNoteTooltip"), tCurr.strName, string.len(tCurr.strNote) > 0 and tCurr.strNote or "N/A")) -- For tooltip
+			if wndData ~= nil then
+				if tCurr.strName == wndData.strName then
+					wndGrid:SetCurrentRow(iCurrRow)
+					wndGrid:SetData(nil)
+					self:OnRosterGridItemClick(self, self, iCurrRow, 1, GameLib.CodeEnumInputMouse.Left)
+				end
+			end
 		end
 	end
 	
@@ -500,6 +510,7 @@ function Circles:ResetRosterMemberButtons()
 	-- Defaults
 	local wndRosterBottom = self.tWndRefs.wndMain:FindChild("RosterScreen:RosterBottom")
 	local wndAddBtn = wndRosterBottom:FindChild("RosterOptionBtnAdd")
+	local wndUnlockBtn = wndRosterBottom:FindChild("UnlockSocialBtn")
 	local wndRemoveBtn = wndRosterBottom:FindChild("RosterOptionBtnRemove")
 	local wndDemoteBtn = wndRosterBottom:FindChild("RosterOptionBtnDemote")
 	local wndPromoteBtn = wndRosterBottom:FindChild("RosterOptionBtnPromote")
@@ -514,12 +525,14 @@ function Circles:ResetRosterMemberButtons()
 		local tMyRankPermissions = guildCurr:GetRanks()[eMyRank]
 		local bSomeRowIsPicked = wndRosterGrid:GetCurrentRow()
 		local bTargetIsUnderMyRank = bSomeRowIsPicked and eMyRank < wndRosterGrid:GetData().nRank
+		local bStoreLinkValid = StorefrontLib.IsLinkValid(StorefrontLib.CodeEnumStoreLink.Signature)
 
 		wndRemoveBtn:Enable(bSomeRowIsPicked and bTargetIsUnderMyRank)
 		wndPromoteBtn:Enable(bSomeRowIsPicked and bTargetIsUnderMyRank)
 		wndDemoteBtn:Enable(bSomeRowIsPicked and bTargetIsUnderMyRank and wndRosterGrid:GetData().nRank ~= 10) -- Circles can't go below 10
 
-		wndAddBtn:Show(tMyRankPermissions and tMyRankPermissions.bInvite)
+		wndAddBtn:Show(tMyRankPermissions and tMyRankPermissions.bInvite and self.bHasFullCircleAccess)
+		wndUnlockBtn:Show(not self.bHasFullCircleAccess and bStoreLinkValid)
 		wndRemoveBtn:Show(tMyRankPermissions and tMyRankPermissions.bKick)
 		wndDemoteBtn:Show(tMyRankPermissions and tMyRankPermissions.bChangeMemberRank)
 		wndPromoteBtn:Show(tMyRankPermissions and tMyRankPermissions.bChangeMemberRank)
@@ -531,6 +544,7 @@ function Circles:ResetRosterMemberButtons()
 		end
 	else
 		wndAddBtn:Show(false)
+		wndUnlockBtn:Show(false)
 		wndRemoveBtn:Show(false)
 		wndDemoteBtn:Show(false)
 		wndPromoteBtn:Show(false)
@@ -541,12 +555,16 @@ function Circles:ResetRosterMemberButtons()
 		wndLeaveFlyoutBtn:SetCheck(false)
 	end
 
-	wndRosterBottom:ArrangeChildrenHorz(0)
+	wndRosterBottom:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 -----------------------------------------------------------------------------------------------
 -- Member permissions updating buttons
 -----------------------------------------------------------------------------------------------
+
+function Circles:OnRosterAddMemberClickLocked(wndHandler,wndControl)
+	StorefrontLib.OpenLink(StorefrontLib.CodeEnumStoreLink.Signature)
+end
 
 function Circles:OnRosterAddMemberClick(wndHandler, wndControl)
 	self.tWndRefs.wndMain:FindChild("RosterScreen:RosterBottom:RosterOptionBtnAdd:AddMemberContainer:AddMemberEditBox"):SetFocus()
@@ -699,6 +717,8 @@ function Circles:OnOfflineTimeUpdate()
 	self.tWndRefs.wndMain:GetData():RequestMembers()
 	
 	wndGrid:SetCurrentRow(nSelectedRow or 0)
+	wndGrid:SetData(nil)
+	self:OnRosterGridItemClick(self, self, nSelectedRow or 0, 1, GameLib.CodeEnumInputMouse.Left)
 	
 	wndAddBtn:SetCheck(bAddSelected)
 	wndRemoveBtn:SetCheck(bRemoveSelected)
@@ -837,6 +857,16 @@ end
 
 function Circles:OnOptionsCloseClick(wndControl)
 	wndControl:GetParent():Close()
+end
+
+function Circles:OnEntitlementUpdate(tEntitlementInfo)
+	if not self.tWndRefs.wndMain then
+		return
+	end
+	if tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.Signature or tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.Free or tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.FullGuildsAccess then
+		self.bHasFullCircleAccess = (AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0 or AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.FullGuildsAccess) > 0)
+		self:ResetRosterMemberButtons()
+	end
 end
 
 -----------------------------------------------------------------------------------------------

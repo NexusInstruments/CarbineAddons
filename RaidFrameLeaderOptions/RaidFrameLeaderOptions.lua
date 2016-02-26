@@ -124,7 +124,7 @@ function RaidFrameLeaderOptions:BuildList()
 		wndRaidMember:FindChild("SetHealBtn"):SetCheck(tMemberData.bHealer)
 	end
 
-	self.wndMain:FindChild("OptionsMemberContainer"):ArrangeChildrenVert(0)
+	self.wndMain:FindChild("OptionsMemberContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	self.wndMain:FindChild("LockAllRolesBtn"):SetTooltip(Apollo.GetString(self.wndMain:FindChild("LockAllRolesBtn"):IsChecked() and "RaidFrame_UnlockRoles" or "RaidFrame_LockRoles"))
 end
 

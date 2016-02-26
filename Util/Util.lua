@@ -19,6 +19,22 @@ function GetUnicodeStringLength(str)
 	return count
 end
 
+function ConvertSecondsToTimer(fSeconds, nDecimals)	
+	local strResult = ""
+	local nHours = math.floor(fSeconds / 3600)
+	local nMins = math.floor(fSeconds / 60 - (nHours * 60))
+	local nSecs = string.format("%02.f", math.floor(fSeconds - (nHours * 3600) - (nMins * 60)))
+	local nMiliseconds = string.format(fSeconds - nSecs)
+
+	if nHours ~= 0 then
+		strResult = nHours .. ":" .. nMins .. ":" .. nSecs
+	else
+		strResult = nMins .. ":" .. nSecs
+	end
+
+	return strResult
+end
+
 --------------------------------------------------------------------------------------------------
 
 function GetPluralizeActor(strSingularPlural, nCount)

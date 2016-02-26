@@ -77,7 +77,7 @@ function ObjectiveTracker:OnDocumentReady()
 	
 	Apollo.RegisterEventHandler("ObjectiveTracker_ExternalRequestRedraw", 	"OnResizeAll", self)
 
-    self.wndMain = Apollo.LoadForm(self.xmlDoc, "ObjectiveTrackerForm", "FixedHudStratum", self)
+    self.wndMain = Apollo.LoadForm(self.xmlDoc, "ObjectiveTrackerForm", "FixedHudStratumLow", self)
 	self.wndMain:SetSizingMinimum(325, 120)
 	self.bMoveable = self.wndMain:IsStyleOn("Moveable")
 	
@@ -99,6 +99,11 @@ function ObjectiveTracker:OnDocumentReady()
 	self.timerResizeThrottle:Stop()
 	
 	self.timerObjectiveTrackerUpdate = ApolloTimer.Create(1.0, true, "OnRedrawTimer", self)
+	self.wndButtonContainer:FindChild("ShortcutBtn"):AttachWindow(self.wndButtonContainer:FindChild("ContextMenu"))
+	self.wndButtonContainer:FindChild("ShortcutBtn"):SetCheck(false)
+	self.wndContextMenu = self.wndButtonContainer:FindChild("ContextMenu")
+
+	self:OnWindowManagementReady()
 end
 
 function ObjectiveTracker:OnRedrawTimer()
@@ -111,13 +116,11 @@ function ObjectiveTracker:OnRequestParent()
 end
 
 function ObjectiveTracker:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("CRB_ObjectiveTracker"), nSaveVersion = 1})
 	Event_FireGenericEvent("WindowManagementAdd", { wnd = self.wndMain, strName = Apollo.GetString("CRB_ObjectiveTracker"), nSaveVersion = 1 })
 end
 
 function ObjectiveTracker:OnWindowManagementUpdate(tSettings)
-	local bOldHasMoved = self.bHasMoved
-	local bOldMoveable = self.bMoveable
-
 	if tSettings and tSettings.wnd and tSettings.wnd == self.wndMain then
 		self.bMoveable = self.wndMain:IsStyleOn("Moveable")
 		self.bHasMoved = tSettings.bHasMoved
@@ -191,15 +194,17 @@ function ObjectiveTracker:OnAddonNew(tAddonSettings)
 	
 	local strKey = tAddonSettings.strAddon
 	self.tAddons[strKey] = tAddonSettings
-	
-	local wndButton = Apollo.LoadForm(self.xmlDoc, "TrackerButton", self.wndButtonContainer:FindChild("Buttons"), self)
-	wndButton:SetData(strKey)
-	wndButton:SetTooltip(strKey)
-	
-	if tAddonSettings.strIcon ~= "" then
-		wndButton:FindChild("Icon"):SetSprite(tAddonSettings.strIcon)
-	else 
-		wndButton:FindChild("Icon"):SetText(string.sub(strKey, 1, 1))
+
+	if not tAddonSettings.bNoBtn then
+		local wndButton = Apollo.LoadForm(self.xmlDoc, "TrackerButton", self.wndButtonContainer:FindChild("Buttons"), self)
+		wndButton:SetData(strKey)
+		wndButton:SetTooltip(strKey)
+		
+		if tAddonSettings.strIcon ~= "" then
+			wndButton:FindChild("Icon"):SetSprite(tAddonSettings.strIcon)
+		else 
+			wndButton:FindChild("Icon"):SetText(string.sub(strKey, 1, 1))
+		end
 	end
 	
 	local bShow = true
@@ -207,7 +212,9 @@ function ObjectiveTracker:OnAddonNew(tAddonSettings)
 		bShow = tAddonSettings.bShow
 	end
 	
-	wndButton:Show(bShow)
+	if wndButton then
+		wndButton:Show(bShow)
+	end
 	
 	local function SortTrackerScroll(a, b)
 		if a:GetData() == nil or b:GetData() == nil then return false end
@@ -239,28 +246,26 @@ function ObjectiveTracker:OnAddonUpdate(tAddonSettings)
 	if not tAddonSettings or not tAddonSettings.strAddon then
 		return
 	end
-	
+
 	local wndButton = self.wndButtonContainer:FindChildByUserData(tAddonSettings.strAddon)
-	if not wndButton or not wndButton:IsValid() then
-		return
+	if wndButton and wndButton:IsValid() then
+		local bShow = true
+		if tAddonSettings.bShow ~= nil then
+			bShow = tAddonSettings.bShow
+		end
+		
+		local nOpacity = tAddonSettings.bChecked and 1 or 0.3
+		wndButton:FindChild("Icon"):SetOpacity(nOpacity)
+		wndButton:FindChild("Number"):SetOpacity(nOpacity)
+		wndButton:FindChild("Number"):SetText(tAddonSettings.strText or "")
+		wndButton:Show(bShow)
+
+		wndButton:FindChild("ShortcutBtn"):SetData(tAddonSettings.strAddon)
 	end
-	
-	local bShow = true
-	if tAddonSettings.bShow ~= nil then
-		bShow = tAddonSettings.bShow
-	end
-	
-	local nOpacity = tAddonSettings.bChecked and 1 or 0.3
-	wndButton:FindChild("Icon"):SetOpacity(nOpacity)
-	wndButton:FindChild("Number"):SetOpacity(nOpacity)
-	wndButton:FindChild("Number"):SetText(tAddonSettings.strText or "")
-	wndButton:Show(bShow)
-	
+
 	for k, v in pairs(tAddonSettings) do
 		self.tAddons[tAddonSettings.strAddon][k] = v
 	end
-	
-	wndButton:FindChild("ShortcutBtn"):SetData(tAddonSettings.strAddon)
 	
 	if self.timerResizeThrottle then
 		self.timerResizeThrottle:Stop()
@@ -315,10 +320,8 @@ end
 -- Right Click
 -----------------------------------------------------------------------------------------------
 function ObjectiveTracker:CloseContextMenu() -- From a variety of source
-	if self.wndContextMenu and self.wndContextMenu:IsValid() then
-		self.wndContextMenu:Destroy()
-		self.wndContextMenu = nil
-		
+	if self.wndButtonContainer:FindChild("ShortcutBtn"):IsChecked() then
+		self.wndButtonContainer:FindChild("ShortcutBtn"):SetCheck(false)
 		return true
 	end
 	
@@ -326,12 +329,7 @@ function ObjectiveTracker:CloseContextMenu() -- From a variety of source
 end
 
 function ObjectiveTracker:DrawContextMenu()
-	local nXCursorOffset = -36
-	local nYCursorOffset = 5
-	
-	if self:CloseContextMenu() then return end
-
-	self.wndContextMenu = Apollo.LoadForm(self.xmlDoc, "ContextMenu", nil, self)
+	self.wndContextMenu = self.wndSettingsButton:FindChild("ContextMenu")
 	self.wndContextMenu:FindChild("QuestTrackerByDistance"):SetCheck(g_InterfaceOptions.Carbine.bQuestTrackerByDistance)
 	self.wndContextMenu:FindChild("QuestAlignTop"):SetCheck(not self.bQuestTrackerAlignBottom)
 	self.wndContextMenu:FindChild("QuestAlignBottom"):SetCheck(self.bQuestTrackerAlignBottom)
@@ -340,17 +338,6 @@ function ObjectiveTracker:DrawContextMenu()
 	self.wndContextMenu:FindChild("Opacity"):FindChild("Label"):SetText(String_GetWeaselString(Apollo.GetString("InterfaceOptions_QuestOpacity"), self.nOpacity))
 	self.wndContextMenu:FindChild("OpacityMouse"):FindChild("SliderBar"):SetValue(self.nOpacityMouseOver)
 	self.wndContextMenu:FindChild("OpacityMouse"):FindChild("Label"):SetText(String_GetWeaselString(Apollo.GetString("InterfaceOptions_QuestOpacityMouseOver"), self.nOpacityMouseOver))
-	
-	local nWidth = self.wndContextMenu:GetWidth()
-	local nHeight = self.wndContextMenu:GetHeight()
-		
-	local tCursor = Apollo.GetMouse()
-	self.wndContextMenu:Move(
-		tCursor.x - nWidth - nXCursorOffset,
-		tCursor.y - nHeight - nYCursorOffset,
-		nWidth,
-		nHeight
-	)
 end
 
 function ObjectiveTracker:OnToggleQuestTrackerByDistance(wndHandler, wndControl)

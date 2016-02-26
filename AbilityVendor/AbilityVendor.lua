@@ -184,7 +184,7 @@ function AbilityVendor:RedrawAll()
 	self:RedrawRespec()
 
 	-- Sort
-	wndItemList:ArrangeChildrenVert(0, function(a,b) return a:GetData() < b:GetData() end)
+	wndItemList:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function(a,b) return a:GetData() < b:GetData() end)
 	wndItemList:SetVScrollPos(nVScrollPos)
 	wndItemList:SetText(#wndItemList:GetChildren() == 0 and Apollo.GetString("AbilityBuilder_OutOfAbilities") or "")
 end

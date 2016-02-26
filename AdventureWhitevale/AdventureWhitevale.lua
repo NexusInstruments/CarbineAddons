@@ -11,12 +11,7 @@ require "Window"
 local AdventureWhitevale = {} 
 
 local knSaveVersion = 2
- 
------------------------------------------------------------------------------------------------
--- Constants
------------------------------------------------------------------------------------------------
--- e.g. local kiExampleVariableMax = 999
- 
+
 -----------------------------------------------------------------------------------------------
 -- Initialization
 -----------------------------------------------------------------------------------------------
@@ -25,7 +20,11 @@ function AdventureWhitevale:new(o)
     setmetatable(o, self)
     self.__index = self 
 
-    -- initialize variables here
+    o.tWndRefs = {}
+	o.tSons = {}
+	o.tRollers = {}
+	o.tGrinders = {}
+	o.tAdventureInfo = {}
 
     return o
 end
@@ -72,91 +71,80 @@ end
 
 -----------------------------------------------------------------------------------------------
 -- AdventureWhitevale OnLoad
------------------------------------------------------------------------------------------------\
+-----------------------------------------------------------------------------------------------
 function AdventureWhitevale:OnLoad()
 	self.xmlDoc = XmlDoc.CreateFromFile("WhitevaleAdventure.xml")
 	self.xmlDoc:RegisterCallback("OnDocumentReady", self) 
 end
 
 function AdventureWhitevale:OnDocumentReady()
-	Apollo.RegisterEventHandler("WindowManagementReady", 	"OnWindowManagementReady", self)
+    Apollo.RegisterEventHandler("WindowManagementReady", 	"OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 	
-    -- Register handlers for events, slash commands and timer, etc.
-    -- e.g. Apollo.RegisterEventHandler("KeyDown", "OnKeyDown", self)
-    Apollo.RegisterSlashCommand("whitevaleadv", "OnWhitevaleAdventureOn", self)
     Apollo.RegisterEventHandler("WhitevaleAdvResource", "OnUpdateResource", self)
 	Apollo.RegisterEventHandler("WhitevaleAdvShow", "OnShow", self)
 	Apollo.RegisterEventHandler("ChangeWorld", "OnHide", self)
+end
+
+function AdventureWhitevale:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("CRB_AdventureWhitevale"), nSaveVersion=3})
+end
+
+function AdventureWhitevale:Initialize()
+	if self.tWndRefs.wnd ~= nil and self.tWndRefs.wnd:IsValid() then
+		return
+	end
+
+	self.tWndRefs.wnd = Apollo.LoadForm(self.xmlDoc, "WhitevaleAdventureForm", nil, self)
+	self.tWndRefs.wndMain = self.tWndRefs.wnd:FindChild("Main")
+	self.tWndRefs.wndRepBar = self.tWndRefs.wndMain:FindChild("Rep")
+	self.tWndRefs.wndSonsLoyalty = self.tWndRefs.wndMain:FindChild("SonsLoyalty")
+	self.tWndRefs.wndRollersLoyalty = self.tWndRefs.wndMain:FindChild("RollersLoyalty")
+	self.tWndRefs.wndGrindersLoyalty = self.tWndRefs.wndMain:FindChild("GrindersLoyalty")
 	
-	self.tSons = {}
-	self.tRollers = {}
-	self.tGrinders = {}
-	
-    -- load our forms
-    self.wnd = Apollo.LoadForm(self.xmlDoc, "WhitevaleAdventureForm", nil, self)
-	self.xmlDoc = nil
-	self.wndMain = self.wnd:FindChild("Main")
-	self.wndRepBar = self.wndMain:FindChild("Rep")
-	self.wndSonsLoyalty = self.wndMain:FindChild("SonsLoyalty")
-	self.wndRollersLoyalty = self.wndMain:FindChild("RollersLoyalty")
-	self.wndGrindersLoyalty = self.wndMain:FindChild("GrindersLoyalty")
-	self.wndSonsLoyalty:FindChild("TitleSons"):SetText(Apollo.GetString("WhitevaleAdv_SonsOfRavok"))
-	self.wndRollersLoyalty:FindChild("TitleRollers"):SetText(Apollo.GetString("WhitevaleAdv_RocktownRollers"))
-	self.wndGrindersLoyalty:FindChild("TitleGrinders"):SetText(Apollo.GetString("WhitevaleAdv_Geargrinders"))
-	self.wndSonsLoyalty:Show(false)
-	self.wndRollersLoyalty:Show(false)
-	self.wndGrindersLoyalty:Show(false)
+	self.tWndRefs.wndSonsLoyalty:FindChild("TitleSons"):SetText(Apollo.GetString("WhitevaleAdv_SonsOfRavok"))
+	self.tWndRefs.wndRollersLoyalty:FindChild("TitleRollers"):SetText(Apollo.GetString("WhitevaleAdv_RocktownRollers"))
+	self.tWndRefs.wndGrindersLoyalty:FindChild("TitleGrinders"):SetText(Apollo.GetString("WhitevaleAdv_Geargrinders"))
+	self.tWndRefs.wndSonsLoyalty:Show(false)
+	self.tWndRefs.wndRollersLoyalty:Show(false)
+	self.tWndRefs.wndGrindersLoyalty:Show(false)
 	
 	for i = 1, 3 do 
-		self.tSons[i] = self.wndSonsLoyalty:FindChild("Sons" .. i)
-		self.tRollers[i] = self.wndRollersLoyalty:FindChild("Rollers" .. i)
-		self.tGrinders[i] = self.wndGrindersLoyalty:FindChild("Grinders" .. i)
+		self.tSons[i] = self.tWndRefs.wndSonsLoyalty:FindChild("Sons" .. i)
+		self.tRollers[i] = self.tWndRefs.wndRollersLoyalty:FindChild("Rollers" .. i)
+		self.tGrinders[i] = self.tWndRefs.wndGrindersLoyalty:FindChild("Grinders" .. i)
 	end
 	
-	self.wndRepBar:SetMax(100)
-	self.wndRepBar:SetFloor(0)
-	self.wndRepBar:SetProgress(0)
-	self.wndRepBar:Show(false)
-	--self.wndRepBar:SetText(Apollo.GetString("WhitevaleAdv_Notoriety"))
-    self.wnd:Show(false)
+	self.tWndRefs.wndRepBar:SetMax(100)
+	self.tWndRefs.wndRepBar:SetFloor(0)
+	self.tWndRefs.wndRepBar:SetProgress(0)
+	self.tWndRefs.wndRepBar:Show(false)
+	--self.tWndRefs.wndRepBar:SetText(Apollo.GetString("WhitevaleAdv_Notoriety"))
+    self.tWndRefs.wnd:Invoke()
     
 	if not self.tAdventureInfo then 
 		self.tAdventureInfo = {}
 	elseif self.bShow then 
 		self:OnUpdateResource(self.tAdventureInfo.nRep, self.tAdventureInfo.nSons, self.tAdventureInfo.nRollers, self.tAdventureInfo.nGrinders )
 	end
-end
-
-function AdventureWhitevale:OnWindowManagementReady()
-	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wnd, strName = Apollo.GetString("CRB_AdventureWhitevale"), nSaveVersion=3})
+	
+	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.tWndRefs.wnd, strName = Apollo.GetString("CRB_AdventureWhitevale"), nSaveVersion=3})
 end
 
 -----------------------------------------------------------------------------------------------
 -- AdventureWhitevale Functions
 -----------------------------------------------------------------------------------------------
--- Define general functions here
-
--- on SlashCommand "/whitevaleadv"
-function AdventureWhitevale:OnWhitevaleAdventureOn()
-	self.wnd:Show(true) -- show the window
-	self.tAdventureInfo.bIsShown = true
-end
-
 
 function AdventureWhitevale:OnUpdateResource(iRep, iSons, iRollers, iGrinders)
-	if not self.wndMain or not self.wndMain:IsValid() then
-		return
-	end
-
-	self.wnd:Show(true)
-	self.wndRepBar:Show(true)
-	self.wndRepBar:SetProgress(iRep)
+	self:Initialize()
+	self.tWndRefs.wndRepBar:Show(true)
+	self.tWndRefs.wndRepBar:SetProgress(iRep)
 	
 	self.tAdventureInfo.bIsShown = true
 	
-	self.wndSonsLoyalty:Show(true)
-	self.wndRollersLoyalty:Show(true)
-	self.wndGrindersLoyalty:Show(true)
+	self.tWndRefs.wndSonsLoyalty:Show(true)
+	self.tWndRefs.wndRollersLoyalty:Show(true)
+	self.tWndRefs.wndGrindersLoyalty:Show(true)
 	self:HideAll()
 	
 	if iSons > 0 then
@@ -195,18 +183,19 @@ function AdventureWhitevale:HideAll()
 	self.tAdventureInfo.nRollers = 0
 	self.tAdventureInfo.nGrinders = 0
 end
-	
-	
+
 function AdventureWhitevale:OnShow(bShow)
 	if bShow == true then
-		self.wnd:Show(true)
+		self:Initialize()
 	elseif bShow == false then
-		self.wndMain:Show(false)
+		self:OnHide()
 	end
 end
 
 function AdventureWhitevale:OnHide()
-	self.wnd:Show(false)
+	if self.tWndRefs.wnd ~= nil and self.tWndRefs.wnd:IsValid() then
+		self.tWndRefs.wnd:Close()
+	end
 	self.tAdventureInfo.bIsShown = false
 end
 -----------------------------------------------------------------------------------------------
@@ -222,6 +211,19 @@ function AdventureWhitevale:OnCancel()
 	self:OnHide()
 end
 
+function AdventureWhitevale:OnWindowClosed(wndHandler, wndControl)
+	if self.tWndRefs.wnd ~= nil and self.tWndRefs.wnd:IsValid() then
+		self.tWndRefs.wnd:Close()
+		self.tWndRefs.wnd:Destroy()
+		self.tWndRefs = {}
+		
+		self.tSons = {}
+		self.tRollers = {}
+		self.tGrinders = {}
+		
+		Event_FireGenericEvent("WindowManagementRemove", {strName = Apollo.GetString("CRB_AdventureWhitevale"), nSaveVersion=3})
+	end
+end
 
 -----------------------------------------------------------------------------------------------
 -- AdventureWhitevale Instance

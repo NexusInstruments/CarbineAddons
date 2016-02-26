@@ -78,8 +78,10 @@ function FloatTextPanel:OnDocumentReady()
 	Apollo.RegisterEventHandler("QuestFloater", "OnQuestNotice", self)
 	Apollo.RegisterEventHandler("SettlerHubReward", "OnSettlerHubReward", self)
 	Apollo.RegisterEventHandler("EpisodeStateChanged", "OnEpisodeStateChanged", self)
-	Apollo.RegisterEventHandler("AchievementUpdated", "OnAchievementUpdated", self)
+	Apollo.RegisterEventHandler("AchievementGranted", "OnAchievementUpdated", self)
 	Apollo.RegisterEventHandler("ProfessionAchievementUpdated", "OnAchievementUpdated", self)
+	Apollo.RegisterEventHandler("AccountEntitlementUpdate", "OnEntitlementUpdate", self)
+	Apollo.RegisterEventHandler("CharacterEntitlementUpdate", "OnEntitlementUpdate", self)
 	Apollo.RegisterEventHandler("AlertAchievement", "OnAchievementNotice", self)
 	Apollo.RegisterEventHandler("AlertTitle", "OnTitletNotice", self)
 	Apollo.RegisterEventHandler("PlayerPathMissionUnlocked", "OnPlayerPathMissionUnlocked", self)
@@ -118,7 +120,8 @@ function FloatTextPanel:OnDocumentReady()
 		self.wndPrimary:FindChild("MainContent_Path"),
 		self.wndPrimary:FindChild("MainContent_PathEpisode"),
 		self.wndPrimary:FindChild("MainContent_Achievement"),
-		self.wndPrimary:FindChild("MainContent_ChallengeUnlock")
+		self.wndPrimary:FindChild("MainContent_ChallengeUnlock"),
+		self.wndPrimary:FindChild("MainContent_Entitlement"),
 	}
 	self.tMainWindowDurations =
 	{
@@ -131,6 +134,7 @@ function FloatTextPanel:OnDocumentReady()
 		4.000, -- path ep completed
 		4.500, -- Achievement unlocked
 		4.000, -- challenge unlock
+		4.000, -- entitlement unlock
 	}
 	self.tQueueMain = {nFirst = 0, nLast = -1}
 
@@ -241,6 +245,12 @@ function FloatTextPanel:OnAchievementOpenBtn(wndHandler, wndControl)
 		Event_FireGenericEvent("FloatTextPanel_ToggleAchievementWindow", achData)
 	elseif tTradeSkillLayout then --Send to tradeskill tree
 		Event_FireGenericEvent("FloatTextPanel_ToggleTechTreeWindow", nil, achData)
+	end
+end
+
+function FloatTextPanel:OnEntitlementUpdate(tEntitlementInfo, strUnlockAnnouncement, bForLoad)
+	if not bForLoad and strUnlockAnnouncement ~= "" then
+		self:AddToQueueMain(10, strUnlockAnnouncement)
 	end
 end
 

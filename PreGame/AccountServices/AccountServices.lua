@@ -8,6 +8,7 @@ require "Window"
 require "CharacterScreenLib"
 require "AccountItemLib"
 require "PreGameLib"
+require "Money"
 
 local AccountServices = {}
 local keFireOnPaidTransfer = "Transfer" -- Random Enum (GOTCHA: Free doesn't need to worry about this)
@@ -58,14 +59,14 @@ local ktCreddRedeemResults =
 }
 
 function AccountServices:new(o)
-    o = o or {}
-    setmetatable(o, self)
-    self.__index = self
-    return o
+	o = o or {}
+	setmetatable(o, self)
+	self.__index = self
+	return o
 end
 
 function AccountServices:Init()
-    Apollo.RegisterAddon(self)
+	Apollo.RegisterAddon(self)
 end
 
 function AccountServices:OnLoad()
@@ -94,6 +95,7 @@ function AccountServices:OnDocumentReady()
 	Apollo.RegisterEventHandler("CREDDRedeemResult", 				"OnCREDDRedeemResult", self)
 	Apollo.RegisterEventHandler("RealmTransferResult", 				"OnRealmTransferResult", self)
 	Apollo.RegisterEventHandler("TransferDestinationRealmList", 	"OnTransferDestinationRealmList", self)
+	Apollo.RegisterEventHandler("PTRCharacterCopyQueued", 	         "OnPTRCharacterCopyQueued", self)
 
 	Apollo.RegisterEventHandler("Pregame_CreationToSelection", 		"OnPregame_CreationToSelection", self)
 	Apollo.RegisterEventHandler("Pregame_CharacterSelected", 		"OnPregame_CharacterSelected", self)
@@ -111,11 +113,18 @@ function AccountServices:OnDocumentReady()
 	self.wndPaidTransferFlyout = self.wndMain:FindChild("PaidTransferFlyout")
 	self.wndFreeTransferFlyout = self.wndMain:FindChild("FreeTransferFlyout")
 	self.wndTrustedIPFlyout = self.wndMain:FindChild("TrustedIPFlyout")
+	self.wndCopyPTRConfirmation = self.wndMain:FindChild("CopyPTRConfirmation")
+	self.wndCopyQueued = self.wndMain:FindChild("CopyQueued")
 	self.wndMainPicker:FindChild("AvailablePaidRenameBtn"):AttachWindow(self.wndRenameFlyout)
 	self.wndMainPicker:FindChild("AvailablePaidRealmBtn"):AttachWindow(self.wndPaidTransferFlyout)
 	self.wndMainPicker:FindChild("AvailableFreeRealmBtn"):AttachWindow(self.wndFreeTransferFlyout)
 	self.wndMainPicker:FindChild("TrustedIPBtn"):AttachWindow(self.wndTrustedIPFlyout)
+	self.wndMainPicker:FindChild("PtrCopyBtn"):AttachWindow(self.wndCopyPTRConfirmation)
 
+	local nLeft, nTop, nRight, nBottom = self.wndMain:FindChild("HideMainPicker"):GetAnchorOffsets()
+	local nLeftMain, nTopMain, nRightMain, nBottomMain = self.wndMain:FindChild("MainPicker"):GetAnchorOffsets()
+	self.nAccountServicesGap = math.abs(nBottomMain) - math.abs(nBottom)--Accounting for the gap between the edges of the window and beginning of sprite.
+	
 	self.wndErrorMessage = nil
 	self.wndRenameConfirm = nil
 	self.wndTransferConfirm = nil
@@ -126,7 +135,7 @@ function AccountServices:OnDocumentReady()
 	self.strFireRenameOnUpdate = nil
 	self.nFirePaidTransferOnUpdate = nil
 
-	self.nCharacterSelectedId = 0
+	self.nCharacterSelectedPos = 0
 	self.strCharacterSelectedName = nil
 	self.bCharacterRequiresRename = false
 
@@ -140,21 +149,43 @@ function AccountServices:OnQueueStatus() -- TODO TEMP, Hide everything if a play
 end
 
 function AccountServices:RedrawAll()
+	if not self.wndMain then --OnTrustedIPListReady may be called before self.wndMain was set.
+		return
+	end
+
 	self:HelperCheckTriggers()
 
 	-- Count Account Bound options
 	local nCreddEscrow = 0
 	local nRenameEscrow = 0
 	local nTransferEscrow = 0
-	local nCreddBound = AccountItemLib.GetAccountCurrency(PreGameLib.CodeEnumAccountCurrency.CREDD) or 0
-	local nRenameBound = AccountItemLib.GetAccountCurrency(PreGameLib.CodeEnumAccountCurrency.NameChange) or 0
-	local nTransferBound = AccountItemLib.GetAccountCurrency(PreGameLib.CodeEnumAccountCurrency.RealmTransfer) or 0
+	local nCreddBound = AccountItemLib.GetAccountCurrency(PreGameLib.CodeEnumAccountCurrency.CREDD):GetAmount() or 0
+	local nRenameBound = AccountItemLib.GetAccountCurrency(PreGameLib.CodeEnumAccountCurrency.NameChange):GetAmount() or 0
+	local nTransferBound = AccountItemLib.GetAccountCurrency(PreGameLib.CodeEnumAccountCurrency.RealmTransfer):GetAmount() or 0
+	local nTrusedIPs = 0--Will be set if we get IP list
+	
+	--Setting TrusteIPB information.
+	if self.bTrustedIPListReady then
+		local arTrustedIPList = AccountItemLib.GetTrustedIPList()
+		nTrusedIPs = #arTrustedIPList
+
+		local wndTrustedIPConfirmBtn = self.wndTrustedIPFlyout:FindChild("TrustedIPConfirmBtn")
+		local wndTrustedIPContent = self.wndTrustedIPFlyout:FindChild("TrustedIPContent")
+		wndTrustedIPContent:DestroyChildren()
+
+		--Adding trusted
+		for idx, tIP in pairs(arTrustedIPList) do
+			local wndIpRow = Apollo.LoadForm(self.xmlDoc, "TrustedIPButton", wndTrustedIPContent, self)
+			wndIpRow:SetData({ ["wndTrustedIPConfirmBtn"] = wndTrustedIPConfirmBtn })
+			wndIpRow:FindChild("Button"):SetData({ ["ipAddress"] = tIP.strIPAddress, ["wndTrustedIPConfirmBtn"] = wndTrustedIPConfirmBtn, ["wndTrustedIPContent"] = wndTrustedIPContent } )
+			wndIpRow:FindChild("IPNumber"):SetText(tIP.strIPAddress)
+			wndIpRow:FindChild("IPDateAdded"):SetText(tIP.strRegisterd)
+		end
+		wndTrustedIPContent:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	end
 
 	-- Note: When claiming from a group to Account Bound, we'll have to warn a player that they will get the entire group.
 	local tFlattenedTable = {}
-	for idx, tPendingAccountItem in pairs(AccountItemLib.GetPendingAccountSingleItems()) do
-		table.insert(tFlattenedTable, tPendingAccountItem)
-	end
 
 	for idx, tPendingAccountItemGroup in pairs(AccountItemLib.GetPendingAccountItemGroups()) do
 		for idx2, tPendingAccountItem in pairs(tPendingAccountItemGroup.items) do
@@ -170,41 +201,6 @@ function AccountServices:RedrawAll()
 			nTransferEscrow = ePendingType == PreGameLib.CodeEnumAccountCurrency.RealmTransfer and (nTransferEscrow + 1) or nTransferEscrow
 		end
 	end
-
-	-- Early exit if subscription expired
-	local bLoadLapsedAccount = CharacterScreenLib.GetSubscriptionExpired()
-	if bLoadLapsedAccount and not self.bCREDDRedeemResultSuccess then
-		if not self.wndBlackFill or not self.wndBlackFill:IsValid() then
-			self.wndBlackFill = Apollo.LoadForm(self.xmlDoc, "FullScreenBlackFill", "AccountServices", self)
-			self.wndBlackFill:Invoke()
-		end
-
-		if not self.wndLapsedBlocker or not self.wndLapsedBlocker:IsValid() then
-			self.wndLapsedBlocker = Apollo.LoadForm(self.xmlDoc, "LapsedButtonBlocker", "AccountServices", self)
-			self.wndLapsedBlocker:Invoke()
-		end
-
-		if AccountItemLib.IsRedeemCREDDInProgress() then
-			if not self.wndRedeemCreddDelay or not self.wndRedeemCreddDelay:IsValid() then
-				self.wndRedeemCreddDelay = Apollo.LoadForm(self.xmlDoc, "RedeemCreddDelaySpinner", "AccountServices", self)
-			end
-		else
-			if not self.wndLapsedPopup or not self.wndLapsedPopup:IsValid() then
-				self.wndLapsedPopup = Apollo.LoadForm(self.xmlDoc, "LapsedAccountWithCREDD", "AccountServices", self)
-				self.wndLapsedPopup:Invoke()
-			end
-
-			if self.wndRedeemCreddDelay and self.wndRedeemCreddDelay:IsValid() then -- As this may fire multiple times with invalid data
-				self.wndRedeemCreddDelay:Destroy()
-			end
-
-			local bHaveCredd = nCreddBound > 0 or nCreddEscrow > 0
-			self.wndLapsedPopup:FindChild("LapsedSubtitleHaveCREDD"):Show(bHaveCredd)
-			self.wndLapsedPopup:FindChild("LapsedSubtitleNoCREDD"):Show(not bHaveCredd)
-			self.wndLapsedPopup:FindChild("LapsedStartRedeemBtn"):Enable(bHaveCredd) -- and not AccountItemLib.IsRedeemCREDDInProgress()
-			self.wndLapsedPopup:FindChild("LapsedStartRedeemBtn"):SetData({ nCreddBound = nCreddBound, nCreddEscrow = nCreddEscrow })
-		end
-	end
 	
 	AccountItemLib.RequestTrustedIPList()
 	
@@ -212,7 +208,7 @@ function AccountServices:RedrawAll()
 	local bHaveCharacters = g_arCharacters and #g_arCharacters > 0
 	local tMyRealmInfo = CharacterScreenLib.GetRealmInfo()
 	local bCanFreeRealmTransfer = tMyRealmInfo and tMyRealmInfo.bFreeRealmTransfer or nil
-	if bHaveCharacters and (bCanFreeRealmTransfer or math.max(nCreddBound, nCreddEscrow, nRenameBound, nRenameEscrow, nTransferBound, nTransferEscrow) > 0) then
+	if bHaveCharacters and (bCanFreeRealmTransfer or math.max(nCreddBound, nCreddEscrow, nRenameBound, nRenameEscrow, nTransferBound, nTransferEscrow, nTrusedIPs) > 0) then
 		local bDefaultMinimized = false -- TODO, Console Variable or saved setting
 		self.wndMain:Show(not bDefaultMinimized, true)
 		self.wndMinimized:Show(bDefaultMinimized, true)
@@ -224,27 +220,36 @@ function AccountServices:RedrawAll()
 		local wndMainPickerButtonList = self.wndMainPicker:FindChild("AvailableScroll")
 		local tWindowNameToSubtitle =
 		{
-			["AvailableFreeRealmBtn"]	=	{ Apollo.GetString("AccountServices_NumRealmsAvailable"), bCanFreeRealmTransfer and 1 or 0 }, -- Just for enabling
-			["AvailablePaidRealmBtn"]	=	{ Apollo.GetString("AccountServices_NumAvailable"), nTransferBound +  nTransferEscrow },
-			["AvailablePaidRenameBtn"]	=	{ Apollo.GetString("AccountServices_NumAvailable"), nRenameBound + nRenameEscrow },
+			["AvailableFreeRealmBtn"]	=	{ strText = Apollo.GetString("AccountServices_NumRealmsAvailable"), nAmount = bCanFreeRealmTransfer and 1 or 0 }, -- Just for enabling
+			["AvailablePaidRealmBtn"]	=	{ strText =  Apollo.GetString("AccountServices_NumAvailable"), nAmount = nTransferBound +  nTransferEscrow },
+			["AvailablePaidRenameBtn"]	=	{ strText =  Apollo.GetString("AccountServices_NumAvailable"), nAmount = nRenameBound + nRenameEscrow },
+			["PtrCopyBtn"]	=	{ strText =  Apollo.GetString("AccountServices_CopyPTR"), nAmount = 1},-- Just for enabling
+			["TrustedIPBtn"]	=	{ strText =  Apollo.GetString("AccountServices_IPAddressSavedCount"), nAmount = nTrusedIPs},
 			--["AvailablePaidCreddBtn"]	=	{ Apollo.GetString("AccountServices_NumAvailableCREDDExplain"), nCreddBound + nCreddEscrow }, -- Disabled for now
 		}
+		local nButtonHeight = 0
 		for strButtonName, tData in pairs(tWindowNameToSubtitle) do
-			local bValid = tonumber(tData[2]) > 0
+			local bValid = tonumber(tData.nAmount) > 0
 			local wndCurrButton = wndMainPickerButtonList:FindChild(strButtonName)
 			wndCurrButton:FindChild("AvailableBtnSubtitle"):SetTextColor(bValid and ApolloColor.new("UI_TextHoloBodyCyan") or ApolloColor.new("UI_TextMetalBodyHighlight"))
-			wndCurrButton:FindChild("AvailableBtnSubtitle"):SetText(PreGameLib.String_GetWeaselString(tData[1], tData[2]))
+			wndCurrButton:FindChild("AvailableBtnSubtitle"):SetText(PreGameLib.String_GetWeaselString(tData.strText, tData.nAmount))
 			wndCurrButton:Show(bValid)
+			
+			if bValid then
+				nButtonHeight = nButtonHeight + wndCurrButton:GetHeight()
+			end
 		end
 		wndMainPickerButtonList:FindChild("AvailablePaidRenameBtn"):Enable(not self.bCharacterRequiresRename)
 
-		wndMainPickerButtonList:ArrangeChildrenVert(0)
+		wndMainPickerButtonList:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+
+		local nLeft, nTop, nRight, nBottom = self.wndMainPicker:FindChild("AvailableScroll"):GetAnchorOffsets()
+		local nLeftMain, nTopMain, nRightMain, nBottomMain = self.wndMainPicker:GetAnchorOffsets()
+		self.wndMainPicker:SetAnchorOffsets(nLeftMain, nTopMain, nRightMain, nTopMain + nTop + nButtonHeight + self.nAccountServicesGap)
 	else
 		self.wndMain:Close()
 		self.wndMinimized:Close()
 	end
-	
-	self:OnTrustedIPListReady()
 end
 
 -----------------------------------------------------------------------------------------------
@@ -253,7 +258,7 @@ end
 
 function AccountServices:OnPregame_CharacterSelected(tData)
 	local tSelected = tData.tSelected
-	self.nCharacterSelectedId = tData.nId
+	self.nCharacterSelectedPos = tData.nId
 	self.strCharacterSelectedName = tSelected and tSelected.strName or ""
 	self.bCharacterRequiresRename = tSelected and tSelected.bRequiresRename
 
@@ -335,8 +340,6 @@ function AccountServices:OnRedeemCREDDYesBtn(wndHandler, wndControl) -- From Sho
 	local tEscrowData = wndHandler:GetData()
 	if tEscrowData.items then -- It's a group
 		AccountItemLib.ClaimPendingItemGroup(tEscrowData.index)
-	else
-		AccountItemLib.ClaimPendingSingleItem(tEscrowData.index)
 	end
 
 	self.wndCreddConfirm:Destroy()
@@ -396,7 +399,7 @@ function AccountServices:OnRenameInputBoxChanged(wndHandler, wndControl)
 	local nLastLength = string.len(strLastName)
 	
 	local strCharacterLimit = string.format("[%s/%s]", nFirstLength+nLastLength, knMaxCharacterName)
-	local strColor = nFirstLength+nLastLength > knMaxCharacterName and "xkcdReddish" or "UI_TextHoloBodyCyan"
+	local strColor = nFirstLength+nLastLength > knMaxCharacterName and "Reddish" or "UI_TextHoloBodyCyan"
 	self.wndRenameFlyout:FindChild("CharacterLimit"):SetTextColor(ApolloColor.new(strColor))
 	self.wndRenameFlyout:FindChild("CharacterLimit"):SetText(strCharacterLimit)
 	
@@ -416,16 +419,16 @@ function AccountServices:OnRenameConfirmBtn(wndHandler, wndControl)
 	local bUsingEscrow = self.wndRenameFlyout:FindChild("RenamePaymentEscrow"):IsChecked()
 	local tEscrowData, bGiftableGroup = self:HelperDeterminePayment(bUsingEscrow, PreGameLib.CodeEnumAccountCurrency.NameChange)
 
-	local nCharacterId = self.nCharacterSelectedId
+	local nCharacterId = self.nCharacterSelectedPos
 	if not nCharacterId then
 		return
 	end
 
-	if bGiftableGroup then
-		self:ShowGroupBindConfirmation(tEscrowData, { eType = keFireOnRename, strFullName = wndHandler:GetData() })
-	else
+--	if bGiftableGroup then
+--		self:ShowGroupBindConfirmation(tEscrowData, { eType = keFireOnRename, strFullName = wndHandler:GetData() })
+--	else
 		self:ShowRenameConfirmation(wndHandler:GetData(), tEscrowData)
-	end
+--	end
 
 	self.wndRenameFlyout:Close()
 end
@@ -442,11 +445,11 @@ function AccountServices:OnRenameYesBtn(wndHandler, wndControl)
 	local nEscrowIndex = wndHandler:GetData().nEscrowIndex
 
 	if self.wndRenameFlyout:FindChild("RenamePaymentEscrow"):IsChecked() then
-		AccountItemLib.ClaimPendingSingleItem(nEscrowIndex)
+		AccountItemLib.ClaimPendingItemGroup(nEscrowIndex)
 		self.strFireRenameOnUpdate = strFullName
 		-- HelperCatchTriggers will catch the event, detect a non nil self.strFireRenameOnUpdate, then call Rename
 	else
-		CharacterScreenLib.RenameCharacter(self.nCharacterSelectedId, strFullName)
+		CharacterScreenLib.RenameCharacter(self.nCharacterSelectedPos, strFullName)
 	end
 	self.wndRenameConfirm:Destroy()
 end
@@ -460,9 +463,23 @@ function AccountServices:OnRenameNameEscape(wndHandler, wndControl)
 	self.wndRenameFlyout:Close()
 end
 
+function AccountServices:OnCopyYesBtn(wndHandler, wndControl)
+	CharacterScreenLib.InitiatePTRCharacterCopy(self.nCharacterSelectedPos)
+	self.wndCopyPTRConfirmation:Show(false)
+end
+
+function AccountServices:OnCopyNoBtn(wndHandler, wndControl)
+	self.wndCopyPTRConfirmation:Show(false)
+end
+
+
 -----------------------------------------------------------------------------------------------
 -- Transfer
 -----------------------------------------------------------------------------------------------
+
+function AccountServices:OnMainPickerCopyCheck(wndHandler, wndControl)
+	self.wndCopyPTRConfirmation:FindChild("CopyExplanation"):SetText(PreGameLib.String_GetWeaselString(Apollo.GetString("AccountServices_CopySelectedName"), self.strCharacterSelectedName))
+end
 
 function AccountServices:OnMainPickerFreeRealmCheck(wndHandler, wndControl)
 	CharacterScreenLib.GetRealmTransferDestinations(false) -- Leads to TransferDestinationRealmList
@@ -528,6 +545,15 @@ function AccountServices:OnTransferDestinationRealmList(tRealmList)
 	wndGrid:SetSortColumn(1, true) -- Sort 1st column Ascending
 end
 
+function AccountServices:OnPTRCharacterCopyQueued()
+	self.wndCopyQueued:FindChild("Body"):SetText(PreGameLib.String_GetWeaselString(Apollo.GetString("AccountServices_CopyQueued"), self.strCharacterSelectedName))
+	self.wndCopyQueued:Invoke()
+end
+
+function AccountServices:OnConfirmQueuedBtn(wndHandler, wndControl)
+	self.wndCopyQueued:Show(false)
+end
+
 function AccountServices:ShowTransferConfirmation(bPaid, nRealmId, strRealm, tEscrowData) -- 4th arg nil for Free Transfers/Account Bound
 	if self.wndTransferConfirm and self.wndTransferConfirm:IsValid() then
 		self.wndTransferConfirm:Destroy()
@@ -559,7 +585,7 @@ end
 function AccountServices:OnFreeTransferYesBtn(wndHandler, wndControl) -- wndHandler is FreeTransferYesBtn, Data is nRealmId
 	local bPaid = false
 	-- Free won't need to care about nEscrowIndex
-	CharacterScreenLib.RealmTransfer(self.nCharacterSelectedId, wndHandler:GetData().nRealmId, bPaid)
+	CharacterScreenLib.RealmTransfer(self.nCharacterSelectedPos, wndHandler:GetData().nRealmId, bPaid)
 	self.wndTransferConfirm:Destroy()
 end
 
@@ -569,11 +595,11 @@ function AccountServices:OnPaidTransferYesBtn(wndHandler, wndControl) -- wndHand
 	local nEscrowIndex = wndHandler:GetData().nEscrowIndex
 
 	if self.wndPaidTransferFlyout:FindChild("TransferPaymentEscrow"):IsChecked() then
-		AccountItemLib.ClaimPendingSingleItem(nEscrowIndex)
+		AccountItemLib.ClaimPendingItemGroup(nEscrowIndex)
 		self.nFirePaidTransferOnUpdate = nRealmId
 		-- HelperCatchTriggers will catch the event, detect a non nil self.nFirePaidTransferOnUpdate, then call Transfer
 	else
-		CharacterScreenLib.RealmTransfer(self.nCharacterSelectedId, nRealmId, bPaid)
+		CharacterScreenLib.RealmTransfer(self.nCharacterSelectedPos, nRealmId, bPaid)
 	end
 	self.wndTransferConfirm:Destroy()
 end
@@ -612,7 +638,7 @@ end
 function AccountServices:OnFreeTransferConfirmBtn(wndHandler, wndControl)
 	local nRealmId = wndHandler:GetData().nRealmId
 	local strRealm = wndHandler:GetData().strRealm
-	local nCharacterId = self.nCharacterSelectedId
+	local nCharacterId = self.nCharacterSelectedPos
 	if not nCharacterId then
 		return
 	end
@@ -643,7 +669,7 @@ function AccountServices:DrawPaidTransferFlyout(nTransferBound, nTransferEscrow)
 	self.wndPaidTransferFlyout:FindChild("EscrowBtnSubtitle"):SetText(PreGameLib.String_GetWeaselString(Apollo.GetString("AccountServices_NumAvailable"), nTransferEscrow))
 	self.wndPaidTransferFlyout:FindChild("BoundBtnSubtitle"):SetTextColor(bBoundEnable and ApolloColor.new("UI_BtnTextBlueNormal") or ApolloColor.new("UI_TextMetalBodyHighlight"))
 	self.wndPaidTransferFlyout:FindChild("EscrowBtnSubtitle"):SetTextColor(bEscrowEnable and ApolloColor.new("UI_BtnTextBlueNormal") or ApolloColor.new("UI_TextMetalBodyHighlight"))
-	self.wndPaidTransferFlyout:FindChild("TransferPaymentArrangeHorz"):ArrangeChildrenHorz(0)
+	self.wndPaidTransferFlyout:FindChild("TransferPaymentArrangeHorz"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	self.wndPaidTransferFlyout:FindChild("PaidTransferConfirmBtn"):Enable(false) -- Until grid is clicked
 end
 
@@ -672,16 +698,16 @@ function AccountServices:OnPaidTransferConfirmBtn(wndHandler, wndControl)
 	local bPaid = true
 	local nRealmId = wndHandler:GetData().nRealmId
 	local strRealm = wndHandler:GetData().strRealm
-	local nCharacterId = self.nCharacterSelectedId
+	local nCharacterId = self.nCharacterSelectedPos
 	if not nCharacterId then
 		return
 	end
 
-	if bGiftableGroup then
-		self:ShowGroupBindConfirmation(tEscrowData, { eType = keFireOnPaidTransfer, nRealmId = nRealmId, strRealm = strRealm })
-	else
+--	if bGiftableGroup then
+--		self:ShowGroupBindConfirmation(tEscrowData, { eType = keFireOnPaidTransfer, nRealmId = nRealmId, strRealm = strRealm })
+--	else
 		self:ShowTransferConfirmation(bPaid, nRealmId, strRealm, tEscrowData)
-	end
+--	end
 
 	self.wndPaidTransferFlyout:Close()
 end
@@ -740,7 +766,7 @@ end
 
 function AccountServices:HelperCheckTriggers()
 	if self.strFireRenameOnUpdate ~= nil then
-		CharacterScreenLib.RenameCharacter(self.nCharacterSelectedId, self.strFireRenameOnUpdate)
+		CharacterScreenLib.RenameCharacter(self.nCharacterSelectedPos, self.strFireRenameOnUpdate)
 		self.strFireRenameOnUpdate = nil
 		return
 	end
@@ -754,7 +780,7 @@ function AccountServices:HelperCheckTriggers()
 
 	if self.nFirePaidTransferOnUpdate ~= nil then
 		local bPaid = true
-		CharacterScreenLib.RealmTransfer(self.nCharacterSelectedId, self.nFirePaidTransferOnUpdate, bPaid)
+		CharacterScreenLib.RealmTransfer(self.nCharacterSelectedPos, self.nFirePaidTransferOnUpdate, bPaid)
 		self.nFirePaidTransferOnUpdate = nil
 		return
 	end
@@ -777,17 +803,6 @@ end
 function AccountServices:HelperDeterminePayment(bUsingEscrow, ePendingTypeRequested)
 	local tEscrowData = nil
 	local bGiftableGroup = bUsingEscrow
-
-	-- First see if we have singles we can just use
-	if bGiftableGroup then
-		for idx, tPendingAccountItem in pairs(AccountItemLib.GetPendingAccountSingleItems()) do
-			if tPendingAccountItem.accountCurrency and tPendingAccountItem.accountCurrency.accountCurrencyEnum == ePendingTypeRequested then
-				tEscrowData = tPendingAccountItem
-				bGiftableGroup = false
-				break
-			end
-		end
-	end
 
 	-- If no singles, then pick the smallest group to use
 	if bGiftableGroup then
@@ -896,7 +911,7 @@ function AccountServices:ShowGroupBindConfirmation(tEscrowData, tBindData) -- In
 		strMessage = PreGameLib.String_GetWeaselString(Apollo.GetString("AccountServices_RenameExplanation"), tBindData.strText)
 	elseif nCurrCount == 1 and tBindData.eType == keFireOnPaidTransfer then
 		local strPayment = Apollo.GetString("AccountServices_PaidRealmTransfer") -- Only paid transfers can be in a group
-		strTitle = Apollo.GetString("AccountInventory_RealmTransfer")
+		strTitle = Apollo.GetString("AccountServices_PaidRealmTransfer")
 		strMessage = PreGameLib.String_GetWeaselString(Apollo.GetString("AccountServices_TransferExplanation"), self.strCharacterSelectedName, tBindData.strRealm, strPayment)
 	else
 		strTitle = PreGameLib.String_GetWeaselString(Apollo.GetString("AccountServices_BindGroupPurchases"), #tEscrowData.items)
@@ -933,40 +948,8 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function AccountServices:OnTrustedIPListReady()
-	if not self.wndMain then
-		return
-	end
-	
-	if not self.wndTrustedIPFlyout then
-		self.wndTrustedIPFlyout = self.wndMain:FindChild("TrustedIPFlyout")
-	end
-	
-	local wndTrustedIPConfirmBtn = self.wndTrustedIPFlyout:FindChild("TrustedIPConfirmBtn")
-	
-	local wndTrustedIPContent = self.wndTrustedIPFlyout:FindChild("TrustedIPContent")
-	wndTrustedIPContent:DestroyChildren()
-	
-	local tList = AccountItemLib.GetTrustedIPList()
-	for idx, tIP in pairs(tList) do
-		local wndIpRow = Apollo.LoadForm(self.xmlDoc, "TrustedIPButton", wndTrustedIPContent, self)
-		wndIpRow:SetData({ ["wndTrustedIPConfirmBtn"] = wndTrustedIPConfirmBtn })
-		wndIpRow:FindChild("Button"):SetData({ ["ipAddress"] = tIP.strIPAddress, ["wndTrustedIPConfirmBtn"] = wndTrustedIPConfirmBtn, ["wndTrustedIPContent"] = wndTrustedIPContent } )
-		wndIpRow:FindChild("IPNumber"):SetText(tIP.strIPAddress)
-		wndIpRow:FindChild("IPDateAdded"):SetText(tIP.strRegisterd)
-	end
-	wndTrustedIPContent:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
-	
-	wndTrustedIPConfirmBtn:Enable(false)
-	
-	self.wndMainPicker:FindChild("TrustedIPBtnSubtitle"):SetText(PreGameLib.String_GetWeaselString(Apollo.GetString("AccountServices_IPAddressSavedCount"), #tList))
-	
-	if #tList > 0 and not self.wndMain:IsShown() and not self.wndMinimized:IsShown() then
-		local bbDefaultMinimized = false
-		self.wndMain:Show(not bDefaultMinimized, true)
-		self.wndMinimized:Show(bDefaultMinimized, true)
-	end
-	self.wndMainPicker:FindChild("TrustedIPBtn"):Show(#tList > 0)
-	self.wndMainPicker:FindChild("AvailableScroll"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	self.bTrustedIPListReady = true
+	self:RedrawAll()
 end
 
 function AccountServices:OnTrustedIpBtnCheck(wndHandler, wndControl, eMouseButton)

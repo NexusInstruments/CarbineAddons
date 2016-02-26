@@ -41,8 +41,8 @@ function Macros:OnDocumentReady()
 	end
 	
 	Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded", "OnInterfaceMenuListHasLoaded", self)
-	Apollo.RegisterEventHandler("WindowManagementReady", 	"OnWindowManagementReady", self)
 	Apollo.RegisterEventHandler("InterfaceMenu_ToggleMacro", "OnInterfaceMenu_ToggleMacro", self)
+	Apollo.RegisterEventHandler("ToggleMacrosWindow", "OnInterfaceMenu_ToggleMacro", self)
 	Apollo.RegisterSlashCommand("macros", "OnMacrosOn", self)
 	Apollo.RegisterSlashCommand("reloadui", "OnRequestReloadUI", self)
 	Apollo.RegisterTimerHandler("LoadIconTimer", "OnLoadIcons", self)
@@ -52,7 +52,6 @@ function Macros:OnDocumentReady()
 	self.wndMacroList = self.wndMacros:FindChild("List")
 	self.wndEditMacro = self.wndMacros:FindChild("EditMacro")
 	self.wndDeleteMacro = self.wndMacros:FindChild("DeleteMacro")
-	self.wndMacros:Show(false)
 	if self.locSavedWindowLoc then
 		self.wndMacros:MoveToLocation(self.locSavedWindowLoc)
 	end
@@ -64,6 +63,9 @@ function Macros:OnDocumentReady()
 	self.bIconTimerCreated = false
 	
 	self:EnableEditingButtons(false)
+
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 end
 
 function Macros:OnInterfaceMenuListHasLoaded()
@@ -71,6 +73,7 @@ function Macros:OnInterfaceMenuListHasLoaded()
 end
 
 function Macros:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {wnd = self.wndMacros, strName = Apollo.GetString("InterfaceMenu_Macro")})
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMacros, strName = Apollo.GetString("InterfaceMenu_Macro")})
 end
 	
@@ -91,8 +94,7 @@ end
 
 function Macros:OnMacrosOn()
 
-	self.wndMacros:Show(true)
-	self.wndMacros:ToFront()
+	self.wndMacros:Invoke()
 	self:EnableEditingButtons(false)
 	
 	for idx, wnd in ipairs(self.tItems) do
@@ -116,7 +118,7 @@ function Macros:OnRequestReloadUI()
 end
 
 function Macros:OnOK()
-	self.wndMacros:Show(false)
+	self.wndMacros:Close()
 end
 
 function Macros:OnQueryBeginDragDrop(wndHandler, wndControl, nX, nY)

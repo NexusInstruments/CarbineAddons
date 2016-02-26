@@ -8,6 +8,7 @@ require "GameLib"
 require "Item"
 require "Window"
 require "Money"
+require "AccountItemLib"
 
 local InventoryBag = {}
 local knSmallIconOption = 42
@@ -15,15 +16,6 @@ local knLargeIconOption = 48
 local knMaxBags = 4 -- how many bags can the player have
 local knSaveVersion = 3
 local knPaddingTop = 20
-
-local karCurrency =  	-- Alt currency table; re-indexing the enums so they don't have to be in sequence code-side (and removing cash)
-{						-- To add a new currency just add an entry to the table; the UI will do the rest. Idx == 1 will be the default one shown
-	{eType = Money.CodeEnumCurrencyType.Renown, 			strTitle = Apollo.GetString("CRB_Renown"), 				strDescription = Apollo.GetString("CRB_Renown_Desc")},
-	{eType = Money.CodeEnumCurrencyType.ElderGems, 			strTitle = Apollo.GetString("CRB_Elder_Gems"), 			strDescription = Apollo.GetString("CRB_Elder_Gems_Desc")},
-	{eType = Money.CodeEnumCurrencyType.Glory, 				strTitle = Apollo.GetString("CRB_Glory"), 				strDescription = Apollo.GetString("CRB_Glory_Desc")},
-	{eType = Money.CodeEnumCurrencyType.Prestige, 			strTitle = Apollo.GetString("CRB_Prestige"), 			strDescription = Apollo.GetString("CRB_Prestige_Desc")},
-	{eType = Money.CodeEnumCurrencyType.CraftingVouchers, 	strTitle = Apollo.GetString("CRB_Crafting_Vouchers"), 	strDescription = Apollo.GetString("CRB_Crafting_Voucher_Desc")}
-}
 
 function InventoryBag:new(o)
 	o = o or {}
@@ -47,10 +39,8 @@ function InventoryBag:OnSave(eType)
 			nSaveVersion = knSaveVersion,
 			bShouldSortItems = self.bShouldSortItems,
 			nSortItemType = self.nSortItemType,
-			nAltCurrencySelected = self.nAltCurrencySelected
 		}
 	end
-
 	return nil
 end
 
@@ -66,12 +56,16 @@ function InventoryBag:OnRestore(eType, tSavedData)
 			return
 		end
 
-		self.bShouldSortItems = tSavedData.bShouldSortItems or false
-		self.nSortItemType = tSavedData.nSortItemType or 1
-		self.nAltCurrencySelected = tSavedData.nAltCurrencySelected or 1
+		self.bShouldSortItems = false
+		if tSavedData.bShouldSortItems ~= nil then
+			self.bShouldSortItems = tSavedData.bShouldSortItems
+		end
+		self.nSortItemType = 1
+		if tSavedData.nSortItemType ~= nil then
+			self.nSortItemType = tSavedData.nSortItemType
+		end
 
 		if self.wndMain then
-			self:UpdateAltCashDisplay()
 			self.wndMainBagWindow:SetSort(self.bShouldSortItems)
 			self.wndMainBagWindow:SetItemSortComparer(ktSortFunctions[self.nSortItemType])
 			self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:ItemSortPrompt:IconBtnSortOff"):SetCheck(not self.bShouldSortItems)
@@ -86,8 +80,6 @@ end
 function InventoryBag:OnLoad()
 	self.xmlDoc = XmlDoc.CreateFromFile("InventoryBag.xml")
 	self.xmlDoc:RegisterCallback("OnDocumentReady", self)
-
-	self.nAltCurrencySelected = 1
 end
 
 local fnSortItemsByName = function(itemLeft, itemRight)
@@ -186,34 +178,29 @@ function InventoryBag:OnDocumentReady()
 	end
 	Apollo.RegisterEventHandler("UpdateInventory", 							"OnUpdateInventory", self)
 	Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded", 				"OnInterfaceMenuListHasLoaded", self)
-	Apollo.RegisterEventHandler("WindowManagementReady", 					"OnWindowManagementReady", self)
-
 	Apollo.RegisterEventHandler("InterfaceMenu_ToggleInventory", 			"OnToggleVisibility", self) -- TODO: The datachron attachment needs to be brought over
 	Apollo.RegisterEventHandler("GuildBank_ShowPersonalInventory", 			"OnToggleVisibilityAlways", self)
-	Apollo.RegisterEventHandler("InvokeVendorWindow", 							"OnToggleVisibilityAlways", self)
-	Apollo.RegisterEventHandler("ShowBank",											 "OnToggleVisibilityAlways", self)
+	Apollo.RegisterEventHandler("InvokeVendorWindow", 						"OnToggleVisibilityAlways", self)
+	Apollo.RegisterEventHandler("ShowBank",									"OnToggleVisibilityAlways", self)
 	Apollo.RegisterEventHandler("PlayerEquippedItemChanged", 				"UpdateBagSlotItems", self) -- using this for bag changes
 	Apollo.RegisterEventHandler("PlayerPathMissionUpdate", 					"OnQuestObjectiveUpdated", self) -- route to same event
 	Apollo.RegisterEventHandler("QuestObjectiveUpdated", 					"OnQuestObjectiveUpdated", self)
 	Apollo.RegisterEventHandler("PlayerPathRefresh", 						"OnQuestObjectiveUpdated", self) -- route to same event
 	Apollo.RegisterEventHandler("QuestStateChanged", 						"OnQuestObjectiveUpdated", self)
 	Apollo.RegisterEventHandler("ToggleInventory", 							"OnToggleVisibility", self) -- todo: figure out if show inventory is needed
-	Apollo.RegisterEventHandler("ShowInventory", 							"OnToggleVisibility", self)
+	Apollo.RegisterEventHandler("ShowInventory", 							"OnToggleVisibilityAlways", self)
 	Apollo.RegisterEventHandler("ChallengeUpdated", 						"OnChallengeUpdated", self)
 	Apollo.RegisterEventHandler("CharacterCreated", 						"OnCharacterCreated", self)
 	Apollo.RegisterEventHandler("PlayerEquippedItemChanged",				"OnEquippedItem", self)
 	Apollo.RegisterEventHandler("GenerciEvent_CostumesWindowOpened",		"OnGenerciEvent_CostumesWindowOpened", self)
 	Apollo.RegisterEventHandler("GenerciEvent_CostumesWindowClosed",		"OnGenerciEvent_CostumesWindowClosed", self)
-
 	Apollo.RegisterEventHandler("GenericEvent_SplitItemStack", 				"OnGenericEvent_SplitItemStack", self)
-
-	Apollo.RegisterEventHandler("PlayerCurrencyChanged",					"OnPlayerCurrencyChanged", self)
-
-	Apollo.RegisterEventHandler("LevelUpUnlock_Inventory_Salvage", "OnLevelUpUnlock_Inventory_Salvage", self)
-	Apollo.RegisterEventHandler("LevelUpUnlock_Path_Item", "OnLevelUpUnlock_Path_Item", self)
-	Apollo.RegisterEventHandler("LootStackItemSentToTradeskillBag", "OnLootstackItemSentToTradeskillBag", self)
-	Apollo.RegisterEventHandler("SupplySatchelOpen", "OnSupplySatchelOpen", self)
-	Apollo.RegisterEventHandler("SupplySatchelClosed", "OnSupplySatchelClosed", self)
+	Apollo.RegisterEventHandler("LevelUpUnlock_Inventory_Salvage", 			"OnLevelUpUnlock_Inventory_Salvage", self)
+	Apollo.RegisterEventHandler("LevelUpUnlock_Path_Item", 					"OnLevelUpUnlock_Path_Item", self)
+	Apollo.RegisterEventHandler("LootStackItemSentToTradeskillBag", 		"OnLootstackItemSentToTradeskillBag", self)
+	Apollo.RegisterEventHandler("SupplySatchelOpen", 						"OnSupplySatchelOpen", self)
+	Apollo.RegisterEventHandler("SupplySatchelClosed", 						"OnSupplySatchelClosed", self)
+	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 				"OnTutorial_RequestUIAnchor", self)
 
 	-- TODO Refactor: Investigate these two, we may not need them if we can detect the origin window of a drag
 	Apollo.RegisterEventHandler("DragDropSysBegin", "OnSystemBeginDragDrop", self)
@@ -239,7 +226,7 @@ function InventoryBag:OnDocumentReady()
 
 	local nLeft, nTop, nRight, nBottom = self.wndMain:GetAnchorOffsets()
 	self.nFirstEverWidth = nRight - nLeft
-	self.wndMain:SetSizingMinimum(238, 270)
+	self.wndMain:SetSizingMinimum(336, 270)
 	self.wndMain:SetSizingMaximum(1200, 700)
 
 	nLeft, nTop, nRight, nBottom = self.wndMain:FindChild("MainGridContainer"):GetAnchorOffsets()
@@ -253,25 +240,7 @@ function InventoryBag:OnDocumentReady()
 	end
 
 	self.nEquippedBagCount = 0 -- used to identify bag updates
-
 	self:UpdateSquareSize()
-
-	--Alt Curency Display
-	for idx = 1, #karCurrency do
-		local tData = karCurrency[idx]
-		local wnd = Apollo.LoadForm(self.xmlDoc, "PickerEntry", self.wndMain:FindChild("OptionsConfigureCurrencyList"), self)
-		wnd:FindChild("EntryCash"):SetMoneySystem(tData.eType) -- We'll fill in the amount during the timer
-		wnd:FindChild("PickerEntryBtn"):SetData(idx)
-		wnd:FindChild("PickerEntryBtn"):SetCheck(idx == self.nAltCurrencySelected)
-		wnd:FindChild("PickerEntryBtnText"):SetText(tData.strTitle)
-		wnd:FindChild("PickerEntryBtn"):SetTooltip(tData.strDescription)
-		tData.wnd = wnd
-	end
-	self.wndMain:FindChild("OptionsConfigureCurrencyList"):ArrangeChildrenVert(0)
-
-	if GameLib.GetPlayerUnit() then
-		self:OnCharacterCreated()
-	end
 
 	if self.locSavedWindowLoc then
 		self.wndMain:MoveToLocation(self.locSavedWindowLoc)
@@ -284,9 +253,13 @@ function InventoryBag:OnDocumentReady()
 	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortAlpha"):SetCheck(self.bShouldSortItems and self.nSortItemType == 1)
 	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortCategory"):SetCheck(self.bShouldSortItems and self.nSortItemType == 2)
 	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortQuality"):SetCheck(self.bShouldSortItems and self.nSortItemType == 3)
+	self.wndMain:FindChild("OptionsBtn"):AttachWindow(self.wndMain:FindChild("OptionsContainer"))
 
 	self.wndIconBtnSortDropDown = self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown")
 	self.wndIconBtnSortDropDown:AttachWindow(self.wndIconBtnSortDropDown:FindChild("ItemSortPrompt"))
+
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 end
 
 function InventoryBag:OnSupplySatchelOpen()
@@ -299,6 +272,7 @@ end
 
 function InventoryBag:OnLootstackItemSentToTradeskillBag(item)
 	self.wndNewSatchelItemRunner:Show(not self.bSupplySatchelOpen)
+	Event_ShowTutorial(GameLib.CodeEnumTutorial.TradeskillsInventory)
 end
 
 function InventoryBag:OnInterfaceMenuListHasLoaded()
@@ -306,11 +280,12 @@ function InventoryBag:OnInterfaceMenuListHasLoaded()
 end
 
 function InventoryBag:OnWindowManagementReady()
-	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("InterfaceMenu_Inventory"), nSaveVersion=2})
-end
-
-function InventoryBag:OnCharacterCreated()
-	self:OnPlayerCurrencyChanged()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("InterfaceMenu_Inventory"), nSaveVersion=3})
+	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("InterfaceMenu_Inventory"), nSaveVersion=3})
+	
+			if #CraftingLib.GetUniversalSchematicsOwned() > 0 then
+			Event_ShowTutorial(GameLib.CodeEnumTutorial.CraftingImprint)
+		end
 end
 
 function InventoryBag:OnToggleVisibility()
@@ -362,16 +337,8 @@ end
 -----------------------------------------------------------------------------------------------
 -- Main Update Timer
 -----------------------------------------------------------------------------------------------
-function InventoryBag:OnInventoryClosed( wndHandler, wndControl )
+function InventoryBag:OnInventoryClosed(wndHandler, wndControl)
 	self.wndMainBagWindow:MarkAllItemsAsSeen()
-end
-
-function InventoryBag:OnPlayerCurrencyChanged()
-	self.wndMain:FindChild("MainCashWindow"):SetAmount(GameLib.GetPlayerCurrency(), true)
-		--Alt Currency stuff
-	for key, wndCurr in pairs(self.wndMain:FindChild("OptionsConfigureCurrencyList"):GetChildren()) do
-		self:UpdateAltCash(wndCurr)
-	end
 end
 
 function InventoryBag:UpdateBagSlotItems() -- update our bag display
@@ -407,7 +374,7 @@ end
 
 function InventoryBag:OnMainWindowMouseResized()
 	self:UpdateSquareSize()
-	self.wndMain:FindChild("VirtualInvItems"):ArrangeChildrenHorz(1)
+	self.wndMain:FindChild("VirtualInvItems"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.Middle)
 end
 
 function InventoryBag:UpdateSquareSize()
@@ -423,15 +390,7 @@ end
 -----------------------------------------------------------------------------------------------
 -- Options
 -----------------------------------------------------------------------------------------------
-
-function InventoryBag:OnBGBottomCashBtnToggle(wndHandler, wndControl)
-	self.wndMain:FindChild("OptionsBtn"):SetCheck(wndHandler:IsChecked())
-	self:OnOptionsMenuToggle()
-end
-
 function InventoryBag:OnOptionsMenuToggle(wndHandler, wndControl) -- OptionsBtn
-	self.wndMain:FindChild("BGBottomCashBtn"):SetCheck(self.wndMain:FindChild("OptionsBtn"):IsChecked())
-	self.wndMain:FindChild("OptionsContainer"):Show(self.wndMain:FindChild("OptionsBtn"):IsChecked())
 
 	for idx = 1,4 do
 		self.wndMain:FindChild("BagBtn" .. idx):FindChild("RemoveBagIcon"):Show(false)
@@ -439,16 +398,6 @@ function InventoryBag:OnOptionsMenuToggle(wndHandler, wndControl) -- OptionsBtn
 
 	self.wndMain:FindChild("IconBtnLarge"):SetCheck(self.nBoxSize == kLargeIconOption)
 	self.wndMain:FindChild("IconBtnSmall"):SetCheck(self.nBoxSize == kSmallIconOption)
-
-	for key, wndCurr in pairs(self.wndMain:FindChild("OptionsConfigureCurrencyList"):GetChildren()) do
-		self:UpdateAltCash(wndCurr)
-	end
-end
-
-function InventoryBag:OnOptionsCloseClick()
-	self.wndMain:FindChild("BGBottomCashBtn"):SetCheck(false)
-	self.wndMain:FindChild("OptionsBtn"):SetCheck(false)
-	self:OnOptionsMenuToggle()
 end
 
 function InventoryBag:OnOptionsAddSizeRows()
@@ -468,33 +417,6 @@ function InventoryBag:OnOptionsRemoveSizeRows()
 end
 
 -----------------------------------------------------------------------------------------------
--- Alt Currency Window Functions
------------------------------------------------------------------------------------------------
-
-function InventoryBag:UpdateAltCash(wndHandler, wndControl) -- Also from PickerEntryBtn
-	local nSelected = wndHandler:FindChild("PickerEntryBtn"):GetData()
-	local tData = karCurrency[nSelected]
-
-	if wndHandler:FindChild("PickerEntryBtn"):IsChecked() then
-		self.nAltCurrencySelected = nSelected
-		self:UpdateAltCashDisplay()
-	end
-
-	if self.wndMain:FindChild("OptionsBtn"):IsChecked() then
-		tData.wnd:FindChild("EntryCash"):SetAmount(GameLib.GetPlayerCurrency(tData.eType):GetAmount(), true)
-	end
-end
-
-function InventoryBag:UpdateAltCashDisplay()
-	local tData = karCurrency[self.nAltCurrencySelected]
-
-	self.wndMain:FindChild("AltCashWindow"):SetMoneySystem(tData.eType)
-	self.wndMain:FindChild("AltCashWindow"):SetAmount(GameLib.GetPlayerCurrency(tData.eType):GetAmount(), true)
-	self.wndMain:FindChild("AltCashWindow"):SetTooltip(String_GetWeaselString(Apollo.GetString("Inventory_MoneyTooltip"), tData.strDescription))
-	self.wndMain:FindChild("MainCashWindow"):SetTooltip(String_GetWeaselString(Apollo.GetString("Inventory_MoneyTooltip"), tData.strDescription))
-end
-
------------------------------------------------------------------------------------------------
 -- Supply Satchel
 -----------------------------------------------------------------------------------------------
 
@@ -507,10 +429,12 @@ function InventoryBag:OnToggleSupplySatchel(wndHandler, wndControl)
 end
 
 function InventoryBag:OnItemClick(wndHandler, wndControl, eButton, item)
-	if self.bCostumesOpen then
+	local bUnlock = self.bCostumesOpen and item:IsEquippable()
+	if bUnlock then
 		Event_FireGenericEvent("GenericEvent_CostumeUnlock", item)
 	end
-	return self.bCostumesOpen
+	
+	return bUnlock
 end
 
 function InventoryBag:OnGenerciEvent_CostumesWindowOpened()
@@ -584,7 +508,7 @@ function InventoryBag:UpdateVirtualItemInventory()
 		wndCurr:SetTooltip(string.format("<P Font=\"CRB_InterfaceSmall\">%s</P><P Font=\"CRB_InterfaceSmall\" TextColor=\"aaaaaaaa\">%s</P>", tCurrItem.strName, tCurrItem.strFlavor))
 	end
 	self.wndMain:FindChild("VirtualInvToggleBtn"):SetText(String_GetWeaselString(Apollo.GetString("Inventory_VirtualInvBtn"), nOnGoingCount))
-	self.wndMain:FindChild("VirtualInvItems"):ArrangeChildrenHorz(1)
+	self.wndMain:FindChild("VirtualInvItems"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.Middle)
 
 	-- Adjust heights
 	local bShowQuestItems = self.wndMain:FindChild("VirtualInvToggleBtn"):IsChecked()
@@ -677,7 +601,12 @@ end
 -- End Salvage Icon
 
 function InventoryBag:HelperSetSalvageEnable()
-	local tInvItems = GameLib.GetPlayerUnit():GetInventoryItems()
+	local unitPlayer = GameLib.GetPlayerUnit()
+	if unitPlayer == nil or not unitPlayer:IsValid() then
+		return
+	end
+	
+	local tInvItems = unitPlayer:GetInventoryItems()
 	for idx, tItem in ipairs(tInvItems) do
 		if tItem and tItem.itemInBag and tItem.itemInBag:CanSalvage() and not tItem.itemInBag:CanAutoSalvage() then
 			self.wndSalvageAllBtn:Enable(true)
@@ -812,6 +741,7 @@ function InventoryBag:OnDeleteConfirm()
 end
 
 function InventoryBag:OnSalvageConfirm()
+	Event_ShowTutorial(GameLib.CodeEnumTutorial.CharacterWindow)
 	self:OnSalvageCancel()
 end
 
@@ -856,6 +786,32 @@ function InventoryBag:OnGenerateTooltip(wndControl, wndHandler, tType, item)
 		local itemEquipped = item:GetEquippedItemForItemType()
 		Tooltip.GetItemTooltipForm(self, wndControl, item, {bPrimary = true, bSelling = false, itemCompare = itemEquipped})
 		-- Tooltip.GetItemTooltipForm(self, wndControl, itemEquipped, {bPrimary = false, bSelling = false, itemCompare = item})
+	end
+end
+
+---------------------------------------------------------------------------------------------------
+-- Tutorial anchor request
+---------------------------------------------------------------------------------------------------
+
+function InventoryBag:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
+	local tAnchors =
+	{
+		[GameLib.CodeEnumTutorialAnchor.Inventory] 		= true,
+		[GameLib.CodeEnumTutorialAnchor.InventoryItem] 	= true,
+	}
+	
+	if not tAnchors[eAnchor] or not self.wndMain then 
+		return 
+	end
+	
+	local tAnchorMapping =
+	{
+		[GameLib.CodeEnumTutorialAnchor.Inventory] 		= self.wndMain,
+		[GameLib.CodeEnumTutorialAnchor.InventoryItem] 	= self.wndMain:FindChild("BGGridArt")
+	}
+	
+	if tAnchorMapping[eAnchor] then
+		Event_FireGenericEvent("Tutorial_ShowCallout", eAnchor, idTutorial, strPopupText, tAnchorMapping[eAnchor])
 	end
 end
 

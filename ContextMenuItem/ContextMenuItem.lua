@@ -145,7 +145,7 @@ function ContextMenuItem:HelperValidateCostumeUnlock(itemArg)
 	
 	local tUnlockInfo = itemArg:GetCostumeUnlockInfo()
 	
-	return tUnlockInfo ~= nil and tUnlockInfo.bCanUnlock and not tUnlockInfo.bUnlocked and itemArg:GetInventoryId()
+	return tUnlockInfo ~= nil and tUnlockInfo.bCanUnlock and not tUnlockInfo.bUnlocked and itemArg:GetInventoryId() ~= 0
 end
 
 local ContextMenuItemInst = ContextMenuItem:new()

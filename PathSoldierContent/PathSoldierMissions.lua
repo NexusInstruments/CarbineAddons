@@ -37,18 +37,17 @@ function PathSoldierMissions:OnDocumentReady()
 	if self.xmlDoc == nil then
 		return
 	end
-	Apollo.RegisterEventHandler("Datachron_LoadPathSoldierContent", 		"OnLoadFromDatachron", self)
+	Apollo.RegisterEventHandler("CharacterCreated", 	"OnCharacterLoaded", self)
 
-	-- For quest hold outs, these are randomly listened to. TODO: investigate proper use of these events
-	Apollo.RegisterEventHandler("Datachron_ToggleHoldoutContent", 			"OnLoadFromDatachron", self)
-	Apollo.RegisterEventHandler("Datachron_LoadQuestHoldoutContent", 		"OnLoadFromDatachron", self)
+	if GameLib.GetPlayerUnit() then
+		self:OnCharacterLoaded()
+	end
 end
 
-function PathSoldierMissions:OnLoadFromDatachron()
+function PathSoldierMissions:OnCharacterLoaded()
 	Apollo.RegisterEventHandler("LoadSoldierMission", "LoadFromList", self)
 
 	Apollo.RegisterEventHandler("PlayerPathSoldierNewWhackAMoleBurrows", 	"OnPlayerPathSoldierNewWhackAMoleBurrows", self)
-	Apollo.RegisterEventHandler("ChallengeUpdated",							"OnChallengeUpdated", self)
 	Apollo.RegisterEventHandler("SoldierHoldoutStatus", 					"OnSoldierHoldoutStatusStart", self)
 	Apollo.RegisterEventHandler("SoldierHoldoutNextWave", 					"OnSoldierHoldoutNextWave", self)
 	Apollo.RegisterEventHandler("SoldierHoldoutDeath",						"OnSoldierHoldoutDeath", self)
@@ -58,9 +57,6 @@ function PathSoldierMissions:OnLoadFromDatachron()
 	Apollo.RegisterTimerHandler("SoldierHoldout_CleanWhackAMole",	"OnSoldierHoldout_CleanWhackAMole", self)
 	Apollo.RegisterTimerHandler("IncomingWarning", 					"OnIncomingWarning", self)
 	Apollo.RegisterTimerHandler("SoldierTimer", 					"OnSoldierTimer", self)
-	Apollo.RegisterTimerHandler("DoAFlashTimer10", 					"DoAFlash", self)
-	Apollo.RegisterTimerHandler("DoAFlashTimer6", 					"DoAFlash", self)
-	Apollo.RegisterTimerHandler("DoAFlashTimer3", 					"DoAFlash", self)
 
 	Apollo.CreateTimer("SoldierTimer", 0.4, true)
 	Apollo.StartTimer("SoldierTimer")
@@ -82,25 +78,6 @@ function PathSoldierMissions:OnLoadFromDatachron()
 			end
 		end
 	end
-end
-
-function PathSoldierMissions:OnChallengeUpdated(nChallengeId)
-	local bActiveChallenge = false
-
-	local tChallenges = ChallengesLib.GetActiveChallengeList()
-	for _, clgCurrent in pairs(tChallenges) do
-		if clgCurrent:IsActivated() then
-			bActiveChallenge = true
-			break
-		end
-	end
-
-	local nOffset = bActiveChallenge and 0.5 or 1
-	local nLeft, nTop, nRight, nBottom = self.wndMain:GetAnchorPoints()
-
-	self.wndMain:FindChild("Timed"):SetAnchorPoints(nLeft, nTop, nOffset, nBottom)
-	self.wndMain:FindChild("Defend"):SetAnchorPoints(nLeft, nTop, nOffset, nBottom)
-	self.wndMain:FindChild("Assault"):SetAnchorPoints(nLeft, nTop, nOffset, nBottom)
 end
 
 function PathSoldierMissions:OnExitSoldierMissionMain()
@@ -180,12 +157,12 @@ function PathSoldierMissions:DrawMissionTimed(seEvent)
 	self.wndMain:FindChild("Timed"):FindChild("TimerText"):SetText(self:HelperCalcTime(nElapsedTime))
 	self.wndMain:FindChild("Timed"):FindChild("TimedMeter"):SetProgress(nElapsedTime)
 	self.wndMain:FindChild("Timed"):FindChild("TimedMeter"):SetMax(seEvent:GetMaxTime())
-	self.wndMain:FindChild("Timed"):FindChild("TimerAndCountArrangeVert"):ArrangeChildrenVert(0)
+	self.wndMain:FindChild("Timed"):FindChild("TimerAndCountArrangeVert"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function PathSoldierMissions:DrawMissionDefense(seEvent)
-	local wndAssault = self.wndMain:FindChild("Assault")
 	local wndDefend = self.wndMain:FindChild("Defend")
+
 	local nElapsedTime = seEvent:GetMaxTime() - seEvent:GetElapsedTime()
 
 	local wndDefendContainer = wndDefend:FindChild("DefendContainer")
@@ -198,7 +175,7 @@ function PathSoldierMissions:DrawMissionDefense(seEvent)
 		if wndEntry == nil then
 			wndEntry = Apollo.LoadForm(self.xmlDoc, "DefendEntry", wndDefendContainer, self)
 			wndEntry:SetData(idx)
-			wndDefendContainer:ArrangeChildrenHorz(1)
+			wndDefendContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.Middle)
 		end
 
 		local nCurrHealth = unit:GetHealth()
@@ -260,7 +237,7 @@ function PathSoldierMissions:DrawMissionDefense(seEvent)
 				wndWave:FindChild("Dot"):SetSprite(strSprite)
 			end
 
-			wndWaves:ArrangeChildrenHorz(1)
+			wndWaves:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.Middle)
 		end
 
 		wndDefend:FindChild("WaveMeter"):Show(true)
@@ -271,6 +248,7 @@ function PathSoldierMissions:DrawMissionDefense(seEvent)
 	end
 
 	self.wndMain:FindChild("BossFrame"):Show(seEvent:IsBoss())
+	wndDefend:FindChild("ProgressFrame"):SetSprite(seEvent:IsBoss() and "Holdouts:spr_Holdouts_WaveBossBG" or "Holdouts:spr_Holdouts_WaveBG")
 end
 
 function PathSoldierMissions:DrawMissionAssault(seEvent)
@@ -280,7 +258,7 @@ function PathSoldierMissions:DrawMissionAssault(seEvent)
 
 	wndAssault:Show(true)
 	wndAssault:FindChild("CountContainer"):Show(false)
-	wndAssault:FindChild("TimerAndCountArrangeVert"):ArrangeChildrenVert(0)
+	wndAssault:FindChild("TimerAndCountArrangeVert"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	self.wndMain:FindChild("TowerDefenseContainer"):Show(false)
 
 	-- Shared
@@ -299,7 +277,7 @@ function PathSoldierMissions:DrawMissionAssault(seEvent)
 			wndWave:FindChild("Dot"):SetSprite(strSprite)
 		end
 
-		wndWaves:ArrangeChildrenHorz(1)
+		wndWaves:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.Middle)
 	end
 
 	wndAssault:FindChild("WaveMeter"):SetMax(seEvent:GetMaxTime())
@@ -319,6 +297,7 @@ function PathSoldierMissions:DrawMissionAssault(seEvent)
 	end
 
 	self.wndMain:FindChild("BossFrame"):Show(seEvent:IsBoss())
+	wndAssault:FindChild("ProgressFrame"):SetSprite(seEvent:IsBoss() and "Holdouts:spr_Holdouts_WaveBossBG" or "Holdouts:spr_Holdouts_WaveBG")
 end
 
 function PathSoldierMissions:DrawMissionTowerDefense(seEvent)
@@ -354,7 +333,7 @@ function PathSoldierMissions:DrawMissionStopThieves(seEvent)
 
 		wndToUse:FindChild("CountContainer"):Show(true)
 		wndToUse:FindChild("CountText"):SetText(nInTransit + seEvent:GetAuxiliaryHealth() .. "/" .. seEvent:GetMaxAuxiliaryHealth())
-		wndToUse:FindChild("TimerAndCountArrangeVert"):ArrangeChildrenVert(0)
+		wndToUse:FindChild("TimerAndCountArrangeVert"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	end
 end
 
@@ -367,9 +346,6 @@ function PathSoldierMissions:DrawMissionBuilding(seEvent)
 	if self.bFirstTowerDefenseLoad then
 		self.bFirstTowerDefenseLoad = false
 		local nMaxTime = seEvent:GetMaxTime()
-		Apollo.CreateTimer("DoAFlashTimer3", nMaxTime - 3.0, false)
-		Apollo.CreateTimer("DoAFlashTimer6", nMaxTime - 6.0, false)
-		Apollo.CreateTimer("DoAFlashTimer10", nMaxTime - 10.0, false)
 	end
 end
 
@@ -395,7 +371,6 @@ function PathSoldierMissions:OnSoldierHoldoutNextWave(seArgEvent)
 		Sound.Play(Sound.PlayUISoldierWaveReleased)
 	end
 
-	self:DoAFlash()
 	self.wndMain:FindChild("SolIncoming"):Show(true)
 	self.wndMain:FindChild("SolIncoming"):FindChild("IncomingText"):SetText(Apollo.GetString("CRB_Incoming!"))
 	Apollo.CreateTimer("IncomingWarning", 2.0, false)
@@ -404,7 +379,6 @@ end
 function PathSoldierMissions:OnIncomingWarning()
 	if not self.wndMain then return end
 
-	self:DoAFlash()
 	self.wndMain:FindChild("SolIncoming"):Show(false)
 	Sound.Play(Sound.PlayUISoldierHoldoutScreenFlashes)
 end
@@ -464,13 +438,6 @@ end
 ---------------------------------------------------------------------------------------------------
 -- Helper Methods
 ---------------------------------------------------------------------------------------------------
-
-function PathSoldierMissions:DoAFlash()
-	if Apollo.GetConsoleVariable("ui.soldierHoldoutDisplayWaveFlash") then
-		Event_FireGenericEvent("Datachron_FlashIndicators")
-		self.wndMain:FindChild("WaveFlash"):SetSprite("WhiteFlash")
-	end
-end
 
 function PathSoldierMissions:HelperCalcTime(nTime)
 	local nInSeconds = nTime / 1000

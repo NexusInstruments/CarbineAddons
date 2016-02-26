@@ -140,7 +140,6 @@ end
 
 function NeedVsGreed:DrawLoot(tCurrentElement, nItemsInQueue)
 	if not self.wndMain or not self.wndMain:IsValid() or not self.wndMain:GetData() then
-		self:Close()
 		self.wndMain = Apollo.LoadForm(self.xmlDoc, "NeedVsGreedForm", nil, self)
 		Sound.Play(Sound.PlayUIWindowNeedVsGreedOpen)
 	end

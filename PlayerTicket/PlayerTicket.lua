@@ -51,7 +51,6 @@ function PlayerTicketDialog:OnDocumentReady()
 	end
 
 	Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded", 			"OnInterfaceMenuListHasLoaded", self)
-	Apollo.RegisterEventHandler("WindowManagementReady", 				"OnWindowManagementReady", self)
 
 	Apollo.RegisterEventHandler("GenericEvent_OpenReportPlayerTicket", 	"OnGenericEvent_OpenReportPlayerTicket", self) -- Does ToggleWindow with a preselection
 	Apollo.RegisterEventHandler("TogglePlayerTicketWindow", 			"ToggleWindow", self)
@@ -81,6 +80,9 @@ function PlayerTicketDialog:OnDocumentReady()
 
 	self.tWindowMap["Category"]:SetColumnText(1, Apollo.GetString("CRB_Category"))
 	self.tWindowMap["SubCategory"]:SetColumnText(1, Apollo.GetString("ErrorDialog_SubcatTitle"))
+
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 end
 
 function PlayerTicketDialog:OnInterfaceMenuListHasLoaded()
@@ -88,6 +90,7 @@ function PlayerTicketDialog:OnInterfaceMenuListHasLoaded()
 end
 
 function PlayerTicketDialog:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {wnd = self.tWindowMap["Main"], strName = Apollo.GetString("InterfaceMenu_SubmitTicket")})
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.tWindowMap["Main"], strName = Apollo.GetString("InterfaceMenu_SubmitTicket")})
 end
 
@@ -97,19 +100,21 @@ function PlayerTicketDialog:OnGenericEvent_OpenReportPlayerTicket(strMessage, bA
 	self:PopulateTypePicker()
 	self.tWindowMap["Category"]:SetCurrentRow(2)
 	self.tWindowMap["PlayerTicketTextEntry"]:SetText(strMessage or "")
+	local nLength = string.len(strMessage or "")
+	self.tWindowMap["PlayerTicketTextEntry"]:SetSel(nLength,nLength)
 	self:PopulateSubtypeCombo() -- After picking a Category
 end
 
 function PlayerTicketDialog:ToggleWindow()
 	if self.tWindowMap["Main"]:IsVisible() then
-		self.tWindowMap["Main"]:Show(false)
+		self.tWindowMap["Main"]:Close()
 	else
 		self:PopulateTypePicker()
 	end
 end
 
 function PlayerTicketDialog:PopulateTypePicker()
-	local tListOfEntries = PlayerTicket_GetErrorTypeList()
+	local arListOfEntries = PlayerTicket_GetErrorTypeList()
 	self.tWindowMap["Category"]:DeleteAll()
 	self.tWindowMap["SubCategory"]:DeleteAll()
 	self.tWindowMap["PlayerTicketTextEntry"]:SetMaxTextLength(GameLib.GetTextTypeMaxLength(GameLib.CodeEnumUserText.PlayerTicketText))
@@ -122,11 +127,31 @@ function PlayerTicketDialog:PopulateTypePicker()
 	self.tWindowMap["SubCatBlocker"]:Show(true)
 
 	self.nMainRowCount = 0
-	for idx, CurrentError in ipairs(tListOfEntries) do
-		local iRow = self.tWindowMap["Category"]:AddRow(CurrentError.localizedText, "", CurrentError.index)
+	for idx, tCurrentError in ipairs(arListOfEntries) do
+		local iRow = self.tWindowMap["Category"]:AddRow(tCurrentError.localizedText, "", tCurrentError.index)
 	end
 
-	self.tWindowMap["Main"]:Show(true)
+	self.tWindowMap["Main"]:Invoke()
+end
+
+
+function PlayerTicketDialog:OnGridSort()
+	self.tWindowMap["Category"]:DeleteAll()
+
+	local arListOfEntries = PlayerTicket_GetErrorTypeList()
+	if self.tWindowMap["Category"]:IsSortAscending() then
+		table.sort(arListOfEntries, function(a,b) return a.localizedText < b.localizedText end)
+	else
+		table.sort(arListOfEntries, function(a,b) return a.localizedText > b.localizedText end)
+	end
+
+	for idx, tCurrentError in ipairs(arListOfEntries) do
+		local iRow = self.tWindowMap["Category"]:AddRow(tCurrentError.localizedText, "", tCurrentError.index)
+		self.tWindowMap["Category"]:SetCellData(iRow, 1, tCurrentError.localizedText, "", tCurrentError.index)
+	end
+
+	self.tWindowMap["Category"]:SetCurrentRow(1)
+	self:PopulateSubtypeCombo()
 end
 
 function PlayerTicketDialog:PopulateSubtypeCombo()
@@ -136,8 +161,8 @@ function PlayerTicketDialog:PopulateSubtypeCombo()
 
 	local nRows = 0
 	local tListOfSubentries = PlayerTicket_GetSubtype(index)
-	for idx, CurrentSubError in ipairs (tListOfSubentries) do
-		local wndNewRow = self.tWindowMap["SubCategory"]:AddRow(CurrentSubError.localizedText, "", CurrentSubError.index)
+	for idx, tCurrentError in ipairs (tListOfSubentries) do
+		local wndNewRow = self.tWindowMap["SubCategory"]:AddRow(tCurrentError.localizedText, "", tCurrentError.index)
 		nRows = nRows + 1
 	end
 
@@ -246,7 +271,7 @@ function PlayerTicketDialog:OnCancelBtn(wndHandler, wndControl, eMouseButton)
 		return
 	end
 	self:ClearTextEntries()
-	self.tWindowMap["Main"]:Show(false)
+	self.tWindowMap["Main"]:Close()
 end
 
 ---------------------------------------------------------------------------------------------------

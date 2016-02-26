@@ -51,8 +51,7 @@ function BuildMap:OnLoad()
 end
 
 function BuildMap:OnDocumentReady()
-	Apollo.RegisterEventHandler("CloseVendorWindow", 			"OnCloseBtn", self)
-	Apollo.RegisterEventHandler("SettlerBuildResult", 			"OnCloseVendorWindow", self)
+	Apollo.RegisterEventHandler("SettlerBuildResult", 			"OnCloseSettlerWindow", self)
 	Apollo.RegisterEventHandler("InvokeSettlerBuild", 			"OnInvokeSettlerBuild", self)
 	Apollo.RegisterEventHandler("SettlerHubClose", 				"OnCloseBtn", self)
 	Apollo.RegisterEventHandler("ChangeWorld", 					"OnCloseBtn", self)
@@ -74,6 +73,7 @@ function BuildMap:Initialize()
 	end
 
 	self.wndMain = Apollo.LoadForm(self.xmlDoc, "BuildMapForm", nil, self)
+	self.wndMain:Invoke()
 	if self.locSavedWindowLoc then
 		self.wndMain:MoveToLocation(self.locSavedWindowLoc)
 	end
@@ -159,6 +159,33 @@ function BuildMap:OnInvokeSettlerBuild(unitPlayer, tList)
 	self:RedrawSelectionItems()
 end
 
+local function CompareTypesAndNames(wndFirstSelectionItem, wndSecondSelectionItem)
+	-- get the tNode from the data which is the first index
+	local wndFirstSelItemBtn = wndFirstSelectionItem:FindChild("SelectionItemBtn")
+	local wndSecondSelItemBtn = wndSecondSelectionItem:FindChild("SelectionItemBtn")
+	if wndFirstSelItemBtn == nil or wndSecondSelItemBtn == nil then
+		return false
+	end
+	local tFirstData = wndFirstSelItemBtn:GetData()
+	local tSecondData = wndSecondSelItemBtn:GetData()
+	if tFirstData == nil or tSecondData == nil then
+		return false
+	end
+	local tFirstNode = tFirstData[1]
+	local tSecondNode = tSecondData[1]
+	if tFirstNode == nil or tSecondNode == nil then
+		return false
+	end
+	if tFirstNode:GetAvenueType() == tSecondNode:GetAvenueType() then
+		if tFirstNode:GetName() < tSecondNode:GetName() then
+			return true
+		end
+	elseif tFirstNode:GetAvenueType() < tSecondNode:GetAvenueType() then
+		return true
+	end
+	return false
+end
+
 function BuildMap:RedrawSelectionItems()
 	local tList = self.wndMain:FindChild("TopSection:WorldMap"):GetData() -- Passed in from InvokeBuild method
 	if not tList then
@@ -196,7 +223,7 @@ function BuildMap:RedrawSelectionItems()
 	elseif self.ePlayerPathType == PlayerPathLib.PlayerPathType_Soldier then
 		strIconPath = "PlayerPathContent_TEMP:spr_PathSol_MapIcon"
 	end
-	self.wndMain:FindChild("BottomSection:CategoryFilterSection:CategoryFilterItemContainer"):ArrangeChildrenVert(0)
+	self.wndMain:FindChild("BottomSection:CategoryFilterSection:CategoryFilterItemContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 	-----------------------------------------------------------------------------------------------
 	-- Selection Items
@@ -210,7 +237,7 @@ function BuildMap:RedrawSelectionItems()
 	}
 
 	self.nNumNodes = #tList
-	for idx, tNode in ipairs(tList) do --if tNode:GetPosition() and tNode:GetName() then
+	for idx, tNode in ipairs(tList) do
 		if SoldierImprovement.is(tNode) then
 			self:DrawTierSoldier(tNode)
 		elseif not nArgAvenueType or nArgAvenueType == tNode:GetAvenueType() then
@@ -220,7 +247,7 @@ function BuildMap:RedrawSelectionItems()
 	end
 
 	if not self.wndExtraInfoScreen or not self.wndExtraInfoScreen:IsValid() or not self.wndExtraInfoScreen:IsShown() then
-		self.wndMain:FindChild("BottomSection:SelectionItemContainer"):ArrangeChildrenVert(0)
+		self.wndMain:FindChild("BottomSection:SelectionItemContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, CompareTypesAndNames)
 	end
 end
 
@@ -378,7 +405,7 @@ function BuildMap:OnSelectionItemShowExtraInfo(wndHandler, wndControl) -- Select
 			end
 		end
 	end
-	wndCurr:FindChild("PopoutCostContainer"):ArrangeChildrenHorz(1)
+	wndCurr:FindChild("PopoutCostContainer"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.Middle)
 
 	-- Build Btn
 	local strButtonText = Apollo.GetString("BuildMap_BuildBtn")
@@ -456,9 +483,15 @@ end
 
 function BuildMap:OnWindowClosed()
 	Event_CancelSettlerHub()
+	if self.wndMain ~= nil and self.wndMain:IsValid() then	
+		self.locSavedWindowLoc = self.wndMain:GetLocation()
+		self.wndMain:Destroy()
+		self.wndMain = nil
+		Event_CancelSettlerHub()
+	end
 end
 
-function BuildMap:OnCloseVendorWindow()
+function BuildMap:OnCloseSettlerWindow()
 	if self.bKeepWindowOpen then
 		return
 	end
@@ -466,11 +499,8 @@ function BuildMap:OnCloseVendorWindow()
 end
 
 function BuildMap:OnCloseBtn() -- SettlerBuildResult
-	if self.wndMain ~= nil and self.wndMain:IsValid() then	
-		self.locSavedWindowLoc = self.wndMain:GetLocation()
-		self.wndMain:Destroy()
-		self.wndMain = nil
-		Event_CancelSettlerHub()
+	if self.wndMain then
+		self.wndMain:Close()
 	end
 end
 

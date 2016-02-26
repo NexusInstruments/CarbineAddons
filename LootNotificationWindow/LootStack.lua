@@ -62,10 +62,7 @@ function LootStack:OnDocumentReady()
 		return
 	end
 	
-	Apollo.RegisterEventHandler("WindowManagementReady", 	"OnWindowManagementReady", self)
-	
-	Apollo.RegisterEventHandler("LootedItem", 			"OnLootedItem", self)
-	Apollo.RegisterEventHandler("LootedMoney", 			"OnLootedMoney", self)
+	Apollo.RegisterEventHandler("ChannelUpdate_Loot",	"OnChannelUpdate_Loot", self)
 	
 	self.timerUpdate = ApolloTimer.Create(0.1, true, "OnLootStackUpdate", self)
 
@@ -84,9 +81,13 @@ function LootStack:OnDocumentReady()
 	end
 
 	self:UpdateDisplay()
+
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 end
 
 function LootStack:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {wnd = self.wndLootStack, strName = Apollo.GetString("HUDAlert_VacuumLoot"), nSaveVersion=2})
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndLootStack, strName = Apollo.GetString("HUDAlert_VacuumLoot"), nSaveVersion=2})
 end
 
@@ -114,21 +115,46 @@ function LootStack:OnMouseExit(wndHandler, wndControl)
 end
 
 -----------------------------------------------------------------------------------------------
--- CASH FUNCTIONS
+-- Channel Update
 -----------------------------------------------------------------------------------------------
 
-function LootStack:OnLootedMoney(monLooted)
-	local eCurrencyType = monLooted:GetMoneyType()
-	if eCurrencyType ~= Money.CodeEnumCurrencyType.Credits then
-		return
+function LootStack:OnChannelUpdate_Loot(eType, tEventArgs)
+
+	if eType == GameLib.ChannelUpdateLootType.Currency and tEventArgs.monNew then
+
+		local eCurrencyType = tEventArgs.monNew:GetMoneyType()
+		if eCurrencyType ~= Money.CodeEnumCurrencyType.Credits then
+			return
+		end
+
+		self.wndCashDisplay:SetAmount(self.wndCashDisplay:GetAmount() + tEventArgs.monNew:GetAmount())
+		self.wndCashComplex:Invoke()
+
+		self.timerCash:Stop()
+		self.timerCash:Start()
+		
+	elseif eType == GameLib.ChannelUpdateLootType.Item and tEventArgs.itemNew then
+
+		local tNewEntry =
+		{
+			eType = knType_Item,
+			itemInstance = tEventArgs.itemNew,
+			nCount = tEventArgs.nCount,
+			money = nil,
+			fTimeAdded = GameLib.GetGameTime()
+		}
+		table.insert(self.tQueuedEntryData, tNewEntry)
+		
+		if not self.bPause then
+			self.timerUpdate:Start()
+		end
+		
 	end
-
-	self.wndCashDisplay:SetAmount(self.wndCashDisplay:GetAmount() + monLooted:GetAmount())
-	self.wndCashComplex:Invoke()
-
-	self.timerCash:Stop()
-	self.timerCash:Start()
 end
+
+-----------------------------------------------------------------------------------------------
+-- CASH FUNCTIONS
+-----------------------------------------------------------------------------------------------
 
 function LootStack:OnLootStack_CashTimer()
 	self.wndCashComplex:Show(false)
@@ -138,22 +164,6 @@ end
 -----------------------------------------------------------------------------------------------
 -- ITEM FUNCTIONS
 -----------------------------------------------------------------------------------------------
-
-function LootStack:OnLootedItem(itemInstance, nCount)
-	local tNewEntry =
-	{
-		eType = knType_Item,
-		itemInstance = itemInstance,
-		nCount = nCount,
-		money = nil,
-		fTimeAdded = GameLib.GetGameTime()
-	}
-	table.insert(self.tQueuedEntryData, tNewEntry)
-	
-	if not self.bPause then
-		self.timerUpdate:Start()
-	end
-end
 
 function LootStack:OnLootStackUpdate(strVar, nValue)
 	if self.wndLootStack == nil then
@@ -265,7 +275,7 @@ function LootStack:UpdateDisplay()
 		end
 	end
 
-	self.wndLootStack:FindChild("LootFloaters"):ArrangeChildrenVert(2)
+	self.wndLootStack:FindChild("LootFloaters"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.RightOrBottom)
 end
 
 local LootStackInst = LootStack:new()

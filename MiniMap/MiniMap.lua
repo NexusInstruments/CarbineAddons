@@ -77,6 +77,7 @@ local ktTooltipCategories =
 	CityDirection = 21,
 	Other = 22,
 	PvPMarker = 23,
+	Navpoint = 24,
 }
 
 local ktCategoryNames =
@@ -103,6 +104,7 @@ local ktCategoryNames =
 	[ktTooltipCategories.Taxi] 			= Apollo.GetString("ZoneMap_Taxis"),
 	[ktTooltipCategories.CityDirection] = Apollo.GetString("ZoneMap_CityDirections"),
 	[ktTooltipCategories.PvPMarker]		= Apollo.GetString("MiniMap_PvPObjective"),
+	[ktTooltipCategories.Navpoint]		= Apollo.GetString("Navpoint"),
 }
 
 local ktInstanceSettingTypeStrings =
@@ -168,6 +170,7 @@ function MiniMap:CreateOverlayObjectTypes()
 	self.eObjectTypeMail				= self.wndMiniMap:CreateOverlayType()
 	self.eObjectTypeServices			= self.wndMiniMap:CreateOverlayType()
 	self.eObjectTypeConvert				= self.wndMiniMap:CreateOverlayType()
+	self.eObjectTypeNavPoint			= self.wndMiniMap:CreateOverlayType()
 end
 
 
@@ -250,7 +253,7 @@ function MiniMap:BuildCustomMarkerInfo()
 		QuestKill				= { nOrder = 5, 	objectType = self.eObjectTypeQuestKill, 		strIcon = "sprMM_TargetCreature", 	bNeverShowOnEdge = true, bFixedSizeMedium = true },
 		QuestTarget				= { nOrder = 6,		objectType = self.eObjectTypeQuestTarget, 		strIcon = "sprMM_TargetObjective", 	bNeverShowOnEdge = true, bFixedSizeMedium = true },
 		PublicEventKill			= { nOrder = 7,		objectType = self.eObjectTypePublicEventKill, 	strIcon = "sprMM_TargetCreature", 	bNeverShowOnEdge = true, bFixedSizeMedium = true },
-		PublicEventTarget		= { nOrder = 8,		objectType = self.eObjectTypePublicEventTarget, strIcon = "sprMM_TargetObjective", 	bNeverShowOnEdge = true, bFixedSizeMedium = true },
+		PublicEventTarget		= { nOrder = 8,		objectType = self.eObjectTypePublicEvent,		strIcon = "sprMM_TargetObjective", 	bNeverShowOnEdge = true, bFixedSizeMedium = true },
 		QuestReward				= { nOrder = 9,		objectType = self.eObjectTypeQuestReward, 		strIcon = "sprMM_QuestCompleteUntracked", 	bNeverShowOnEdge = true, bHideIfHostile = true },
 		QuestRewardSoldier		= { nOrder = 10,	objectType = self.eObjectTypeQuestReward, 		strIcon = "IconSprites:Icon_MapNode_Map_Soldier_Accepted", 	bNeverShowOnEdge = true, bHideIfHostile = true },
 		QuestRewardSettler		= { nOrder = 11,	objectType = self.eObjectTypeQuestReward, 		strIcon = "IconSprites:Icon_MapNode_Map_Settler_Accepted", 	bNeverShowOnEdge = true, bHideIfHostile = true },
@@ -301,8 +304,8 @@ function MiniMap:BuildCustomMarkerInfo()
 		ItemAuctionhouse		= { nOrder = 53,	objectType = self.eObjectTypeAuctioneer, 		strIcon = "IconSprites:Icon_MapNode_Map_AuctionHouse", 	bNeverShowOnEdge = true, bHideIfHostile = true },
 		SettlerImprovement		= { nOrder = 54,	objectType = GameLib.CodeEnumMapOverlayType.PathObjective, strIcon = "CRB_MinimapSprites:sprMM_SmallIconSettler", bNeverShowOnEdge = true },
 		CREDDExchange			= { nOrder = 55,	objectType = self.eObjectTypeCREDDExchange,		strIcon = "IconSprites:Icon_MapNode_Map_CREED",	bNeverShowOnEdge = true, bFixedSizeMedium = true, bHideIfHostile = true },
-		Neutral					= { nOrder = 151,	objectType = self.eObjectTypeNeutral, 			strIcon = "ClientSprites:MiniMapMarkerTiny", 	bNeverShowOnEdge = true, bShown = false, crObject = ApolloColor.new("xkcdBrightYellow") },
-		Hostile					= { nOrder = 150,	objectType = self.eObjectTypeHostile, 			strIcon = "ClientSprites:MiniMapMarkerTiny", 	bNeverShowOnEdge = true, bShown = false, crObject = ApolloColor.new("xkcdBrightRed") },
+		Neutral					= { nOrder = 151,	objectType = self.eObjectTypeNeutral, 			strIcon = "ClientSprites:MiniMapMarkerTiny", 	bNeverShowOnEdge = true, bShown = false, crObject = ApolloColor.new("BrightYellow") },
+		Hostile					= { nOrder = 150,	objectType = self.eObjectTypeHostile, 			strIcon = "ClientSprites:MiniMapMarkerTiny", 	bNeverShowOnEdge = true, bShown = false, crObject = ApolloColor.new("BrightRed") },
 		GroupMember				= { nOrder = 1,		objectType = self.eObjectTypeGroupMember, 		strIcon = "IconSprites:Icon_MapNode_Map_GroupMember", bFixedSizeLarge = true, strIconEdge = "CRB_MinimapSprites:sprMM_PartyMemberArrow", crEdge = CColor.new(1, 1, 1, 1), bNeverShowOnEdge = false },
 		Bank					= { nOrder = 55,	objectType = self.eObjectTypeBank, 				strIcon = "IconSprites:Icon_MapNode_Map_Bank", 	bNeverShowOnEdge = true, bFixedSizeLarge = true, bHideIfHostile = true },
 		GuildBank				= { nOrder = 57,	objectType = self.eObjectTypeGuildBank, 		strIcon = "IconSprites:Icon_MapNode_Map_Bank", 	bNeverShowOnEdge = true, bFixedSizeLarge = true, crObject = ApolloColor.new("yellow"), bHideIfHostile = true },
@@ -345,6 +348,32 @@ function MiniMap:OnLoad()
 
 	self.tGroupMembers 				= {}
 	self.tGroupMemberObjects 		= {}
+	
+	self.tToggledIcons =
+	{
+		[ktTooltipCategories.QuestNPC]			= true,
+		[ktTooltipCategories.TrackedQuest] 		= true,
+		[ktTooltipCategories.NeutralNPC] 		= true,
+		[ktTooltipCategories.HostileNPC] 		= true,
+		[ktTooltipCategories.Path] 				= true,
+		[ktTooltipCategories.Challenge] 		= true,	
+		[ktTooltipCategories.PublicEvent] 		= true,
+		[ktTooltipCategories.Tradeskill] 		= true,
+		[ktTooltipCategories.Vendor] 			= true,
+		[ktTooltipCategories.Service] 			= true,
+		[ktTooltipCategories.Portal] 			= true,
+		[ktTooltipCategories.BindPoint] 		= true,
+		[ktTooltipCategories.Mining] 			= true,
+		[ktTooltipCategories.Relic] 			= true,
+		[ktTooltipCategories.Survivalist] 		= true,
+		[ktTooltipCategories.Farming] 			= true,
+		[ktTooltipCategories.Friend] 			= true,
+		[ktTooltipCategories.Rival] 			= true,
+		[ktTooltipCategories.Taxi] 				= true,
+		[ktTooltipCategories.CityDirection] 	= false,
+		[ktTooltipCategories.GroupMember] 		= true,
+		[ktTooltipCategories.PvPMarker] 		= true,
+	}
 
 	self.xmlDoc = XmlDoc.CreateFromFile("minimap.xml")
 	self.xmlDoc:RegisterCallback("OnDocumentReady", self)
@@ -354,8 +383,6 @@ function MiniMap:OnDocumentReady()
 	if self.xmlDoc == nil then
 		return
 	end
-
-	Apollo.RegisterEventHandler("WindowManagementReady", 				"OnWindowManagementReady", self)
 
 	Apollo.RegisterEventHandler("CharacterCreated", 					"OnCharacterCreated", self)
 	Apollo.RegisterEventHandler("OptionsUpdated_QuestTracker", 			"OnOptionsUpdated", self)
@@ -394,7 +421,9 @@ function MiniMap:OnDocumentReady()
 	Apollo.RegisterEventHandler("PublicEventLocationRemoved", 			"OnPublicEventUpdate", self)
 	Apollo.RegisterEventHandler("PublicEventObjectiveLocationAdded", 	"OnPublicEventObjectiveUpdate", self)
 	Apollo.RegisterEventHandler("PublicEventObjectiveLocationRemoved", 	"OnPublicEventObjectiveUpdate", self)
-
+	Apollo.RegisterEventHandler("NavPointCleared",						"OnNavPointCleared", self)
+	Apollo.RegisterEventHandler("NavPointSet",							"OnNavPointSet", self)
+	
 	Apollo.RegisterEventHandler("CityDirectionMarked",					"OnCityDirectionMarked", self)
 	Apollo.RegisterEventHandler("ZoneMap_TimeOutCityDirectionEvent",	"OnZoneMap_TimeOutCityDirectionEvent", self)
 
@@ -404,6 +433,8 @@ function MiniMap:OnDocumentReady()
 	Apollo.RegisterEventHandler("HazardRemoveMinimapUnit", 				"OnHazardRemoveMinimapUnit", self)
 	Apollo.RegisterEventHandler("ZoneMapPing", 							"OnMapPing", self)
 	Apollo.RegisterEventHandler("UnitPvpFlagsChanged", 					"OnUnitPvpFlagsChanged", self)
+	Apollo.RegisterTimerHandler("TimeUpdateTimer", 						"OnUpdateTimer", self)
+	Apollo.RegisterEventHandler("OptionsUpdated_HUDPreferences", 		"OnUpdateTimer", self)
 
 	Apollo.RegisterEventHandler("PlayerLevelChange",					"UpdateHarvestableNodes", self)
 
@@ -453,34 +484,6 @@ function MiniMap:OnDocumentReady()
 	if self.unitPlayerDisposition ~= nil then
 		self:OnCharacterCreated()
 	end
-
-	if not self.tToggledIcons or self.tToggledIcons[ktTooltipCategories.QuestNPC] == nil then
-		self.tToggledIcons =
-		{
-			[ktTooltipCategories.QuestNPC]			= true,
-			[ktTooltipCategories.TrackedQuest] 		= true,
-			[ktTooltipCategories.NeutralNPC] 		= true,
-			[ktTooltipCategories.HostileNPC] 		= true,
-			[ktTooltipCategories.Path] 				= true,
-			[ktTooltipCategories.Challenge] 		= true,	
-			[ktTooltipCategories.PublicEvent] 		= true,
-			[ktTooltipCategories.Tradeskill] 		= true,
-			[ktTooltipCategories.Vendor] 			= true,
-			[ktTooltipCategories.Service] 			= true,
-			[ktTooltipCategories.Portal] 			= true,
-			[ktTooltipCategories.BindPoint] 		= true,
-			[ktTooltipCategories.Mining] 			= true,
-			[ktTooltipCategories.Relic] 			= true,
-			[ktTooltipCategories.Survivalist] 		= true,
-			[ktTooltipCategories.Farming] 			= true,
-			[ktTooltipCategories.Friend] 			= true,
-			[ktTooltipCategories.Rival] 			= true,
-			[ktTooltipCategories.Taxi] 				= true,
-			[ktTooltipCategories.CityDirection] 	= true,
-			[ktTooltipCategories.GroupMember] 		= true,
-			[ktTooltipCategories.PvPMarker] 		= true,
-		}
-	end
 	
 	-- The object types for each category
 	self.tCategoryTypes =
@@ -492,7 +495,7 @@ function MiniMap:OnDocumentReady()
 		[ktTooltipCategories.HostileNPC]	= {self.eObjectTypeHostile,},
 		[ktTooltipCategories.Path]			= {GameLib.CodeEnumMapOverlayType.PathObjective,},
 		[ktTooltipCategories.Challenge] 	= {self.eObjectTypeChallenge,},
-		[ktTooltipCategories.PublicEvent] 	= {self.eObjectTypePublicEvent,},
+		[ktTooltipCategories.PublicEvent] 	= {self.eObjectTypePublicEvent, self.eObjectTypePublicEventKill,},
 		[ktTooltipCategories.Tradeskill] 	= {self.eObjectTypeTradeskills,},
 		[ktTooltipCategories.Vendor] 		= {self.eObjectTypeVendor,},
 		[ktTooltipCategories.Service] 		= {self.eObjectTypeAuctioneer, self.eObjectTypeCommodity, self.eObjectTypeBank, self.eObjectTypeGuildBank, self.eObjectTypeGuildRegistrar, self.eObjectTypeCostume, self.eObjectTypeCREDDExchange, self.eObjectTypeMail, self.eObjectTypeConvert,},
@@ -507,6 +510,7 @@ function MiniMap:OnDocumentReady()
 		[ktTooltipCategories.Taxi] 			= {self.eObjectTypeFlightPath, self.eObjectTypeFlightPathNew,},
 		[ktTooltipCategories.CityDirection] = {self.eObjectTypeCityDirections,},
 		[ktTooltipCategories.PvPMarker]		= {self.eObjectPvPMarkers,},
+		[ktTooltipCategories.Navpoint]		= {self.eObjectTypeNavPoint,},
 	}
 	
 	-- Maps object types to their parent category for quick access
@@ -555,6 +559,11 @@ function MiniMap:OnDocumentReady()
 		wndOptionsBtn:SetCheck(self.tToggledIcons[eCategory])
 	end
 
+	if GameLib.IsNavPointSet() then
+		local tPoint = GameLib.GetNavPoint()
+		self:OnNavPointSet(tPoint and tPoint.tPosition or nil)
+	end
+	
 	self:RehideAllToggledIcons()
 
 	if g_wndTheMiniMap == nil then
@@ -562,9 +571,15 @@ function MiniMap:OnDocumentReady()
 	end
 
 	self:OnOptionsUpdated()
+	self:UpdateRapidTransportBtn()
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
 end
 
 function MiniMap:OnCharacterCreated()
+	self:UpdateRapidTransportBtn()
+	Apollo.CreateTimer("TimeUpdateTimer", 1.0, true)
+
 	if not self.unitPlayerDisposition then
 		self.unitPlayerDisposition = GameLib.GetPlayerUnit()
 	end
@@ -597,6 +612,42 @@ function MiniMap:OnOptionsUpdated()
 	end
 
 	self:OnQuestStateChanged()
+end
+
+function MiniMap:OnUpdateTimer()
+
+	--Toggle Visibility based on ui preference
+	local nVisibility = Apollo.GetConsoleVariable("hud.TimeDisplay")
+	
+	local tLocalTime = GameLib.GetLocalTime()
+	local tServerTime = GameLib.GetServerTime()
+	local b24Hour = true
+	local nLocalHour = tLocalTime.nHour > 12 and tLocalTime.nHour - 12 or tLocalTime.nHour == 0 and 12 or tLocalTime.nHour
+	local nServerHour = tServerTime.nHour > 12 and tServerTime.nHour - 12 or tServerTime.nHour == 0 and 12 or tServerTime.nHour
+		
+	self.wndMain:FindChild("Time"):SetText(string.format("%02d:%02d", tostring(tLocalTime.nHour), tostring(tLocalTime.nMinute)))
+	
+	if nVisibility == 2 then --Local 12hr am/pm
+		self.wndMain:FindChild("Time"):SetText(string.format("%02d:%02d", tostring(nLocalHour), tostring(tLocalTime.nMinute)))
+		
+		b24Hour = false
+	elseif nVisibility == 3 then --Server 24hr
+		self.wndMain:FindChild("Time"):SetText(string.format("%02d:%02d", tostring(tServerTime.nHour), tostring(tServerTime.nMinute)))
+	elseif nVisibility == 4 then --Server 12hr am/pm
+		self.wndMain:FindChild("Time"):SetText(string.format("%02d:%02d", tostring(nServerHour), tostring(tServerTime.nMinute)))
+		
+		b24Hour = false
+	end
+	
+	nLocalHour = b24Hour and tLocalTime.nHour or nLocalHour
+	nServerHour = b24Hour and tServerTime.nHour or nServerHour
+	
+	self.wndMain:FindChild("Time"):SetTooltip(
+		string.format("%s%02d:%02d\n%s%02d:%02d", 
+			Apollo.GetString("OptionsHUD_Local"), tostring(nLocalHour), tostring(tLocalTime.nMinute),
+			Apollo.GetString("OptionsHUD_Server"), tostring(nServerHour), tostring(tServerTime.nMinute)
+		)
+	)
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -646,7 +697,10 @@ function MiniMap:OnRestore(eType, tSavedData)
 	end
 
 	if tSavedData.tToggled then
-		self.tToggledIcons = tSavedData.tToggled
+		for eType, bState in pairs(tSavedData.tToggled) do
+			self.tToggledIcons[eType] = bState
+		end
+		
 		self:RehideAllToggledIcons()
 	end
 
@@ -676,6 +730,7 @@ function MiniMap:OnRestore(eType, tSavedData)
 end
 
 function MiniMap:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {wnd = self.wndMain, strName = Apollo.GetString("MiniMap_Title")})
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("MiniMap_Title")})
 end
 
@@ -693,6 +748,8 @@ end
 ---------------------------------------------------------------------------------------------------
 function MiniMap:OnChangeZoneName(oVar, strNewZone)
 	self:UpdateZoneName(strNewZone)
+	
+	self:UpdateRapidTransportBtn()
 
 	-- update mission indicators
 	self:ReloadMissions()
@@ -1099,6 +1156,31 @@ end
 
 function MiniMap:OnPublicEventObjectiveEnd(peoUpdated)
 	self.wndMiniMap:RemoveObjectsByUserData(self.eObjectTypePublicEvent, peoUpdated)
+end
+
+---------------------------------------------------------------------------------------------------
+function MiniMap:OnNavPointCleared()
+	if not self.wndMiniMap or not self.wndMiniMap:IsValid() then
+		return
+	end
+	self.wndMiniMap:RemoveObjectsByType(self.eObjectTypeNavPoint)
+end
+
+function MiniMap:OnNavPointSet(tLoc)
+	if not self.wndMiniMap or not self.wndMiniMap:IsValid() or not tLoc then
+		return
+	end
+	
+	local tInfo =
+	{
+		objectType = self.eObjectTypeNavPoint,
+		strIcon = "IconSprites:Icon_MapNode_Map_NavPoint",
+		strIconEdge = "sprMM_NavPointArrow",
+		strIconAbove = "sprMM_NavPointArrow",
+		crEdge = CColor.new(1, 1, 1, 1),
+	}
+	self.wndMiniMap:RemoveObjectsByType(self.eObjectTypeNavPoint)
+	self.wndMiniMap:AddObject(self.eObjectTypeNavPoint, tLoc, "Nav Pt", tInfo, {bOnlyShowOnEdge = false, bFixedSizeMedium = false, bAboveOverlay = true}, false)
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -1595,10 +1677,12 @@ function MiniMap:OnGenerateTooltip(wndHandler, wndControl, eType, nX, nY)
 		local strName = string.format("<T Font=\"%s\" TextColor=\"%s\">%s</T>", "CRB_InterfaceMedium", "ffffffff", tObject.strName)
 		local eParentCategory = self.tReverseCategoryMap[tObject.eType]
 		
-		if self.tToggledIcons[eParentCategory] then
+		if self.tToggledIcons[eParentCategory] or tObject.eType == self.eObjectTypeNavPoint then
 			if tObject.eType == GameLib.CodeEnumMapOverlayType.QuestObjective then
 				local strLevel = string.format("<T Font=\"%s\" TextColor=\"%s\"> (%s)</T>", "CRB_InterfaceMedium", ktConColors[tObject.userData:GetColoredDifficulty()], tObject.userData:GetConLevel())
 				strName = strName .. strLevel
+			elseif tObject.eType == self.eObjectTypeNavPoint then
+				strName = Apollo.GetString("Navpoint_Set")
 			end
 			
 			if not tDisplayStrings[eParentCategory] then				
@@ -1732,14 +1816,23 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function MiniMap:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
-	if eAnchor ~= GameLib.CodeEnumTutorialAnchor.MiniMap then
+	local tAnchors =
+	{
+		[GameLib.CodeEnumTutorialAnchor.MiniMap] = true,
+	}
+	
+	if not tAnchors[eAnchor] then
 		return
 	end
 
-	local tRect = {}
-	tRect.l, tRect.t, tRect.r, tRect.b = self.wndMain:GetRect()
-
-	Event_FireGenericEvent("Tutorial_RequestUIAnchorResponse", eAnchor, idTutorial, strPopupText, tRect)
+	local tAnchorMapping = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.MiniMap] = self.wndMain,
+	}
+	
+	if tAnchorMapping[eAnchor] then
+		Event_FireGenericEvent("Tutorial_ShowCallout", eAnchor, idTutorial, strPopupText, tAnchorMapping[eAnchor])
+	end
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -1775,7 +1868,7 @@ end
 function MiniMap:RehideAllToggledIcons()
 	if self.wndMiniMap ~= nil and self.tToggledIcons ~= nil then
 		for eData, bState in pairs(self.tToggledIcons) do
-			if not bState then
+			if not bState and self.tCategoryTypes[eData] ~= nil then
 				for idx, eObjectType in pairs(self.tCategoryTypes[eData]) do
 					self.wndMiniMap:HideObjectsByType(eObjectType)
 				end
@@ -1796,6 +1889,21 @@ function MiniMap:GetToggledIconState(eSearchType)
 	return false
 end
 
+
+function MiniMap:OnRapidTransportOpen()
+	Event_FireGenericEvent("InvokeTaxiWindow")
+end
+
+function MiniMap:UpdateRapidTransportBtn()
+	local wndRapidTransport = self.wndMain:FindChild("RapidTransportBtnOverlay")
+	local tZone = GameLib.GetCurrentZoneMap()
+	local nZoneId = 0
+	if tZone ~= nil then
+		nZoneId = tZone.id
+	end
+	local bOnArkship = tZone == nil or GameLib.IsTutorialZone(nZoneId)
+	wndRapidTransport:Show(not bOnArkship or wndRapidTransport:IsShown())
+end
 ---------------------------------------------------------------------------------------------------
 -- MiniMap instance
 ---------------------------------------------------------------------------------------------------

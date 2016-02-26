@@ -121,9 +121,9 @@ function PvPKillBoard:OnPvpKillNotification(strVictimName, eReason, strKillerNam
 	
 	wndVictimNameLabel:SetText(strVictimName or "")
 	
-	wndEntry:ArrangeChildrenHorz(0)
+	wndEntry:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	
-	self.tWndRefs.wndContainer:ArrangeChildrenVert(1)
+	self.tWndRefs.wndContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.Middle)
 	self.tWndRefs.wndContainer:SetVScrollPos(self.tWndRefs.wndContainer:GetVScrollRange())
 end
 

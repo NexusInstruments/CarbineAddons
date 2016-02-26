@@ -99,8 +99,8 @@ local ktTypesIntoEnums =  -- converts list idx to usable enum
 local kcrColorOnline 	= ApolloColor.new("UI_TextHoloBodyHighlight")
 local kcrColorOffline 	= ApolloColor.new("UI_BtnTextGrayNormal")
 local kcrColorNeutral 	= ApolloColor.new("gray")
-local kcrColorDominion 	= ApolloColor.new("xkcdBrownishRed")
-local kcrColorExile 	= ApolloColor.new("xkcdCeruleanBlue")
+local kcrColorDominion 	= ApolloColor.new("BrownishRed")
+local kcrColorExile 	= ApolloColor.new("CeruleanBlue")
 local kcrColorMessage	= ApolloColor.new("UI_TextHoloTitle")
 
 local karStatusColors =
@@ -161,6 +161,13 @@ local ktFriendshipResult =
 	[FriendshipLib.FriendshipResult_NameUnavailable]				= Apollo.GetString("Friends_NameUnavailable"),			 	--crColor = kcrColorMessage}
 	[FriendshipLib.FriendshipResult_PrivilegeRestricted]			= Apollo.GetString("FriendsList_PrivilegeRestricted"),		 --crColor = kcrColorMessage}
 }
+
+local ktRemoveMessages = {
+	[LuaCodeEnumTabTypes.Ignore] = Apollo.GetString("Social_RemovedFromIgnore"),
+	[LuaCodeEnumTabTypes.Friend] = Apollo.GetString("Social_RemovedFromFriends"),
+	[LuaCodeEnumTabTypes.Rival] = Apollo.GetString("Social_RemovedFromRivals"),
+}
+
 
 local ktSortButtonToFuncMap =
 {
@@ -279,6 +286,7 @@ function FriendsList:OnDocumentReady()
 	self.timerUpdateSatus:Stop()
 
 	self.nDelayedPostToFriendsId = nil
+	self:LoadAssociations()--To handle messages about associations when social window hasn't initialized.
 end
 
 function FriendsList:OnGenericEvent_InitializeFriends(wndParent)
@@ -329,9 +337,9 @@ function FriendsList:OnGenericEvent_InitializeFriends(wndParent)
 		self.tWndRefs.tTabs[idx] = wndTabBtn
 	end
 
-	self.tWndRefs.wndMain:FindChild("TabContainer"):ArrangeChildrenHorz(1)
+	self.tWndRefs.wndMain:FindChild("TabContainer"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.Middle)
 
-self.tWndRefs.wndMain:FindChild("OptionsBtn"):AttachWindow(self.tWndRefs.wndMain:FindChild("AdvancedOptionsContainer"))
+	self.tWndRefs.wndMain:FindChild("OptionsBtn"):AttachWindow(self.tWndRefs.wndMain:FindChild("AdvancedOptionsContainer"))
 	self.tWndRefs.wndModifyNoteBtn:AttachWindow(self.tWndRefs.wndModifyNoteBtn:FindChild("NoteWindow"))
 	self.tWndRefs.wndMain:FindChild("AddBtn"):AttachWindow(self.tWndRefs.wndMessage:FindChild("AddFriendContainer"))
 	self.tWndRefs.wndMain:FindChild("AddPlayerBtn"):AttachWindow(self.tWndRefs.wndMessage:FindChild("PlayerAddWindow"))
@@ -365,6 +373,38 @@ self.tWndRefs.wndMain:FindChild("OptionsBtn"):AttachWindow(self.tWndRefs.wndMain
 	self:UpdateControls()
 
 	self:OnFriendsListOn()
+end
+
+function FriendsList:LoadAssociations()
+	for key, tFriend in pairs(FriendshipLib.GetList()) do
+		if tFriend.bIgnore == true then
+			self.arIgnored[tFriend.nId] = tFriend
+		else
+			if tFriend.bFriend == true then
+				self.arFriends[tFriend.nId] = tFriend
+			end
+
+			if tFriend.bRival == true then
+				self.arRivals[tFriend.nId] = tFriend
+			end
+		end
+	end
+
+	for key, tSuggested in pairs(FriendshipLib.GetSuggestedList()) do
+		self.arSuggested[tSuggested.nId] = tSuggested
+	end
+
+	for key, tFriend in pairs(FriendshipLib.GetAccountList()) do
+		self.arAccountFriends[tFriend.nId] = tFriend
+	end
+
+	for key, tInvite in pairs(FriendshipLib.GetAccountInviteList()) do
+		self.arAccountInvites[tInvite.nId] = tInvite
+	end
+
+	for key, tInvite in pairs(FriendshipLib.GetInviteList()) do
+		self.arInvites[tInvite.nId] = tInvite
+	end
 end
 
 function FriendsList:OnGenericEvent_DestroyFriends()
@@ -422,6 +462,7 @@ function FriendsList:OnFriendshipLoaded()
 	for idx = 1, #self.tWndRefs.tTabs do
 		self.tWndRefs.tTabs[idx]:Enable(true)
 	end
+	self:LoadAssociations()
 end
 
 function FriendsList:OnFriendsListOn()
@@ -430,36 +471,8 @@ function FriendsList:OnFriendsListOn()
 		self.timerLastOnline:Stop()
 		return
 	end
-	
-	for key, tFriend in pairs(FriendshipLib.GetList()) do
-		if tFriend.bIgnore == true then
-			self.arIgnored[tFriend.nId] = tFriend
-		else
-			if tFriend.bFriend == true then
-				self.arFriends[tFriend.nId] = tFriend
-			end
 
-			if tFriend.bRival == true then
-				self.arRivals[tFriend.nId] = tFriend
-			end
-		end
-	end
-
-	for key, tSuggested in pairs(FriendshipLib.GetSuggestedList()) do
-		self.arSuggested[tSuggested.nId] = tSuggested
-	end
-
-	for key, tFriend in pairs(FriendshipLib.GetAccountList()) do
-		self.arAccountFriends[tFriend.nId] = tFriend
-	end
-
-	for key, tInvite in pairs(FriendshipLib.GetAccountInviteList()) do
-		self.arAccountInvites[tInvite.nId] = tInvite
-	end
-
-	for key, tInvite in pairs(FriendshipLib.GetInviteList()) do
-		self.arInvites[tInvite.nId] = tInvite
-	end
+	self:LoadAssociations()
 
 	self.tWndRefs.tTabs[LuaCodeEnumTabTypes.Friend]:SetCheck(true)
 	self.tWndRefs.arHeaders[LuaCodeEnumTabTypes.Friend]:Show(true)
@@ -489,7 +502,6 @@ function FriendsList:OnFriendshipAdd(nFriendId)
 	if tFriend.bIgnore == true then
 		self.arIgnored[nFriendId] = tFriend
 		bViewingList = self.tWndRefs.wndListContainer:GetData() == LuaCodeEnumTabTypes.Ignore
-		ChatSystemLib.PostOnChannel(ChatSystemLib.ChatChannel_System, String_GetWeaselString(Apollo.GetString("Social_AddedToIgnore"), tFriend.strCharacterName))
 	else
 		if tFriend.bFriend == true then -- can be friend and rival
 			self.arFriends[nFriendId] = tFriend
@@ -513,20 +525,24 @@ function FriendsList:OnFriendshipUpdate(nFriendId) -- Gotcha: will fire for ever
 	local nTab = self.tWndRefs.wndListContainer and self.tWndRefs.wndListContainer:GetData() or nil
 	local tFriend = FriendshipLib.GetById( nFriendId )
 
+	local bSilenceRemoveList = false--Used to prevent spamming messages of the removal from lists when ignoring.
 	if tFriend.bIgnore == true then
+		if not self.arIgnored[nFriendId] then
+			ChatSystemLib.PostOnChannel(ChatSystemLib.ChatChannel_System, String_GetWeaselString(Apollo.GetString("Social_AddedToIgnore"), tFriend.strCharacterName))
+		end
 		self.arIgnored[nFriendId] = tFriend
 		if nTab and nTab == LuaCodeEnumTabTypes.Ignore then
 			self:HelperAddOrUpdateMemberWindow(nFriendId, tFriend)
 			self:PerformLastSort()
 		end
+		bSilenceRemoveList = true
 	else
-		self:OnFriendshipRemoveFromList(nFriendId, LuaCodeEnumTabTypes.Ignore)
+		self:OnFriendshipRemoveFromList(nFriendId, LuaCodeEnumTabTypes.Ignore, bSilenceRemoveList)
 	end
 
 	if tFriend.bFriend == true then -- can be friend and rival
 		self.arFriends[nFriendId] = tFriend
-		
-		if self.nDelayedPostToFriendsId and self.nDelayedPostToFriendsId == nFriendId then
+		if self.nDelayedPostToFriendsId and self.nDelayedPostToFriendsId == nFriendId then--True when the waited friend request becomes true.
 			ChatSystemLib.PostOnChannel(ChatSystemLib.ChatChannel_System, String_GetWeaselString(Apollo.GetString("Friends_AddedToFriends"), tFriend.strCharacterName or ""), "")
 			self.nDelayedPostToFriendsId = nil
 		end
@@ -536,17 +552,20 @@ function FriendsList:OnFriendshipUpdate(nFriendId) -- Gotcha: will fire for ever
 			self:PerformLastSort()
 		end
 	else
-		self:OnFriendshipRemoveFromList(nFriendId, LuaCodeEnumTabTypes.Friend)
+		self:OnFriendshipRemoveFromList(nFriendId, LuaCodeEnumTabTypes.Friend, bSilenceRemoveList)
 	end
 
 	if tFriend.bRival == true then
+		if not self.arRivals[nFriendId] then
+			ChatSystemLib.PostOnChannel(ChatSystemLib.ChatChannel_System, String_GetWeaselString(Apollo.GetString("Social_AddedToRivals"), tFriend.strCharacterName))
+		end
 		self.arRivals[nFriendId] = tFriend
 		if nTab and nTab == LuaCodeEnumTabTypes.Rival then
 			self:HelperAddOrUpdateMemberWindow(nFriendId, tFriend)
 			self:PerformLastSort()
 		end
 	else
-		self:OnFriendshipRemoveFromList(nFriendId, LuaCodeEnumTabTypes.Rival)
+		self:OnFriendshipRemoveFromList(nFriendId, LuaCodeEnumTabTypes.Rival, bSilenceRemoveList)
 	end
 
 	FriendshipLib.InviteMarkSeen(nFriendId)
@@ -586,14 +605,20 @@ function FriendsList:OnFriendshipRemove(nFriendId) -- removes from all lists
 	for idx = 1, #self.arListTypes do
 		self:HelperRemoveMemberWindow(nFriendId, idx)	-- do all; the function will only search the one that's shown
 		if self.arListTypes[idx][nFriendId] ~= nil then -- find the right one and remove it
+			local strMessage = ktRemoveMessages[idx]
+			ChatSystemLib.PostOnChannel(ChatSystemLib.ChatChannel_System, String_GetWeaselString(strMessage, self.arListTypes[idx][nFriendId].strCharacterName))
 			self.arListTypes[idx][nFriendId] = nil
 		end
 	end
 end
 
-function FriendsList:OnFriendshipRemoveFromList(nFriendId, nTab) -- removes from specific list
+function FriendsList:OnFriendshipRemoveFromList(nFriendId, nTab, bSilenceRemoveList) -- removes from specific list
 	self:HelperRemoveMemberWindow(nFriendId, nTab)	-- do all; the function will only search the one that's shown
 	if self.arListTypes[nTab][nFriendId] ~= nil then -- find the right one and remove it
+		if not bSilenceRemoveList then
+			local strMessage = ktRemoveMessages[nTab]
+			ChatSystemLib.PostOnChannel(ChatSystemLib.ChatChannel_System, String_GetWeaselString(strMessage, self.arListTypes[nTab][nFriendId].strCharacterName))
+		end
 		self.arListTypes[nTab][nFriendId] = nil
 	end
 end
@@ -834,7 +859,7 @@ function FriendsList:DrawControls(nList)
 		self.tWndRefs.wndAddBtn:Show(false)
 		self.tWndRefs.wndModifyNoteBtn:Show(false)
 	end
-	self.tWndRefs.wndMain:FindChild("SortContainer"):ArrangeChildrenHorz(2)
+	self.tWndRefs.wndMain:FindChild("SortContainer"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.RightOrBottom)
 end
 
 
@@ -850,7 +875,7 @@ function FriendsList:OnFriendTabBtn(wndHandler, wndControl)
 	end
 
 	self:DrawList(nList)
-	self.tWndRefs.wndMain:FindChild("SortContainer"):ArrangeChildrenHorz(2)
+	self.tWndRefs.wndMain:FindChild("SortContainer"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.RightOrBottom)
 	self:UpdateControls()
 end
 
@@ -899,7 +924,7 @@ function FriendsList:UpdateControls()
 		self.tWndRefs.wndModifyNoteBtn:SetData(tFriend)
 	end
 
-	self.tWndRefs.wndMain:FindChild("SortContainer"):ArrangeChildrenHorz(2)
+	self.tWndRefs.wndMain:FindChild("SortContainer"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.RightOrBottom)
 end
 
 function FriendsList:UpdateControlsSuggested()
@@ -1292,7 +1317,7 @@ function FriendsList:OnAddBtn(wndHandler, wndControl)
 	local nMemberNoteHeight = wndPlayerAdd:FindChild("AddMemberNoteEditBox"):GetHeight()
 	local nHeightPadding = bFriendsTab and (nAddPlayerWndHeight - nMemberNoteHeight) or nMemberNoteHeight
 	
-	local nHeight = wndFriendArrangeVert:ArrangeChildrenVert(0)
+	local nHeight = wndFriendArrangeVert:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	local nLeft, nTop, nRight, nBottom  = wndAddFriendContainer:GetAnchorOffsets()
 	wndAddFriendContainer:SetAnchorOffsets(nLeft, nBottom - nHeight - nHeightPadding, nRight, nBottom)
 	wndPlayerAdd:FindChild("AddMemberNoteEditBox"):SetText("")
@@ -1376,7 +1401,7 @@ function FriendsList:OnAddRadioBtn(wndHandler, wndControl)
 	local nMemberNoteHeight = wndAddContainer:FindChild("AddMemberNoteEditBox"):GetHeight()
 	local nHeightPadding = nAddPlayerWndHeight - nMemberNoteHeight
 	
-	local nHeight = wndFriendArrangeVert:ArrangeChildrenVert(0)
+	local nHeight = wndFriendArrangeVert:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	local nLeft, nTop, nRight, nBottom  = wndAddContainer:GetAnchorOffsets()
 	wndAddContainer:SetAnchorOffsets(nLeft, nBottom - nHeight - nHeightPadding, nRight, nBottom)
 end
@@ -1628,7 +1653,7 @@ function FriendsList:OnFriendSortToggle(wndHandler, wndControl, eMouseButton)
 		bDesc = true
 		self.arLastSorts[eCurrentTab] = {wndName, wndName.."2"}
 	elseif strLastSort == wndName.."2" then
-		self.tWndRefs.wndListContainer:ArrangeChildrenVert(0, function(wndLeft, wndRight)
+		self.tWndRefs.wndListContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function(wndLeft, wndRight)
 			if eCurrentTab ~= LuaCodeEnumTabTypes.Friend then
 				return self:SortDefaultOther(wndLeft, wndRight)
 			else
@@ -1643,7 +1668,7 @@ function FriendsList:OnFriendSortToggle(wndHandler, wndControl, eMouseButton)
 		self.arLastSorts[eCurrentTab] = {wndName, wndName}
 	end
 
-	self.tWndRefs.wndListContainer:ArrangeChildrenVert(0, function(wndLeft, wndRight)
+	self.tWndRefs.wndListContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function(wndLeft, wndRight)
 		if ktSortButtonToFuncMap[wndName] ~= nil then
 			return self[ktSortButtonToFuncMap[wndName]](self, bDesc, wndLeft, wndRight)
 		end
@@ -1656,11 +1681,12 @@ function FriendsList:PerformLastSort()
 	local strLastSort = tLastSort[2]
 	local wndName = tLastSort[1] or ""
 	local bDesc = true
+	local bHasMultipleFriends = #self.tWndRefs.wndListContainer:GetChildren() > 1
 
 	if strLastSort == wndName.."2" then
 		bDesc = true
-	elseif strLastSort == "Special" and #self.tWndRefs.wndListContainer:GetChildren() > 1 then
-		self.tWndRefs.wndListContainer:ArrangeChildrenVert(0, function(wndLeft, wndRight)
+	elseif strLastSort == "Special" and bHasMultipleFriends then
+		self.tWndRefs.wndListContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function(wndLeft, wndRight)
 			if eCurrentTab ~= LuaCodeEnumTabTypes.Friend then
 				return self:SortDefaultOther(wndLeft, wndRight)
 			else
@@ -1678,11 +1704,14 @@ function FriendsList:PerformLastSort()
 	if wndName ~= "" then
 		self.tWndRefs.arHeaders[eCurrentTab]:FindChild(wndName):SetCheck(true)
 	end
-	self.tWndRefs.wndListContainer:ArrangeChildrenVert(0, function(wndLeft, wndRight)
-		if ktSortButtonToFuncMap[wndName] ~= nil then
-			return self[ktSortButtonToFuncMap[wndName]](self, bDesc, wndLeft, wndRight)
-		end
-	end)
+	
+	if bHasMultipleFriends then
+		self.tWndRefs.wndListContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function(wndLeft, wndRight)
+			if ktSortButtonToFuncMap[wndName] ~= nil then
+				return self[ktSortButtonToFuncMap[wndName]](self, bDesc, wndLeft, wndRight)
+			end
+		end)
+	end
 end
 
 function FriendsList:SortDefaultOther(wndLeft, wndRight)
@@ -2001,9 +2030,6 @@ end
 -----------------------------------------------------------------------------------------------
 
 function FriendsList:OnFriendshipResult(strName, eResult)
-	if not self.tWndRefs.wndMain or not self.tWndRefs.wndMain:IsValid() then
-		return
-	end
 	local strMessage = ktFriendshipResult[eResult] or String_GetWeaselString(Apollo.GetString("Friends_UnknownResult"), eResult)
 	Event_FireGenericEvent("GenericEvent_SystemChannelMessage", strMessage)
 end

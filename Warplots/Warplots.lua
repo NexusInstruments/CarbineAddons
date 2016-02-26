@@ -39,6 +39,9 @@ function Warplots:new(o)
 	o = o or {}
 	setmetatable(o, self)
 	self.__index = self
+	
+	o.tWndRefs = {}
+	
 	return o
 end
 
@@ -62,17 +65,6 @@ function Warplots:OnDocumentReady()
 	Apollo.RegisterEventHandler("PublicEventStart",			"CheckForWarplot", self)
 	Apollo.RegisterEventHandler("MatchEntered", 			"CheckForWarplot", self)
 	
-	self.wndMain = Apollo.LoadForm(self.xmlDoc, "WarplotsMain", "FixedHudStratumLow", self)
-	self.wndMain:Show(false)
-	
-	self.wndRedBar = self.wndMain:FindChild("RedBar")
-	self.wndBlueBar = self.wndMain:FindChild("BlueBar")
-	
-	self.wndRedGeneratorN = Apollo.LoadForm(self.xmlDoc, "ClusterTargetMini", self.wndMain:FindChild("Red:Generator1"), self)
-	self.wndRedGeneratorS = Apollo.LoadForm(self.xmlDoc, "ClusterTargetMini", self.wndMain:FindChild("Red:Generator2"), self)
-	self.wndBlueGeneratorN = Apollo.LoadForm(self.xmlDoc, "ClusterTargetMini", self.wndMain:FindChild("Blue:Generator1"), self)
-	self.wndBlueGeneratorS = Apollo.LoadForm(self.xmlDoc, "ClusterTargetMini", self.wndMain:FindChild("Blue:Generator2"), self)
-	
 	Apollo.CreateTimer("WarPlot_OneSecMatchTimer", 1.0, true)
 	Apollo.StopTimer("WarPlot_OneSecMatchTimer")
 	
@@ -87,7 +79,11 @@ function Warplots:OnDocumentReady()
 end
 
 function Warplots:OnChangeWorld()
-	self.wndMain:Show(false)
+	if self.tWndRefs.wndMain ~= nil and self.tWndRefs.wndMain:IsValid() then
+		self.tWndRefs.wndMain:Close()
+		self.tWndRefs.wndMain:Destroy()
+	end
+	self.tWndRefs = {}
 	Apollo.StopTimer("WarPlot_OneSecMatchTimer")
 	self.peMatch = nil
 end
@@ -98,26 +94,38 @@ function Warplots:OnWarPlotOneSecMatchTimer()
 		return
 	end
 	
-	self.wndMain:Show(true)
+	if self.tWndRefs.wndMain == nil or not self.tWndRefs.wndMain:IsValid() then
+		local wndMain = Apollo.LoadForm(self.xmlDoc, "WarplotsMain", "FixedHudStratumLow", self)
+		self.tWndRefs.wndMain = wndMain
+		self.tWndRefs.wndRedBar = wndMain:FindChild("RedBar")
+		self.tWndRefs.wndBlueBar = wndMain:FindChild("BlueBar")
+		
+		self.tWndRefs.wndRedGeneratorN = Apollo.LoadForm(self.xmlDoc, "ClusterTargetMini", wndMain:FindChild("Red:Generator1"), self)
+		self.tWndRefs.wndRedGeneratorS = Apollo.LoadForm(self.xmlDoc, "ClusterTargetMini", wndMain:FindChild("Red:Generator2"), self)
+		self.tWndRefs.wndBlueGeneratorN = Apollo.LoadForm(self.xmlDoc, "ClusterTargetMini", wndMain:FindChild("Blue:Generator1"), self)
+		self.tWndRefs.wndBlueGeneratorS = Apollo.LoadForm(self.xmlDoc, "ClusterTargetMini", wndMain:FindChild("Blue:Generator2"), self)
+		
+		wndMain:Invoke()
+	end
 	
 	-- Building Red Team's Info
-	self:DrawEnergy(self.tRedInfo[LuaEnumRedTeamInfo.Energy], self.wndRedBar, self.wndMain:FindChild("Red:CurrentProgress"))
-	self.wndMain:FindChild("Red:CurrencyValue"):SetText(self.tRedInfo[LuaEnumRedTeamInfo.Nanopacks]:GetCount()) -- Nanopacks
-	self:DrawGenerator(self.tRedInfo[LuaEnumRedTeamInfo.GeneratorNorth], self.wndRedGeneratorN, "Red")
-	self:DrawGenerator(self.tRedInfo[LuaEnumRedTeamInfo.GeneratorSouth], self.wndRedGeneratorS, "Red")
+	self:DrawEnergy(self.tRedInfo[LuaEnumRedTeamInfo.Energy], self.tWndRefs.wndRedBar, self.tWndRefs.wndMain:FindChild("Red:CurrentProgress"))
+	self.tWndRefs.wndMain:FindChild("Red:CurrencyValue"):SetText(self.tRedInfo[LuaEnumRedTeamInfo.Nanopacks]:GetCount()) -- Nanopacks
+	self:DrawGenerator(self.tRedInfo[LuaEnumRedTeamInfo.GeneratorNorth], self.tWndRefs.wndRedGeneratorN, "Red")
+	self:DrawGenerator(self.tRedInfo[LuaEnumRedTeamInfo.GeneratorSouth], self.tWndRefs.wndRedGeneratorS, "Red")
 	
 	-- Building Blue Team's Info
-	self:DrawEnergy(self.tBlueInfo[LuaEnumBlueTeamInfo.Energy], self.wndBlueBar, self.wndMain:FindChild("Blue:CurrentProgress"))
-	self.wndMain:FindChild("Blue:CurrencyValue"):SetText(self.tBlueInfo[LuaEnumBlueTeamInfo.Nanopacks]:GetCount()) -- Nanopacks
-	self:DrawGenerator(self.tBlueInfo[LuaEnumBlueTeamInfo.GeneratorNorth], self.wndBlueGeneratorN, "Blue")
-	self:DrawGenerator(self.tBlueInfo[LuaEnumBlueTeamInfo.GeneratorSouth], self.wndBlueGeneratorS, "Blue")
+	self:DrawEnergy(self.tBlueInfo[LuaEnumBlueTeamInfo.Energy], self.tWndRefs.wndBlueBar, self.tWndRefs.wndMain:FindChild("Blue:CurrentProgress"))
+	self.tWndRefs.wndMain:FindChild("Blue:CurrencyValue"):SetText(self.tBlueInfo[LuaEnumBlueTeamInfo.Nanopacks]:GetCount()) -- Nanopacks
+	self:DrawGenerator(self.tBlueInfo[LuaEnumBlueTeamInfo.GeneratorNorth], self.tWndRefs.wndBlueGeneratorN, "Blue")
+	self:DrawGenerator(self.tBlueInfo[LuaEnumBlueTeamInfo.GeneratorSouth], self.tWndRefs.wndBlueGeneratorS, "Blue")
 	
 	-- Draw Control Points
-	self:DrawControlPoint(self.tControlPointInfo[LuaEnumControlPoints.BlueNorth], self.wndMain:FindChild("BlueN"), 1)
-	self:DrawControlPoint(self.tControlPointInfo[LuaEnumControlPoints.RedNorth], self.wndMain:FindChild("RedN"), 2)
-	self:DrawControlPoint(self.tControlPointInfo[LuaEnumControlPoints.Center], self.wndMain:FindChild("Center"), 3)
-	self:DrawControlPoint(self.tControlPointInfo[LuaEnumControlPoints.RedSouth], self.wndMain:FindChild("RedS"), 4)
-	self:DrawControlPoint(self.tControlPointInfo[LuaEnumControlPoints.BlueSouth], self.wndMain:FindChild("BlueS"), 5)
+	self:DrawControlPoint(self.tControlPointInfo[LuaEnumControlPoints.BlueNorth], self.tWndRefs.wndMain:FindChild("BlueN"), 1)
+	self:DrawControlPoint(self.tControlPointInfo[LuaEnumControlPoints.RedNorth], self.tWndRefs.wndMain:FindChild("RedN"), 2)
+	self:DrawControlPoint(self.tControlPointInfo[LuaEnumControlPoints.Center], self.tWndRefs.wndMain:FindChild("Center"), 3)
+	self:DrawControlPoint(self.tControlPointInfo[LuaEnumControlPoints.RedSouth], self.tWndRefs.wndMain:FindChild("RedS"), 4)
+	self:DrawControlPoint(self.tControlPointInfo[LuaEnumControlPoints.BlueSouth], self.tWndRefs.wndMain:FindChild("BlueS"), 5)
 end
 
 function Warplots:DrawEnergy(peoEnergy, wndBar, wndProgress)

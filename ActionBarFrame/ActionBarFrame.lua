@@ -6,12 +6,12 @@
 require "Window"
 require "Apollo"
 require "GameLib"
+require "CollectiblesLib"
 require "Spell"
 require "Unit"
 require "Item"
 require "AbilityBook"
 require "ActionSetLib"
-require "AttributeMilestonesLib"
 require "Tooltip"
 
 local ActionBarFrame = {}
@@ -55,12 +55,12 @@ function ActionBarFrame:OnDocumentReady()
 	Apollo.RegisterEventHandler("ActionBarNonSpellShortcutAddFailed", 		"OnActionBarNonSpellShortcutAddFailed", self)
 	Apollo.RegisterEventHandler("UpdateInventory", 							"OnUpdateInventory", self)
 
-	self.wndShadow = Apollo.LoadForm(self.xmlDoc, "Shadow", "FixedHudStratumLow", self)
-	self.wndArt = Apollo.LoadForm(self.xmlDoc, "Art", "FixedHudStratumLow", self)
-	self.wndBar2 = Apollo.LoadForm(self.xmlDoc, "Bar2ButtonContainer", "FixedHudStratum", self)
+	self.wndShadow = Apollo.LoadForm(self.xmlDoc, "Shadow", "FixedHudStratum", self)
+	self.wndArt = Apollo.LoadForm(self.xmlDoc, "Art", "FixedHudStratum", self)
 	self.wndBar3 = Apollo.LoadForm(self.xmlDoc, "Bar3ButtonContainer", "FixedHudStratum", self)
+	self.wndBar2 = Apollo.LoadForm(self.xmlDoc, "Bar2ButtonContainer", "FixedHudStratum", self)
 
-	self.wndMain = Apollo.LoadForm(self.xmlDoc, "ActionBarFrameForm", "FixedHudStratum", self)
+	self.wndMain = Apollo.LoadForm(self.xmlDoc, "ActionBarFrameForm", "FixedHudStratumHigh", self)
 	self.wndBar1 = self.wndMain:FindChild("Bar1ButtonContainer")
 
 	self.wndStancePopoutFrame = self.wndMain:FindChild("StancePopoutFrame")
@@ -70,7 +70,7 @@ function ActionBarFrame:OnDocumentReady()
 	self.wndPotionPopoutFrame = self.wndPotionFlyout:FindChild("PotionPopoutFrame")
 	self.wndMain:FindChild("PotionPopoutBtn"):AttachWindow(self.wndPotionPopoutFrame)
 
-	g_wndActionBarResources	= Apollo.LoadForm(self.xmlDoc, "Resources", "FixedHudStratumLow", self) -- Do not rename. This is global and used by other forms as a parent.
+	g_wndActionBarResources	= Apollo.LoadForm(self.xmlDoc, "Resources", "FixedHudStratum", self) -- Do not rename. This is global and used by other forms as a parent.
 
 	Event_FireGenericEvent("ActionBarLoaded")
 	
@@ -186,7 +186,11 @@ function ActionBarFrame:InitializeBars()
 			wndCurr = Apollo.LoadForm(self.xmlDoc, "ActionBarItemBig", self.wndBar1, self)
 			wndActionBarBtn = wndCurr:FindChild("ActionBarBtn")
 			wndActionBarBtn:SetContentId(idx - 1)
-
+			
+			if idx == 1 then
+				self.wndTutorialAnchor = wndCurr
+			end
+			
 			if ActionSetLib.IsSlotUnlocked(idx - 1) ~= ActionSetLib.CodeEnumLimitedActionSetResult.Ok then
 				wndCurr:FindChild("LockSprite"):Show(true)
 				wndCurr:FindChild("Cover"):Show(false)
@@ -235,10 +239,10 @@ function ActionBarFrame:InitializeBars()
 		self.arBarButtons[idx] = wndActionBarBtn
 	end
 
-	self.wndBar1:ArrangeChildrenHorz(0)
-	self.wndMain:FindChild("Bar1ButtonSmallContainer:Buttons"):ArrangeChildrenHorz(0)
-	self.wndBar2:ArrangeChildrenHorz(0)
-	self.wndBar3:ArrangeChildrenHorz(0)
+	self.wndBar1:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	self.wndMain:FindChild("Bar1ButtonSmallContainer:Buttons"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	self.wndBar2:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	self.wndBar3:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	self:OnUpdateActionBarTooltipLocation()
 
 	self:RedrawBarVisibility()
@@ -370,7 +374,7 @@ function ActionBarFrame:RedrawStances()
 		end
 	end
 
-	local nHeight = wndStancePopout:ArrangeChildrenVert(0)
+	local nHeight = wndStancePopout:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	local nLeft, nTop, nRight, nBottom = self.wndStancePopoutFrame:GetAnchorOffsets()
 	self.wndStancePopoutFrame:SetAnchorOffsets(nLeft, nBottom - nHeight - 72, nRight, nBottom)
 	self.wndMain:FindChild("StancePopoutBtn"):Show(#wndStancePopout:GetChildren() > 0)
@@ -389,7 +393,7 @@ function ActionBarFrame:RedrawMounts()
 	local wndMountPopout = self.wndMountFlyoutFrame:FindChild("MountPopoutList")
 	wndMountPopout:DestroyChildren()
 
-	local tMountList = GameLib.GetMountList()
+	local tMountList = CollectiblesLib.GetMountList()
 	local splSelected = nil
 
 	for idx, tMountData  in pairs(tMountList) do
@@ -422,8 +426,8 @@ function ActionBarFrame:RedrawMounts()
 	local nCount = #wndMountPopout:GetChildren()
 	if nCount > 0 then
 		local nMax = 7
-		local nMaxHeight = (wndMountPopout:ArrangeChildrenVert(0) / nCount) * nMax
-		local nHeight = wndMountPopout:ArrangeChildrenVert(0)
+		local nMaxHeight = (wndMountPopout:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop) / nCount) * nMax
+		local nHeight = wndMountPopout:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 		nHeight = nHeight <= nMaxHeight and nHeight or nMaxHeight
 
@@ -501,8 +505,8 @@ function ActionBarFrame:RedrawPotions()
 	local nCount = #wndPotionPopout:GetChildren()
 	if nCount > 0 then
 		local nMax = 7
-		local nMaxHeight = (wndPotionPopout:ArrangeChildrenVert(0) / nCount) * nMax
-		local nHeight = wndPotionPopout:ArrangeChildrenVert(0)
+		local nMaxHeight = (wndPotionPopout:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop) / nCount) * nMax
+		local nHeight = wndPotionPopout:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 		nHeight = nHeight <= nMaxHeight and nHeight or nMaxHeight
 
@@ -569,7 +573,7 @@ function ActionBarFrame:ShowVehicleBar(eWhichBar, bIsVisible, nNumShortcuts)
 			wndVehicleBar:FindChild("VehicleBarFrame"):SetAnchorOffsets(nLeft, nTop, nLeft + (58 * nNumShortcuts) + 66, nBottom)
 		end
 
-		wndVehicleBar:ArrangeChildrenHorz(1)
+		wndVehicleBar:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.Middle)
 		
 		self.tCurrentVehicleInfo =
 		{
@@ -594,10 +598,24 @@ function ActionBarFrame:HelperSetTooltipType(wnd)
 end
 
 function ActionBarFrame:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
-	if eAnchor == GameLib.CodeEnumTutorialAnchor.AbilityBar or eAnchor == GameLib.CodeEnumTutorialAnchor.InnateAbility then
-		local tRect = {}
-		tRect.l, tRect.t, tRect.r, tRect.b = self.wndMain:GetRect()
-		Event_FireGenericEvent("Tutorial_RequestUIAnchorResponse", eAnchor, idTutorial, strPopupText, tRect)
+	local tAnchors = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.AbilityBar] 	= true,
+	    [GameLib.CodeEnumTutorialAnchor.InnateAbility] 	= true,
+	}
+	
+	if not tAnchors[eAnchor] or not self.wndMain then
+		return
+	end
+	
+	local tAnchorMapping = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.AbilityBar] 	= self.wndTutorialAnchor,
+		[GameLib.CodeEnumTutorialAnchor.InnateAbility] 	= self.wndMain:FindChild("StancePopoutBtn"),
+	}
+	
+	if tAnchorMapping[eAnchor] then
+		Event_FireGenericEvent("Tutorial_ShowCallout", eAnchor, idTutorial, strPopupText, tAnchorMapping[eAnchor])
 	end
 end
 

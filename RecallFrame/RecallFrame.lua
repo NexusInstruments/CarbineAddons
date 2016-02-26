@@ -64,8 +64,7 @@ function RecallFrame:OnDocumentReady()
 	if not self.bActionBarReady or self.wndMain then
 		return
 	end
-	
-	self.bFormsLoaded = true
+
 	Apollo.RegisterEventHandler("ChangeWorld", 					"OnChangeWorld", self)
 	Apollo.RegisterEventHandler("HousingNeighborhoodRecieved", 	"OnNeighborhoodsUpdated", self)
 	Apollo.RegisterEventHandler("GuildResult", 					"OnGuildResult", self)
@@ -75,6 +74,8 @@ function RecallFrame:OnDocumentReady()
 	Apollo.RegisterEventHandler("PersonaUpdateCharacterStats", 	"RefreshDefaultCommand", self)
 	Apollo.RegisterEventHandler("OptionsUpdated_HUDPreferences","RefreshDefaultCommand", self)
 
+	Apollo.RegisterEventHandler("AccountCurrencyChanged", 		"GenerateBindList", self)
+
 	Apollo.RegisterTimerHandler("RefreshRecallTimer", 			"RefreshDefaultCommand", self)
 	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 	"OnTutorial_RequestUIAnchor", self)
 	
@@ -83,6 +84,7 @@ function RecallFrame:OnDocumentReady()
 	self.wndMenu = Apollo.LoadForm(self.xmlDoc, "RecallSelectionMenu", nil, self)
 	self.wndMain:FindChild("RecallOptionToggle"):AttachWindow(self.wndMenu)
     
+    self.tCoolDowns = {}
 	self:RefreshDefaultCommand()
 end
 
@@ -136,34 +138,21 @@ function RecallFrame:RefreshDefaultCommand()
 			self:ResetDefaultCommand()
 		end
 	end
-	
-	local bShowRecallBtn = false
-	if GameLib.GetDefaultRecallCommand() ~= nil then
-		if GameLib.GetDefaultRecallCommand() == GameLib.CodeEnumRecallCommand.BindPoint then
-			if GameLib.HasBindPoint() then
-				bShowRecallBtn = true
-				self.wndMain:FindChild("RecallActionBtn"):SetContentId(GameLib.CodeEnumRecallCommand.BindPoint)
-			else
-				bShowRecallBtn = false
-			end
-		elseif GameLib.GetDefaultRecallCommand() == GameLib.CodeEnumRecallCommand.House then
-			bShowRecallBtn = true
-			self.wndMain:FindChild("RecallActionBtn"):SetContentId(GameLib.CodeEnumRecallCommand.House)
-		elseif GameLib.GetDefaultRecallCommand() == GameLib.CodeEnumRecallCommand.Warplot then
-			bShowRecallBtn = true
-			self.wndMain:FindChild("RecallActionBtn"):SetContentId(GameLib.CodeEnumRecallCommand.Warplot)
-		elseif GameLib.GetDefaultRecallCommand() == GameLib.CodeEnumRecallCommand.Illium then
-			bShowRecallBtn = true
-			self.wndMain:FindChild("RecallActionBtn"):SetContentId(GameLib.CodeEnumRecallCommand.Illium)
-		elseif GameLib.GetDefaultRecallCommand() == GameLib.CodeEnumRecallCommand.Thayd then
-			bShowRecallBtn = true
-			self.wndMain:FindChild("RecallActionBtn"):SetContentId(GameLib.CodeEnumRecallCommand.Thayd)
+
+	local wndRecallActionBtn = self.wndMain:FindChild("RecallActionBtn")
+	local eDefaultCommand = GameLib.GetDefaultRecallCommand()
+
+	--Can use all content ids, but if it was a bind point, make sure the player has bind point.	
+	if eDefaultCommand ~= nil and 
+		(eDefaultCommand == GameLib.CodeEnumRecallCommand.BindPoint and GameLib.HasBindPoint() or eDefaultCommand ~= GameLib.CodeEnumRecallCommand.BindPoint) then
+		local tContent = wndRecallActionBtn:GetContent()
+		if tContent and tContent.spell then
+			local tData = {eContentId = eDefaultCommand, spell = tContent.spell}
+			wndRecallActionBtn:SetData(tData)
 		end
-	else
-		bShowRecallBtn = false
-	end
-	
-	if bShowRecallBtn then
+
+		wndRecallActionBtn:SetContentId(eDefaultCommand)
+
 		--Toggle Visibility based on ui preference
 		local unitPlayer = GameLib.GetPlayerUnit()
 		local nVisibility = Apollo.GetConsoleVariable("hud.SkillsBarDisplay")
@@ -178,7 +167,7 @@ function RecallFrame:RefreshDefaultCommand()
 			self.wndMain:Show(true)
 		end
 	else
-		self.wndMain:Show(false)
+		self.wndMain:Show(false)--Hide unless valid command.
 	end
 end
 
@@ -218,9 +207,13 @@ function RecallFrame:ResetDefaultCommand()
 	end
 end
 
-function RecallFrame:OnGenerateTooltip(wndControl, wndHandler, tType, arg1, arg2)
+function RecallFrame:OnGenerateTooltip(wndControl, wndHandler, eType, spell)
+	if wndControl ~= wndHandler then
+		return
+	end
+
 	if Tooltip ~= nil and Tooltip.GetSpellTooltipForm ~= nil then
-		Tooltip.GetSpellTooltipForm(self, wndControl, arg1)
+		Tooltip.GetSpellTooltipForm(self, wndControl, spell)
 	end
 end
 
@@ -231,121 +224,127 @@ end
 function RecallFrame:OnRecallOptionToggle(wndHandler, wndControl, eMouseButton)
 	if wndControl:IsChecked() then
 		self:GenerateBindList()
+		self.wndMenu:Invoke()
 	else
-		self.wndMenu:Show(false)
+		self:CloseMenu()
 	end
 end
 
 function RecallFrame:GenerateBindList()
-	self.wndMenu:FindChild("Content"):DestroyChildren() -- todo: selectively destroy the list
-	local nWndLeft, nWndTop, nWndRight, nWndBottom = self.wndMenu:GetAnchorOffsets()
-	local nEntryHeight = 0
-	local bHasBinds = false
-	local bHasWarplot = false
-	local guildCurr = nil
-	
-	-- todo: condense this 
-	if GameLib.HasBindPoint() == true then
-		--load recall
-		local wndBind = Apollo.LoadForm(self.xmlDoc, "RecallEntry", self.wndMenu:FindChild("Content"), self)
-		wndBind:FindChild("RecallActionBtn"):SetContentId(GameLib.CodeEnumRecallCommand.BindPoint)
-		wndBind:FindChild("RecallActionBtn"):SetData(GameLib.CodeEnumRecallCommand.BindPoint)
-		
-		bHasBinds = true
-		local nLeft, nTop, nRight, nBottom = wndBind:GetAnchorOffsets()
-		nEntryHeight = nEntryHeight + (nBottom - nTop)
+	local tRecallPoints = {}
+	self.wndMenu:FindChild("Content"):DestroyChildren()
+
+	if GameLib.HasBindPoint() then
+		table.insert(tRecallPoints, GameLib.CodeEnumRecallCommand.BindPoint)
 	end
 	
-	if HousingLib.IsResidenceOwner() == true then
-		-- load house
-		local wndHouse = Apollo.LoadForm(self.xmlDoc, "RecallEntry", self.wndMenu:FindChild("Content"), self)
-		wndHouse:FindChild("RecallActionBtn"):SetContentId(GameLib.CodeEnumRecallCommand.House)
-		wndHouse:FindChild("RecallActionBtn"):SetData(GameLib.CodeEnumRecallCommand.House)
-		
-		bHasBinds = true
-		local nLeft, nTop, nRight, nBottom = wndHouse:GetAnchorOffsets()
-		nEntryHeight = nEntryHeight + (nBottom - nTop)		
+	if HousingLib.IsResidenceOwner() then
+		table.insert(tRecallPoints, GameLib.CodeEnumRecallCommand.House)
 	end
 
 	-- Determine if this player is in a WarParty
 	for key, guildCurr in pairs(GuildLib.GetGuilds()) do
 		if guildCurr:GetType() == GuildLib.GuildType_WarParty then
-			bHasWarplot = true
+			table.insert(tRecallPoints, GameLib.CodeEnumRecallCommand.Warplot)
 			break
 		end
 	end
-	
-	if bHasWarplot == true then
-		-- load warplot
-		local wndWarplot = Apollo.LoadForm(self.xmlDoc, "RecallEntry", self.wndMenu:FindChild("Content"), self)
-		wndWarplot:FindChild("RecallActionBtn"):SetContentId(GameLib.CodeEnumRecallCommand.Warplot)
-		wndWarplot:FindChild("RecallActionBtn"):SetData(GameLib.CodeEnumRecallCommand.Warplot)
-		
-		bHasBinds = true
-		local nLeft, nTop, nRight, nBottom = wndWarplot:GetAnchorOffsets()
-		nEntryHeight = nEntryHeight + (nBottom - nTop)	
-	end
-	
-	local bIllium = false
-	local bThayd = false
-	
+
 	for idx, tSpell in pairs(AbilityBook.GetAbilitiesList(Spell.CodeEnumSpellTag.Misc) or {}) do
-		if tSpell.bIsActive and tSpell.nId == GameLib.GetTeleportIlliumSpell():GetBaseSpellId() then
-			bIllium = true
-		end
-		if tSpell.bIsActive and tSpell.nId == GameLib.GetTeleportThaydSpell():GetBaseSpellId() then
-			bThayd = true
-		end
-	end
-	
-	if bIllium then
-		-- load capital
-		local wndWarplot = Apollo.LoadForm(self.xmlDoc, "RecallEntry", self.wndMenu:FindChild("Content"), self)
-		wndWarplot:FindChild("RecallActionBtn"):SetContentId(GameLib.CodeEnumRecallCommand.Illium)
-		wndWarplot:FindChild("RecallActionBtn"):SetData(GameLib.CodeEnumRecallCommand.Illium)
-		
-		bHasBinds = true
-		local nLeft, nTop, nRight, nBottom = wndWarplot:GetAnchorOffsets()
-		nEntryHeight = nEntryHeight + (nBottom - nTop)
-	end
-	
-	if bThayd then
-		-- load capital
-		local wndWarplot = Apollo.LoadForm(self.xmlDoc, "RecallEntry", self.wndMenu:FindChild("Content"), self)
-		wndWarplot:FindChild("RecallActionBtn"):SetContentId(GameLib.CodeEnumRecallCommand.Thayd)
-		wndWarplot:FindChild("RecallActionBtn"):SetData(GameLib.CodeEnumRecallCommand.Thayd)		
-		
-		bHasBinds = true
-		local nLeft, nTop, nRight, nBottom = wndWarplot:GetAnchorOffsets()
-		nEntryHeight = nEntryHeight + (nBottom - nTop)
-	end
-	
-	if bHasBinds == true then
-		self.wndMenu:FindChild("Content"):SetText("")
-		self.wndMenu:SetAnchorOffsets(nWndLeft, nWndBottom -(nEntryHeight + knBottomPadding+knTopPadding), nWndRight, nWndBottom)
+		if tSpell.bIsActive then
+			if tSpell.nId == GameLib.GetTeleportIlliumSpell():GetBaseSpellId() then
+				table.insert(tRecallPoints, GameLib.CodeEnumRecallCommand.Illium)
+			end
 
-		self.wndMenu:FindChild("Content"):ArrangeChildrenVert()
+			if tSpell.nId == GameLib.GetTeleportThaydSpell():GetBaseSpellId() then
+				table.insert(tRecallPoints, GameLib.CodeEnumRecallCommand.Thayd)
+			end
+		end
 	end
 
-	self.wndMenu:Show(true)
-	self.wndMenu:ToFront()	
+	
+	for idx, eRecallData in pairs(tRecallPoints) do
+		self:BuildRecallEntry(eRecallData)
+	end
+
+	local nNewHeight = self.wndMenu:FindChild("Content"):ArrangeChildrenVert()
+	local nLeft, nTop, nRight, nBottom = self.wndMenu:GetAnchorOffsets()
+	self.wndMenu:SetAnchorOffsets(nLeft, nBottom -(nNewHeight + knBottomPadding + knTopPadding), nRight, nBottom)
+end
+
+function RecallFrame:CloseMenu()
+	self.wndMenu:FindChild("Content"):DestroyChildren()
+	for idx, tCoolDownInfo in pairs(self.tCoolDowns) do
+		tCoolDownInfo.timer:Stop()
+	end
+
+	self.tCoolDowns = {}
+	self.wndMenu:Close()
+end
+function RecallFrame:BuildRecallEntry(eContent)
+	local wndRecallEntry = Apollo.LoadForm(self.xmlDoc, "RecallEntry", self.wndMenu:FindChild("Content"), self)
+	local wndRecallActionBtn = wndRecallEntry:FindChild("RecallActionBtn")
+	local wndCooldownBtn = wndRecallEntry:FindChild("CooldownCastBtn")
+	wndRecallActionBtn:SetContentId(eContent)
+	wndCooldownBtn:SetContentId(eContent)
+
+	local tContent = wndRecallActionBtn:GetContent()
+	if tContent and tContent.spell then
+		local tData = {eContentId = eContent, spell = tContent.spell}
+		wndRecallEntry:SetData(tData)
+		wndCooldownBtn:SetData(tData)
+		wndRecallActionBtn:SetData(tData)
+
+		local monCost = tContent.spell:GetSpellServiceTokenCost()
+		local nCoolDown = tContent.spell:GetCooldownRemaining()--In Seconds
+		if nCoolDown > 0 then
+			self.tCoolDowns[eContent] = { spell = tContent.spell, wndRecallEntry = wndRecallEntry, timer = ApolloTimer.Create(nCoolDown, false, "OnCooldownTimer", self)}
+		end
+
+		wndRecallEntry:FindChild("CostContainer"):Show(nCoolDown > 0)
+		wndRecallEntry:FindChild("FreeContainer"):Show(nCoolDown <= 0)
+
+		local wndCost = wndRecallEntry:FindChild("Cost")
+		wndCost:SetAmount(monCost or 0, true)
+
+		local colorCostText = ApolloColor.new("UI_TextMetalBodyHighlight")
+		local nPlayerAmount = AccountItemLib.GetAccountCurrency(AccountItemLib.CodeEnumAccountCurrency.ServiceToken):GetAmount()
+		if monCost and monCost:GetAmount() > nPlayerAmount then
+			colorCostText = ApolloColor.new("AddonError")
+		end
+		wndCost:SetTextColor(colorCostText)
+	end
+end
+
+function RecallFrame:OnCooldownTimer()
+	for eContent, tCoolDownInfo in pairs(self.tCoolDowns) do
+		if tCoolDownInfo.wndRecallEntry:IsValid() then
+			local nCoolDown = tCoolDownInfo.spell:GetCooldownRemaining()
+			tCoolDownInfo.wndRecallEntry:FindChild("CostContainer"):Show(nCoolDown > 0)
+			tCoolDownInfo.wndRecallEntry:FindChild("FreeContainer"):Show(nCoolDown <= 0)
+		end
+	end
 end
 
 function RecallFrame:OnRecallBtn(wndControl, wndHandler)
-	local nRecallCommand = wndControl:GetData()
-	
-	GameLib.SetDefaultRecallCommand(nRecallCommand)
-	self.wndMain:FindChild("RecallActionBtn"):SetContentId(nRecallCommand)
-	self.wndMenu:Show(false)
+	local tData = wndControl:GetData()
+	if not tData or (tData and not tData.eContentId) then
+		return
+	end
+
+	GameLib.SetDefaultRecallCommand(tData.eContentId)
+	wndControl:SetContentId(tData.eContentId)
+	self.wndMain:FindChild("RecallActionBtn"):SetContentId(tData.eContentId)
+	self:CloseMenu()
 end
 
 function RecallFrame:OnCloseBtn()
-	self.wndMenu:Show(false)
+	self:CloseMenu()
 end
 
 function RecallFrame:OnChangeWorld()
 	self.bHaveNeighborhoods = false
-	self.wndMenu:Show(false)
+	self:CloseMenu()
 end
 
 function RecallFrame:OnGuildResult(guildCurr, strName, nRank, eResult) -- guild object, name string, Rank, result enum
@@ -364,23 +363,35 @@ function RecallFrame:OnGuildResult(guildCurr, strName, nRank, eResult) -- guild 
 	end
 				
 	if bRefresh then
-		self.wndMenu:Show(false)
+		self:CloseMenu()
 		-- Process on the next frame.
 		Apollo.CreateTimer("RefreshRecallTimer", 0.001, false)
 	end
 end
 
 function RecallFrame:OnAbilityBookChange()
-	self.wndMenu:Show(false)
+	self:CloseMenu()
 	-- Process on the next frame.
 	Apollo.CreateTimer("RefreshRecallTimer", 0.001, false)
 end
 
 function RecallFrame:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
-	if eAnchor == GameLib.CodeEnumTutorialAnchor.Recall then
-		local tRect = {}
-		tRect.l, tRect.t, tRect.r, tRect.b = self.wndMain:GetRect()
-		Event_FireGenericEvent("Tutorial_RequestUIAnchorResponse", eAnchor, idTutorial, strPopupText, tRect)
+	local tAnchors = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.Recall] = true,
+	}
+	
+	if not tAnchors[eAnchor] then
+		return
+	end
+	
+	local tAnchorMapping = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.Recall] = self.wndMain,
+	}
+	
+	if tAnchorMapping[eAnchor] then
+		Event_FireGenericEvent("Tutorial_ShowCallout", eAnchor, idTutorial, strPopupText, tAnchorMapping[eAnchor])
 	end
 end
 

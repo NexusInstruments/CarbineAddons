@@ -139,7 +139,7 @@ function Hazards:OnHazardsUpdated()
 			bNew = true
 		end
 		
-		self:OnHazardUpdate(tData.nId, tData.eHazardType, tData.fMeterValue, tData.fMaxValue, tData.strTooltip)
+		self:OnHazardUpdate(tData.nId, tData.eHazardType, tData.fMeterValue, tData.fMaxValue, tData.strTooltip, tData.tMeterThresholds)
 	end
 
 	if bNew and self.tWndRefs.wndMain ~= nil and self.tWndRefs.wndMain:IsValid() then
@@ -149,7 +149,7 @@ function Hazards:OnHazardsUpdated()
 	end
 end
 
-function Hazards:OnHazardUpdate(idHazard, eHazardType, fMeterValue, fMaxValue, strTooltip)
+function Hazards:OnHazardUpdate(idHazard, eHazardType, fMeterValue, fMaxValue, strTooltip, tMeterThresholds)
 	if self.tHazardWnds[idHazard] then
 		-- find the progress bar and update the limits
 		local wndProgressBar = self.tHazardWnds[idHazard].wndHazardProgress
@@ -173,6 +173,22 @@ function Hazards:OnHazardUpdate(idHazard, eHazardType, fMeterValue, fMaxValue, s
 
 		if strTooltip ~= nil then
 			wndProgressBar:SetTooltip(strTooltip)
+		end
+		
+		if tMeterThresholds and not wndProgressBar:FindChild("HazardThreshold") then --Don't repeatedly redraw the thresholds.
+			for idx, nGivenPercent in pairs(tMeterThresholds) do
+				local nPercent = 100 - nGivenPercent
+				local nHeight = wndProgressBar:GetHeight()
+				local nOffset = nHeight * ((nPercent) / 100)
+				
+				
+				local wndThreshold = Apollo.LoadForm(self.xmlDoc, "HazardThreshold", wndProgressBar, self)
+				local nThreshHeight  =  wndThreshold:GetHeight()
+				local nLeft, nTop, nRight, nBottom = wndThreshold:GetAnchorOffsets()
+				local nNewTop = nOffset - (nThreshHeight / 2) 
+				wndThreshold:SetAnchorOffsets(nLeft, nNewTop, nRight, nNewTop + nThreshHeight )
+				wndThreshold:Show(true)
+			end
 		end
 	end
 end

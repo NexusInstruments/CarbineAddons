@@ -134,7 +134,7 @@ function AbilityAMPs:OnPlayerCurrencyChanged()
 
 		local strColor = ApolloColor.new("UI_TextHoloBodyHighlight")
 		if not bCanAfford then
-			strColor = ApolloColor.new("xkcdReddish")
+			strColor = ApolloColor.new("Reddish")
 		elseif not bLockedInPoints then
 			strColor = ApolloColor.new("UI_BtnTextBlueDisabled")
 		end
@@ -238,6 +238,7 @@ function AbilityAMPs:RedrawAll() -- Do not pass in arguments, this can come from
 	local tCategoryPowers = {}
 	local tValidCategories = {}
 
+	local fRotationIncrement = (2 * math.pi) / #tEldanAugmentationData.tCategories
 	for idx = 1, #tEldanAugmentationData.tCategories do
 		local tCategory = tEldanAugmentationData.tCategories[idx]
 		if self.arHighestUnlockedTier[tCategory.nId] and self.arHighestUnlockedTier[tCategory.nId] < tCategory.nHighestTierUnlocked then
@@ -273,7 +274,7 @@ function AbilityAMPs:RedrawAll() -- Do not pass in arguments, this can come from
 					nRankCenterY + nHeight,
 				},
 			},
-			fRotation = nColumn * 60 + 120,
+			fRotation = fRotationIncrement * (nColumn - 1) + math.pi,
 			strSprite = "",
 		}
 
@@ -612,7 +613,7 @@ function AbilityAMPs:OnAmpFormBtn(wndHandler, wndControl, eMouseBtn) -- AmpFormB
 			-- Determine if this is a valid amp to remove
 			if self.tCategoryInfo[idCategory].nHighestTierUnlocked > 1 then
 				for idAmp, tAmpData in pairs(self.tAmpMap[idCategory]) do
-					if tAmpData.eEldanAvailability == AbilityBook.CodeEnumEldanAvailability.Activated and tAmpData.nId ~= tAugment.nId and not tDependencies[tAmpData.nId] then
+					if tAmpData.eEldanAvailability == AbilityBook.CodeEnumEldanAvailability.Activated and tAmpData.nId ~= tAugment.nId and not tDependencies[tAmpData.nId] and (tAugment.bIsCached or not tAmpData.bIsCached) then
 						nPowerUsed[tAmpData.nCategoryTier] = nPowerUsed[tAmpData.nCategoryTier] + tAmpData.nPowerCost
 					end
 				end
@@ -712,6 +713,7 @@ function AbilityAMPs:OnAmpFormBtn(wndHandler, wndControl, eMouseBtn) -- AmpFormB
 	end
 	
 	self:HelperCheckCached()
+	Event_ShowTutorial(GameLib.CodeEnumTutorial.AMPSave)
 end
 
 function AbilityAMPs:OnResetCategoryBtn(wndHandler, wndControl)

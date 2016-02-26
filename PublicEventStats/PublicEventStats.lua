@@ -20,79 +20,6 @@ function PublicEventStats:Init()
     Apollo.RegisterAddon(self)
 end
 
-local ktParticipantKeys = 
-{
-	[PublicEvent.PublicEventType_PVP_Arena] =
-	{
-		"strName",
-		"nKills",
-		"nDeaths",
-		"nAssists",
-		"nDamage",
-		"nHealed",
-		"nDamageReceived",
-		"nHealingReceived",
-		"nSaves"
-	},
-
-	[PublicEvent.PublicEventType_PVP_Warplot] =
-	{
-		"strName",
-		"nKills",
-		"nDeaths",
-		"nAssists",
-		"nDamage",
-		"nHealed",
-		"nDamageReceived",
-		"nHealingReceived",
-		"nSaves",
-		"nKillStreak"
-	},
-
-	[PublicEvent.PublicEventType_PVP_Battleground_HoldTheLine] =
-	{
-		"strName",
-		"nKills",
-		"nDeaths",
-		"nAssists",
-		"nCustomNodesCaptured",
-		"nDamage",
-		"nHealed",
-		"nDamageReceived",
-		"nHealingReceived",
-		"nSaves",
-		"nKillStreak"
-	},
-	[PublicEvent.PublicEventType_PVP_Battleground_Vortex] =
-	{
-		"strName",
-		"nKills",
-		"nDeaths",
-		"nAssists",
-		"nCustomFlagsPlaced",
-		"bCustomFlagsStolen",
-		"nDamage",
-		"nHealed",
-		"nDamageReceived",
-		"nHealingReceived",
-		"nSaves",
-		"nKillStreak"
-	},
-	[PublicEvent.PublicEventType_PVP_Battleground_Sabotage] =
-	{
-		"strName",
-		"nKills",
-		"nDeaths",
-		"nAssists",
-		"nDamage",
-		"nHealed",
-		"nDamageReceived",
-		"nHealingReceived",
-		"nSaves",
-		"nKillStreak"
-	}
-}
-
 local kstrClassToMLIcon =
 {
 	[GameLib.CodeEnumClass.Warrior] 		= "<T Image=\"CRB_Raid:sprRaid_Icon_Class_Warrior\"></T> ",
@@ -113,27 +40,6 @@ local ktPvPEvents =
 	[PublicEvent.PublicEventType_PVP_Battleground_HoldTheLine] 	= true,
 }
 
-local ktEventTypeToWindowName =
-{
-	[PublicEvent.PublicEventType_PVP_Arena] 					= "PvPArenaContainer",
-	[PublicEvent.PublicEventType_PVP_Warplot] 					= "PvPWarPlotContainer",
-	[PublicEvent.PublicEventType_PVP_Battleground_HoldTheLine] 	= "PvPHoldContainer",
-	[PublicEvent.PublicEventType_PVP_Battleground_Vortex] 		= "PvPCTFContainer",
-	[PublicEvent.PublicEventType_PVP_Battleground_Sabotage] 	= "PvPSaboContainer",
-	[PublicEvent.PublicEventType_WorldEvent] 					= "PublicEventGrid",
-	[PublicEvent.PublicEventType_Adventure_Astrovoid] 			= "PublicEventGrid",
-	[PublicEvent.PublicEventType_Adventure_Farside] 			= "PublicEventGrid",
-	[PublicEvent.PublicEventType_Adventure_Galeras] 			= "PublicEventGrid",
-	[PublicEvent.PublicEventType_Adventure_Hycrest]				= "PublicEventGrid",
-	[PublicEvent.PublicEventType_Adventure_LevianBay] 			= "PublicEventGrid",
-	[PublicEvent.PublicEventType_Adventure_Malgrave] 			= "PublicEventGrid",
-	[PublicEvent.PublicEventType_Adventure_NorthernWilds] 		= "PublicEventGrid",
-	[PublicEvent.PublicEventType_Adventure_Skywatch] 			= "PublicEventGrid",
-	[PublicEvent.PublicEventType_Adventure_Whitevale] 			= "PublicEventGrid",
-	[PublicEvent.PublicEventType_Dungeon] 						= "PublicEventGrid",
-	[PublicEvent.PublicEventType_Shiphand]						= "PublicEventGrid",
-}
-
 local ktPvEInstancedEvents =
 {
 	[PublicEvent.PublicEventType_Adventure_Astrovoid] 		= true,
@@ -149,94 +55,31 @@ local ktPvEInstancedEvents =
 	[PublicEvent.PublicEventType_Shiphand]					= true,
 }
 
--- necessary until we can either get column names for a compare/swap or a way to set localized strings in XML for columns
-local ktEventTypeToColumnNameList =
+local knColWidthForName = 300
+local knColWidthOffSet 	= 30
+
+local ktAttributeToColumn =
 {
-	[PublicEvent.PublicEventType_PVP_Arena] =
-	{
-		"PublicEventStats_Name",
-		"PublicEventStats_Kills",
-		"PublicEventStats_Deaths",
-		"PublicEventStats_Assists",
-		"PublicEventStats_DamageDone",
-		"PublicEventStats_HealingDone",
-		"PublicEventStats_DamageTaken",
-		"PublicEventStats_HealingTaken",
-		"PublicEventStats_Saves"
-	},
-	[PublicEvent.PublicEventType_PVP_Warplot] =
-	{
-		"PublicEventStats_Name",
-		"PublicEventStats_Kills",
-		"PublicEventStats_Deaths",
-		"PublicEventStats_Assists",
-		"PublicEventStats_DamageDone",
-		"PublicEventStats_HealingDone",
-		"PublicEventStats_DamageTaken",
-		"PublicEventStats_HealingTaken",
-		"PublicEventStats_Saves",
-		"PublicEventStats_KillStreak"
-	},
-	[PublicEvent.PublicEventType_PVP_Battleground_HoldTheLine] =
-	{
-		"PublicEventStats_Name",
-		"PublicEventStats_Kills",
-		"PublicEventStats_Deaths",
-		"PublicEventStats_Assists",
-		"PublicEventStats_Captures",
-		"PublicEventStats_DamageDone",
-		"PublicEventStats_HealingDone",
-		"PublicEventStats_DamageTaken",
-		"PublicEventStats_HealingTaken",
-		"PublicEventStats_Saves",
-		"PublicEventStats_KillStreak"
-	},
-	[PublicEvent.PublicEventType_PVP_Battleground_Vortex] =
-	{
-		"PublicEventStats_Name",
-		"PublicEventStats_Kills",
-		"PublicEventStats_Deaths",
-		"PublicEventStats_Assists",
-		"PublicEventStats_Captures",
-		"PublicEventStats_Stolen",
-		"PublicEventStats_DamageDone",
-		"PublicEventStats_HealingDone",
-		"PublicEventStats_DamageTaken",
-		"PublicEventStats_HealingTaken",
-		"PublicEventStats_Saves",
-		"PublicEventStats_KillStreak"
-	},
-	[PublicEvent.PublicEventType_PVP_Battleground_Sabotage] =
-	{
-		"PublicEventStats_Name",
-		"PublicEventStats_Kills",
-		"PublicEventStats_Deaths",
-		"PublicEventStats_Assists",
-		"PublicEventStats_DamageDone",
-		"PublicEventStats_HealingDone",
-		"PublicEventStats_DamageTaken",
-		"PublicEventStats_HealingTaken",
-		"PublicEventStats_Saves",
-		"PublicEventStats_KillStreak"
-	},
-	[PublicEvent.PublicEventType_WorldEvent] =
-	{
-		"PublicEventStats_Name",
-		"PublicEventStats_Contribution",
-		"PublicEventStats_DamageDone",
-		"PublicEventStats_DamageTaken",
-		"PublicEventStats_HealingDone",
-		"PublicEventStats_HealingTaken"
-	},
-	[PublicEvent.PublicEventType_Dungeon] =
-	{
-		"PublicEventStats_Name",
-		"PublicEventStats_Contribution",
-		"PublicEventStats_DamageDone",
-		"PublicEventStats_DamageTaken",
-		"PublicEventStats_HealingDone",
-		"PublicEventStats_HealingTaken"
-	},
+	["nAssists"] 				= Apollo.GetString("PublicEventStats_Assists"),
+	["nContributions"] 			= Apollo.GetString("PublicEventStats_Contribution"),
+	["nDamage"] 				= Apollo.GetString("PublicEventStats_DamageDone"),
+	["nDamageReceived"] 		= Apollo.GetString("PublicEventStats_DamageTaken"),
+	["nDeaths"] 				= Apollo.GetString("PublicEventStats_Deaths"),
+	["nHaters"] 				= Apollo.GetString("PublicEventStats_Haters"),
+	["nHealed"] 				= Apollo.GetString("PublicEventStats_HealingDone"),
+	["nHealingReceived"] 		= Apollo.GetString("PublicEventStats_HealingTaken"),
+	["nHits"] 					= Apollo.GetString("PublicEventStats_Hits"),
+	["nKills"] 					= Apollo.GetString("PublicEventStats_Kills"),
+	["nKillStreak"] 			= Apollo.GetString("PublicEventStats_KillStreak"),
+	["nLongestImpulse"] 		= Apollo.GetString("PublicEventStats_LongestImpulse"),
+	["nLongestLife"] 			= Apollo.GetString("PublicEventStats_LongestLife"),
+	["nMaxMultiKills"] 			= Apollo.GetString("PublicEventStats_MaxMultiKills"),
+	["nMedalPoints"] 			= Apollo.GetString("PublicEventStats_MedalPoints"),
+	["strName"] 				= Apollo.GetString("PublicEventStats_Name"),
+	["strTeamName"] 			= Apollo.GetString("PublicEventStats_TeamName"),
+	["nOverhealed"] 			= Apollo.GetString("PublicEventStats_Overhealed"),
+	["nOverhealingReceived"]	= Apollo.GetString("PublicEventStats_OverhealingReceived"),
+	["nSaves"] 					= Apollo.GetString("PublicEventStats_Saves"),
 }
 
 local ktAdventureListStrIndexToIconSprite =  -- Default: ClientSprites:Icon_SkillMind_UI_espr_moverb
@@ -286,6 +129,9 @@ function PublicEventStats:OnDocumentReady()
 
 	math.randomseed(os.time())
 
+	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
+
     Apollo.RegisterEventHandler("GenericEvent_OpenEventStats", 			"OnToggleEventStats", self)
     Apollo.RegisterEventHandler("GenericEvent_OpenEventStatsZombie", 	"InitializeZombie", self)
 	Apollo.RegisterEventHandler("ResolutionChanged", 					"OnResolutionChanged", self)
@@ -318,10 +164,15 @@ function PublicEventStats:OnDocumentReady()
 	end
 end
 
+function PublicEventStats:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("Tutorials_PublicEvents"), nSaveVersion = 2})
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("MatchMaker_Adventures")})
+end
+
 ------------------------------------------------------------------------------------
 -----    Live Stat Scoreboards
 ------------------------------------------------------------------------------------
-function PublicEventStats:OnToggleEventStats(peEvent)
+function PublicEventStats:OnToggleEventStats(peEvent, tMyStats, arTeamStats, arParticipantStats)
 	if self.wndScoreboard and self.wndScoreboard:IsShown() then
 		self.timerRedrawInfo:Stop()
 		self.wndScoreboard:Close()
@@ -356,6 +207,50 @@ function PublicEventStats:OnPublicEventStart(peEvent)
 	end
 end
 
+function PublicEventStats:DrawCustomEvents(tStats, peEvent)
+	local tPersonalStats = peEvent:GetMyStats()
+	local tScore = {}
+	local tIcons = {}
+	-- Add Custom to score tracker
+	for idx, tStat in pairs(tPersonalStats.arCustomStats) do
+		if tStat.nValue and tStat.nValue > 0 then
+			tScore[tStat.strName] = 0
+			tIcons[tStat.strName] = tStat.strIcon
+			tPersonalStats[tStat.strName] = tStat.nValue
+		end
+	end
+
+	-- Count times beaten by other participants
+	for key, tCurr in pairs(tStats.arParticipantStats) do
+		tScore = self:HelperCompareScores(tPersonalStats, tCurr, tScore)
+	end
+
+	-- Convert to an interim table for sorting
+	local bHaveCustomStats = false
+	local wndRight = self.wndScoreboard:FindChild("Right")
+	local wndCustomStatContainer = wndRight:FindChild("Container")
+
+	local tSortedTable = self:HelperSortTableForSummary(tScore)
+	for key, tData in pairs(tSortedTable) do
+		local strIndex = tData.strKey
+		local nValue = tData.nValue
+		local nValueForString = math.abs(0 - nValue) + 1
+		if nValueForString > 0 and tPersonalStats[strIndex] ~= nil and tPersonalStats[strIndex] > 0 then
+			local strLabelText = String_GetWeaselString(Apollo.GetString("PublicEventStats_AwardOther"), nValueForString, strIndex)
+			local wndListItem = Apollo.LoadForm(self.xmlDoc , "CustomStatListItem", wndCustomStatContainer, self)
+			wndListItem:FindChild("Icon"):SetSprite(tIcons[strIndex])
+			wndListItem:FindChild("Title"):SetText(strLabelText)
+			bHaveCustomStats = true
+		end
+	end
+
+	if bHaveCustomStats then
+		wndCustomStatContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	end
+	wndRight:FindChild("CustomStatsBtn"):Show(bHaveCustomStats)
+	wndRight:Show(bHaveCustomStats)
+end
+
 function PublicEventStats:InitializeScoreboard(peEvent)
 	local tStats = self.tTrackedStats or self.tZombieStats or peEvent:GetLiveStats()
 	
@@ -368,6 +263,13 @@ function PublicEventStats:InitializeScoreboard(peEvent)
 		self.wndScoreboard = Apollo.LoadForm(self.xmlDoc , "PublicEventStatsForm", nil, self)
 		Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndScoreboard, strName = Apollo.GetString("Tutorials_PublicEvents")})
 	end
+
+	local eEventType = peEvent:GetEventType()
+	if eEventType == PublicEvent.PublicEventType_NonCombatEvent then
+		self:DrawCustomEvents(tStats, peEvent)
+	end
+
+	self.wndScoreboard:FindChild("CustomStatsBtn"):AttachWindow(self.wndScoreboard:FindChild("CustomStats"))
 	
 	-- Primarily for when the timer is fired
 	if not peEvent and self.peActiveEvent then
@@ -376,36 +278,24 @@ function PublicEventStats:InitializeScoreboard(peEvent)
 		self.peActiveEvent = peEvent
 	end
 
-	local eEventType = peEvent:GetEventType()
-	local wndParent = self.wndScoreboard:FindChild(ktEventTypeToWindowName[eEventType])
-
-	local wndGrid = wndParent
-	if ktPvPEvents[eEventType] then
-		wndGrid = wndParent:FindChild("PvPTeamGridBot")
-
-		for idx = 1, wndGrid:GetColumnCount() do
-			wndGrid:SetColumnText(idx, Apollo.GetString(ktEventTypeToColumnNameList[eEventType][idx]))
-		end
-
-		wndGrid = wndParent:FindChild("PvPTeamGridTop")
-	end
-
-	local nMaxScoreboardWidth = self.wndScoreboard:GetWidth() - wndGrid:GetWidth() + 15 -- Magic number for the width of the scroll bar
-	for idx = 1, wndGrid:GetColumnCount() do
-		nMaxScoreboardWidth = nMaxScoreboardWidth + wndGrid:GetColumnWidth(idx)
-		wndGrid:SetColumnText(idx, Apollo.GetString(ktEventTypeToColumnNameList[eEventType][idx])) 
-	end
-
-	self.wndScoreboard:SetSizingMinimum(640, 500)
-	self.wndScoreboard:SetSizingMaximum(nMaxScoreboardWidth, 800)
-
-	self.strMyName = GameLib.GetPlayerUnit():GetName()
-	
-	if ktPvPEvents[eEventType] then
+	local wndParent	= nil
+	local wndGrid = nil
+	if not ktPvPEvents[eEventType] then
+		wndParent = self.wndScoreboard:FindChild("NonCombatContainer")
+		wndGrid = wndParent:FindChild("DynGrid")
+		self:InitializeGrid(wndGrid)
+	else
+		wndParent = self.wndScoreboard:FindChild("PvPArenaContainer")
+		local wndGridTop = wndParent:FindChild("PvPTeamGridTop")
+		local wndPvPTeamGridBot = wndParent:FindChild("PvPTeamGridBot")
 		local wndHeaderTop 	= wndParent:FindChild("PvPTeamHeaderTop")
 		local wndHeaderBot 	= wndParent:FindChild("PvPTeamHeaderBot")
-		local wndGridTop 	= wndParent:FindChild("PvPTeamGridTop")
-		local wndGridBot 	= wndParent:FindChild("PvPTeamGridBot")
+
+		--Need a grid reference for measuring later.
+		wndGrid = wndGridTop
+
+		self:InitializeGrid(wndGridTop)
+		self:InitializeGrid(wndPvPTeamGridBot)
 		
 		local tMatchState = MatchingGame:GetPVPMatchState()
 
@@ -423,10 +313,19 @@ function PublicEventStats:InitializeScoreboard(peEvent)
 				self:CheckTeamName(key, wndHeader, tStats, tMatchState)
 			end
 		end
-	-- Set up reward info for zombie world event stats
 	end
+
+	local nMaxScoreboardWidth = self.wndScoreboard:GetWidth() - wndGrid:GetWidth() + 15 -- Magic number for the width of the scroll bar
+	for idx = 1, wndGrid:GetColumnCount() do
+		nMaxScoreboardWidth = nMaxScoreboardWidth + wndGrid:GetColumnWidth(idx)
+	end
+
+	self.wndScoreboard:SetSizingMinimum(640, 500)
+	self.wndScoreboard:SetSizingMaximum(nMaxScoreboardWidth, 800)
+
+	self.strMyName = GameLib.GetPlayerUnit():GetName()
 	
-	if tStats.eRewardTier and tStats.eRewardType and not ktPvPEvents[eEventType] then
+	if tStats.eRewardTier and ktRewardTierInfo[tStats.eRewardTier] and tStats.eRewardType and not ktPvPEvents[eEventType] then
 		self.wndScoreboard:FindChild("BGRewardTierIcon"):SetSprite(ktRewardTierInfo[tStats.eRewardTier].strSprite)
 		self.wndScoreboard:FindChild("BGRewardTierFrame"):SetText(ktRewardTierInfo[tStats.eRewardTier].strText)
 	else
@@ -435,6 +334,75 @@ function PublicEventStats:InitializeScoreboard(peEvent)
 	end
 
 	self.wndScoreboard:Show(false)
+end
+
+function PublicEventStats:InitializeGrid(wndGrid)
+	if not wndGrid then
+		return
+	end
+
+	wndGrid:DeleteAllRowsAndColumns()
+	local tColumnNames = self:HelperGetColumnNames()
+	for idx, strColumn in pairs(tColumnNames) do
+		local nColWidth = 0
+		if idx == 1 then--This is the name column.
+			nColWidth = knColWidthForName
+		else
+			nColWidth = Apollo.GetTextWidth("CRB_InterfaceSmall", strColumn) + knColWidthOffSet
+		end
+
+		wndGrid:AddCol(strColumn, nil, nColWidth, "UI_TextHoloBody")
+	end
+end
+
+function PublicEventStats:HelperGetAttributes()
+	local tAttributes = {"strName"}--GetStatsToDisplay does NOT have names because ALL should begin with name.
+
+	if not self.peActiveEvent then
+		return tAttributes
+	end
+
+	local eEventType = self.peActiveEvent:GetEventType()
+	if ktPvPEvents[eEventType] then
+		table.insert(tAttributes, "strTeamName")
+	end
+
+
+	local tDisplay = self.peActiveEvent:GetStatsToDisplay()
+	if not tDisplay then
+		return tAttributes
+	end
+
+	for idx, strAttribute in pairs(tDisplay) do
+		table.insert(tAttributes, strAttribute)
+	end
+
+	local tParticipant = self.peActiveEvent:GetMyStats()
+	if not tParticipant then
+		return tAttributes
+	end
+
+	--Adding Custom Stats
+	for idx, tCustomTable in pairs(tParticipant.arCustomStats) do
+		table.insert(tAttributes, tCustomTable.strName)
+	end
+
+	return tAttributes
+end
+
+function PublicEventStats:HelperGetColumnNames()
+	local tColumnNames = {}
+	local tAttributes = self:HelperGetAttributes()
+	for idx, strAttribute in pairs(tAttributes) do
+		local strColumnName = ktAttributeToColumn[strAttribute]
+		if strColumnName then
+			table.insert(tColumnNames, strColumnName)
+		else--Custom Stats, and are already Localized.
+			table.insert(tColumnNames, strAttribute)
+		end
+	end
+	
+	return tColumnNames
 end
 
 -- Fires from the quest tracker's PublicEvent Tracker
@@ -451,19 +419,15 @@ function PublicEventStats:UpdateGrid() -- self.wndScoreboard guaranteed valid an
 			wndCurr:Show(false)
 		end
 
+		local wndParent	= nil
+		local wndNonCombatContainer = self.wndScoreboard:FindChild("NonCombatContainer")
+		local wndPvPArenaContainer = self.wndScoreboard:FindChild("PvPArenaContainer")
 		local eEventType = self.peActiveEvent:GetEventType()
-		
-		local wndGrid = nil
-		
-		if ktEventTypeToWindowName[eEventType] then
-			wndGrid = self.wndScoreboard:FindChild(ktEventTypeToWindowName[eEventType])
-		end
-
-		-- Determine which type of window to use
-		if ktPvPEvents[eEventType] then
-			self:HelperBuildPvPSharedGrids(wndGrid, eEventType)
+		local bCombatEvent = ktPvPEvents[eEventType]
+		if bCombatEvent then
+			self:HelperBuildPvPSharedGrids(wndPvPArenaContainer, eEventType)
 		else
-			self:BuildPublicEventGrid(wndGrid)
+			self:BuildPublicEventGrid(wndNonCombatContainer)
 		end
 
 		-- Title Text (including timer)
@@ -475,12 +439,10 @@ function PublicEventStats:UpdateGrid() -- self.wndScoreboard guaranteed valid an
 		end
 		self.wndScoreboard:FindChild("EventTitleText"):SetText(strTitleText)
 
-		if wndGrid then
-			wndGrid:Show(true)
-		end
+		wndNonCombatContainer:Show(not bCombatEvent)
+		wndPvPArenaContainer:Show(bCombatEvent)
 	end
 end
-
 
 function PublicEventStats:OnLiveStatsUpdate(peEvent)
 	if peEvent and peEvent:IsActive() then
@@ -580,8 +542,16 @@ function PublicEventStats:HelperBuildPvPSharedGrids(wndParent, eEventType)
 		end
 	end
 
+	local tAttributes = self:HelperGetAttributes()
 	-- For each player ...
 	for key, tParticipant in pairs(self.tTrackedStats.arParticipantStats) do
+		
+		--Special Adding Of Custom Stats.
+		local tCurCustomStats = {}
+		for idx, tCustomTable in pairs(tParticipant.arCustomStats) do
+			tCurCustomStats[tCustomTable.strName] = tCustomTable.nValue or 0
+		end
+
 		-- ... figure out which window their team is on, ...
 		local wndGrid = nil
 		if tParticipant.strTeamName == wndHeaderTop:GetData() then
@@ -592,23 +562,6 @@ function PublicEventStats:HelperBuildPvPSharedGrids(wndParent, eEventType)
 
 		-- Custom Stats
 		if wndGrid then
-			-- ... determine what "Custom" means, ...
-			if eEventType == PublicEvent.PublicEventType_PVP_Battleground_HoldTheLine then
-				for idx, tCustomTable in pairs(tParticipant.arCustomStats) do
-					if tCustomTable.strName == Apollo.GetString("PublicEventStats_SecondaryPointCaptured") then
-						tParticipant.nCustomNodesCaptured = tCustomTable.nValue or 0
-					end
-				end
-			elseif eEventType == PublicEvent.PublicEventType_PVP_Battleground_Vortex then
-				for idx, tCustomTable in pairs(tParticipant.arCustomStats) do
-					if idx == 1 then
-						tParticipant.nCustomFlagsPlaced = tCustomTable.nValue or 0
-					else
-						tParticipant.bCustomFlagsStolen = tCustomTable.nValue or 0
-					end
-				end
-			end
-
 			-- ... set up Player Reporting, ...
 			local rptInfraction = tParticipant.rptParticipant
 			if not rptInfraction then
@@ -616,25 +569,32 @@ function PublicEventStats:HelperBuildPvPSharedGrids(wndParent, eEventType)
 			end
 
 			local nCurrRow = self:HelperGridFactoryProduce(wndGrid, tParticipant.strName) -- GOTCHA: This is an integer
-			wndGrid:SetCellLuaData(nCurrRow, 1, tParticipant.strName)
-			wndGrid:SetCellLuaData(nCurrRow, 2, tParticipant.strTeamName == self.strMyPublicEventTeam and rptInfraction)
-
-			-- ... figure out the stats, ...
-			for idx, strParticipantKey in pairs(ktParticipantKeys[eEventType]) do
-				local oValue = tParticipant[strParticipantKey]
-				local strClassIcon = idx == 1 and kstrClassToMLIcon[tParticipant.eClass] or ""
-				local strAppend = ""
-				
-				if type(oValue) == "number" then
-					wndGrid:SetCellSortText(nCurrRow, idx, string.format("%8d", oValue))
-					strAppend = Apollo.FormatNumber(oValue)
-				elseif type(oValue) == "string" then
-					wndGrid:SetCellSortText(nCurrRow, idx, oValue or "")
-					strAppend = oValue
+			for idx, strAttribute in pairs(tAttributes) do
+				local oValue = tParticipant[strAttribute]
+				if not oValue then--Check for custom stats!
+					oValue = tCurCustomStats[strAttribute]
 				end
-				
-				-- ... and add the stats to the grid.
-				wndGrid:SetCellDoc(nCurrRow, idx, string.format("<T Font=\"CRB_InterfaceSmall\">%s%s</T>", strClassIcon, strAppend))
+
+				if oValue ~= nil then--Make sure it was set, either standard or custom stat.
+					local strAppend = ""
+
+					local strClassIcon = ""
+					if idx == 1 and kstrClassToMLIcon[tParticipant.eClass] then
+						strClassIcon = kstrClassToMLIcon[tParticipant.eClass]
+					end
+
+					local strFont = ""
+					if type(oValue) == "number" then
+						wndGrid:SetCellSortText(nCurrRow, idx, string.format("%8d", oValue))
+						strAppend = Apollo.FormatNumber(oValue)
+						strFont = "CRB_Header10"
+					elseif type(oValue) == "string" then
+						wndGrid:SetCellSortText(nCurrRow, idx, oValue or "")
+						strAppend = oValue
+						strFont = "CRB_InterfaceSmall"
+					end
+					wndGrid:SetCellDoc(nCurrRow, idx, string.format("<T Font='%s'>%s%s</T>", strFont, strClassIcon, strAppend))
+				end
 			end
 		end
 	end
@@ -664,7 +624,7 @@ function PublicEventStats:OnPvPGridClick(wndHandler, wndControl, iRow, iCol, eMo
 		self.wndPvPContextMenu:Invoke()
 
 		-- ... and move it into place.
-		local nHeight = self.wndPvPContextMenu:FindChild("ButtonList"):ArrangeChildrenVert(0)
+		local nHeight = self.wndPvPContextMenu:FindChild("ButtonList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 		local nLeft, nTop, nRight, nBottom = self.wndPvPContextMenu:GetAnchorOffsets()
 		self.wndPvPContextMenu:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nHeight + 60)
 
@@ -702,8 +662,9 @@ end
 -----    Public Event Specific Functions
 -----------------------------------------------------------------------------------------------
 
-function PublicEventStats:BuildPublicEventGrid(wndGrid)
+function PublicEventStats:BuildPublicEventGrid(wndParent)
 	-- Save scroll info
+	local wndGrid = wndParent:FindChild("DynGrid")
 	local nVScrollPos = wndGrid:GetVScrollPos()
 	local nSortedColumn = wndGrid:GetSortColumn() or 1
 	local bAscending = wndGrid:IsSortAscending()
@@ -715,28 +676,35 @@ function PublicEventStats:BuildPublicEventGrid(wndGrid)
 	if not tStats then
 		self.wndScoreboard:Close()
 	end
-	
-	-- Set up each player's stats
-	for strKey, tCurr in pairs(tStats.arParticipantStats) do
-		if tCurr.strName and tCurr.strName ~= "" then
-			local wndCurrRow = self:HelperGridFactoryProduce(wndGrid, tCurr.strName) -- GOTCHA: This is an integer
-			wndGrid:SetCellLuaData(wndCurrRow, 1, tCurr.strName)
-			
-			local strName = (tCurr.strName and tCurr.strName ~= "") and tCurr.strName or Apollo.GetString("PublicEventStats_Total")
-			
-			-- index is the column that the value will be applied to
-			local tAttributes = {strName, tCurr.nContributions, tCurr.nDamage, tCurr.nDamageReceived, tCurr.nHealed, tCurr.nHealingReceived}			
-			
-			for idx, oValue in pairs(tAttributes) do
-				local strText
+
+	local tAttributes = self:HelperGetAttributes()
+	for strKey, tParticipant in pairs(tStats.arParticipantStats) do
+		--Special Adding Of Custom Stats.
+		local tCurCustomStats = {}
+		for idx, tCustomTable in pairs(tParticipant.arCustomStats) do
+			tCurCustomStats[tCustomTable.strName] = tCustomTable.nValue or 0
+		end
+
+		local nCurrRow = self:HelperGridFactoryProduce(wndGrid, tParticipant.strName) -- GOTCHA: This is an integer
+		-- index is the column that the value will be applied to
+		for idx, strAttribute in pairs(tAttributes) do
+			local oValue = tParticipant[strAttribute]
+			if not oValue then--Check for custom stats!
+				oValue = tCurCustomStats[strAttribute]
+			end
+
+			if oValue ~= nil then--Make sure it was set, either standard or custom stat.
+				local strFont = ""
 				if type(oValue) == "number" then
-					wndGrid:SetCellSortText(wndCurrRow, idx, string.format("%8d", oValue))
-					strText = Apollo.FormatNumber(oValue)
-				else
-					wndGrid:SetCellSortText(wndCurrRow, idx, oValue)
-					strText = oValue
+					wndGrid:SetCellSortText(nCurrRow, idx, string.format("%8d", oValue))
+					strAppend = Apollo.FormatNumber(oValue)
+					strFont = "CRB_Header10"
+				elseif type(oValue) == "string" then
+					wndGrid:SetCellSortText(nCurrRow, idx, oValue or "")
+					strAppend = oValue
+					strFont = "CRB_InterfaceSmall"
 				end
-				wndGrid:SetCellDoc(wndCurrRow, idx, "<T Font=\"CRB_InterfaceSmall\">" .. strText .. "</T>")
+				wndGrid:SetCellDoc(nCurrRow, idx, string.format("<T Font='%s'>%s</T>", strFont, strAppend))
 			end
 		end
 	end
@@ -755,7 +723,7 @@ end
 -- If you leave the match, stop showing who won so we can reset it for the next match.
 function PublicEventStats:OnPublicEventLeave(peEnding, eReason)
 	if self.wndScoreboard and self.wndScoreboard:IsValid() then
-		self.wndScoreboard:FindChild("Header:BGPvPWinnerTopBar"):Show(false)
+		self.wndScoreboard:FindChild("BGPvPWinnerTopBar"):Show(false)
 	end
 end
 
@@ -802,8 +770,8 @@ function PublicEventStats:OnPVPMatchFinished(eWinner, eReason, nDeltaTeam1, nDel
 	if tMatchState and eEventType == PublicEvent.PublicEventType_PVP_Arena and tMatchState.arTeams then
 		local strMyArenaTeamName = ""
 		local strOtherArenaTeamName = ""
-		local wndHeaderTop 	= self.wndScoreboard:FindChild("MainGridContainer:PvPArenaContainer:PvPTeamHeaderTop")
-		local wndHeaderBot 	= self.wndScoreboard:FindChild("MainGridContainer:PvPArenaContainer:PvPTeamHeaderBot")
+		local wndHeaderTop 	= self.wndScoreboard:FindChild("Left:MainGridContainer:PvPArenaContainer:PvPTeamHeaderTop")
+		local wndHeaderBot 	= self.wndScoreboard:FindChild("Left:MainGridContainer:PvPArenaContainer:PvPTeamHeaderBot")
 		for idx, tCurr in pairs(tMatchState.arTeams) do
 			local strDelta = ""
 			if arRatingDelta then
@@ -845,7 +813,12 @@ function PublicEventStats:OnWarPartyMatchResults(tWarplotResults)
 		self.tWarplotResults = tWarplotResults
 		for idx, tTeamStats in pairs(tWarplotResults or {}) do
 			local strStats = String_GetWeaselString(Apollo.GetString("PEStats_WarPartyTeamStats"), tTeamStats.nRating, tTeamStats.nDestroyedPlugs, tTeamStats.nRepairCost, tTeamStats.nWarCoinsEarned)
-			self.wndScoreboard:FindChild("PvPWarPlotContainer"):FindChild(idx == 1 and "PvPTeamHeaderTop" or "PvPTeamHeaderBot"):FindChild("PvPHeaderText"):SetData(strStats)
+			local wndHeader = self.wndScoreboard:FindChild("Left:MainGridContainer:PvPArenaContainer:PvPTeamHeaderBot:PvPHeaderText")
+			if idx == 1 then
+				wndHeader = self.wndScoreboard:FindChild("Left:MainGridContainer:PvPArenaContainer:PvPTeamHeaderTop:PvPHeaderText")
+			end
+			
+			wndHeader:SetData(strStats)
 		end
 		self.wndScoreboard:FindChild("PvPSurrenderMatchBtn"):Show(false)
 	end
@@ -872,8 +845,8 @@ function PublicEventStats:OnPublicEventEnd(peEnding, eReason, tStats)
 	local eEventType = peEnding:GetEventType()
 	self.peActiveEvent = peEnding
 	self.tZombieStats = tStats
-	
-	if ktPvPEvents[eEventType] then
+
+	if ktPvPEvents[eEventType] or eEventType == PublicEvent.PublicEventType_NonCombatEvent then
 		if not self.wndScoreboard then
 			self:InitializeScoreboard(peEnding)
 		end
@@ -887,11 +860,6 @@ end
 
 -- When we change zones, destroy the window and clear the info
 function PublicEventStats:OnChangeWorld()
-	if self.wndScoreboard and self.wndScoreboard:IsValid() then
-		self.wndScoreboard:FindChild("BGPvPWinnerTopBarArtText"):SetText("")
-		self.wndScoreboard:Destroy()
-		self.wndScoreboard = nil
-	end
 	self.timerRedrawInfo:Stop()
 	self.tZombieStats = nil
 	self.tTrackedStats = nil
@@ -905,7 +873,9 @@ function PublicEventStats:OnClose(wndHandler, wndControl) -- Also AdventureClose
 			peCurrent:RequestScoreboard(false)
 		end
 
-		self.wndScoreboard:Close()
+		self.wndScoreboard:FindChild("BGPvPWinnerTopBarArtText"):SetText("")
+		self.wndScoreboard:Destroy()
+		self.wndScoreboard = nil
 	end
 	if self.wndAdventure then
 		self.wndAdventure:Destroy()
@@ -924,7 +894,7 @@ end
 function PublicEventStats:OnPvPLeaveMatchBtn(wndHandler, wndControl)
 	if MatchingGame.IsInMatchingGame() then
 		if self.wndScoreboard then
-			self.wndScoreboard:FindChild("Header:BGPvPWinnerTopBar"):Show(false)
+			self.wndScoreboard:FindChild("BGPvPWinnerTopBar"):Show(false)
 			self.wndScoreboard:Close()
 		end
 		MatchingGame.LeaveMatchingGame()
@@ -962,18 +932,17 @@ function PublicEventStats:BuildAdventuresSummary() -- Also Dungeons
 
 	-- Count times beaten by other participants
 	for key, tCurr in pairs(self.tZombieStats.arParticipantStats) do
-		tScore = self:HelperCompareAdventureScores(tPersonalStats, tCurr, tScore)
+		tScore = self:HelperCompareScores(tPersonalStats, tCurr, tScore)
 	end
 
 	-- Convert to an interim table for sorting
-	local tSortedTable = self:HelperSortTableForAdventuresSummary(tScore)
+	local tSortedTable = self:HelperSortTableForSummary(tScore)
 	self.wndAdventure:FindChild("AwardsContainer"):DestroyChildren()
 	for key, tData in pairs(tSortedTable) do
 		local strIndex = tData.strKey
 		local nValue = tData.nValue
 		if #self.wndAdventure:FindChild("AwardsContainer"):GetChildren() < 3 then
 			local nValueForString = math.abs(0 - nValue) + 1
-			--local wndListItem = Apollo.LoadForm(self.xmlDoc , "AdventureListItem", self.wndAdventure:FindChild("AwardsContainer"), self)
 			local strDisplayText = ""
 			local strLabelText = nil
 			if strIndex == "nDeaths" then
@@ -997,7 +966,7 @@ function PublicEventStats:BuildAdventuresSummary() -- Also Dungeons
 		end
 	end
 
-	self.wndAdventure:FindChild("AwardsContainer"):ArrangeChildrenVert(0)
+	self.wndAdventure:FindChild("AwardsContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 
 	-- Reward Tier
 	if self.tZombieStats and self.tZombieStats.eRewardTier and self.tZombieStats.eRewardType ~= 0 then -- TODO: ENUM!!
@@ -1024,14 +993,15 @@ function PublicEventStats:BuildAdventuresSummary() -- Also Dungeons
 	self.wndAdventure:FindChild("OpenDungeonMedalsBtn"):Show(self.peActiveEvent:GetEventType() == PublicEvent.PublicEventType_Dungeon)
 end
 
-function PublicEventStats:HelperCompareAdventureScores(tPersonalStats, tComparisonStats, tScore)
-	if tComparisonStats.nDeaths < tPersonalStats.nDeaths then
+function PublicEventStats:HelperCompareScores(tPersonalStats, tComparisonStats, tScore)
+	--If we don't care about the stat to compare, we will not include it in the tPersonalStats.
+	if tScore.nDeaths ~= nil and tComparisonStats.nDeaths ~= nil and tPersonalStats.nDeaths ~= nil and tComparisonStats.nDeaths < tPersonalStats.nDeaths then
 		tScore.nDeaths = tScore.nDeaths + 1
 	end
-	if tComparisonStats.nDamage > tPersonalStats.nDamage then
+	if tScore.nDamage ~= nil and tComparisonStats.nDamage ~= nil and tPersonalStats.nDamage ~= nil and tComparisonStats.nDamage > tPersonalStats.nDamage then
 		tScore.nDamage = tScore.nDamage + 1
 	end
-	if tComparisonStats.nHealed > tPersonalStats.nHealed then
+	if tScore.nHealed ~= nil and tComparisonStats.nHealed ~= nil and tPersonalStats.nHealed ~= nil and tComparisonStats.nHealed > tPersonalStats.nHealed then
 		tScore.nHealed = tScore.nHealed + 1
 	end
 
@@ -1074,31 +1044,40 @@ function PublicEventStats:BuildDungeonMedalScreen(peDungeon)
 		return
 	end
 
-	local strPass = ""
-	local strFail = ""
 	local nPass = 0
 	local nTotal = 0
+	self.wndDungeonMedalsForm = Apollo.LoadForm(self.xmlDoc	, "DungeonMedalsForm", nil, self)
+	local wndPassContainer = self.wndDungeonMedalsForm:FindChild("DungeonMedalsPassScroll:Container")
+	local wndFailContainer = self.wndDungeonMedalsForm:FindChild("DungeonMedalsFailScroll:Container")
+
 	for idx, tData in pairs(self.tZombieStats.arObjectives) do -- GOTCHA: Zombie Stats is needed as the event won't have :GetObjectives() when finished
 		local peoObjective = tData.peoObjective
-		local bPass = tData.eStatus == PublicEventObjective.PublicEventStatus_Succeeded -- Other states include Succeeded, Active, Inactive and Failed
+		
 		if not peoObjective:IsHidden() then
-			-- Objective description, with fail safes
-			local strObjective = string.len(peoObjective:GetShortDescription()) > 0 and peoObjective:GetShortDescription() or peoObjective:GetDescription()
-			strObjective = string.len(strObjective) > 0 and strObjective or peoObjective:GetObjectiveId() -- Fail safe
-
-			-- Different formatting based on pass/fail and challenge/objective
 			local eCategory = peoObjective:GetCategory()
-			if bPass and eCategory == PublicEventObjective.PublicEventObjectiveCategory_Challenge then
-				strPass = strPass .. "<P Font=\"CRB_InterfaceSmall\" TextColor=\"UI_TextHoloBody\">" .. kstrDungeonGoldIcon .. " " .. strObjective .. "</P>"
-			elseif eCategory == PublicEventObjective.PublicEventObjectiveCategory_Challenge then
-				strFail = strFail .. "<P Font=\"CRB_InterfaceSmall\" TextColor=\"UI_TextHoloBody\">" .. kstrDungeonGoldIcon .. " " .. strObjective .. "</P>"
-			elseif bPass and eCategory == PublicEventObjective.PublicEventObjectiveCategory_Optional then
-				strPass = strPass .. "<P Font=\"CRB_InterfaceSmall\" TextColor=\"UI_TextHoloBody\">" .. kstrDungeonBronzeIcon .. " " .. strObjective .. "</P>"
-			elseif eCategory == PublicEventObjective.PublicEventObjectiveCategory_Optional then
-				strFail = strFail .. "<P Font=\"CRB_InterfaceSmall\" TextColor=\"UI_TextHoloBody\">" .. kstrDungeonBronzeIcon .. " " .. strObjective .. "</P>"
-			end
+			if eCategory == PublicEventObjective.PublicEventObjectiveCategory_Challenge or eCategory == PublicEventObjective.PublicEventObjectiveCategory_Optional  then
 
-			if eCategory == PublicEventObjective.PublicEventObjectiveCategory_Challenge or eCategory == PublicEventObjective.PublicEventObjectiveCategory_Optional then
+				local bPass = tData.eStatus == PublicEventObjective.PublicEventStatus_Succeeded -- Other states include Succeeded, Active, Inactive and Failed
+				local wndDungeonMedal = Apollo.LoadForm(self.xmlDoc	, "DungeonMedal", bPass and wndPassContainer or wndFailContainer, self)
+				wndDungeonMedal:SetTooltip(peoObjective:GetDescription())
+				
+				local strObjective = peoObjective:GetDescription()--By Default
+				if string.len(peoObjective:GetShortDescription()) > 0 then
+					strObjective = peoObjective:GetShortDescription()
+				end
+				
+				wndDungeonMedal:FindChild("RewardTierMessage"):SetAML(string.format("<P Font=\"CRB_InterfaceSmall\" TextColor=\"UI_TextHoloTitle\">%s</P>", strObjective))
+				
+				local nLeftBefore, nTopBefore, nRightBefore, nBottomBefore = wndDungeonMedal:FindChild("RewardTierMessage"):GetAnchorOffsets()
+				wndDungeonMedal:FindChild("RewardTierMessage"):SetHeightToContentHeight()
+				local nLeftAfter, nTopAfter, nRightAfter, nBottomAfter = wndDungeonMedal:FindChild("RewardTierMessage"):GetAnchorOffsets()
+				local heightChange = nBottomAfter - nBottomBefore
+				
+				wndDungeonMedal:FindChild("RewardTierIcon"):SetSprite(PublicEventObjective.PublicEventObjectiveCategory_Challenge and "CRB_ChallengeTrackerSprites:sprChallengeTierGold" or "CRB_ChallengeTrackerSprites:sprChallengeTierBronze")
+				
+				local nLeft, nTop, nRight, nBottom = wndDungeonMedal:GetAnchorOffsets()
+				wndDungeonMedal:SetAnchorOffsets(nLeft, nTop, nRight, nBottom + heightChange)
+				
 				nTotal = nTotal + 1
 				nPass = nPass + (bPass and 1 or 0)
 			end
@@ -1106,18 +1085,14 @@ function PublicEventStats:BuildDungeonMedalScreen(peDungeon)
 	end
 
 	-- Build and Resize Forms
-	self.wndDungeonMedalsForm = Apollo.LoadForm(self.xmlDoc	, "DungeonMedalsForm", nil, self)
 	self.wndDungeonMedalsForm:FindChild("DungeonMedalsPassTitle"):SetText(String_GetWeaselString(Apollo.GetString("PublicEventStats_DungeonPassTitle"), tostring(nPass), tostring(nTotal)))
-	self.wndDungeonMedalsForm:FindChild("DungeonMedalsPassText"):SetAML(strPass)
-	self.wndDungeonMedalsForm:FindChild("DungeonMedalsPassText"):SetHeightToContentHeight()
-	self.wndDungeonMedalsForm:FindChild("DungeonMedalsPassScroll"):ArrangeChildrenVert(0)
+	wndPassContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+
 	self.wndDungeonMedalsForm:FindChild("DungeonMedalsNoPassMessage"):Show(nPass == 0)
 	self.wndDungeonMedalsForm:FindChild("DungeonMedalsNoPassMessage"):SetText(Apollo.GetString(karRandomFailStrings[math.random(1, #karRandomFailStrings)]) or "")
 
 	self.wndDungeonMedalsForm:FindChild("DungeonMedalsFailTitle"):SetText(String_GetWeaselString(Apollo.GetString("PublicEventStats_DungeonFailTitle"), tostring(nTotal - nPass), tostring(nTotal)))
-	self.wndDungeonMedalsForm:FindChild("DungeonMedalsFailText"):SetAML(strFail)
-	self.wndDungeonMedalsForm:FindChild("DungeonMedalsFailText"):SetHeightToContentHeight()
-	self.wndDungeonMedalsForm:FindChild("DungeonMedalsFailScroll"):ArrangeChildrenVert(0)
+	wndFailContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	self.wndDungeonMedalsForm:FindChild("DungeonMedalsNoFailMessage"):Show(nPass == nTotal)
 	self.wndDungeonMedalsForm:FindChild("DungeonMedalsNoFailMessage"):SetText(Apollo.GetString(karRandomPassStrings[math.random(1, #karRandomPassStrings)]) or "")
 end
@@ -1125,7 +1100,7 @@ end
 -----------------------------------------------------------------------------------------------
 -----    Helpers
 -----------------------------------------------------------------------------------------------
-function PublicEventStats:HelperSortTableForAdventuresSummary(tScore)
+function PublicEventStats:HelperSortTableForSummary(tScore)
 	local tNewTable = {}
 	for key, nValue in pairs(tScore) do
 		table.insert(tNewTable, {strKey = key, nValue = nValue or 0})

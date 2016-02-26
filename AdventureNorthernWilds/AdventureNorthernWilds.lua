@@ -53,6 +53,9 @@ function NorthernWildsAdv:OnLoad()
 end
 
 function NorthernWildsAdv:OnDocumentReady()
+	Apollo.RegisterEventHandler("WindowManagementReady", 	"OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
+
 	Apollo.RegisterEventHandler("NWADV_ShowUI", "UIShow", self)
     Apollo.RegisterEventHandler("NWADV_HideUI", "UIHide", self)
     Apollo.RegisterEventHandler("NWADV_UpdateProgress", "UIProgress", self)
@@ -81,6 +84,10 @@ function NorthernWildsAdv:OnDocumentReady()
 	end
 end
 
+function NorthernWildsAdv:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("Lore_NorthernWilds")})
+end
+
 function NorthernWildsAdv:ResetInstance()
 	self.tSavedInfo = nil
 	self.tAdventureInfo = {}
@@ -89,6 +96,7 @@ end
 function NorthernWildsAdv:UIShow()
 	if not self.wndMain or not self.wndMain:IsValid() then
 		self.wndMain = Apollo.LoadForm(self.xmlDoc, "AdventureNorthernWildsForm", nil, self)
+		
 		Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("Lore_NorthernWilds")})
 		
 		self.wndMain:FindChild("LeftAssetCostume"):SetCostumeToCreatureId(20668) -- TODO Hardcoded

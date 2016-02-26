@@ -53,10 +53,15 @@ function CombatLog:OnDocumentReady()
 	Apollo.RegisterEventHandler("CombatLogCCState", 				"OnCombatLogCCState", self)
 	Apollo.RegisterEventHandler("CombatLogCCStateBreak", 			"OnCombatLogCCStateBreak", self)
 	Apollo.RegisterEventHandler("CombatLogDamage", 					"OnCombatLogDamage", self)
+	Apollo.RegisterEventHandler("CombatLogDamageShields", 			"OnCombatLogDamageShields", self)
+	Apollo.RegisterEventHandler("CombatLogReflect", 				"OnCombatLogReflect", self)
+	Apollo.RegisterEventHandler("CombatLogMultiHit", 				"OnCombatLogMultiHit", self)
+	Apollo.RegisterEventHandler("CombatLogMultiHitShields", 		"OnCombatLogMultiHitShields", self)
 	Apollo.RegisterEventHandler("CombatLogFallingDamage", 			"OnCombatLogFallingDamage", self)
 	Apollo.RegisterEventHandler("CombatLogDelayDeath", 				"OnCombatLogDelayDeath", self)
 	Apollo.RegisterEventHandler("CombatLogDispel", 					"OnCombatLogDispel", self)
 	Apollo.RegisterEventHandler("CombatLogHeal", 					"OnCombatLogHeal", self)
+	Apollo.RegisterEventHandler("CombatLogMultiHeal", 				"OnCombatLogMultiHeal", self)
 	Apollo.RegisterEventHandler("CombatLogModifyInterruptArmor", 	"OnCombatLogModifyInterruptArmor", self)
 	Apollo.RegisterEventHandler("CombatLogTransference", 			"OnCombatLogTransference", self)
 	Apollo.RegisterEventHandler("CombatLogVitalModifier", 			"OnCombatLogVitalModifier", self)
@@ -71,12 +76,9 @@ function CombatLog:OnDocumentReady()
 	Apollo.RegisterEventHandler("CombatLogMount", 					"OnCombatLogMount", self)
 	Apollo.RegisterEventHandler("CombatLogPet", 					"OnCombatLogPet", self)
 	Apollo.RegisterEventHandler("CombatLogExperience", 				"OnCombatLogExperience", self)
-	Apollo.RegisterEventHandler("CombatLogEndGameCurrencies", 		"OnCombatLogEndGameCurrencies", self)
 	Apollo.RegisterEventHandler("CombatLogElderPointsLimitReached", "OnCombatLogElderPointsLimitReached", self)
 	Apollo.RegisterEventHandler("CombatLogDurabilityLoss", 			"OnCombatLogDurabilityLoss", self)
-	Apollo.RegisterEventHandler("CombatLogCrafting", 				"OnCombatLogCrafting", self)
 	Apollo.RegisterEventHandler("CombatLogModifying", 				"OnCombatLogModifying", self)
-	Apollo.RegisterEventHandler("CombatLogItemDestroy", 			"OnCombatLogItemDestroy", self)
 	Apollo.RegisterEventHandler("CombatLogLAS",						"OnCombatLogLAS", self)
 	Apollo.RegisterEventHandler("CombatLogBuildSwitch",				"OnCombatLogBuildSwitch", self)
 
@@ -174,10 +176,225 @@ function CombatLog:OnCombatLogDamage(tEventArgs)
 		local strAmountAbsorbed = string.format("<T TextColor=\"%s\">%s</T>", strDamageColor, tEventArgs.nAbsorption)
 		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_DamageAbsorbed"), strResult, strAmountAbsorbed)
 	end
+	
+	if tEventArgs.nGlanceAmount and tEventArgs.nGlanceAmount > 0 then
+		local strAmountGlanced = string.format("<T TextColor=\"%s\">%s</T>", strDamageColor, tEventArgs.nGlanceAmount)
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_DamageGlanced"), strResult, strAmountGlanced)
+	end
 
 	if tEventArgs.nOverkill and tEventArgs.nOverkill > 0 then
 		local strAmountOverkill = string.format("<T TextColor=\"%s\">%s</T>", strDamageColor, tEventArgs.nOverkill)
 		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_DamageOverkill"), strResult, strAmountOverkill)
+	end
+
+	if tEventArgs.bTargetVulnerable then
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_DamageVulnerable"), strResult)
+	end
+
+	if tEventArgs.eCombatResult == GameLib.CodeEnumCombatResult.Critical then
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_Critical"), strResult)
+	end
+
+	self:PostOnChannel(string.format("<T TextColor=\"%s\">%s</T>", tTextInfo.strColor, strResult))
+
+	if tEventArgs.bTargetKilled then
+		local strKill = String_GetWeaselString(Apollo.GetString("CombatLog_TargetKilled"), tTextInfo.strCaster, tTextInfo.strTarget)
+		self:PostOnChannel(string.format("<T TextColor=\"%s\">%s</T>", kstrStateColor, strKill))
+	end
+end
+
+function CombatLog:OnCombatLogDamageShields(tEventArgs)
+	-- Example Combat Log Message: 17:18: Alvin uses Mind Stab on Space Pirate for 250 Magic damage to shields.
+	local strDamageColor = self:HelperDamageColor(tEventArgs.eDamageType)
+	local tTextInfo = self:HelperCasterTargetSpell(tEventArgs, true, true, true)
+	--local strCaster, strTarget, strSpellName, strColor = self:HelperCasterTargetSpell(tEventArgs, true, true, true)
+
+	tTextInfo.strSpellName = string.format("<T Font=\"%s\">%s</T>", kstrFontBold, tTextInfo.strSpellName)
+	local strDamage = string.format("<T TextColor=\"%s\">%s</T>", strDamageColor, tEventArgs.nDamageAmount)
+
+	if tEventArgs.unitTarget and tEventArgs.unitTarget:IsMounted() then
+		tTextInfo.strTarget = String_GetWeaselString(Apollo.GetString("CombatLog_MountedTarget"), tTextInfo.strTarget)
+	end
+
+	local strDamageType = Apollo.GetString("CombatLog_UnknownDamageType")
+	if tEventArgs.eDamageType then
+		strDamageType = self.tTypeMapping[tEventArgs.eDamageType]
+	end
+
+	local strResult = String_GetWeaselString(Apollo.GetString("CombatLog_BaseShieldDamage"), tTextInfo.strCaster, tTextInfo.strSpellName, tTextInfo.strTarget, strDamage, strDamageType)
+	
+	if tEventArgs.nShield and tEventArgs.nShield > 0 then
+		local strAmountShielded = string.format("<T TextColor=\"%s\">%s</T>", strDamageColor, tEventArgs.nShield)
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_DamageShielded"), strResult, strAmountShielded)
+	end
+
+	if tEventArgs.nAbsorption and tEventArgs.nAbsorption > 0 then
+		local strAmountAbsorbed = string.format("<T TextColor=\"%s\">%s</T>", strDamageColor, tEventArgs.nAbsorption)
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_DamageAbsorbed"), strResult, strAmountAbsorbed)
+	end
+	
+	if tEventArgs.nGlanceAmount and tEventArgs.nGlanceAmount > 0 then
+		local strAmountGlanced = string.format("<T TextColor=\"%s\">%s</T>", strDamageColor, tEventArgs.nGlanceAmount)
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_DamageGlanced"), strResult, strAmountGlanced)
+	end
+	
+	if tEventArgs.bTargetVulnerable then
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_DamageVulnerable"), strResult)
+	end
+
+	if tEventArgs.eCombatResult == GameLib.CodeEnumCombatResult.Critical then
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_Critical"), strResult)
+	end
+
+	self:PostOnChannel(string.format("<T TextColor=\"%s\">%s</T>", tTextInfo.strColor, strResult))
+
+	if tEventArgs.bTargetKilled then
+		local strKill = String_GetWeaselString(Apollo.GetString("CombatLog_TargetKilled"), tTextInfo.strCaster, tTextInfo.strTarget)
+		self:PostOnChannel(string.format("<T TextColor=\"%s\">%s</T>", kstrStateColor, strKill))
+	end
+end
+
+function CombatLog:OnCombatLogReflect(tEventArgs)
+	-- Example Combat Log Message: 17:18: Alvin reflects Mind Stab back onto Space Pirate for 250 Magic damage.
+	local strDamageColor = self:HelperDamageColor(tEventArgs.eDamageType)
+	local tTextInfo = self:HelperCasterTargetSpell(tEventArgs, true, true, true)
+	--local strCaster, strTarget, strSpellName, strColor = self:HelperCasterTargetSpell(tEventArgs, true, true, true)
+
+	tTextInfo.strSpellName = string.format("<T Font=\"%s\">%s</T>", kstrFontBold, tTextInfo.strSpellName)
+	local strDamage = string.format("<T TextColor=\"%s\">%s</T>", strDamageColor, tEventArgs.nDamageAmount)
+
+	if tEventArgs.unitTarget and tEventArgs.unitTarget:IsMounted() then
+		tTextInfo.strTarget = String_GetWeaselString(Apollo.GetString("CombatLog_MountedTarget"), tTextInfo.strTarget)
+	end
+
+	local strResult = String_GetWeaselString(Apollo.GetString("CombatLog_BaseReflect"), tTextInfo.strCaster, tTextInfo.strSpellName, tTextInfo.strTarget)
+
+	local strDamageType = Apollo.GetString("CombatLog_UnknownDamageType")
+	if tEventArgs.eDamageType then
+		strDamageType = self.tTypeMapping[tEventArgs.eDamageType]
+	end
+
+	local strDamageMethod = Apollo.GetString("CombatLog_BaseDamage")
+
+	if strDamageMethod then
+		strResult = String_GetWeaselString(strDamageMethod, strResult, strDamage, strDamageType)
+	end
+
+
+	if tEventArgs.nShield and tEventArgs.nShield > 0 then
+		local strAmountShielded = string.format("<T TextColor=\"%s\">%s</T>", strDamageColor, tEventArgs.nShield)
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_DamageShielded"), strResult, strAmountShielded)
+	end
+
+	if tEventArgs.nAbsorption and tEventArgs.nAbsorption > 0 then
+		local strAmountAbsorbed = string.format("<T TextColor=\"%s\">%s</T>", strDamageColor, tEventArgs.nAbsorption)
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_DamageAbsorbed"), strResult, strAmountAbsorbed)
+	end
+	
+	if tEventArgs.nGlanceAmount and tEventArgs.nGlanceAmount > 0 then
+		local strAmountGlanced = string.format("<T TextColor=\"%s\">%s</T>", strDamageColor, tEventArgs.nGlanceAmount)
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_DamageGlanced"), strResult, strAmountGlanced)
+	end
+
+	self:PostOnChannel(string.format("<T TextColor=\"%s\">%s</T>", tTextInfo.strColor, strResult))
+
+	if tEventArgs.bTargetKilled then
+		local strKill = String_GetWeaselString(Apollo.GetString("CombatLog_TargetKilled"), tTextInfo.strCaster, tTextInfo.strTarget)
+		self:PostOnChannel(string.format("<T TextColor=\"%s\">%s</T>", kstrStateColor, strKill))
+	end
+end
+
+function CombatLog:OnCombatLogMultiHit(tEventArgs)
+	-- Example Combat Log Message: 17:18: Alvin multi-hits with Mind Stab on Space Pirate for 250 Magic damage.
+	local strDamageColor = self:HelperDamageColor(tEventArgs.eDamageType)
+	local tTextInfo = self:HelperCasterTargetSpell(tEventArgs, true, true, true)
+	--local strCaster, strTarget, strSpellName, strColor = self:HelperCasterTargetSpell(tEventArgs, true, true, true)
+
+	tTextInfo.strSpellName = string.format("<T Font=\"%s\">%s</T>", kstrFontBold, tTextInfo.strSpellName)
+	local strDamage = string.format("<T TextColor=\"%s\">%s</T>", strDamageColor, tEventArgs.nDamageAmount)
+
+	if tEventArgs.unitTarget and tEventArgs.unitTarget:IsMounted() then
+		tTextInfo.strTarget = String_GetWeaselString(Apollo.GetString("CombatLog_MountedTarget"), tTextInfo.strTarget)
+	end
+
+	local strResult = String_GetWeaselString(Apollo.GetString("CombatLog_BaseMultiHit"), tTextInfo.strCaster, tTextInfo.strSpellName, tTextInfo.strTarget)
+
+	local strDamageType = Apollo.GetString("CombatLog_UnknownDamageType")
+	if tEventArgs.eDamageType then
+		strDamageType = self.tTypeMapping[tEventArgs.eDamageType]
+	end
+
+	local strDamageMethod = Apollo.GetString("CombatLog_BaseDamage")
+
+	if strDamageMethod then
+		strResult = String_GetWeaselString(strDamageMethod, strResult, strDamage, strDamageType)
+	end
+
+
+	if tEventArgs.nShield and tEventArgs.nShield > 0 then
+		local strAmountShielded = string.format("<T TextColor=\"%s\">%s</T>", strDamageColor, tEventArgs.nShield)
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_DamageShielded"), strResult, strAmountShielded)
+	end
+
+	if tEventArgs.nAbsorption and tEventArgs.nAbsorption > 0 then
+		local strAmountAbsorbed = string.format("<T TextColor=\"%s\">%s</T>", strDamageColor, tEventArgs.nAbsorption)
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_DamageAbsorbed"), strResult, strAmountAbsorbed)
+	end
+	
+	if tEventArgs.nGlanceAmount and tEventArgs.nGlanceAmount > 0 then
+		local strAmountGlanced = string.format("<T TextColor=\"%s\">%s</T>", strDamageColor, tEventArgs.nGlanceAmount)
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_DamageGlanced"), strResult, strAmountGlanced)
+	end
+
+	if tEventArgs.bTargetVulnerable then
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_DamageVulnerable"), strResult)
+	end
+
+	if tEventArgs.eCombatResult == GameLib.CodeEnumCombatResult.Critical then
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_Critical"), strResult)
+	end
+
+	self:PostOnChannel(string.format("<T TextColor=\"%s\">%s</T>", tTextInfo.strColor, strResult))
+
+	if tEventArgs.bTargetKilled then
+		local strKill = String_GetWeaselString(Apollo.GetString("CombatLog_TargetKilled"), tTextInfo.strCaster, tTextInfo.strTarget)
+		self:PostOnChannel(string.format("<T TextColor=\"%s\">%s</T>", kstrStateColor, strKill))
+	end
+end
+
+function CombatLog:OnCombatLogMultiHitShields(tEventArgs)
+	-- Example Combat Log Message: 17:18: Alvin multi-hits shields with Mind Stab on Space Pirate for 250 Magic damage.
+	local strDamageColor = self:HelperDamageColor(tEventArgs.eDamageType)
+	local tTextInfo = self:HelperCasterTargetSpell(tEventArgs, true, true, true)
+	--local strCaster, strTarget, strSpellName, strColor = self:HelperCasterTargetSpell(tEventArgs, true, true, true)
+
+	tTextInfo.strSpellName = string.format("<T Font=\"%s\">%s</T>", kstrFontBold, tTextInfo.strSpellName)
+	local strDamage = string.format("<T TextColor=\"%s\">%s</T>", strDamageColor, tEventArgs.nDamageAmount)
+
+	if tEventArgs.unitTarget and tEventArgs.unitTarget:IsMounted() then
+		tTextInfo.strTarget = String_GetWeaselString(Apollo.GetString("CombatLog_MountedTarget"), tTextInfo.strTarget)
+	end
+
+	local strDamageType = Apollo.GetString("CombatLog_UnknownDamageType")
+	if tEventArgs.eDamageType then
+		strDamageType = self.tTypeMapping[tEventArgs.eDamageType]
+	end
+
+	local strResult = String_GetWeaselString(Apollo.GetString("CombatLog_BaseMultiHitShields"), tTextInfo.strCaster, tTextInfo.strSpellName, tTextInfo.strTarget, strDamage, strDamageType)
+
+	if tEventArgs.nShield and tEventArgs.nShield > 0 then
+		local strAmountShielded = string.format("<T TextColor=\"%s\">%s</T>", strDamageColor, tEventArgs.nShield)
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_DamageShielded"), strResult, strAmountShielded)
+	end
+
+	if tEventArgs.nAbsorption and tEventArgs.nAbsorption > 0 then
+		local strAmountAbsorbed = string.format("<T TextColor=\"%s\">%s</T>", strDamageColor, tEventArgs.nAbsorption)
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_DamageAbsorbed"), strResult, strAmountAbsorbed)
+	end
+	
+	if tEventArgs.nGlanceAmount and tEventArgs.nGlanceAmount > 0 then
+		local strAmountGlanced = string.format("<T TextColor=\"%s\">%s</T>", strDamageColor, tEventArgs.nGlanceAmount)
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_DamageGlanced"), strResult, strAmountGlanced)
 	end
 
 	if tEventArgs.bTargetVulnerable then
@@ -208,7 +425,12 @@ function CombatLog:OnCombatLogDeflect(tEventArgs)
 	local tCastInfo = self:HelperCasterTargetSpell(tEventArgs, true, true, true)
 	tCastInfo.strSpellName = string.format("<T Font=\"%s\">%s</T>", kstrFontBold, tCastInfo.strSpellName)
 
-	local strResult = String_GetWeaselString(Apollo.GetString("CombatLog_BaseSkillUse"), tCastInfo.strCaster, tCastInfo.strSpellName, tCastInfo.strTarget)
+	local strResult = ""
+	if tEventArgs.bMultiHit then
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_BaseMultiHit"), tCastInfo.strCaster, tCastInfo.strSpellName, tCastInfo.strTarget)
+	else
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_BaseSkillUse"), tCastInfo.strCaster, tCastInfo.strSpellName, tCastInfo.strTarget)
+	end
 	strResult = String_GetWeaselString(Apollo.GetString("CombatLog_Deflect"), strResult)
 
 	self:PostOnChannel(string.format("<T TextColor=\"%s\">%s</T>", tCastInfo.strColor, strResult))
@@ -277,6 +499,34 @@ function CombatLog:OnCombatLogHeal(tEventArgs)
 	self:PostOnChannel(string.format("<T TextColor=\"%s\">%s</T>", tCastInfo.strColor, strResult))
 end
 
+function CombatLog:OnCombatLogMultiHeal(tEventArgs)
+	-- -- Example Combat Log Message: 17:18: Alvin multi-hits with Mental Boon on Trevor for 250 health.
+	local strDamageColor = self:HelperDamageColor(tEventArgs.eDamageType)
+	local tCastInfo = self:HelperCasterTargetSpell(tEventArgs, true, true, true)
+	tCastInfo.strSpellName = string.format("<T Font=\"%s\">%s</T>", kstrFontBold, tCastInfo.strSpellName)
+	local strAmount = string.format("<T TextColor=\"%s\">%s</T>", strDamageColor, tEventArgs.nHealAmount)
+
+	local strResult = String_GetWeaselString(Apollo.GetString("CombatLog_BaseMultiHit"), tCastInfo.strCaster, tCastInfo.strSpellName, tCastInfo.strTarget)
+
+	local strHealType = ""
+	if tEventArgs.eEffectType == Spell.CodeEnumSpellEffectType.HealShields then
+		strHealType = Apollo.GetString("CombatLog_HealShield")
+	else
+		strHealType = Apollo.GetString("CombatLog_HealHealth")
+	end
+	strResult = String_GetWeaselString(strHealType, strResult, strAmount)
+
+	if tEventArgs.nOverheal and tEventArgs.nOverheal > 0 then
+		local strOverhealAmount = string.format("<T TextColor=\"white\">%s</T>", tEventArgs.nOverheal)
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_Overheal"), strResult, strOverhealAmount)
+	end
+
+	if tEventArgs.eCombatResult == GameLib.CodeEnumCombatResult.Critical then
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_Critical"), strResult)
+	end
+	self:PostOnChannel(string.format("<T TextColor=\"%s\">%s</T>", tCastInfo.strColor, strResult))
+end
+
 function CombatLog:OnCombatLogModifyInterruptArmor(tEventArgs)
 
 	local tCastInfo = self:HelperCasterTargetSpell(tEventArgs, true, true, true)
@@ -323,7 +573,12 @@ function CombatLog:OnCombatLogVitalModifier(tEventArgs)
 	local strValue = string.format("<T TextColor=\"%s\">%s</T>", self.crVitalModifier, tEventArgs.nAmount)
 
 	local strSpellName = string.format("<T Font=\"%s\">%s</T>", kstrFontBold, tCastInfo.strSpellName)
-	local strResult = String_GetWeaselString(Apollo.GetString("CombatLog_GainVital"), tCastInfo.strTarget, strValue, strVital, strSpellName)
+	local strResult = ""
+	if tEventArgs.nAmount < 0 then
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_LoseVital"), tCastInfo.strTarget, strValue, strVital, strSpellName)
+	else
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_GainVital"), tCastInfo.strTarget, strValue, strVital, strSpellName)
+	end
 
 	if tEventArgs.eCombatResult == GameLib.CodeEnumCombatResult.Critical then
 		self:PostOnChannel("VitalMod")
@@ -396,9 +651,7 @@ function CombatLog:OnCombatLogTransference(tEventArgs)
 	local bDisableOtherPlayers = Apollo.GetConsoleVariable("cmbtlog.disableOtherPlayers")
 	
 	-- OnCombatLogDamage does exactly what we need so just pass along the tEventArgs
-	if not bDisableOtherPlayers or self.unitPlayer == tEventArgs.unitCaster then
-		self:OnCombatLogDamage(tEventArgs)
-	end
+	self:OnCombatLogDamage(tEventArgs)
 	
 	local tCastInfo = self:HelperCasterTargetSpell(tEventArgs, true, false)
 	-- healing data is stored in a table where each subtable contains a different vital that was healed
@@ -595,11 +848,6 @@ function CombatLog:OnCombatLogExperience(tEventArgs)
 	end
 end
 
-function CombatLog:OnCombatLogEndGameCurrencies(tEventArgs)
-	local strResult = String_GetWeaselString(Apollo.GetString("CombatLog_LootReceived"), tEventArgs.monLoot:GetMoneyString())
-	self:PostOnChannel(string.format("<P TextColor=\"%s\">%s</P>", kstrCurrencyColor, strResult))
-end
-
 function CombatLog:OnCombatLogElderPointsLimitReached(tEventArgs)
 	local strResult = String_GetWeaselString(Apollo.GetString("CombatLog_ElderPointLimitReached"))
 	self:PostOnChannel(string.format("<P TextColor=\"%s\">%s</P>", kstrColorCombatLogXP, strResult))
@@ -780,8 +1028,7 @@ function CombatLog:OnConfigure()
 		self:InitOptions()
 	end
 
-	self.wndOptions:Show(true)
-	self.wndOptions:ToFront()
+	self.wndOptions:Invoke()
 
 	for idx, tControlData in pairs(self.mapOptionsControls) do
 		tControlData.wnd:SetData(tControlData)
@@ -795,7 +1042,6 @@ function CombatLog:InitOptions()
 	if self.locSavedOptionsLoc then
 		self.wndOptions:MoveToLocation(self.locSavedOptionsLoc)
 	end
-	self.wndOptions:Show(false)
 
 	self.mapOptionsControls =
 	{
@@ -868,11 +1114,11 @@ function CombatLog:OnMappedOptionsCheckbox(wndHandler, wndControl, eMouseButton)
 end
 
 function CombatLog:OnCancel(wndHandler, wndControl, eMouseButton)
-	self.wndOptions:Show(false)
+	self.wndOptions:Close()
 end
 
 function CombatLog:OnOK(wndHandler, wndControl, eMouseButton)
-	self.wndOptions:Show(false)
+	self.wndOptions:Close()
 end
 
 local CombatLogInstance = CombatLog:new()

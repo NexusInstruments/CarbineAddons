@@ -34,20 +34,25 @@ function TradeskillTrainer:OnDocumentReady()
         return
     end
 
+    Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
+	self:OnWindowManagementReady()
+
 	Apollo.RegisterEventHandler("InvokeTradeskillTrainerWindow", "OnInvokeTradeskillTrainer", self)
 	Apollo.RegisterEventHandler("CloseTradeskillTrainerWindow", "OnClose", self)
 
 	self.nActiveTradeskills = 0
 end
 
+function TradeskillTrainer:OnWindowManagementReady()
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("DialogResponse_TradskillTraining")})
+end
+
 function TradeskillTrainer:OnInvokeTradeskillTrainer(unitTrainer)
 	if not self.wndMain or not self.wndMain:IsValid() then
 		self.wndMain = Apollo.LoadForm(self.xmlDoc, "TradeskillTrainerForm", nil, self)
+		self.wndMain:Invoke()
+		
 		Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("DialogResponse_TradskillTraining")})
-
-		if self.locSavedWindowLoc then
-			self.wndMain:MoveToLocation(self.locSavedWindowLoc)
-		end
 	end
 
 	self.nActiveTradeskills = 0
@@ -88,15 +93,15 @@ function TradeskillTrainer:OnInvokeTradeskillTrainer(unitTrainer)
 		end
 	end
 
-	self.wndMain:FindChild("ListContainer"):ArrangeChildrenVert(0)
+	self.wndMain:FindChild("ListContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function TradeskillTrainer:OnClose()
 	if self.wndMain then
-		self.locSavedWindowLoc = self.wndMain:GetLocation()
 		self.wndMain:Destroy()
 		self.wndMain = nil
 	end
+	
 	Event_CancelTradeskillTraining()
 end
 
