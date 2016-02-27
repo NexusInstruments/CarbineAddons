@@ -104,7 +104,7 @@ function RaidFrameLeaderOptions:BuildList()
 		if tMemberData.bIsLeader then
 			self.wndMain:FindChild("LockAllRolesBtn"):SetCheck(tMemberData.bRoleLocked)
 			local wndLeaderAttachment = self:FactoryProduce(wndRaidMember, "OptionsMemberRaidLeader", "OptionsMemberRaidLeader")
-			local bHasText = string.len(wndLeaderAttachment:FindChild("SetRaidLeaderEditBox"):GetText()) > 0
+			local bHasText = Apollo.StringLength(wndLeaderAttachment:FindChild("SetRaidLeaderEditBox"):GetText()) > 0
 			wndLeaderAttachment:FindChild("SetRaidLeaderConfirmImage"):Show(bHasText)
 			wndLeaderAttachment:FindChild("SetRaidLeaderConfirmBtn"):Enable(bHasText)
 			wndLeaderAttachment:FindChild("SetRaidLeaderConfirmBtn"):SetData(wndLeaderAttachment)

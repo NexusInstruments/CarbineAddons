@@ -217,7 +217,7 @@ function ArenaTeam:OnRosterRemoveMemberYesClick(wndHandler, wndControl)
 end
 
 function ArenaTeam:OnAddMemberEditBoxReturn(wndHandler, wndControl, strText)
-	if wndHandler and wndHandler:GetData() and string.len(strText) > 0 then -- wndHandler is 'AddMemberEditBox' with data guildCurr
+	if wndHandler and wndHandler:GetData() and Apollo.StringLength(strText) > 0 then -- wndHandler is 'AddMemberEditBox' with data guildCurr
 		-- TODO: Additional string validation
 		wndHandler:GetData():Invite(strText)
 	end
@@ -228,7 +228,7 @@ function ArenaTeam:OnAddMemberConfirmBtn(wndHandler, wndControl)
 	local wndEditBox = wndHandler:GetParent():FindChild("AddMemberEditBox")
 	if wndHandler and wndEditBox then
 
-		if wndEditBox and wndEditBox:GetData() and string.len(wndEditBox:GetText()) > 0 then
+		if wndEditBox and wndEditBox:GetData() and Apollo.StringLength(wndEditBox:GetText()) > 0 then
 			-- TODO: Additional string validation
 			wndEditBox:GetData():Invite(wndEditBox:GetText())
 		end
@@ -379,7 +379,7 @@ function ArenaTeam:OnGuildRoster(guildCurr, tRoster)
 	-- Maintain the state of the AddMemberContainer if already opened
 	if self.wndMain:FindChild("RosterOptionBtnAdd"):IsChecked() then
 		local wndAddMemberEditBox = self.wndMain:FindChild("AddMemberEditBox")
-		local nStringLen = string.len(wndAddMemberEditBox:GetText())
+		local nStringLen = Apollo.StringLength(wndAddMemberEditBox:GetText())
 		wndAddMemberEditBox:SetSel(nStringLen, nStringLen)
 		self.wndMain:FindChild("AddMemberContainer"):Show(true)
 	end

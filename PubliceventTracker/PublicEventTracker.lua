@@ -79,6 +79,8 @@ local ktPvPEventTypes =
 	[PublicEvent.PublicEventType_PVP_Battleground_HoldTheLine] 	= true,
 }
 
+local knDynamicBossMaxPoints = 20
+
 local kstrRed 		= "ffff4c4c"
 local kstrGreen 	= "ff2fdc02"
 local kstrYellow 	= "fffffc00"
@@ -186,6 +188,10 @@ function PublicEventTracker:InitializeWindowMeasuring()
 	self.knInitialEventObjectiveHeight = wndMeasure:GetHeight()
 	wndMeasure:Destroy()
 
+	wndMeasure = Apollo.LoadForm(self.xmlDoc, "DynamicBosses", nil, self)
+	self.knInitialDynamicBossHeight = wndMeasure:GetHeight()
+	wndMeasure:Destroy()
+
 	if self.strPlayerPath == "" then
 		local ePlayPathType = PlayerPathLib.GetPlayerPathType()
 		if ePlayPathType then
@@ -252,9 +258,13 @@ function PublicEventTracker:OnRealTimeUpdateTimer(nTime)
 
 	for index, tEventObjectiveInfo in pairs(self.tTimedEventObjectives) do
 		local wndCurrObjective = tEventObjectiveInfo.wndObjective
-		if tEventObjectiveInfo.peEvent:IsActive() and wndCurrObjective and wndCurrObjective:IsValid() and wndCurrObjective:FindChild("ObjectiveBtn") ~= nil then
-			wndCurrObjective:FindChild("ObjectiveBtn"):SetTooltip(self:BuildEventObjectiveTitleString(tEventObjectiveInfo.peEvent, tEventObjectiveInfo.peoObjective, true))
-			wndCurrObjective:FindChild("ObjectiveText"):SetAML(self:BuildEventObjectiveTitleString(tEventObjectiveInfo.peEvent, tEventObjectiveInfo.peoObjective))
+		if tEventObjectiveInfo.peEvent:IsActive() and wndCurrObjective and wndCurrObjective:IsValid() then
+			if wndCurrObjective:FindChild("ObjectiveBtn") ~= nil then
+				wndCurrObjective:FindChild("ObjectiveBtn"):SetTooltip(self:BuildEventObjectiveTitleString(tEventObjectiveInfo.peEvent, tEventObjectiveInfo.peoObjective, true))
+				wndCurrObjective:FindChild("ObjectiveText"):SetAML(self:BuildEventObjectiveTitleString(tEventObjectiveInfo.peEvent, tEventObjectiveInfo.peoObjective))
+			elseif wndCurrObjective:FindChild("ProgressContainer") ~= nil then
+				self:UpdateDynamicBoss(wndCurrObjective, tEventObjectiveInfo.peoObjective:GetEvent(), tEventObjectiveInfo.peoObjective)--Have to make sure we get the right time and update description based on the objective type
+			end
 		else
 			self.tTimedEventObjectives[index] = nil
 		end
@@ -271,8 +281,8 @@ end
 
 function PublicEventTracker:BuildAll()
 	local bShowPublicEvents = false
-	local tPublicEvents = PublicEvent.GetActiveEvents()
-	for idx, peEvent in pairs(tPublicEvents) do
+	local arPublicEvents = PublicEvent.GetActiveEvents()
+	for idx, peEvent in pairs(arPublicEvents) do
 		if peEvent and peEvent:GetEventType() ~= PublicEvent.PublicEventType_LiveEvent then
 			bShowPublicEvents = true
 			break
@@ -282,9 +292,13 @@ function PublicEventTracker:BuildAll()
 	if #self.tZombiePublicEvents == 0 and not bShowPublicEvents then
 		return
 	end
-	
+
+	if #arPublicEvents > 1 then
+		table.sort(arPublicEvents, function(a, b) return a:IsPriorityDisplay() end)
+	end
+
 	-- Events
-	for key, peEvent in pairs(tPublicEvents) do
+	for key, peEvent in pairs(arPublicEvents) do
 		if peEvent:IsActive() and peEvent:GetEventType() ~= PublicEvent.PublicEventType_LiveEvent then -- Done in the LiveEvents addon
 			self:DrawEvent(peEvent)
 		end
@@ -312,14 +326,7 @@ function PublicEventTracker:ResizeAll()
 	local nOngoingGroupCount = self.knInitialGroupHeight
 	
 	local arPublicEvents = PublicEvent.GetActiveEvents()
-	local bShowPublicEvents = false
-	for idx, peEvent in pairs(arPublicEvents) do
-		if peEvent and peEvent:GetEventType() ~= PublicEvent.PublicEventType_LiveEvent then
-			bShowPublicEvents = true
-			break
-		end
-	end
-	
+
 	-- Events
 	local nAlphabetNumber = 0
 	for key, peEvent in pairs(arPublicEvents) do
@@ -450,8 +457,34 @@ function PublicEventTracker:DrawEvent(peEvent)
 	wndEventStatsBacker:Show(peEvent:HasLiveStats())
 	wndEventStatsBacker:SetBGColor(self.kcrEventLetterBacker)
 
+	local function SortObjectivesByDisplayOrder(a, b)
+		if a and not b then
+			return true
+		elseif not a and b then
+			return false
+		elseif not a and not b then
+			return true
+		end
+
+		local nDisplayA = a:GetDisplayOrder()
+		local nDisplayB = b:GetDisplayOrder()
+
+		if nDisplayA == 0 then
+			return false
+		elseif nDisplayB == 0 then
+			return true
+		else
+			return nDisplayA <= nDisplayB
+		end
+	end
+
+	local arObjectives = peEvent:GetObjectives()
+	if #arObjectives > 1 then
+		table.sort(arObjectives, SortObjectivesByDisplayOrder)
+	end
+
 	-- Draw the Objective, or delete if it's still around
-	for idx, peoObjective in pairs(peEvent:GetObjectives()) do
+	for idx, peoObjective in pairs(arObjectives) do
 		if not peoObjective:IsHidden() then
 			if peoObjective:GetStatus() == PublicEventObjective.PublicEventStatus_Active then
 				self:DrawEventObjective(peoObjective)
@@ -503,7 +536,7 @@ end
 function PublicEventTracker:DestroyEventObjective(peoObjective)
 	local wndObjective
 	local tObjective = self.tObjectiveWndCache[peoObjective:GetObjectiveId()]
-	if tObjective ~= nil then
+	if tObjective ~= nil and tObjective.wndObjective ~= nil then--Now multiple objectives can point to the same window with Dynamic Boss.
 		tObjective.wndObjective:Destroy()
 	end
 	
@@ -516,19 +549,31 @@ function PublicEventTracker:DrawEventObjective(peoObjective)
 	if tObjective ~= nil then
 		wndObjective = tObjective.wndObjective
 	end
-	
+
 	local peEvent = peoObjective:GetEvent()
-	if wndObjective == nil or not wndObjective:IsValid() then
-		local wndEvent = self.tEventWndCache[peEvent:GetName()]
-		if wndEvent == nil or not wndEvent:IsValid() then
-			return
-		end
-		
+	if peEvent:ShouldUseCustomTracker() then--Dynamic Bosses
+		wndObjective = self:HelperDrawDynamicBosses(peEvent)--Has to collect all objectives information and redraw based on how dynamic bosses public event is currently set up.
+	else--Normal Public Events
+		wndObjective = self:HelperDrawStandardObjective(peEvent, peoObjective)
+	end
+
+	tObjective = { wndObjective = wndObjective, peEvent = peEvent }
+	self.tObjectiveWndCache[peoObjective:GetObjectiveId()] = tObjective
+	
+end
+
+function PublicEventTracker:HelperDrawStandardObjective(peEvent, peoObjective)
+	local wndEvent = self.tEventWndCache[peEvent:GetName()]
+	if wndEvent == nil or not wndEvent:IsValid() then
+		return
+	end
+
+	local wndObjective = nil
+	if self.tObjectiveWndCache[peoObjective:GetObjectiveId()] then
+		wndObjective = self.tObjectiveWndCache[peoObjective:GetObjectiveId()].wndObjective
+	else
 		wndObjective = Apollo.LoadForm(self.xmlDoc, "EventObjectiveItem", wndEvent:FindChild("ObjectiveContainer"), self)
 		wndEvent:SetData(0)
-		
-		tObjective = { wndObjective = wndObjective, peEvent = peEvent }
-		self.tObjectiveWndCache[peoObjective:GetObjectiveId()] = tObjective
 	end
 
 	local wndQuestObjectiveBtn = wndObjective:FindChild("ObjectiveBtn")
@@ -583,6 +628,60 @@ function PublicEventTracker:DrawEventObjective(peoObjective)
 		end
 		wndSpellBtn:SetContentId(peoObjective)
 	end
+
+	return wndObjective
+end
+
+function PublicEventTracker:HelperDrawDynamicBosses(peEvent)
+	local wndEvent = self.tEventWndCache[peEvent:GetName()]
+	if wndEvent == nil or not wndEvent:IsValid() then
+		return
+	end
+
+	local arObjectives = peEvent:GetObjectives()
+	if arObjectives and #arObjectives > 0 then
+		for idx, peoObjective in pairs(arObjectives) do
+			local wndObjective = wndEvent:FindChild("DynamicBosses")
+			if not wndObjective or not wndObjective:IsValid() then
+				wndObjective = Apollo.LoadForm(self.xmlDoc, "DynamicBosses", wndEvent:FindChild("ObjectiveContainer"), self)
+				local wndProgressBar = wndObjective:FindChild("ProgressBar")
+				wndProgressBar:SetFloor(0)
+				wndProgressBar:SetMax(knDynamicBossMaxPoints)
+				wndEvent:SetData(0)
+			end
+			self:UpdateDynamicBoss(wndObjective, peoObjective:GetEvent(), peoObjective)
+		end
+	end
+
+	return wndObjective
+end
+
+function PublicEventTracker:UpdateDynamicBoss(wndObjective, peEvent, peoObjective)
+	local wndDynamicBossText = wndObjective:FindChild("DynamicBossText")
+	wndDynamicBossText:SetText(peoObjective:GetShortDescription())
+
+	local eObjectiveType = peoObjective:GetObjectiveType()
+	if eObjectiveType == PublicEventObjective.PublicEventObjectiveType_TimedWin then
+		local nTime = math.floor((peoObjective:GetTotalTime() - peoObjective:GetElapsedTime())/1000)
+		local wndTimer = wndObjective:FindChild("Timer")
+		wndTimer:SetText(ConvertSecondsToTimer(nTime, 2))
+
+		local nOnjectiveId = peoObjective:GetObjectiveId()
+		local strTimeColor = "UI_WindowTextTextPureGreen"
+		if nTime <= 0 then
+			strTimeColor = "UI_TextMetalBody"
+			self.tTimedEventObjectives[nOnjectiveId] = nil
+		elseif not self.tTimedEventObjectives[nOnjectiveId] then
+			self.tTimedEventObjectives[nOnjectiveId] = { peEvent = peEvent, peoObjective = peoObjective, wndObjective = wndObjective }
+			self.timerRealTimeUpdate:Start()
+		end
+		wndTimer:SetTextColor(strTimeColor)
+	elseif eObjectiveType == PublicEventObjective.PublicEventObjectiveType_ResourcePool then
+		local nPoints = peoObjective:GetCount()
+		local wndProgressBar = wndObjective:FindChild("ProgressBar")
+		wndProgressBar:SetProgress(nPoints)
+		wndProgressBar:SetTooltip(String_GetWeaselString(Apollo.GetString("PublicEventTracker_ObjectiveProgress"), nPoints))
+	end
 end
 
 function PublicEventTracker:ResizeEventObjective(wndObjective)
@@ -614,6 +713,12 @@ function PublicEventTracker:ResizeEventObjective(wndObjective)
 	if wndPublicProgressItem ~= nil and wndPublicProgressItem:IsValid() then
 		nObjTextHeight = nObjTextHeight + wndPublicProgressItem:GetHeight()
 	end
+
+	--Add Dynamic Boss Height.
+	local wndProgressContainer = wndObjective:FindChild("ProgressContainer")
+	if wndProgressContainer ~= nil and wndProgressContainer:IsValid() then
+		nObjTextHeight = nObjTextHeight + self.knInitialDynamicBossHeight
+	end
 	
 	local nLeft, nTop, nRight, nBottom = wndObjective:GetAnchorOffsets()
 	wndObjective:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nObjTextHeight)
@@ -625,7 +730,7 @@ function PublicEventTracker:BuildEventObjectiveTitleString(peEvent, peoObjective
 	-- Use short form or reward text if possible
 	local strResult = ""
 	local strShortText = peoObjective:GetShortDescription()
-	if strShortText and string.len(strShortText) > 0 and not bIsTooltip then
+	if strShortText and Apollo.StringLength(strShortText) > 0 and not bIsTooltip then
 		strResult = string.format("<T Font=\"CRB_InterfaceMedium\">%s</T>", strShortText)
 	else
 		strResult = string.format("<T Font=\"CRB_InterfaceMedium\">%s</T>", peoObjective:GetDescription())

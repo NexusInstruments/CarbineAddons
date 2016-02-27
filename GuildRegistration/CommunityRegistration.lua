@@ -74,7 +74,6 @@ function CommunityRegistration:Initialize(wndParent)
 	
 	self.wndMain:FindChild("CreditCost"):SetMoneySystem(Money.CodeEnumCurrencyType.Credits)
 	self.wndMain:FindChild("CreditCurrent"):SetMoneySystem(Money.CodeEnumCurrencyType.Credits)
-	self.bHasFullCommunityAccess = (AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0 or AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.FullGuildsAccess) > 0)
 	self:RefreshStoreLink()
 end
 
@@ -127,7 +126,7 @@ function CommunityRegistration:OnCommunityRegNameChanging(wndHandler, wndControl
 	self:UpdateCommunityRegOptions()
 		
 	if wndLimit ~= nil then
-		local nNameLength = string.len(strInput or "")
+		local nNameLength = Apollo.StringLength(strInput or "")
 
 		wndLimit:SetText(String_GetWeaselString(Apollo.GetString("CRB_Progress"), nNameLength, GameLib.GetTextTypeMaxLength(GameLib.CodeEnumUserText.GuildName)))
 
@@ -143,12 +142,12 @@ function CommunityRegistration:UpdateCommunityRegOptions()
 	--see if the Guild can be submitted
 	local bHasName = self:HelperCheckForEmptyString(self.wndCommunityRegName:GetText())
 	local bNameValid = GameLib.IsTextValid( self.wndCommunityRegName:GetText(), GameLib.CodeEnumUserText.GuildName, eProfanityFilter)
-	self.wndRegisterCommunityBtn:Enable(bHasName and bNameValid and self.bHasFullCommunityAccess)
+	self.wndRegisterCommunityBtn:Enable(bHasName and bNameValid and GuildLib.CanCreate(GuildLib.GuildType_Community))
 end
 
 function CommunityRegistration:HelperCheckForEmptyString(strText) -- make sure there's a valid string
 	local strFirstChar = string.find(strText, "%S")
-	return strFirstChar ~= nil and string.len(strFirstChar) > 0
+	return strFirstChar ~= nil and Apollo.StringLength(strFirstChar) > 0
 end
 
 function CommunityRegistration:HelperClearCommunityRegFocus(wndHandler, wndControl)
@@ -217,16 +216,17 @@ function CommunityRegistration:OnEntitlementUpdate(tEntitlementInfo)
 	if not self.wndMain then
 		return
 	end
+
+	local bCanCreate = GuildLib.CanCreate(GuildLib.GuildType_Community)
 	if tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.Signature or tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.Free or tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.FullGuildsAccess then
-		self.bHasFullCommunityAccess = (AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0 or AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.FullGuildsAccess) > 0)
 		
-		self.wndRegisterCommunityBtn:Show(self.bHasFullCommunityAccess or not self.bStoreLinkValid)
-		self.wndRegisterCommunityBtn:Enable(self.bHasFullCommunityAccess)
-		self.wndMain:FindChild("UnlockCommunityBtn"):Show(not self.bHasFullCommunityAccess and self.bStoreLinkValid)
+		self.wndRegisterCommunityBtn:Show(bCanCreate or not self.bStoreLinkValid)
+		self.wndRegisterCommunityBtn:Enable(bCanCreate)
+		self.wndMain:FindChild("UnlockCommunityBtn"):Show(not bCanCreate and self.bStoreLinkValid)
 	end
 	local wndRegisterBtnTooltip = self.wndMain:FindChild("RegisterBtnTooltip")
-	wndRegisterBtnTooltip:Show(not self.bHasFullCommunityAccess)
-	if not self.bHasFullCommunityAccess then
+	wndRegisterBtnTooltip:Show(not bCanCreate)
+	if not bCanCreate then
 		wndRegisterBtnTooltip:SetTooltipForm(Apollo.LoadForm(self.xmlDoc, "UnlockCommunityTooltip", nil, self))
 	end
 end

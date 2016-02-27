@@ -19,8 +19,10 @@ LuaEnumState =
 	Delete 		= 3,
 }
 
+local knMaxCharacterNamePart = PreGameLib.GetTextTypeMaxLength(PreGameLib.CodeEnumUserText.CharacterNamePart)
+local knMaxCharacterName = PreGameLib.GetTextTypeMaxLength(PreGameLib.CodeEnumUserText.CharacterName)
+local knMinCharacterName = PreGameLib.GetTextTypeMinLength(PreGameLib.CodeEnumUserText.CharacterName)
 local knDesignerPaddingBottom = 10
-local knMaxCharacterName = 29
 local k_idCassian = 100	-- Humans (Dominion - fabricated value)
 
 local c_arRaceStrings =  --inserting values so we can use direct race numbering. Each holds a table with name, then description
@@ -568,12 +570,12 @@ function Character:OnLoad()
 
 	self.wndFirstName = g_controls:FindChild("FirstNameEntryForm")
 	self.wndFirstNameEntry = self.wndFirstName:FindChild("EnterNameEntry")
-	self.wndFirstNameEntry:SetMaxTextLength(knMaxCharacterName)
+	self.wndFirstNameEntry:SetMaxTextLength(knMaxCharacterNamePart)
 	self.wndFirstNameRandomBtn = self.wndFirstName:FindChild("btn_RenameRandom")
 	
 	self.wndLastName = g_controls:FindChild("LastNameEntryForm")
 	self.wndLastNameEntry = self.wndLastName:FindChild("EnterNameEntry")
-	self.wndLastNameEntry:SetMaxTextLength(knMaxCharacterName)
+	self.wndLastNameEntry:SetMaxTextLength(knMaxCharacterNamePart)
 
 	self.wndCreateCode = g_controls:FindChild("CodeEntryForm")
 	self.wndCreateCodeEntry = self.wndCreateCode:FindChild("CreateCodeEditBox")
@@ -658,6 +660,8 @@ function Character:OnActorClicked(actor, bDoubleClick)
 	for eFaction, tFactions in pairs(ktFactionRaceDisplayInfo) do
 		for eGender, tGenderInfo in pairs(tFactions) do
 			for eRace, tDisplayInfo in pairs(tGenderInfo) do
+
+				if g_eFactionRestriction == nil or (g_eFactionRestriction ~= nil and eFaction == g_eFactionRestriction) then
 				local actorRace = g_arActors[tDisplayInfo.strDisplay][eGender]
 				
 				local wndBtn
@@ -677,6 +681,7 @@ function Character:OnActorClicked(actor, bDoubleClick)
 				local wndContainer = self.wndRaceContent:FindChild("Container")
 				local wndDescription = wndContainer:FindChild(tDisplayInfo.strDisplay..eGender):FindChild("Description")
 				wndDescription:Show(false)
+
 				if actorRace == actor then
 					self:OnRaceBtnCheck(wndBtn, wndBtn, bDoubleClick)
 					
@@ -702,6 +707,7 @@ function Character:OnActorClicked(actor, bDoubleClick)
 			end
 		end
 	end
+end
 end
 
 function Character:OnActorMouseEnter(actor)
@@ -794,7 +800,7 @@ function Character:OnQueueFinished()
 end
 
 -- Receiving this event means the player's character list has come down. Note: can happen when on the queue screen.
-function Character:OnCharacterList( nMaxNumCharacters, arCharacters, arCharacterInWorld )
+function Character:OnCharacterList( nMaxNumCharacters, arCharacters, arCharacterInWorld, eFactionRestriction )
 	g_arCharacters = arCharacters
 	g_arCharacterInWorld = arCharacterInWorld
 	g_nMaxNumCharacters = nMaxNumCharacters
@@ -805,6 +811,11 @@ function Character:OnCharacterList( nMaxNumCharacters, arCharacters, arCharacter
 		self.wndSubscriptionExpiredAlert:Invoke()
 	end
 	
+	local tRealmInfo = CharacterScreenLib.GetRealmInfo()
+	if tRealmInfo and tRealmInfo.bFactionRestricted and eFactionRestriction ~= 0 then
+		g_eFactionRestriction = eFactionRestriction
+	end
+
 	if not self.wndRealmFull:IsShown() then
 		self:OpenCharacterSelect()
 	end
@@ -907,7 +918,7 @@ function Character:OnEnterBtn(wndHandler, wndControl)
 		self.strName = string.format("%s %s", self.wndFirstNameEntry:GetText(), self.wndLastNameEntry:GetText())
 
 		local tCreation = self.arCharacterCreateOptions[self.characterCreateIndex]
-		if string.len(self.strName) > 0 and tCreation then
+		if Apollo.StringLength(self.strName) > 0 and tCreation then
 			local nCharacterCreateId = tCreation.characterCreateId
 			local tSkipTutorialCreationIds = nil
 			if self.wndExperienceContent:FindChild("ExpertBtn"):IsChecked() then
@@ -988,6 +999,7 @@ function Character:SetInitialCreateForms()
 
 	g_controls:FindChild("EnterForm"):FindChild("BGArt_BottomRunnerName"):Show(true)
 	g_controls:FindChild("EnterForm"):FindChild("BGArt_BottomRunner"):Show(false)
+	g_controls:FindChild("EnterBtn"):Enable(true)
 
 	g_controls:FindChild("CameraControls"):Show(false)
 
@@ -1060,7 +1072,45 @@ function Character:StartGuidedTour()
 		self:SetupAllRaceActors()
 	end
 
-	self:HelperHandlePointerOppacity(true)
+	local wndDominionBtn = self.wndRaceContent:FindChild("DominionBtn")
+	local wndExileBtn = self.wndRaceContent:FindChild("ExileBtn")
+	if g_eFactionRestriction ~= nil then
+		local wndDisableBtn = wndDominionBtn
+		local wndCheckBtn = wndExileBtn
+		if g_eFactionRestriction == PreGameLib.CodeEnumFaction.Dominion then
+			wndDisableBtn = wndExileBtn
+			wndCheckBtn = wndDominionBtn
+		end
+		wndDisableBtn:Enable(false)
+		wndCheckBtn:SetCheck(true)
+
+		local tFactions = 
+		{
+			[PreGameLib.CodeEnumFaction.Exile] 		= Apollo.GetString("Friends_ExilesFaction"),
+			[PreGameLib.CodeEnumFaction.Dominion] 	= Apollo.GetString("Friends_DominionFaction"),
+		}
+		local strDisabled = PreGameLib.String_GetWeaselString(Apollo.GetString("PregameCharacter_FactionLockedTooltip"), tFactions[g_eFactionRestriction])
+		wndDisableBtn:GetParent():SetTooltip(strDisabled)
+		wndDisableBtn:FindChild("CN_FactionBlocker"):Show(true)
+
+		local wndButtons = self.wndRacePicker:FindChild("Buttons")
+		for idx, wndEntry in pairs(wndButtons:GetChildren()) do
+			local wndBtn = wndEntry:FindChild("Btn")
+			local tInfo = wndBtn:GetData()
+			wndBtn:Enable(tInfo.eFaction == g_eFactionRestriction)
+		end
+
+		local wndDominionBlocker = self.wndFinalizeContent:FindChild("DominionBlocker")
+		wndDominionBlocker:Show(g_eFactionRestriction ~= PreGameLib.CodeEnumFaction.Dominion)
+		wndDominionBlocker:FindChild("DisabledText"):SetText(g_eFactionRestriction ~= PreGameLib.CodeEnumFaction.Dominion and strDisabled or "")
+
+		local wndExilesBlocker = self.wndFinalizeContent:FindChild("ExilesBlocker")
+		wndExilesBlocker:Show(g_eFactionRestriction ~= PreGameLib.CodeEnumFaction.Exile)
+		wndExilesBlocker:FindChild("DisabledText"):SetText(g_eFactionRestriction ~= PreGameLib.CodeEnumFaction.Exile and strDisabled or "")
+		
+	end
+
+	self:HelperHandlePointerOppacity(not wndDominionBtn:IsChecked() and not wndExileBtn:IsChecked())
 	self.ePageToShow = keTutorialTab.Experience
 	self:ShowCorrectTabPage()
 end
@@ -1132,8 +1182,20 @@ function Character:ResetOptionButtons()
 	wndBtns:FindChild("FemaleBtn"):SetCheck(false)
 	
 	wndBtns = self.wndRaceContent:FindChild("FactionFraming")
-	wndBtns:FindChild("DominionBtn"):SetCheck(false)
-	wndBtns:FindChild("ExileBtn"):SetCheck(false)
+	local wndDominionEntry = wndBtns:FindChild("DominionEntry")
+	local wndExileEntry = wndBtns:FindChild("ExileEntry")
+
+	wndDominionEntry:SetTooltip("")
+	wndExileEntry:SetTooltip("")
+
+	local wndDominionBtn = wndDominionEntry:FindChild("DominionBtn")
+	local wndExileBtn = wndExileEntry:FindChild("ExileBtn")
+	wndDominionBtn:Enable(true)
+	wndExileBtn:Enable(true)
+	wndDominionBtn:SetCheck(false)
+	wndExileBtn:SetCheck(false)
+	wndDominionBtn:FindChild("CN_FactionBlocker"):Show(false)
+	wndExileBtn:FindChild("CN_FactionBlocker"):Show(false)
 	
 	self.wndCreationAlert:Show(false)
 	self.wndCustomizationAlert:Show(false)
@@ -1614,6 +1676,9 @@ function Character:OnRaceBtnCheck(wndHandler, wndControl, bDoubleClick)
 
 	--Record Data
 	local tRaceData = wndControl:GetData()
+	if g_eFactionRestriction ~= nil and g_eFactionRestriction ~= tRaceData.eFaction then
+		return
+	end
 
 	--Enable the correct class buttons for this race.
 	local bConflicts = self:CheckForConflicts(tRaceData.eRace, self.eClass)
@@ -2644,6 +2709,10 @@ function Character:FormatInfoPanel()
 		return
 	end
 	
+	local tRealmInfo = CharacterScreenLib.GetRealmInfo()
+	self.wndInfoPane:FindChild("CN_HintWindow"):Show(tRealmInfo and tRealmInfo.bFactionRestricted and #g_arCharacters == 0)
+	
+	
 	local nBufferHeight 		= 6
 	local nContentHeight 	= 0
 	local wndContainer		= self.wndInfoPane:FindChild("InfoPane_SortContainer")
@@ -3164,7 +3233,7 @@ function Character:OnNameChanged(wndControl, wndHandler, strText)
 	local strColor = nNameLength > knMaxCharacterName and "UI_BtnTextRedNormal" or "UI_TextHoloBodyHighlight"
 	local strHelpText = string.format(
 		"%s [%s/%s]",
-		Apollo.GetString("CharacterCreate_NameRules"),
+		PreGameLib.String_GetWeaselString(Apollo.GetString("CharacterCreate_NameRules"), knMinCharacterName, knMaxCharacterName),
 		nNameLength,
 		knMaxCharacterName
 	)
@@ -4097,7 +4166,7 @@ function Character:HelperServerMessages(strExtra)
 	end
 
 	self.wndServerMessage:SetAML(string.format("<T Font=\"CRB_Interface10_B\" TextColor=\"%s\">%s</T>", strColor, strAllMessage))
-	self.wndServerMessagesContainer:Show(string.len(strAllMessage or "") > 0)
+	self.wndServerMessagesContainer:Show(Apollo.StringLength(strAllMessage or "") > 0)
 
 	local nWidth, nHeight = self.wndServerMessage:SetHeightToContentHeight()
 	local nLeft, nTop, nRight, nBottom = self.wndServerMessagesContainer:GetAnchorOffsets()

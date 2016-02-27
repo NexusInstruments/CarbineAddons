@@ -131,6 +131,8 @@ function Crafting:OnGenericEvent_StartCircuitCraft(idSchematic)
 	
 	if not self.wndMain then
 		self.wndMain = Apollo.LoadForm(self.xmlDoc, "CraftingForm", nil, self)
+		
+		self.ePremiumSystem = AccountItemLib.GetPremiumSystem()
 	end
 	
 	self.wndMain:FindChild("PreviewStartCraftBtn"):SetData(idSchematic)
@@ -864,7 +866,10 @@ function Crafting:UpdateOverchargeInfo()
 		wndCraftBtn:FindChild("Label"):SetTextColor("UI_BtnTextGreenDisabled")
 	end
 	
-	local strTooltip = String_GetWeaselString(Apollo.GetString("CBCrafting_PercentOverchargeRiskReduction"), tostring(tCraftInfo.tResult.nUnbuffedFailCap), tostring(tCraftInfo.tResult.nFailChanceBuff), tostring(tCraftInfo.tResult.nFailCap))
+	local strTooltip = ""
+	if self.ePremiumSystem == AccountItemLib.CodeEnumPremiumSystem.Hybrid then
+		strTooltip = String_GetWeaselString(Apollo.GetString("CBCrafting_PercentOverchargeRiskReduction"), tostring(tCraftInfo.tResult.nUnbuffedFailCap), tostring(tCraftInfo.tResult.nFailChanceBuff), tostring(tCraftInfo.tResult.nFailCap))
+	end
 	self.wndMain:FindChild("FailChargeFrame"):SetTooltip(strTooltip)
 	self.wndMain:FindChild("FailPercentText"):SetTooltip(strTooltip)
 end

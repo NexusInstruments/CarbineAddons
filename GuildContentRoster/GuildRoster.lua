@@ -141,7 +141,6 @@ function GuildRoster:Initialize(wndParent)
 	
 	wndMain:SetData(guildOwner)
 	wndMain:FindChild("EditNotesEditbox"):SetMaxTextLength(GameLib.GetTextTypeMaxLength(GameLib.CodeEnumUserText.GuildMemberNote))
-	self.bHasFullGuildAccess = (AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0 or AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.FullGuildsAccess) > 0)
 	local tEntitlementInfo = { nEntitlementId = AccountItemLib.CodeEnumEntitlement.Free }
 	self:OnEntitlementUpdate(tEntitlementInfo)
 end
@@ -292,7 +291,7 @@ function GuildRoster:BuildRosterList(guildCurr, tRoster)
 			wndGrid:SetCellDoc(iCurrRow, 7, "<T Font=\"CRB_InterfaceSmall\" TextColor=\""..strTextColor.."\">"..self:HelperConvertToTime(tCurr.fLastOnline).."</T>")			
 			
 			wndGrid:SetCellDoc(iCurrRow, 8, "<T Font=\"CRB_InterfaceSmall\" TextColor=\""..strTextColor.."\">".. FixXMLString(tCurr.strNote) .."</T>")
-			wndGrid:SetCellLuaData(iCurrRow, 8, String_GetWeaselString(Apollo.GetString("GuildRoster_ActiveNoteTooltip"), tCurr.strName, string.len(tCurr.strNote) > 0 and tCurr.strNote or "N/A")) -- For tooltip
+			wndGrid:SetCellLuaData(iCurrRow, 8, String_GetWeaselString(Apollo.GetString("GuildRoster_ActiveNoteTooltip"), tCurr.strName, Apollo.StringLength(tCurr.strNote) > 0 and tCurr.strNote or "N/A")) -- For tooltip
 		end
 	end
 	
@@ -511,7 +510,7 @@ function GuildRoster:HelperValidateAndRefreshRankSettingsWindow()
 	local strName = wndSettings:FindChild("OptionString"):GetText()
 	
 	if wndLimit ~= nil then
-		local nNameLength = GetUnicodeStringLength(strName or "")
+		local nNameLength = Apollo.StringLength(strName or "")
 		
 		wndLimit:SetText(String_GetWeaselString(Apollo.GetString("CRB_Progress"), nNameLength, GameLib.GetTextTypeMaxLength(GameLib.CodeEnumUserText.GuildRankName)))
 		
@@ -616,7 +615,7 @@ function GuildRoster:ResetRosterMemberButtons()
 		self.tWndRefs.wndRosterOptionBtnPromote:Enable(bSomeRowIsPicked and bTargetIsUnderMyRank)
 		self.tWndRefs.wndRosterOptionBtnDemote:Enable(bSomeRowIsPicked and bTargetIsUnderMyRank and tGridData.nRank ~= 10) -- Can't go below 10
 
-		self.tWndRefs.wndRosterOptionBtnAdd:Show(tMyRankPermissions and tMyRankPermissions.bInvite and self.bHasFullGuildAccess)
+		self.tWndRefs.wndRosterOptionBtnAdd:Show(tMyRankPermissions and tMyRankPermissions.bInvite and GuildLib.CanInvite(GuildLib.GuildType_Guild))
 		self.tWndRefs.wndRosterOptionBtnRemove:Show(tMyRankPermissions and tMyRankPermissions.bKick)
 		self.tWndRefs.wndRosterOptionBtnDemote:Show(tMyRankPermissions and tMyRankPermissions.bChangeMemberRank)
 		self.tWndRefs.wndRosterOptionBtnPromote:Show(tMyRankPermissions and tMyRankPermissions.bChangeMemberRank)
@@ -710,7 +709,7 @@ function GuildRoster:OnAddMemberYesClick(wndHandler, wndControl) -- wndHandler i
 	local guildCurr = self.tWndRefs.wndMain:GetData()
 	local wndEditBox = wndHandler:GetData()
 
-	if wndEditBox and wndEditBox:GetData() and string.len(wndEditBox:GetText()) > 0 then -- TODO: Additional string validation
+	if wndEditBox and wndEditBox:GetData() and Apollo.StringLength(wndEditBox:GetText()) > 0 then -- TODO: Additional string validation
 		guildCurr:Invite(wndEditBox:GetText())
 	end
 	self:OnRosterAddMemberCloseBtn()
@@ -879,8 +878,7 @@ function GuildRoster:OnEntitlementUpdate(tEntitlementInfo)
 		return
 	end
 	if tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.Signature or tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.Free or tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.FullGuildsAccess then
-		self.bHasFullGuildAccess = (AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0 or AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.FullGuildsAccess) > 0)
-		self.tWndRefs.wndRosterOptionBtnAdd:Show(self.bHasFullGuildAccess)
+		self.tWndRefs.wndRosterOptionBtnAdd:Show(GuildLib.CanInvite(GuildLib.GuildType_Guild))
 	end
 end
 

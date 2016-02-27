@@ -1062,7 +1062,7 @@ function PublicEventStats:BuildDungeonMedalScreen(peDungeon)
 				wndDungeonMedal:SetTooltip(peoObjective:GetDescription())
 				
 				local strObjective = peoObjective:GetDescription()--By Default
-				if string.len(peoObjective:GetShortDescription()) > 0 then
+				if Apollo.StringLength(peoObjective:GetShortDescription()) > 0 then
 					strObjective = peoObjective:GetShortDescription()
 				end
 				

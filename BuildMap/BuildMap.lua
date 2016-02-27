@@ -269,7 +269,7 @@ function BuildMap:DrawTierSettler(setNode)
 			end
 
 			local strSprite = "Icon_Windows_UI_CRB_Colonist"
-			if tCurrTier.splDisplay and tCurrTier.splDisplay:GetIcon() and string.len(tCurrTier.splDisplay:GetIcon()) > 0 then
+			if tCurrTier.splDisplay and tCurrTier.splDisplay:GetIcon() and Apollo.StringLength(tCurrTier.splDisplay:GetIcon()) > 0 then
 				strSprite = tCurrTier.splDisplay:GetIcon()
 			end
 

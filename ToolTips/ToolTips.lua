@@ -10,6 +10,7 @@ require "ChallengesLib"
 require "PlayerPathLib"
 require "Unit"
 require "Item"
+require "AccountItemLib"
 
 local ToolTips = {}
 
@@ -304,6 +305,7 @@ local kcrNeutralEnemyTextColor 			= ApolloColor.new("DispositionNeutral")
 local tVitals = {}
 
 local knWndHeightBuffer
+local knPremiumPlayerSystem
 local knWndHeightPadding_Spell = 24
 
 function ToolTips:new(o)
@@ -335,15 +337,16 @@ function ToolTips:OnDocumentReady()
 
 	tVitals = Unit.GetVitalTable()
 
-	Apollo.RegisterEventHandler("PlayerChanged", "OnUpdateVitals", self)
-	Apollo.RegisterEventHandler("MatchEntered", "OnUpdateVitals", self)
-	Apollo.RegisterEventHandler("MouseOverUnitChanged", "OnMouseOverUnitChanged", self)
-	Apollo.RegisterEventHandler("PlayerRealmName", "OnPlayerRealmName", self)
+	Apollo.RegisterEventHandler("PlayerChanged",		"OnUpdateVitals", self)
+	Apollo.RegisterEventHandler("MatchEntered",			"OnUpdateVitals", self)
+	Apollo.RegisterEventHandler("MouseOverUnitChanged",	"OnMouseOverUnitChanged", self)
+	Apollo.RegisterEventHandler("PlayerRealmName",		"OnPlayerRealmName", self)
 
 	local wndTooltip = Apollo.LoadForm(self.xmlDoc, "ItemTooltip_Base", nil, self)
 	local wndTooltipItem = wndTooltip:FindChild("Items")
 
 	knWndHeightBuffer = wndTooltip:GetHeight() - wndTooltipItem:GetHeight()
+	knPremiumPlayerSystem = AccountItemLib.GetPremiumSystem()
 
 	wndTooltip:Destroy()
 	wndTooltipItem:Destroy()
@@ -1012,7 +1015,8 @@ local function ItemTooltipBasicStatsHelper(wndParent, tItemInfo, itemSource)
 	                        (tItemInfo.tStack and tItemInfo.tStack.nMaxCount ~= 1) or
 	                        (tItemInfo.bPvpGear or tItemInfo.bPvpOnlyRune or tItemInfo.bPveOnlyRune) or
 	                        (tItemInfo.nInstalledMinimumItemLevel or tItemInfo.nPowerCoreMaximumLevel or tItemInfo.nCraftedMultiplier) or
-							tItemInfo.tBind.bSoulbound or tItemInfo.tBind.bOnEquip or tItemInfo.tBind.bOnPickup or itemSource:IsSalvagedLootSoulbound() or tItemInfo.tUnique
+							tItemInfo.tBind.bSoulbound or tItemInfo.tBind.bOnEquip or tItemInfo.tBind.bOnPickup or itemSource:IsSalvagedLootSoulbound() or 
+							tItemInfo.tUnique or not itemSource:IsAlwaysTradeable()
 	
 	if not bNeedLeftColumn then
 		return
@@ -1051,6 +1055,10 @@ local function ItemTooltipBasicStatsHelper(wndParent, tItemInfo, itemSource)
 			ItemTooltipBasicStatsHelperWindowBuilder(wndLeftColumn, kUIBody, strBind )
 		end
 		
+		if not itemSource:IsAlwaysTradeable() then
+			ItemTooltipBasicStatsHelperWindowBuilder(wndLeftColumn, kUIBody, Apollo.GetString("Tooltips_Untradable"))
+		end
+		
 		-- Unique
 		if tItemInfo.tUnique then
 			local strUniqueStr = ""
@@ -1077,7 +1085,7 @@ local function ItemTooltipBasicStatsHelper(wndParent, tItemInfo, itemSource)
 		end
 		
 		-- PvP
-		strPvp = ""
+		local strPvp = ""
 		if tItemInfo.bPvpGear then
 			strPvp = String_GetWeaselString(Apollo.GetString("ItemTooltip_ItemTypePvP"))
 		elseif tItemInfo.bPvpOnlyRune then
@@ -1101,6 +1109,12 @@ local function ItemTooltipBasicStatsHelper(wndParent, tItemInfo, itemSource)
 			if strStackCount ~= "" then
 				ItemTooltipBasicStatsHelperWindowBuilder(wndLeftColumn, kUIBody, strStackCount)
 			end
+		end
+		
+		-- Supply Satchel Stack Count
+		local nMaxSupplySatchelStackCount = itemSource:GetMaxSupplySatchelStackCount()
+		if knPremiumPlayerSystem == AccountItemLib.CodeEnumPremiumSystem.VIP and nMaxSupplySatchelStackCount > 0 then
+			ItemTooltipBasicStatsHelperWindowBuilder(wndLeftColumn, kUIBody, String_GetWeaselString(Apollo.GetString("Tooltips_TradeskillBagStackCount"), nMaxSupplySatchelStackCount))
 		end
 		
 		-- Rune is unique per item, since it is part of a set
@@ -1780,7 +1794,7 @@ end
 
 local function ItemTooltipFlavorHelper(wndParent, tItemInfo)
 	local strResult = ""
-	if tItemInfo.strFlavor and tItemInfo.strFlavor ~= " " and string.len(tItemInfo.strFlavor) > 0 then
+	if tItemInfo.strFlavor and tItemInfo.strFlavor ~= " " and Apollo.StringLength(tItemInfo.strFlavor) > 0 then
 		strResult = string.format("<P Font=\"CRB_InterfaceSmall\" TextColor=\"UI_TextMetalBodyHighlight\">%s</P>", tItemInfo.strFlavor)
 	end
 
@@ -1802,12 +1816,12 @@ local function ItemTooltipFlavorHelper(wndParent, tItemInfo)
 		strResult = string.format("%s<P Font=\"CRB_InterfaceSmall\" TextColor=\"UI_TextMetalBodyHighlight\">%s</P>", strResult, strExpireTime)
 	end
 
-	if tItemInfo.strMakersMark and string.len(tItemInfo.strMakersMark) > 0 and tItemInfo.strMakersMark ~= Apollo.GetString("CRB_Unknown") then
+	if tItemInfo.strMakersMark and Apollo.StringLength(tItemInfo.strMakersMark) > 0 and tItemInfo.strMakersMark ~= Apollo.GetString("CRB_Unknown") then
 		local strCraftedBy = String_GetWeaselString(Apollo.GetString("Tooltips_CraftedBy"), tItemInfo.strMakersMark)
 		strResult = string.format("%s<P Font=\"CRB_InterfaceSmall\" TextColor=\"UI_TextMetalBodyHighlight\">%s</P>", strResult, strCraftedBy)
 	end
 
-	if strResult == " " or string.len(strResult) == 0 then
+	if strResult == " " or Apollo.StringLength(strResult) == 0 then
 		return
 	end
 

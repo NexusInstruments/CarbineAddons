@@ -127,7 +127,7 @@ function WarpartyRegister:Validate()
 	self.tWndRefs.wndMain:FindChild("ValidAlert"):Show(not bValid)
 	
 
-	local nNameLength = string.len(self.tCreate.strName or "")
+	local nNameLength = Apollo.StringLength(self.tCreate.strName or "")
 	if nNameLength < 3 or nNameLength > GameLib.GetTextTypeMaxLength(GameLib.CodeEnumUserText.GuildName) then
 		self.tWndRefs.wndWarpartyNameLimit:SetTextColor(crGuildNameLengthError)
 	else
@@ -143,7 +143,7 @@ function WarpartyRegister:HelperCheckForEmptyString(strText) -- make sure there'
 
 	strFirstChar = string.find(strText, "%S")
 
-	bHasText = strFirstChar ~= nil and string.len(strFirstChar) > 0
+	bHasText = strFirstChar ~= nil and Apollo.StringLength(strFirstChar) > 0
 	return bHasText
 end
 

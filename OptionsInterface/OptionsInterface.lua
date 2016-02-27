@@ -261,7 +261,6 @@ end
 function OptionsInterface:OnConfigure() -- From ESC -> Options
 	self.wndInterface:MoveToLocation((self.wndInterface:GetOriginalLocation()))
 	self.wndInterface:Invoke()
-	self.wndInterface:FindChild("InvertMouse"):SetCheck(Apollo.GetConsoleVariable("camera.invertMouse"))
 
 	local fTooltip = Apollo.GetConsoleVariable("ui.TooltipDelay") or 0
 	self.wndInterface:FindChild("TooltipDelaySliderBar"):SetValue(fTooltip)
@@ -278,7 +277,6 @@ function OptionsInterface:OnConfigure() -- From ESC -> Options
 	self.wndInterface:FindChild("SpellErrorMessages"):SetCheck(g_InterfaceOptions.Carbine.bSpellErrorMessages)
 	self.wndInterface:FindChild("ChallengeSharePreference"):SetCheck(g_InterfaceOptions.Carbine.eShareChallengePreference == GameLib.SharedChallengePreference.Prompt)
 	self.wndInterface:FindChild("InteractTextOnUnit"):SetCheck(g_InterfaceOptions.Carbine.bInteractTextOnUnit)
-	self.wndInterface:FindChild("DisplayWaveFlash"):SetCheck(Apollo.GetConsoleVariable("ui.soldierHoldoutDisplayWaveFlash"))
 	self.wndInterface:FindChild("DropToggleTargetFrame"):Enable(false)
 	self.wndInterface:FindChild("TargetUnitFrame"):SetRadioSel("TargetFrameFilpped", g_InterfaceOptions.Carbine.bTargetFrameFlipped and 1 or 2)
 	self.wndInterface:FindChild("MyUnitFrame"):SetRadioSel("MyUnitFrameFlipped", g_InterfaceOptions.Carbine.bMyUnitFrameFlipped and 1 or 2)
@@ -350,7 +348,7 @@ end
 -----------------------------------------------------------------------------------------------
 
 function OptionsInterface:OnWindowManagementRegister(tSettings)
-	if tSettings == nil or tSettings.strName == nil or string.len(tSettings.strName) == 0 then
+	if tSettings == nil or tSettings.strName == nil or Apollo.StringLength(tSettings.strName) == 0 then
 		return
 	end
 	
@@ -376,7 +374,7 @@ function OptionsInterface:OnWindowManagementRegister(tSettings)
 end
 
 function OptionsInterface:OnWindowManagementAdd(tSettings)
-	if tSettings == nil or tSettings.wnd == nil or not tSettings.wnd:IsValid() or tSettings.strName == nil or string.len(tSettings.strName) == 0 then
+	if tSettings == nil or tSettings.wnd == nil or not tSettings.wnd:IsValid() or tSettings.strName == nil or Apollo.StringLength(tSettings.strName) == 0 then
 		return
 	end
 	
@@ -432,7 +430,7 @@ function OptionsInterface:OnWindowManagementAdd(tSettings)
 end
 
 function OptionsInterface:OnWindowManagementRemove(tSettings)
-	if tSettings == nil or tSettings.strName == nil or string.len(tSettings.strName) == 0 then
+	if tSettings == nil or tSettings.strName == nil or Apollo.StringLength(tSettings.strName) == 0 then
 		return
 	end
 	
@@ -694,11 +692,6 @@ function OptionsInterface:OnCharacterFlagsUpdated()
 	self.wndInterface:FindChild("IgnoreDuelRequests"):SetCheck(GameLib.IsIgnoringDuelRequests())
 end
 
-function OptionsInterface:OnInvertMouse(wndHandler, wndControl)
-	Apollo.SetConsoleVariable("camera.invertMouse", wndControl:IsChecked())
-	Event_FireGenericEvent("GenericEvent_SystemChannelMessage", String_GetWeaselString(Apollo.GetString("InterfaceOptions_InvertMouseToggle"), wndControl:IsChecked() and Apollo.GetString("Command_Chat_True") or Apollo.GetString("Command_Chat_False")))
-end
-
 function OptionsInterface:OnMappedOptionsQuestCallouts(wndHandler, wndControl)
 	GameLib.ToggleQuestUnitCallouts()
 	g_InterfaceOptions.Carbine.bAreQuestUnitCalloutsVisible = GameLib.AreQuestUnitCalloutsVisible()
@@ -786,10 +779,6 @@ function OptionsInterface:OnToggleInteractTextOnUnit(wndHandler, wndControl)
 	g_InterfaceOptions.Carbine.bInteractTextOnUnit = wndHandler:IsChecked()
 	Event_FireGenericEvent("OptionsUpdated_HUDInteract")
 	Event_FireGenericEvent("GenericEvent_SystemChannelMessage", Apollo.GetString("HUDAlert_InteractTextVisibilityChanged"), wndHandler:IsChecked() and Apollo.GetString("Command_Chat_True") or Apollo.GetString("Command_Chat_False"))
-end
-
-function OptionsInterface:OnToggleDisplayWaveFlash(wndHandler, wndControl)
-	Apollo.SetConsoleVariable("ui.soldierHoldoutDisplayWaveFlash", wndHandler:IsChecked())
 end
 
 local OptionsInterfaceInst = OptionsInterface:new()

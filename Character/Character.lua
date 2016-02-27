@@ -177,6 +177,19 @@ local ktItemSlotToEquippedItems =
 	[GameLib.CodeEnumEquippedItems.WeaponPrimary] = GameLib.CodeEnumItemSlots.Weapon,
 }
 
+local ktVIPIcons = 
+{
+	[1] = "CRB_CN:CRB_CN_VIP1_C",
+	[2] = "CRB_CN:CRB_CN_VIP2_C",
+	[3] = "CRB_CN:CRB_CN_VIP3_C",
+	[4] = "CRB_CN:CRB_CN_VIP4_C",
+	[5] = "CRB_CN:CRB_CN_VIP5_C",
+	[6] = "CRB_CN:CRB_CN_VIP6_C",
+	[7] = "CRB_CN:CRB_CN_VIP7_C",
+	[8] = "CRB_CN:CRB_CN_VIP8_C",
+	[9] = "CRB_CN:CRB_CN_VIP9_C",
+	[10] = "CRB_CN:CRB_CN_VIP10_C",
+}
 function Character:new(o)
 	o = o or {}
 	setmetatable(o, self)
@@ -247,6 +260,7 @@ function Character:OnDocumentReady()
 	
 	Apollo.RegisterEventHandler("PlayerEquippedItemChanged",						"MapEquipment", self)
 
+	Apollo.RegisterEventHandler("PremiumTierChanged", 								"OnPremiumTierChanged", self)
 	Apollo.RegisterEventHandler("AccountEntitlementUpdate", 						"OnEntitlementUpdate", self)
 	Apollo.RegisterEventHandler("CharacterEntitlementUpdate",						"OnEntitlementUpdate", self)
 	Apollo.RegisterEventHandler("StoreLinksRefresh",								"RefreshStoreLink", self)
@@ -419,10 +433,87 @@ function Character:ShowCharacterWindow()
 	Event_ShowTutorial(GameLib.CodeEnumTutorial.CharacterPanel)
 end
 
+function Character:DrawPremiumTier(wndUpdate, ePremiumSystem, nTier)
+	local wndPremiumIcon = wndUpdate:FindChild("BGArt_OverallFrame:PremiumIcon")
+	if nTier < 1 then
+		wndPremiumIcon:Show(false)
+		return
+	end
+
+	local wndPlayerName = wndUpdate:FindChild("BGArt_OverallFrame:PlayerName")
+	wndPremiumIcon:Show(true)
+
+	local strSprite = "UI_BK3_PremiumCalloutBanner_CharacterPanel"
+	if ePremiumSystem == AccountItemLib.CodeEnumPremiumSystem.VIP and ktVIPIcons[nTier] then
+		strSprite = ktVIPIcons[nTier]
+	end
+
+	wndPremiumIcon:SetSprite(strSprite)
+
+	local knSpacing = 4
+	local nIconWidth = wndPremiumIcon:GetWidth()
+	local nTextWidth = Apollo.GetTextWidth("CRB_HeaderSmall", wndPlayerName:GetText())
+
+	local nIconLeft = (-nTextWidth / 2) - nIconWidth - knSpacing
+	local nIconRight = (-nTextWidth / 2) - knSpacing
+	local nLeft, nTop, nRight, nBottom = wndPlayerName:GetOriginalLocation():GetOffsets()
+
+	if nTextWidth + nIconWidth + knSpacing >= wndPlayerName:GetWidth() then
+		local nNewLeft = nLeft + nIconWidth + knSpacing
+		local nNewRight = nRight - nIconWidth
+		wndPlayerName:SetAnchorOffsets(nNewLeft, nTop, nNewRight, nBottom)--Shrink text box to be able to fit icon also!
+
+		nIconLeft = nNewLeft - nIconWidth - knSpacing
+		nIconRight = nNewLeft - knSpacing
+	else
+		wndPlayerName:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)--Stretch the text box back to original size.
+	end
+
+	wndPremiumIcon:SetAnchorOffsets(nIconLeft, nTop + knSpacing, nIconRight, nBottom - knSpacing)
+end
+
+function Character:OnPremiumTierChanged(ePremiumSystem, nTier)
+	if self.wndCharacter == nil then
+		return
+	end
+
+	self:DrawPremiumTier(self.wndCharacter, ePremiumSystem, nTier)
+	self:UpdateGuildHolomarks()
+end
+
 --Entitlements
 function Character:OnEntitlementUpdate(tEntitlementInfo)
 	self:RefreshEntitlements()
-	self:UpdateCostumeList(tEntitlementInfo)
+	if tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.CostumeSlots then
+		self:UpdateCostumeList()
+	end
+end
+
+function Character:UpdateGuildHolomarks()
+	if not self.wndCharacter or not self.wndCharacter:IsValid() then
+		return
+	end
+
+	local wndHolomarkContainer = self.wndCharacterTitles:FindChild("NameEditGuildHolomarkContainer")
+	local tHoloMarkInfo = 
+	{
+		[GameLib.CodeEnumHoloMark.Left] = wndHolomarkContainer:FindChild("GuildHolomarkLeftBtn"),
+		[GameLib.CodeEnumHoloMark.Right] = wndHolomarkContainer:FindChild("GuildHolomarkRightBtn"),
+		[GameLib.CodeEnumHoloMark.Back] = wndHolomarkContainer:FindChild("GuildHolomarkBackBtn"),
+	}
+
+	for eHoloMark, wndHoloBtn in pairs(tHoloMarkInfo) do
+		wndHoloBtn:Enable(GameLib.CanShowGuildHolomark(eHoloMark))
+	end
+	
+
+	local bShow = true
+	local tHoloRewardProperty = AccountItemLib.GetPlayerRewardProperty(AccountItemLib.CodeEnumRewardProperty.GuildHolomarkUnlimited)
+	if tHoloRewardProperty.nValue ~= nil then
+		bShow = tHoloRewardProperty.nValue == 0--0 is the value returned when the player does not reward property
+	end
+
+	wndHolomarkContainer:FindChild("VIPRestriction"):Show(bShow)
 end
 
 function Character:RefreshEntitlements()
@@ -478,11 +569,7 @@ function Character:RefreshEntitlements()
 	self.wndGridContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
-function Character:UpdateCostumeList(tEntitlementInfo)
-	if tEntitlementInfo.nEntitlementId ~= AccountItemLib.CodeEnumEntitlement.CostumeSlots then
-		return
-	end
-	
+function Character:UpdateCostumeList()
 	self.nCurrentCostume = CostumesLib.GetCostumeIndex()
 	local nCurrentCostumeCount = CostumesLib.GetCostumeCount()
 	if nCurrentCostumeCount < self.nCostumeCount then
@@ -506,7 +593,7 @@ function Character:UpdateCostumeList(tEntitlementInfo)
 	self.nCostumeCount = nCurrentCostumeCount
 	local nMTXBtnHeight = 0
 	local nCostumeMaxCount = CostumesLib.GetCostumeMaxCount()
-	if self.nCostumeCount < nCostumeMaxCount and self.bStoreLinkValid then
+	if self.nCostumeCount < nCostumeMaxCount and self.tStoreLinkValid[StorefrontLib.CodeEnumStoreLink.CostumeSlots] then
 		if wndCostumeBtnMTX == nil then
 			wndCostumeBtnMTX = Apollo.LoadForm(self.xmlDoc, "CostumeBtnMTX", self.wndCostumeList, self)
 			wndCostumeBtnMTX:SetData(nCostumeMaxCount)
@@ -525,12 +612,19 @@ function Character:UpdateCostumeList(tEntitlementInfo)
 end
 
 function Character:RefreshStoreLink()
-	self.bStoreLinkValid = StorefrontLib.IsLinkValid(StorefrontLib.CodeEnumStoreLink.CostumeSlots)
-	self:UpdateCostumeList( { nEntitlementId = AccountItemLib.CodeEnumEntitlement.CostumeSlots } )
+	self.tStoreLinkValid = {}
+	self.tStoreLinkValid[StorefrontLib.CodeEnumStoreLink.CostumeSlots] = StorefrontLib.IsLinkValid(StorefrontLib.CodeEnumStoreLink.CostumeSlots)
+	self.tStoreLinkValid[StorefrontLib.CodeEnumStoreLink.Signature] = StorefrontLib.IsLinkValid(StorefrontLib.CodeEnumStoreLink.Signature)
+	self:UpdateCostumeList()
 end
 
 function Character:UnlockMoreCostumes()
 	StorefrontLib.OpenLink(StorefrontLib.CodeEnumStoreLink.CostumeSlots)
+end
+
+
+function Character:OnJoinVIPBtn()
+	StorefrontLib.OpenLink(StorefrontLib.CodeEnumStoreLink.Signature)
 end
 
 function Character:OnCostumeBtnToggle(wndHandler, wndCtrl)
@@ -539,7 +633,7 @@ function Character:OnCostumeBtnToggle(wndHandler, wndCtrl)
 	end
 
 	--self.nCurrentCostume = CostumesLib.GetCostumeIndex()
-	
+
 	local idCostume = wndHandler:GetData()
 
 	local costumePreview = CostumesLib.GetCostume(idCostume)
@@ -580,7 +674,7 @@ function Character:OnNoCostumeBtn()
 	if self.nCurrentCostume == 0 then
 		return
 	end
-
+	
 	self.nCurrentCostume = 0
 	self:OnCostumeSet(self.nCurrentCostume)
 	
@@ -979,20 +1073,20 @@ function Character:DrawAttributes(wndUpdate)
 					if itemCurr:GetItemFamily() == Item.CodeEnumItem2Family.Costume then
 						bShowDurabilityBlocker = false
 					else
-						if nDurabilityRation <= .100 then
-							wndDurabilityMeter:SetBarColor("ffaf1212")
-							local wndDurabilityAlert = wndSlot:FindChild("DurabilityAlert")
-							if wndDurabilityAlert then
-								wndDurabilityAlert:Show(true)
-							end
-						elseif nDurabilityRation <= .250 then
-							wndDurabilityMeter:SetBarColor("ffffba00")
-						elseif nDurabilityRation <= .500 then
-							wndDurabilityMeter:SetBarColor("ffd7d017")
-						else 
-							wndDurabilityMeter:SetBarColor("ff129faf")
+					if nDurabilityRation <= .100 then
+						wndDurabilityMeter:SetBarColor("ffaf1212")
+						local wndDurabilityAlert = wndSlot:FindChild("DurabilityAlert")
+						if wndDurabilityAlert then
+							wndDurabilityAlert:Show(true)
 						end
+					elseif nDurabilityRation <= .250 then
+						wndDurabilityMeter:SetBarColor("ffffba00")
+					elseif nDurabilityRation <= .500 then
+						wndDurabilityMeter:SetBarColor("ffd7d017")
+					else 
+						wndDurabilityMeter:SetBarColor("ff129faf")
 					end
+				end
 					wndDurabilityBlocker:Show(bShowDurabilityBlocker)
 				end
 			end
@@ -1231,26 +1325,26 @@ function Character:DrawNames(wndUpdate)
 			nDisplayedLevel = tStats.nEffectiveLevel
 			strEffectiveLevelStatus = bMentoring and Apollo.GetString("CRB_Mentoring") or Apollo.GetString("MiniMap_Rallied")
 		end
-		
+
 		wndUpdate:FindChild("CharDataLevelBig"):SetText(nDisplayedLevel)
-		
+
 		wndAlert:Show(strEffectiveLevelStatus)
 
 		if wndAlert:IsShown() then
 			wndAlert:SetTooltip(strEffectiveLevelStatus)
 		end
 
-		local nRaceID = unitPlayer:GetRaceId()
-
-		wndUpdate:FindChild("BGArt_OverallFrame:PlayerName"):SetText(strTitleName)
+		local wndPlayerName = wndUpdate:FindChild("BGArt_OverallFrame:PlayerName")
+		wndPlayerName:SetText(strTitleName)
+		self:DrawPremiumTier(wndUpdate, AccountItemLib.GetPremiumSystem(), unitPlayer:GetPremiumTier())
 
 		if wndUpdate:FindChild("ClassTitleGuild") then
-			wndUpdate:FindChild("ClassTitleGuild"):SetText((string.len(strGuildName) > 0) and strGuildName or "")
+			wndUpdate:FindChild("ClassTitleGuild"):SetText((Apollo.StringLength(strGuildName) > 0) and strGuildName or "")
 		end
 
 		if wndUpdate:FindChild("InspectAffiliation") and unitPlayer:GetGuildType() and kstrInspectAffiliation[unitPlayer:GetGuildType()] then
 			local strCombined = String_GetWeaselString(kstrInspectAffiliation[unitPlayer:GetGuildType()], strGuildName)
-			wndUpdate:FindChild("InspectAffiliation"):SetText((string.len(strGuildName) > 0) and strCombined or "")
+			wndUpdate:FindChild("InspectAffiliation"):SetText((Apollo.StringLength(strGuildName) > 0) and strCombined or "")
 		end
 	end
 
@@ -1259,7 +1353,7 @@ function Character:DrawNames(wndUpdate)
 	local eClass = unitPlayer:GetClassId()
 	local ePath = unitPlayer:GetPlayerPathType()
 	local eRace = unitPlayer:GetRaceId()
-
+	
 	wndUpdate:FindChild("CharDataClassIcon"):SetTooltip(karClassToString[eClass] or "")
 	wndUpdate:FindChild("CharDataClassIcon"):SetSprite(karClassToIcon[eClass] or "")
 	wndUpdate:FindChild("CharDataPathIcon"):SetTooltip(ktPathToString[ePath] or "")
@@ -1340,25 +1434,15 @@ function Character:OnDrawEditNamePopout()
 
 		bInATeam = true
 	end
-	
-	local bSelectedWasGuild = guildSelected and guildSelected:GetType() == GuildLib.GuildType_Guild
+
 	self.wndCharacter:FindChild("NameEditGuildTagList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	self.wndCharacter:FindChild("FrameGuild"):Show(bInAGuild or bInATeam)
-	self.wndCharacter:FindChild("NameEditGuildHolomarkContainer"):Show(bInAGuild and bSelectedWasGuild)
+	self.wndCharacter:FindChild("NameEditGuildHolomarkContainer"):Show(bInAGuild and guildSelected and guildSelected:GetType() == GuildLib.GuildType_Guild)
 	local nHeight = self.wndCharacter:FindChild("ArrangedWindows"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	local nLeftOrig, nTopOrig, nRightOrig, nBottomOrig = self.wndCharacter:FindChild("NameEditTitleContainer"):GetOriginalLocation():GetOffsets()
 	self.wndCharacter:FindChild("NameEditTitleContainer"):SetAnchorOffsets(nLeftOrig, nTopOrig, nRightOrig, nTopOrig + nHeight)
 
-
-	wndHolomarkContainer = self.wndCharacter:FindChild("NameEditGuildHolomarkContainer")
-	
-	wndHolomarkContainer:FindChild("GuildHolomarkLeftBtn"):Enable(bSelectedWasGuild)
-	wndHolomarkContainer:FindChild("GuildHolomarkRightBtn"):Enable(bSelectedWasGuild)
-	wndHolomarkContainer:FindChild("GuildHolomarkBackBtn"):Enable(bSelectedWasGuild)
-	wndHolomarkContainer:FindChild("GuildHolomarkNearBtn"):Enable(bSelectedWasGuild)
-	wndHolomarkContainer:FindChild("GuildHolomarkFarBtn"):Enable(bSelectedWasGuild)
-
-
+	self:UpdateGuildHolomarks()
 	self:DrawNames(self.wndCharacter)
 end
 

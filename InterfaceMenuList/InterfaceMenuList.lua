@@ -312,8 +312,8 @@ end
 function InterfaceMenuList:IsPinned(strText)
 	local nHasTableValue = self:GetPinIndex(self.tPinnedAddons,strText)
 	if nHasTableValue ~= nil then 
-		return true
-	end
+			return true
+		end
 	
 	return false
 end
@@ -335,7 +335,7 @@ function InterfaceMenuList:FullListRedraw()
 			local wndMenuButton = self:LoadByName("InterfaceMenuButton", wndMenuItem:FindChild("Icon"), strAddonName)
 			local strTooltip = strAddonName
 			
-			if string.len(tData[2]) > 0 then
+			if Apollo.StringLength(tData[2]) > 0 then
 				local strKeyBindLetter = GameLib.GetKeyBinding(tData[2])
 				strKeyBindLetter = strKeyBindLetter == strUnbound and "" or string.format(" (%s)", strKeyBindLetter)  -- LOCALIZE
 				
@@ -358,7 +358,7 @@ function InterfaceMenuList:FullListRedraw()
 			wndMenuItem:FindChild("PinBtn"):SetCheck(self:IsPinned(strAddonName))
 			wndMenuItem:FindChild("PinBtn"):SetData(strAddonName)
 			
-			if string.len(tData[2]) > 0 then
+			if Apollo.StringLength(tData[2]) > 0 then
 				local strKeyBindLetter = GameLib.GetKeyBinding(tData[2])
 				wndMenuItem:FindChild("MenuListItemBtn"):FindChild("MenuListItemKeybind"):SetText(strKeyBindLetter == strUnbound and "" or string.format("(%s)", strKeyBindLetter))  -- LOCALIZE
 			end
@@ -398,7 +398,7 @@ function InterfaceMenuList:AddPinToButtonList(strAddonName)
 		local wndMenuItem = self:LoadByName("InterfaceMenuButton", wndParent, strAddonName)
 		local strTooltip = strAddonName
 
-		if string.len(tData[2]) > 0 then
+			if Apollo.StringLength(tData[2]) > 0 then
 			local strKeyBindLetter = GameLib.GetKeyBinding(tData[2])
 			strKeyBindLetter = strKeyBindLetter == strUnbound and "" or string.format(" (%s)", strKeyBindLetter)  -- LOCALIZE
 			strTooltip = strKeyBindLetter ~= "" and strTooltip .. strKeyBindLetter or strTooltip
@@ -441,7 +441,7 @@ end
 -----------------------------------------------------------------------------------------------
 
 function InterfaceMenuList:OnSearchEditBoxChanged(wndHandler, wndControl)
-	self.wndList:FindChild("SearchClearBtn"):Show(string.len(wndHandler:GetText() or "") > 0)
+	self.wndList:FindChild("SearchClearBtn"):Show(Apollo.StringLength(wndHandler:GetText() or "") > 0)
 	self:FullListRedraw()
 end
 
@@ -492,7 +492,7 @@ function InterfaceMenuList:OnDrawAlertVisual(strAddonName, tParams)
 	local wndButtonListItem = wndButtonList:FindChild("InterfaceMenuButton_" .. strAddonName)
 	local nPinIndex = self:GetPinIndex(self.tPinnedAddons, strAddonName)
 	
-	if wndButtonListItem and nPinIndex ~= nil then
+	if wndButtonListItem and nPinIndex ~= nil then 
 		local wndButton = wndButtonListItem:FindChild("ShortcutBtn")
 				local wndIcon = wndButton:FindChild("Icon")
 				
@@ -561,7 +561,7 @@ function InterfaceMenuList:OnMenuListItemClick(wndHandler, wndControl)
 	local strKey = wndHandler:GetData()
 	local strMappingResult = (strKey and self.tMenuData[strKey]) and self.tMenuData[strKey][1] or ""
 	
-	if string.len(strMappingResult) > 0 then
+	if Apollo.StringLength(strMappingResult) > 0 then
 		Event_FireGenericEvent(strMappingResult)
 	else
 		if strKey == Apollo.GetString("InterfaceMenu_SystemMenu") then
@@ -599,7 +599,7 @@ function InterfaceMenuList:OnListBtnClick(wndHandler, wndControl) -- These are t
 	local strKey = wndHandler:GetData()
 	local strMappingResult = wndHandler:GetData() and self.tMenuData[strKey][1] or ""
 	
-	if string.len(strMappingResult) > 0 then
+	if Apollo.StringLength(strMappingResult) > 0 then
 		Event_FireGenericEvent(strMappingResult)
 	else
 		if strKey == Apollo.GetString("InterfaceMenu_SystemMenu") then

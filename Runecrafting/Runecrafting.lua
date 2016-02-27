@@ -158,6 +158,8 @@ function Runecrafting:Initialize()
 	else
 		self:InitFilters()
 	end
+	
+	Sound.Play(Sound.PlayUIWindowCraftingOpen)
 end
 
 function Runecrafting:OnCloseFromUI(wndHandler, wndControl)
@@ -188,6 +190,7 @@ function Runecrafting:OnClose()
 		self.wndSelectedElement = nil
 		self.wndSelection = nil
 		
+		Sound.Play(Sound.PlayUIWindowMetalClose)
 		Event_CancelEngravingStation()
 	end
 end
@@ -878,6 +881,8 @@ function Runecrafting:OnRuneSlotBtn(wndHandler, wndControl)
 		return
 	end
 	
+	Sound.Play(Sound.PlayUIWindowMetalOpen)
+	
 	local tData = wndHandler:GetData()
 	
 	if tData.itemRune then
@@ -1057,6 +1062,7 @@ function Runecrafting:BuildRerollOptions(wndHandler, wndControl)
 	end
 	
 	wndContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	Sound.Play(Sound.PlayUIWindowHoloOpen)
 end
 
 function Runecrafting:BuildAddSlotOptions(wndHandler, wndControl)
@@ -1121,6 +1127,7 @@ function Runecrafting:BuildAddSlotOptions(wndHandler, wndControl)
 	end
 	
 	wndContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	Sound.Play(Sound.PlayUIButtonWindowOpen)
 end
 
 function Runecrafting:OnPurchaseWithServiceTokens(wndHandler, wndControl)
@@ -1136,6 +1143,10 @@ end
 
 function Runecrafting:OnRuneSlotAdded()
 	Sound.Play(Sound.PlayUIAddRuneSlot)
+end
+
+function Runecrafting:OnOptionSelected()
+	Sound.Play(Sound.PlayUIButtonHoloSmall)
 end
 
 function Runecrafting:OnServiceTokenClosed_RuneCrafting(strParent, eActionConfirmEvent)
@@ -1287,7 +1298,7 @@ function Runecrafting:OnAddConfirmYes(wndHandler, wndControl) -- Potentially fro
 			local tSounds = karElementsToSounds[eElement]
 			local arSetBonuses = tConfirmData.itemSource:GetSetBonuses()
 			if tSounds then
-				if #arSetBonuses > 0 and tSounds.soundSet ~= nil then
+				if #arSetBonuses > 0 and tSounds.eSet ~= nil then
 					Sound.Play(tSounds.eSet)--Set Bonus Sound.
 				else
 					Sound.Play(tSounds.eNonSet)--Normal element sound.

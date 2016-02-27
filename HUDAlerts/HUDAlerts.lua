@@ -292,7 +292,7 @@ function HUDAlerts:RebuildQuestList()
 		for idx2, tCurrQuest in pairs(tEpisode:GetTrackedQuests()) do
 			if tCurrQuest:GetState() == Quest.QuestState_Achieved then
 				local tContactInfo = tCurrQuest:GetContactInfo()
-				if tContactInfo and tContactInfo.strName and string.len(tContactInfo.strName) > 0 then -- Has a call back
+				if tContactInfo and tContactInfo.strName and Apollo.StringLength(tContactInfo.strName) > 0 then -- Has a call back
 					table.insert(tQuestsTracked, tCurrQuest)
 				end
 			end

@@ -8,11 +8,12 @@ require "Apollo"
 require "GameLib"
 require "GroupLib"
 require "PlayerPathLib"
+require "AccountItemLib"
 
 local XPBar = {}
 local knMaxLevel = 50 -- TODO: Replace with a variable from code
 local knMaxPathLevel = 30 -- TODO: Replace this with a non hardcoded value
-local knDefaultAltCurrency = 6 -- index into karCurrency for Credits
+local knDefaultAltCurrency = 6
 
 local karCurrency =  	
 {						-- To add a new currency just add an entry to the table; the UI will do the rest. Idx == 1 will be the default one shown
@@ -21,7 +22,7 @@ local karCurrency =
 	{eType = Money.CodeEnumCurrencyType.Glory, 						strTitle = Apollo.GetString("CRB_Glory"), 						strDescription = Apollo.GetString("CRB_Glory_Desc")},
 	{eType = Money.CodeEnumCurrencyType.Prestige, 					strTitle = Apollo.GetString("CRB_Prestige"), 					strDescription = Apollo.GetString("CRB_Prestige_Desc")},
 	{eType = Money.CodeEnumCurrencyType.CraftingVouchers, 			strTitle = Apollo.GetString("CRB_Crafting_Vouchers"), 			strDescription = Apollo.GetString("CRB_Crafting_Voucher_Desc")},
-	{eType = AccountItemLib.CodeEnumAccountCurrency.Omnibits, 		strTitle = Apollo.GetString("CRB_OmniBits"), 					strDescription = Apollo.GetString("CRB_OmniBits_Desc"), bAccountItem = true},
+	-- Will be alternative account currency for the sixth index
 	{eType = AccountItemLib.CodeEnumAccountCurrency.ServiceToken, 	strTitle = Apollo.GetString("AccountInventory_ServiceToken"), 	strDescription = Apollo.GetString("AccountInventory_ServiceToken_Desc"), bAccountItem = true},
 	{eType = AccountItemLib.CodeEnumAccountCurrency.MysticShiny, 	strTitle = Apollo.GetString("CRB_FortuneCoin"), 				strDescription = Apollo.GetString("CRB_FortuneCoin_Desc"), bAccountItem = true},
 }
@@ -80,6 +81,13 @@ end
 function XPBar:OnLoad()
 	self.xmlDoc = XmlDoc.CreateFromFile("XPBar.xml")
 	self.xmlDoc:RegisterCallback("OnDocumentReady", self) 
+	
+	if AccountItemLib.GetAlternativeCurrency() == AccountItemLib.CodeEnumAccountCurrency.Omnibits then
+		table.insert(karCurrency, 6, {eType = AccountItemLib.CodeEnumAccountCurrency.Omnibits, strTitle = Apollo.GetString("CRB_OmniBits"), strDescription = Apollo.GetString("CRB_OmniBits_Desc"), bAccountItem = true})
+	elseif AccountItemLib.GetAlternativeCurrency() == AccountItemLib.CodeEnumAccountCurrency.Loyalty then
+		table.insert(karCurrency, 6, {eType = AccountItemLib.CodeEnumAccountCurrency.Loyalty, strTitle = Apollo.GetString("CRB_Loyalty"), strDescription = Apollo.GetString("CRB_Loyalty_Desc"), bAccountItem = true})
+	end
+	
 	self.nAltCurrencySelected = knDefaultAltCurrency
 end
 
@@ -103,7 +111,7 @@ function XPBar:OnDocumentReady()
 	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 	"OnTutorial_RequestUIAnchor", self)
 	Apollo.RegisterEventHandler("UpdateInventory", 				"OnUpdateInventory", self)
 	Apollo.RegisterEventHandler("PersonaUpdateCharacterStats",	"OnUpdateInventory", self)
-	Apollo.RegisterEventHandler("KeyBindingKeyChanged",						"OnKeyBindingKeyChanged", self)
+	Apollo.RegisterEventHandler("PremiumTierChanged",			"OnPremiumTierChanged", self)
 
 
 	self.wndArt = Apollo.LoadForm(self.xmlDoc, "BaseBarCornerArt", "FixedHudStratum", self)
@@ -161,22 +169,7 @@ function XPBar:OnDocumentReady()
 	self:UpdateAltCashDisplay()
 	self.xmlDoc = nil
 	
-	local bSignature = AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0
-	local strKeyBinding = GameLib.GetKeyBindingByEnum(GameLib.CodeEnumInputAction.Store)
-	local strSignaturePlayerTooltip = nil
-	if bSignature then
-		self.wndMain:FindChild("SignatureIndicator"):SetSprite("HUD_BottomBar:spr_HUD_SignatureAlert_On")
-		self.wndMain:FindChild("SignatureTitle"):SetText(Apollo.GetString("Storefront_SignatureCaps"))
-		local strSigBody = String_GetWeaselString(Apollo.GetString("HUD_SignatureStatusActiveDesc"), strKeyBinding)
-		strSignaturePlayerTooltip = string.format("<P Font=\"CRB_HeaderTiny\"><T TextColor=\"UI_WindowTitleYellow\">%s</T><T TextColor=\"UI_BtnTextGreenNormal\"> %s</T></P><P Font=\"CRB_InterfaceSmall\" TextColor=\"UI_TextHoloBody\">%s</P>", Apollo.GetString("CRB_SignatureStatusColon"), Apollo.GetString("QuestLog_Active"), strSigBody)
-	else
-		self.wndMain:FindChild("SignatureIndicator"):SetSprite("HUD_BottomBar:spr_HUD_SignatureAlert_Off")
-		self.wndMain:FindChild("SignatureTitle"):SetText(Apollo.GetString("CRB_Basic"))
-		local strSigBody = String_GetWeaselString(Apollo.GetString("HUD_SignatureStatusInactiveDesc"), strKeyBinding)
-		strSignaturePlayerTooltip = string.format("<P Font=\"CRB_HeaderTiny\"><T TextColor=\"UI_WindowTitleYellow\">%s</T><T TextColor=\"Reddish\"> %s</T></P><P Font=\"CRB_InterfaceSmall\" TextColor=\"ff39b5d4\">%s</P>", Apollo.GetString("CRB_SignatureStatusColon"), Apollo.GetString("SettlerMission_Inactive"), strSigBody)
-	end
-
-	self.wndMain:FindChild("SignatureIndicator"):SetTooltip(strSignaturePlayerTooltip)
+	self:OnPremiumTierChanged(AccountItemLib.GetPremiumSystem(), AccountItemLib.GetPremiumTier())
 end
 
 function XPBar:OnCurrencyPanelToggle(wndHandler, wndControl) -- OptionsBtn
@@ -208,7 +201,7 @@ function XPBar:UpdateAltCash(wndHandler, wndControl) -- Also from PickerEntryBtn
 	
 	self:UpdateAltCashDisplay()
 
-	tData.wnd:FindChild("EntryCash"):SetAmount(self:HelperGetCurrencyAmmount(tData), true)
+	tData.wnd:FindChild("EntryCash"):SetAmount(self:HelperGetCurrencyAmount(tData), true)
 	if self.wndCurrencyDisplay:IsShown() then
 		self.wndCurrencyDisplay:Show(false)
 	end
@@ -216,7 +209,7 @@ end
 
 function XPBar:UpdateAltCashDisplay()
 	local tData = karCurrency[self.nAltCurrencySelected]
-	self.wndInvokeForm:FindChild("AltCashWindow"):SetAmount(self:HelperGetCurrencyAmmount(tData), true)
+	self.wndInvokeForm:FindChild("AltCashWindow"):SetAmount(self:HelperGetCurrencyAmount(tData), true)
 	self.wndInvokeForm:FindChild("MainCashWindow"):SetAmount(GameLib.GetPlayerCurrency(), true)
 
 	local strDescription = tData.strDescription
@@ -235,7 +228,7 @@ function XPBar:UpdateAltCashDisplay()
 	self.wndArt:FindChild("BottomBarBaseRightCap"):SetAnchorOffsets(nRightCap - self.nLeftCapOrigWidth - nAltCurrencyWidth, nTopCap, nRightCap, nBottomCap)
 end
 
-function XPBar:HelperGetCurrencyAmmount(tData)
+function XPBar:HelperGetCurrencyAmount(tData)
 	local monAmount = 0
 	if tData.bAccountItem then
 		monAmount = AccountItemLib.GetAccountCurrency(tData.eType)
@@ -626,6 +619,50 @@ end
 
 function XPBar:OnToggleFromDatachronIcon()
 	Event_FireGenericEvent("InterfaceMenu_ToggleInventory")
+end
+
+---------------------------------------------------------------------------------------------------
+-- Premium System Updates
+---------------------------------------------------------------------------------------------------
+
+function XPBar:OnPremiumTierChanged(ePremiumSystem, nTier)
+	self.ePremiumSystem = ePremiumSystem
+	self.nPremiumTier = nTier
+	
+	local bIsHybrid = self.ePremiumSystem == AccountItemLib.CodeEnumPremiumSystem.Hybrid
+	local bIsVIP = self.ePremiumSystem == AccountItemLib.CodeEnumPremiumSystem.VIP
+	local strKeyBinding = GameLib.GetKeyBindingByEnum(GameLib.CodeEnumInputAction.Store)
+	local strPremiumPlayerTooltip = nil
+	local strPremiumPlayerTitle = nil
+	
+	if bIsHybrid then
+		if self.nPremiumTier < AccountItemLib.GetPremiumTierMax() then
+			self.wndMain:FindChild("PremiumIndicator"):SetSprite("HUD_BottomBar:spr_HUD_SignatureAlert_Off")
+			strPremiumPlayerTitle = Apollo.GetString("CRB_Basic")
+			local strSigBody = String_GetWeaselString(Apollo.GetString("HUD_SignatureStatusInactiveDesc"), strKeyBinding)
+			strPremiumPlayerTooltip = string.format("<P Font=\"CRB_HeaderTiny\"><T TextColor=\"UI_WindowTitleYellow\">%s</T><T TextColor=\"Reddish\"> %s</T></P><P Font=\"CRB_InterfaceSmall\" TextColor=\"ff39b5d4\">%s</P>", Apollo.GetString("CRB_SignatureStatusColon"), Apollo.GetString("SettlerMission_Inactive"), strSigBody)
+		else
+			self.wndMain:FindChild("PremiumIndicator"):SetSprite("HUD_BottomBar:spr_HUD_SignatureAlert_On")
+			strPremiumPlayerTitle = Apollo.GetString("Storefront_SignatureCaps")
+			local strSigBody = String_GetWeaselString(Apollo.GetString("HUD_SignatureStatusActiveDesc"), strKeyBinding)
+			strPremiumPlayerTooltip = string.format("<P Font=\"CRB_HeaderTiny\"><T TextColor=\"UI_WindowTitleYellow\">%s</T><T TextColor=\"UI_BtnTextGreenNormal\"> %s</T></P><P Font=\"CRB_InterfaceSmall\" TextColor=\"UI_TextHoloBody\">%s</P>", Apollo.GetString("CRB_SignatureStatusColon"), Apollo.GetString("QuestLog_Active"), strSigBody)
+		end
+	elseif bIsVIP then
+		if self.nPremiumTier < 1 then
+			self.wndMain:FindChild("PremiumIndicator"):SetSprite("HUD_BottomBar:spr_HUD_SignatureAlert_Off")
+			strPremiumPlayerTitle = Apollo.GetString("CRB_Basic")
+			local strSigBody = String_GetWeaselString(Apollo.GetString("HUD_VIPStatusInactiveDesc"), strKeyBinding)
+			strPremiumPlayerTooltip = string.format("<P Font=\"CRB_HeaderTiny\"><T TextColor=\"UI_WindowTitleYellow\">%s</T><T TextColor=\"Reddish\"> %s</T></P><P Font=\"CRB_InterfaceSmall\" TextColor=\"ff39b5d4\">%s</P>", Apollo.GetString("CRB_VIPStatusColon"), Apollo.GetString("SettlerMission_Inactive"), strSigBody)
+		else
+			self.wndMain:FindChild("PremiumIndicator"):SetSprite("HUD_BottomBar:spr_HUD_SignatureAlert_On")
+			strPremiumPlayerTitle = Apollo.GetString("Storefront_VIPPlayer")
+			local strSigBody = String_GetWeaselString(Apollo.GetString("HUD_VIPStatusActiveDesc"), strKeyBinding)
+			strPremiumPlayerTooltip = string.format("<P Font=\"CRB_HeaderTiny\"><T TextColor=\"UI_WindowTitleYellow\">%s</T><T TextColor=\"UI_BtnTextGreenNormal\"> %s</T></P><P Font=\"CRB_InterfaceSmall\" TextColor=\"UI_TextHoloBody\">%s</P>", Apollo.GetString("CRB_VIPStatusColon"), Apollo.GetString("QuestLog_Active"), strSigBody)
+		end
+	end
+	
+	self.wndMain:FindChild("PremiumIndicator"):SetTooltip(strPremiumPlayerTooltip)
+	self.wndMain:FindChild("PremiumTitle"):SetText(strPremiumPlayerTitle)
 end
 
 ---------------------------------------------------------------------------------------------------

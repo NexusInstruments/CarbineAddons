@@ -10,6 +10,7 @@ require "ChatSystemLib"
 require "FriendshipLib"
 require "MatchingGame"
 require "HousingLib"
+require "AccountItemLib"
 
 local knXCursorOffset = 10
 local knYCursorOffset = 25
@@ -108,6 +109,8 @@ function ContextMenuPlayer:OnDocumentReady()
 	Apollo.RegisterEventHandler("Group_Left", 			"OnEventRequestResize", self)
 	Apollo.RegisterEventHandler("FriendshipUpdate", 	"OnEventRequestResize", self)
 	Apollo.RegisterEventHandler("TargetUnitChanged", 	"OnTargetUnitChanged", self)
+	Apollo.RegisterEventHandler("PremiumTierChanged", 	"OnPremiumTierOrPlayerLevelChanged", self)
+	Apollo.RegisterEventHandler("PlayerLevelChange", 	"OnPremiumTierOrPlayerLevelChanged", self)
 end
 
 function ContextMenuPlayer:SharedInitialize(wndParent)
@@ -124,6 +127,8 @@ function ContextMenuPlayer:SharedInitialize(wndParent)
 
 	local tCursor = Apollo.GetMouse()
 	self.wndMain:Move(tCursor.x - knXCursorOffset, tCursor.y - knYCursorOffset, self.wndMain:GetWidth(), self.wndMain:GetHeight())
+	
+	self:UpdatePlayerRewardProperties()
 end
 
 function ContextMenuPlayer:InitializeFriend(wndParent, nFriendId)
@@ -358,7 +363,12 @@ function ContextMenuPlayer:RedrawAll()
 			-- Trade always visible, just enabled/disabled
 			local eCanTradeResult = P2PTrading.CanInitiateTrade(unitTarget)
 			local wndCurr = self:HelperBuildRegularButton(wndButtonList, "BtnTrade", Apollo.GetString("ContextMenu_Trade"))
-			self:HelperEnableDisableRegularButton(wndCurr, eCanTradeResult == P2PTrading.P2PTradeError_Ok or eCanTradeResult == P2PTrading.P2PTradeError_TargetRangeMax)
+			local bEnabled = eCanTradeResult == P2PTrading.P2PTradeError_Ok or eCanTradeResult == P2PTrading.P2PTradeError_TargetRangeMax
+			local strTooltip = ""
+			if not bEnabled then
+				strTooltip = self.strTradeBtnTooltip
+			end
+			self:HelperEnableDisableRegularButton(wndCurr, bEnabled, strTooltip)
 			
 			-- Duel
 			local eCurrentZonePvPRules = GameLib.GetCurrentZonePvpRules()
@@ -502,14 +512,14 @@ function ContextMenuPlayer:RedrawAll()
 
 			if bInMatchingGame and not bIsMatchingGameFinished then
 				local wndCurr = self:HelperBuildRegularButton(wndGroupListItems, "BtnVoteToKick", Apollo.GetString("ContextMenu_VoteToKick"))
-				self:HelperEnableDisableRegularButton(wndCurr, not MatchingGame.IsVoteKickActive())
+				self:HelperEnableDisableRegularButton(wndCurr, not MatchingGame.IsVoteKickActive(), "")
 			end
 
 			if bInMatchingGame and not bIsMatchingGameFinished then
 				local tMatchState = MatchingGame:GetPVPMatchState()
 				if tMatchState and tMatchState.eRules ~= MatchingGame.Rules.DeathmatchPool then
 					local wndCurr = self:HelperBuildRegularButton(wndGroupListItems, "BtnVoteToDisband", Apollo.GetString("ContextMenu_VoteToDisband"))
-					self:HelperEnableDisableRegularButton(wndCurr, not MatchingGame.IsVoteSurrenderActive())
+					self:HelperEnableDisableRegularButton(wndCurr, not MatchingGame.IsVoteSurrenderActive(), "")
 				end
 			end
 
@@ -659,8 +669,8 @@ function ContextMenuPlayer:CheckWindowBounds()
 		end
 
 		if bSafeY == false then
-			nBottom = nTop + knYCursorOffset
-			nTop = nBottom - nHeight
+			nBottom = nTop
+			nTop = nTop - self.wndMain:FindChild("ContextMenuPlayerContainer"):GetHeight()
 		end
 
 		if bSafeX == false or bSafeY == false then
@@ -811,7 +821,7 @@ function ContextMenuPlayer:ProcessContextClick(eButtonType)
 	elseif eButtonType == "BtnPvPFlag" then
 		GameLib.TogglePvpFlags()
 	elseif eButtonType and string.find(eButtonType, "BtnMark") ~= 0 and unitTarget then
-		unitTarget:SetTargetMarker(tonumber(string.sub(eButtonType, string.len("BtnMark_"))))
+		unitTarget:SetTargetMarker(tonumber(string.sub(eButtonType, Apollo.StringLength("BtnMark_"))))
 	end
 end
 
@@ -835,17 +845,25 @@ function ContextMenuPlayer:OnMainWindowClosed(wndHandler, wndControl)
 end
 
 function ContextMenuPlayer:OnRegularBtn(wndHandler, wndControl)
+	if wndHandler ~= wndControl then
+		return
+	end
+
 	self:ProcessContextClick(wndHandler:GetData())
 	self:OnMainWindowClosed()
 end
 
-function ContextMenuPlayer:OnBtnRegularMouseDown(wndHandler, wndControl)
-	self:OnRegularBtn(wndHandler:GetParent(), wndHandler:GetParent())
+function ContextMenuPlayer:OnRegularBtnParent(wndHandler, wndControl)
+	self:OnRegularBtn(wndHandler:GetParent(), wndControl:GetParent())
 end
 
 function ContextMenuPlayer:OnBtnCheckboxMouseDown(wndHandler, wndControl)
 	for idx, wndCurr in pairs(self.wndMain:FindChild("ButtonList"):GetChildren()) do
-		wndCurr:SetCheck(wndHandler == wndCurr:FindChild("BtnCheckboxMouseCatcher") and not wndCurr:IsChecked())
+		local wndCurrBtn = wndCurr:FindChild("BtnRegular")
+		if wndCurrBtn == nil then
+			wndCurrBtn = wndCurr
+		end
+		wndCurrBtn:SetCheck(wndHandler == wndCurr:FindChild("BtnCheckboxMouseCatcher") and not wndCurr:IsChecked())
 	end
 	return true
 end
@@ -866,6 +884,28 @@ function ContextMenuPlayer:OnEventRequestResize()
 	self:RedrawAll()
 end
 
+function ContextMenuPlayer:OnPremiumTierOrPlayerLevelChanged()
+	local bCanTrade = self.bCanTrade
+	self:UpdatePlayerRewardProperties()
+	if bCanTrade ~= self.bCanTrade then
+		self:RedrawAll()
+	end
+end
+
+function ContextMenuPlayer:UpdatePlayerRewardProperties()
+	if AccountItemLib.GetPremiumSystem() == AccountItemLib.CodeEnumPremiumSystem.VIP then
+		self.bCanTrade = AccountItemLib.GetPlayerRewardProperty(AccountItemLib.CodeEnumRewardProperty.Trading).nValue ~= 0
+		
+		if self.bCanTrade then
+			self.strTradeBtnTooltip = ""
+		else
+			self.strTradeBtnTooltip = String_GetWeaselString(Apollo.GetString("ContextMenuPlayer_TradeRequirements"), P2PTrading.GetMinimumTradeLevel())
+		end
+	else
+		self.strTradeBtnTooltip = ""
+	end
+end
+
 function ContextMenuPlayer:HelperBuildPetDismissButton(wndButtonList, eButtonType, strButtonText, unitTarget)
 	-- TODO 2nd argument probably shouldn't be a string, and doesn't need to be localized
 	local wndCurr = self:FactoryProduce(wndButtonList, "BtnPetDismiss", eButtonType)
@@ -877,20 +917,22 @@ end
 
 function ContextMenuPlayer:HelperBuildRegularButton(wndButtonList, eButtonType, strButtonText)
 	-- TODO 2nd argument probably shouldn't be a string, and doesn't need to be localized
-	local wndCurr = self:FactoryProduce(wndButtonList, "BtnRegular", eButtonType)
+	local wndCurr = self:FactoryProduce(wndButtonList, "BtnRegularContainer", eButtonType)
 	wndCurr:FindChild("BtnText"):SetText(strButtonText)
 	return wndCurr
 end
 
-function ContextMenuPlayer:HelperEnableDisableRegularButton(wndCurr, bEnable)
-	if bEnable and wndCurr:ContainsMouse() then
-		wndCurr:FindChild("BtnText"):SetTextColor("UI_BtnTextBlueFlyBy")
+function ContextMenuPlayer:HelperEnableDisableRegularButton(wndCurr, bEnable, strTooltip)
+	local wndCurrBtn = wndCurr:FindChild("BtnRegular")
+	if bEnable and wndCurrBtn:ContainsMouse() then
+		wndCurrBtn:FindChild("BtnText"):SetTextColor("UI_BtnTextBlueFlyBy")
 	elseif bEnable then
-		wndCurr:FindChild("BtnText"):SetTextColor("UI_BtnTextBlueNormal")
+		wndCurrBtn:FindChild("BtnText"):SetTextColor("UI_BtnTextBlueNormal")
 	else
-		wndCurr:FindChild("BtnText"):SetTextColor("UI_BtnTextBlueDisabled")
+		wndCurrBtn:FindChild("BtnText"):SetTextColor("UI_BtnTextBlueDisabled")
 	end
-	wndCurr:Enable(bEnable)
+	wndCurr:SetTooltip(strTooltip)
+	wndCurrBtn:Enable(bEnable)
 end
 
 function ContextMenuPlayer:FactoryProduce(wndParent, strFormName, tObject)

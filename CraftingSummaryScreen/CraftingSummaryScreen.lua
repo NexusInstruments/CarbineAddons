@@ -249,11 +249,11 @@ end
 
 function CraftingSummaryScreen:HelperWriteToCraftingSummaryDetails(strMessage)
 	-- Add a line break if not the first
-	if strMessage ~= "" and self.strOnGoingMessage ~= "" and string.len(strMessage) > 0 and string.len(self.strOnGoingMessage) > 0 then
+	if strMessage ~= "" and self.strOnGoingMessage ~= "" and Apollo.StringLength(strMessage) > 0 and Apollo.StringLength(self.strOnGoingMessage) > 0 then
 		strMessage = strMessage .. "<P Font=\"CRB_InterfaceMedium_B\" TextColor=\"0\">.</P>"
 	end
 
-	if strMessage ~= "" and string.len(strMessage) > 0 then
+	if strMessage ~= "" and Apollo.StringLength(strMessage) > 0 then
 		local strFont = "<P Font=\"CRB_InterfaceMedium_B\" TextColor=\"UI_TextHoloBody\">"
 		self.strOnGoingMessage = string.format("%s%s</P>%s%s</P>", strFont, strMessage, strFont, self.strOnGoingMessage or "")
 	end

@@ -154,7 +154,7 @@ function ArenaTeamRegister:OnNameChanging(wndHandler, wndControl)
 		local eProfanityFilter = GameLib.CodeEnumUserTextFilterClass.Strict
 		local bIsValid = GameLib.IsTextValid(strInput, GameLib.CodeEnumUserText.GuildName, eProfanityFilter)
 	
-		local nNameLength = string.len(strInput)
+		local nNameLength = Apollo.StringLength(strInput)
 		local nMaxLength = GameLib.GetTextTypeMaxLength(GameLib.CodeEnumUserText.GuildName)
 		
 		wndLimit:SetText(String_GetWeaselString(Apollo.GetString("CRB_Progress"), nNameLength, nMaxLength))

@@ -60,6 +60,10 @@ local ktCurrencies =
 	},
 }
 
+local nBuffer = 165 -- Buffer for resizing popup containers
+local nAlertBuffer = 192 -- Buffer for resizing popup alerts
+local nMaxHeight = 500 -- Max height for container resizing
+
 function AccountInventory:new(o)
     o = o or {}
     setmetatable(o, self)
@@ -254,7 +258,7 @@ function AccountInventory:SetupMainWindow()
 	self.tWndRefs.wndMain = Apollo.LoadForm(self.xmlDoc, "AccountInventoryForm", nil, self)
 	self.tWndRefs.wndMain:Invoke()
 	
-	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.tWndRefs.wndMain, strName = Apollo.GetString("AccountInv_TitleText"), nSaveVersion = 2})
+	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.tWndRefs.wndMain, strName = Apollo.GetString("AccountInv_TitleText"), nSaveVersion = 3})
 	Event_ShowTutorial(GameLib.CodeEnumTutorial.General_AccountServices)
 
 	--Containers
@@ -284,18 +288,16 @@ function AccountInventory:SetupMainWindow()
 	self.tWndRefs.wndInventoryFilterLockedBtn = self.tWndRefs.wndMain:FindChild("ContentContainer:Inventory:Container:InventoryFilterLockedBtn")
 
 	--Inventory Confirm
-	self.tWndRefs.wndPendingClaimContainer = self.tWndRefs.wndMain:FindChild("ContentContainer:InventoryClaimConfirm:PendingClaimContainer")
-	self.tWndRefs.wndInventoryTakeConfirmContainer = self.tWndRefs.wndMain:FindChild("ContentContainer:InventoryTakeConfirm:TakeContainer")
-	self.tWndRefs.wndInventoryCreddRedeemConfirmContainer = self.tWndRefs.wndMain:FindChild("ContentContainer:InventoryRedeemCreddConfirm:RedeemContainer")
+	self.tWndRefs.wndPendingClaimContainer = self.tWndRefs.wndMain:FindChild("ContentContainer:InventoryClaimConfirm:Container:PendingClaimContainer")
+	self.tWndRefs.wndInventoryTakeConfirmContainer = self.tWndRefs.wndMain:FindChild("ContentContainer:InventoryTakeConfirm:Container:TakeContainer")
+	self.tWndRefs.wndInventoryCreddRedeemConfirmContainer = self.tWndRefs.wndMain:FindChild("ContentContainer:InventoryRedeemCreddConfirm:Container:RedeemContainer")
 
 	--Inventory Gift
-	self.tWndRefs.wndInventoryGiftFriendContainer = self.tWndRefs.wndMain:FindChild("ContentContainer:InventoryGift:FriendContainer")
-	self.tWndRefs.wndInventoryGiftFriendSelectBtn = self.tWndRefs.wndMain:FindChild("ContentContainer:InventoryGift:GiftBtn")
-	self.tWndRefs.wndInventoryGiftConfirmItemContainer = self.tWndRefs.wndMain:FindChild("ContentContainer:InventoryGiftConfirm:InventoryGiftConfirmItemContainer")
-	self.tWndRefs.wndInventoryGiftReturnConfirmItemContainer = self.tWndRefs.wndMain:FindChild("ContentContainer:InventoryGiftReturnConfirm:InventoryGiftReturnContainer")
-
-	self.tWndRefs.wndMain:SetSizingMinimum(700, 480)
-	self.tWndRefs.wndMain:SetSizingMaximum(1920, 1080)
+	self.tWndRefs.wndInventoryGiftFriendContainer = self.tWndRefs.wndMain:FindChild("ContentContainer:InventoryGift:Container:FriendContainer")
+	self.tWndRefs.wndInventoryGiftFriendSelectBtn = self.tWndRefs.wndMain:FindChild("ContentContainer:InventoryGift:Container:GiftBtn")
+	self.tWndRefs.wndInventoryGiftConfirmItemContainer = self.tWndRefs.wndMain:FindChild("ContentContainer:InventoryGiftConfirm:Container:InventoryGiftConfirmItemContainer")
+	self.tWndRefs.wndInventoryGiftReturnConfirmItemContainer = self.tWndRefs.wndMain:FindChild("ContentContainer:InventoryGiftReturnConfirm:Container:InventoryGiftReturnContainer")
+	
 	self.tWndRefs.wndInventoryGift:Show(false, true)
 	self.tWndRefs.wndInventoryTakeConfirm:Show(false, true)
 	self.tWndRefs.wndInventoryGiftConfirm:Show(false, true)
@@ -340,7 +342,7 @@ function AccountInventory:HelperAddPendingSingleToContainer(wndParent, tPendingA
 		strName = tPendingAccountItem.item:GetName()
 		strIcon = tPendingAccountItem.item:GetIcon()
 		-- No strTooltip Needed
-	elseif tPendingAccountItem.entitlement and string.len(tPendingAccountItem.entitlement.name) > 0 then
+	elseif tPendingAccountItem.entitlement and Apollo.StringLength(tPendingAccountItem.entitlement.name) > 0 then
 		strName = String_GetWeaselString(Apollo.GetString("AccountInventory_EntitlementPrefix"), tPendingAccountItem.entitlement.name)
 		if tPendingAccountItem.entitlement.maxCount > 1 then
 			strName = String_GetWeaselString(Apollo.GetString("CRB_EntitlementCount"), strName, tPendingAccountItem.entitlement.count)
@@ -388,7 +390,6 @@ function AccountInventory:HelperAddPendingSingleToContainer(wndParent, tPendingA
 	local nHeight = wndGroup:FindChild("ItemContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	local nLeft, nTop, nRight, nBottom = wndGroup:GetAnchorOffsets()
 	wndGroup:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nHeight + nHeightBuffer)
-	
 	wndParent:RecalculateContentExtents()
 end
 
@@ -415,7 +416,7 @@ function AccountInventory:HelperAddPendingGroupToContainer(wndParent, tPendingAc
 			strName = tPendingAccountItem.item:GetName()
 			strIcon = tPendingAccountItem.item:GetIcon()
 			-- No strTooltip Needed
-		elseif tPendingAccountItem.entitlement and string.len(tPendingAccountItem.entitlement.name) > 0 then
+		elseif tPendingAccountItem.entitlement and Apollo.StringLength(tPendingAccountItem.entitlement.name) > 0 then
 			strName = tPendingAccountItem.entitlement.name
 			if tPendingAccountItem.entitlement.maxCount > 1 then
 				strName = String_GetWeaselString(Apollo.GetString("CRB_EntitlementCount"), strName, tPendingAccountItem.entitlement.count)
@@ -639,7 +640,7 @@ function AccountInventory:RefreshInventoryActions()
 		end
 	end
 
-	local bPendingNeedsTwoFactorToGift = AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.TwoStepVerification) <= 0
+	local bPendingNeedsTwoFactorToGift = GameLib.GetGameMode() ~= GameLib.CodeEnumGameMode.China and AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.TwoStepVerification) <= 0
 	local tSelectedPendingData = wndSelectedPendingItem ~= nil and wndSelectedPendingItem:GetData() or nil
 	local tSelectedData = wndSelectedItem ~= nil and wndSelectedItem:GetData() or nil
 	local bPendingCanClaim = tSelectedPendingData ~= nil and tSelectedPendingData.tData.canClaim
@@ -734,12 +735,20 @@ function AccountInventory:OnInventoryTakeBtn(wndHandler, wndControl, eMouseButto
 
 	self.tWndRefs.wndInventory:Show(false)
 	self.tWndRefs.wndInventoryTakeConfirm:Show(true)
-
+	local nHeight = 0
 	for idx, wndCurr in pairs(self.tWndRefs.wndInventoryTakeConfirmContainer:GetChildren()) do
 		wndCurr:Enable(false)
 		if wndCurr:FindChild("ItemButton") then
-			wndCurr:FindChild("ItemButton"):ChangeArt("CRB_DEMO_WrapperSprites:btnDemo_CharInvisible")
+			wndCurr:FindChild("ItemButton"):ChangeArt("BK3:btnHolo_ListView_SimpleDisabled")
 		end
+		nHeight = nHeight + wndCurr:FindChild("ItemButton"):GetHeight()
+
+	end
+	
+	local nLeft, nTop, nRight, nBottom = self.tWndRefs.wndInventoryTakeConfirm:FindChild("Container"):GetAnchorOffsets()
+	self.tWndRefs.wndInventoryTakeConfirm:FindChild("Container"):SetAnchorOffsets(nLeft, -((nHeight + nBuffer)/2), nRight, (nHeight + nBuffer)/2)
+	if self.tWndRefs.wndInventoryTakeConfirm:FindChild("Container"):GetHeight() > nMaxHeight then
+		self.tWndRefs.wndInventoryTakeConfirm:FindChild("Container"):SetAnchorOffsets(self.tWndRefs.wndInventoryTakeConfirm:FindChild("Container"):GetOriginalLocation():GetOffsets())
 	end
 end
 
@@ -792,12 +801,19 @@ function AccountInventory:RefreshPendingConfirm()
 	else
 		self:HelperAddPendingSingleToContainer(self.tWndRefs.wndPendingClaimContainer, tSelectedPendingData.tData)
 	end
-
+	
+	local nHeight = 0
 	for idx, wndCurr in pairs(self.tWndRefs.wndPendingClaimContainer:GetChildren()) do
 		wndCurr:Enable(false)
 		if wndCurr:FindChild("ItemButton") then
-			wndCurr:FindChild("ItemButton"):ChangeArt("CRB_DEMO_WrapperSprites:btnDemo_CharInvisible")
+			wndCurr:FindChild("ItemButton"):ChangeArt("BK3:btnHolo_ListView_SimpleDisabled")
 		end
+		nHeight = nHeight + wndCurr:FindChild("ItemButton"):GetHeight()
+	end
+	local nLeft, nTop, nRight, nBottom = self.tWndRefs.wndInventoryClaimConfirm:FindChild("Container"):GetAnchorOffsets()
+	self.tWndRefs.wndInventoryClaimConfirm:FindChild("Container"):SetAnchorOffsets(nLeft, -((nHeight + nBuffer)/2), nRight, (nHeight + nBuffer)/2)
+	if self.tWndRefs.wndInventoryClaimConfirm:FindChild("Container"):GetHeight() > nMaxHeight then
+		self.tWndRefs.wndInventoryClaimConfirm:FindChild("Container"):SetAnchorOffsets(self.tWndRefs.wndInventoryClaimConfirm:FindChild("Container"):GetOriginalLocation():GetOffsets())
 	end
 end
 
@@ -862,7 +878,7 @@ function AccountInventory:RefreshInventoryGift()
 		local wndFriend = Apollo.LoadForm(self.xmlDoc, "FriendForm", self.tWndRefs.wndInventoryGiftFriendContainer, self)
 		wndFriend:SetData(tFriend)
 		wndFriend:FindChild("FriendNote"):SetTooltip(tFriend.strPrivateNote or "")
-		wndFriend:FindChild("FriendNote"):Show(string.len(tFriend.strPrivateNote or "") > 0)
+		wndFriend:FindChild("FriendNote"):Show(Apollo.StringLength(tFriend.strPrivateNote or "") > 0)
 		wndFriend:FindChild("FriendButton"):SetText(String_GetWeaselString(Apollo.GetString("AccountInventory_AccountFriendPrefix"), tFriend.strCharacterName))
 	end
 	for idx, tFriend in pairs(FriendshipLib.GetList()) do
@@ -870,14 +886,19 @@ function AccountInventory:RefreshInventoryGift()
 			local wndFriend = Apollo.LoadForm(self.xmlDoc, "FriendForm", self.tWndRefs.wndInventoryGiftFriendContainer, self)
 			wndFriend:SetData(tFriend)
 			wndFriend:FindChild("FriendNote"):SetTooltip(tFriend.strNote or "")
-			wndFriend:FindChild("FriendNote"):Show(string.len(tFriend.strNote or "") > 0)
+			wndFriend:FindChild("FriendNote"):Show(Apollo.StringLength(tFriend.strNote or "") > 0)
 			wndFriend:FindChild("FriendButton"):SetText(tFriend.strCharacterName)
 		end
 	end
-	-- TODO: Include the note as well
 
-	self.tWndRefs.wndInventoryGiftFriendContainer:SetText(next(self.tWndRefs.wndInventoryGiftFriendContainer:GetChildren()) and "" or Apollo.GetString("AccountInventory_NoFriendsToGiftTo"))
-	self.tWndRefs.wndInventoryGiftFriendContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	local wndInventoryGiftContainer = self.tWndRefs.wndInventoryGift:FindChild("Container")
+	wndInventoryGiftContainer:FindChild("Title"):SetText(next(self.tWndRefs.wndInventoryGiftFriendContainer:GetChildren()) and Apollo.GetString("AccountInventory_ChooseFriendToGift") or Apollo.GetString("AccountInventory_NoFriendsToGiftTo"))
+	local nHeight = self.tWndRefs.wndInventoryGiftFriendContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	local nLeft, nTop, nRight, nBottom = wndInventoryGiftContainer:GetAnchorOffsets()
+	wndInventoryGiftContainer:SetAnchorOffsets(nLeft, -((nHeight + nBuffer)/2), nRight, (nHeight + nBuffer)/2)
+	if wndInventoryGiftContainer:GetHeight() > nMaxHeight then
+		wndInventoryGiftContainer:SetAnchorOffsets(self.tWndRefs.wndInventoryGift:FindChild("Container"):GetOriginalLocation():GetOffsets())
+	end
 	self:RefreshInventoryGiftActions()
 end
 
@@ -945,12 +966,20 @@ function AccountInventory:RefreshInventoryGiftConfirm()
 		self:HelperAddPendingSingleToContainer(self.tWndRefs.wndInventoryGiftConfirmItemContainer, tSelectedData.tData)
 	end
 
+	local nHeight = 0
 	for idx, wndCurr in pairs(self.tWndRefs.wndInventoryGiftConfirmItemContainer:GetChildren()) do
 		wndCurr:Enable(false)
 		if wndCurr:FindChild("ItemButton") then
-			wndCurr:FindChild("ItemButton"):ChangeArt("CRB_DEMO_WrapperSprites:btnDemo_CharInvisible")
+			wndCurr:FindChild("ItemButton"):ChangeArt("BK3:btnHolo_ListView_SimpleDisabled")
 			wndCurr:FindChild("ItemIconGiftable"):Show(false)
 		end
+		nHeight = nHeight + wndCurr:FindChild("ItemButton"):GetHeight()
+	end
+	local wndInventoryGiftConfirmContainer = self.tWndRefs.wndInventoryGiftConfirm:FindChild("Container")
+	local nLeft, nTop, nRight, nBottom = wndInventoryGiftConfirmContainer:GetAnchorOffsets()
+	wndInventoryGiftConfirmContainer:SetAnchorOffsets(nLeft, -((nHeight + nBuffer)/2), nRight, (nHeight + nBuffer)/2)
+	if wndInventoryGiftConfirmContainer:GetHeight() > nMaxHeight then
+		wndInventoryGiftConfirmContainer:SetAnchorOffsets(wndInventoryGiftConfirmContainer:GetOriginalLocation():GetOffsets())
 	end
 end
 
@@ -983,13 +1012,22 @@ function AccountInventory:RefreshInventoryGiftReturnConfirm()
 		self:HelperAddPendingSingleToContainer(self.tWndRefs.wndInventoryGiftReturnConfirmItemContainer, tSelectedData.tData)
 	end
 
-	for idx, wndCurr in pairs(self.tWndRefs.wndInventoryGiftConfirmItemContainer:GetChildren()) do
+	local nHeight = 0
+	for idx, wndCurr in pairs(self.tWndRefs.wndInventoryGiftReturnConfirmItemContainer:GetChildren()) do
 		wndCurr:Enable(false)
 		if wndCurr:FindChild("ItemButton") then
-			wndCurr:FindChild("ItemButton"):ChangeArt("CRB_DEMO_WrapperSprites:btnDemo_CharInvisible")
+			wndCurr:FindChild("ItemButton"):ChangeArt("BK3:btnHolo_ListView_SimpleDisabled")
 			wndCurr:FindChild("ItemIconGiftable"):Show(false)
 		end
+		nHeight = nHeight + wndCurr:FindChild("ItemButton"):GetHeight()
 	end
+	local wndInventoryGiftReturnConfirmContainer = self.tWndRefs.wndInventoryGiftReturnConfirm:FindChild("Container")
+	local nLeft, nTop, nRight, nBottom = wndInventoryGiftReturnConfirmContainer:GetAnchorOffsets()
+	wndInventoryGiftReturnConfirmContainer:SetAnchorOffsets(nLeft, -((nHeight + nAlertBuffer)/2), nRight, (nHeight + nAlertBuffer)/2)
+	if wndInventoryGiftReturnConfirmContainer:GetHeight() > nMaxHeight then
+		wndInventoryGiftReturnConfirmContainer:SetAnchorOffsets(wndInventoryGiftReturnConfirmContainer:GetOriginalLocation():GetOffsets())
+	end
+	
 end
 
 function AccountInventory:OnAccountPendingItemsReturned(wndHandler, wndControl)

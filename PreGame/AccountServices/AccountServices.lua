@@ -44,6 +44,7 @@ local ktRealmTransferResults =
 	[PreGameLib.CodeEnumCharacterModifyResults.RealmTransferFailed_ServerFull]			=	"AccountServices_Error_ServerFull",
 	[PreGameLib.CodeEnumCharacterModifyResults.RealmTransferFailed_Money]				=	"AccountServices_Error_TooMuchMoney",
 	[PreGameLib.CodeEnumCharacterModifyResults.RealmTransferFailed_HasSavedInstance]	=	"AccountServices_Error_HasSavedInstance",
+	[PreGameLib.CodeEnumCharacterModifyResults.RealmTransferFailed_FactionRestricted]	=	"AccountServices_Error_FactionRestricted",
 }
 
 local ktCreddRedeemResults =
@@ -308,52 +309,6 @@ function AccountServices:OnHideMainPicker(wndHandler, wndControl)
 end
 
 -----------------------------------------------------------------------------------------------
--- Lapsed Account
------------------------------------------------------------------------------------------------
-
-function AccountServices:OnLapsedExitToLogin(wndHandler, wndControl)
-	CharacterScreenLib.ExitToLogin()
-end
-
-function AccountServices:OnLapsedStartRedeemBtn(wndHandler, wndControl) -- LapsedStartRedeemBtn
-	local nCreddBound = wndHandler:GetData().nCreddBound
-	local nCreddEscrow = wndHandler:GetData().nCreddEscrow
-	local tEscrowData, bGiftableGroup = self:HelperDeterminePayment(true, PreGameLib.CodeEnumAccountCurrency.CREDD)
-
-	if nCreddBound > 0 then
-		self.bFireCreddOnUpdate = true
-		self:HelperCheckTriggers()
-	elseif nCreddEscrow > 0 then
-		if self.wndCreddConfirm and self.wndCreddConfirm:IsValid() then
-			self.wndCreddConfirm:Destroy()
-		end
-		self.wndCreddConfirm = Apollo.LoadForm(self.xmlDoc, "RedeemCREDDConfirmation", "AccountServices", self)
-		self.wndCreddConfirm:FindChild("RedeemCREDDYesBtn"):SetData(tEscrowData)
-		self.wndCreddConfirm:Invoke()
-	elseif bGiftableGroup then
-		self:ShowGroupBindConfirmation(tEscrowData, { eType = keFireOnCredd })
-	end
-end
-
-function AccountServices:OnRedeemCREDDYesBtn(wndHandler, wndControl) -- From ShowCreddRedemptionConfirmation
-	-- HelperCatchTriggers will catch the event, detect a non nil self.bFireCreddOnUpdate, then call Redeem
-	local tEscrowData = wndHandler:GetData()
-	if tEscrowData.items then -- It's a group
-		AccountItemLib.ClaimPendingItemGroup(tEscrowData.index)
-	end
-
-	self.wndCreddConfirm:Destroy()
-	self.bFireCreddOnUpdate = true
-end
-
-function AccountServices:OnCloseRedeemConfirmation(wndHandler, wndControl)
-	if self.wndCreddConfirm and self.wndCreddConfirm:IsValid() then
-		self.wndCreddConfirm:Destroy()
-		self.bFireCreddOnUpdate = nil
-	end
-end
-
------------------------------------------------------------------------------------------------
 -- Rename
 -----------------------------------------------------------------------------------------------
 
@@ -393,10 +348,10 @@ function AccountServices:OnRenameInputBoxChanged(wndHandler, wndControl)
 	)
 	
 	local strFirstName = self.wndRenameFlyout:FindChild("RenameCharacterFirstNameEntry"):GetText()
-	local nFirstLength = string.len(strFirstName)
+	local nFirstLength = Apollo.StringLength(strFirstName)
 	
 	local strLastName = self.wndRenameFlyout:FindChild("RenameCharacterLastNameEntry"):GetText()
-	local nLastLength = string.len(strLastName)
+	local nLastLength = Apollo.StringLength(strLastName)
 	
 	local strCharacterLimit = string.format("[%s/%s]", nFirstLength+nLastLength, knMaxCharacterName)
 	local strColor = nFirstLength+nLastLength > knMaxCharacterName and "Reddish" or "UI_TextHoloBodyCyan"
@@ -424,11 +379,7 @@ function AccountServices:OnRenameConfirmBtn(wndHandler, wndControl)
 		return
 	end
 
---	if bGiftableGroup then
---		self:ShowGroupBindConfirmation(tEscrowData, { eType = keFireOnRename, strFullName = wndHandler:GetData() })
---	else
-		self:ShowRenameConfirmation(wndHandler:GetData(), tEscrowData)
---	end
+	self:ShowRenameConfirmation(wndHandler:GetData(), tEscrowData)
 
 	self.wndRenameFlyout:Close()
 end
@@ -703,11 +654,7 @@ function AccountServices:OnPaidTransferConfirmBtn(wndHandler, wndControl)
 		return
 	end
 
---	if bGiftableGroup then
---		self:ShowGroupBindConfirmation(tEscrowData, { eType = keFireOnPaidTransfer, nRealmId = nRealmId, strRealm = strRealm })
---	else
-		self:ShowTransferConfirmation(bPaid, nRealmId, strRealm, tEscrowData)
---	end
+	self:ShowTransferConfirmation(bPaid, nRealmId, strRealm, tEscrowData)
 
 	self.wndPaidTransferFlyout:Close()
 end

@@ -16,8 +16,7 @@ local kclrRed 	= ApolloColor.new("ItemQuantityFull")
 local kclrOrange 	= ApolloColor.new("ItemQuantityNearFull")
 local knUnloadWaitTime = 300 -- unload from memory if unused for 5 minutes
 local knEmptyThreshold = 0
-local knFullThreshold = 250
-local knMediumThreshold = knFullThreshold * .90
+local knMediumThresholdScalar = .90
 
 function SupplySatchel:new(o)
 	o = o or {}
@@ -47,6 +46,8 @@ function SupplySatchel:OnDocumentReady()
 	Apollo.RegisterEventHandler("ToggleTradeSkillsInventory", 		"OnToggleVisibility", self)
 	Apollo.RegisterEventHandler("ToggleTradeskillInventoryFromBag", "OnToggleVisibility", self)
 	Apollo.RegisterEventHandler("PlayerEnteredWorld", 				"OnPlayerEnteredWorld", self)
+	Apollo.RegisterEventHandler("PremiumTierChanged",				"OnPremiumTierChanged", self)
+	Apollo.RegisterEventHandler("StoreLinksRefresh",				"RefreshStoreLink", self)
 
 	Apollo.RegisterTimerHandler("InitializeSatchelPart2", "OnInitializeSatchelPart2", self)
 	Apollo.RegisterTimerHandler("UnloadSatchel", "OnUnloadSatchel", self)
@@ -136,13 +137,13 @@ function SupplySatchel:OnInitializeSatchelPart2()
 			wndItem:SetData(tCurrItem)
 			wndItem:FindChild("Icon"):SetSprite(tCurrItem.itemMaterial:GetIcon())
 			wndItem:FindChild("Icon"):GetWindowSubclass():SetItem(tCurrItem.itemMaterial)
-			if tCurrItem.nCount == knFullThreshold then
+			if tCurrItem.nCount == tCurrItem.nMaxStackCount then
 				wndItem:FindChild("HighCountWarnFrame"):Show(true)
-				wndItem:FindChild("Count"):SetText(tostring(tCurrItem.nCount).."\n/"..knFullThreshold)
+				wndItem:FindChild("Count"):SetText(tostring(tCurrItem.nCount).."\n/"..tCurrItem.nMaxStackCount)
 				wndItem:FindChild("Count"):SetTextColor(kclrRed)
-			elseif tCurrItem.nCount >= knMediumThreshold then
+			elseif tCurrItem.nCount >= tCurrItem.nMaxStackCount * knMediumThresholdScalar then
 				wndItem:FindChild("HighCountWarnFrame"):Show(true)
-				wndItem:FindChild("Count"):SetText(tostring(tCurrItem.nCount).."\n/"..knFullThreshold)
+				wndItem:FindChild("Count"):SetText(tostring(tCurrItem.nCount).."\n/"..tCurrItem.nMaxStackCount)
 				wndItem:FindChild("Count"):SetTextColor(kclrOrange)
 			elseif tCurrItem.nCount > knEmptyThreshold then
 				wndItem:FindChild("Count"):SetText(tostring(tCurrItem.nCount))
@@ -162,6 +163,8 @@ function SupplySatchel:OnInitializeSatchelPart2()
 
 	self:OnResize()
 	self:PopulateSatchel(false)
+	self.nPremiumTier = AccountItemLib.GetPremiumTier()
+	self:RefreshStoreLink()
 end
 
 function SupplySatchel:OnUnloadSatchel()
@@ -282,7 +285,7 @@ function SupplySatchel:PopulateSatchel(bRescroll)
 	end
 
 	local strSearchString = self.wndMain:FindChild("SearchBox"):GetText()
-	local bSearchString = string.len(strSearchString) > 0
+	local bSearchString = Apollo.StringLength(strSearchString) > 0
 	self.wndMain:FindChild("SearchClearBtn"):Show(bSearchString)
 
 	for strCategory, arItems in pairs(unitPlayer:GetSupplySatchelItems(0)) do
@@ -298,16 +301,16 @@ function SupplySatchel:PopulateSatchel(bRescroll)
 					table.insert(self.tNewlyAddedItemsWindows , tCacheItem.wndItem)
 				end
 
-				if tCacheItem.nCount ~= tCurrItem.nCount then
+				if tCacheItem.nCount ~= tCurrItem.nCount or tCacheItem.nMaxStackCount ~= tCurrItem.nMaxStackCount then
 					tCacheItem.nCount = tCurrItem.nCount
 					tCacheItem.wndItem:SetData(tCurrItem)
-					tCacheItem.wndItem:FindChild("HighCountWarnFrame"):Show(tCurrItem.nCount > knFullThreshold)
-					if tCurrItem.nCount == knFullThreshold then
-						tCacheItem.wndItem:FindChild("Count"):SetText(tostring(tCurrItem.nCount).."\n/"..knFullThreshold)
+					tCacheItem.wndItem:FindChild("HighCountWarnFrame"):Show(tCurrItem.nCount > tCurrItem.nMaxStackCount)
+					if tCurrItem.nCount == tCurrItem.nMaxStackCount then
+						tCacheItem.wndItem:FindChild("Count"):SetText(tostring(tCurrItem.nCount).."\n/"..tCurrItem.nMaxStackCount)
 						tCacheItem.wndItem:FindChild("Count"):SetTextColor(kclrRed)
 						tCacheItem.wndItem:FindChild("Icon"):SetBGColor(kclrWhite)
-					elseif tCurrItem.nCount >= knMediumThreshold then
-						tCacheItem.wndItem:FindChild("Count"):SetText(tostring(tCurrItem.nCount).."\n/"..knFullThreshold)
+					elseif tCurrItem.nCount >= tCurrItem.nMaxStackCount * knMediumThresholdScalar then
+						tCacheItem.wndItem:FindChild("Count"):SetText(tostring(tCurrItem.nCount).."\n/"..tCurrItem.nMaxStackCount)
 						tCacheItem.wndItem:FindChild("Count"):SetTextColor(kclrOrange)
 						tCacheItem.wndItem:FindChild("Icon"):SetBGColor(kclrWhite)
 					elseif tCurrItem.nCount > knEmptyThreshold then
@@ -375,6 +378,52 @@ function SupplySatchel:HelperSearchNameMatch(strBase, strInput)
 	strBase = strBase:lower() -- Not case sensitive
 	strInput = strInput:lower()
 	return strBase:find(strInput, 1, true)
+end
+
+-----------------------------------------------------------------------------------------------
+-- Premium System Updates
+-----------------------------------------------------------------------------------------------
+
+function SupplySatchel:OnPremiumTierChanged(ePremiumSystem, nTier)
+	if ePremiumSystem ~= AccountItemLib.CodeEnumPremiumSystem.VIP then
+		return
+	end
+	
+	self.nPremiumTier = nTier
+	if self.wndMain ~= nil and self.wndMain:IsValid() then
+		self:UpdatePremium()
+		self:PopulateSatchel(false)
+	end
+end
+
+function SupplySatchel:UpdatePremium()
+	if self.wndMain == nil or not self.wndMain:IsValid() or AccountItemLib.GetPremiumSystem() ~= AccountItemLib.CodeEnumPremiumSystem.VIP then
+		return
+	end
+	
+	local wndVipMtxStackIncrease = self.wndMain:FindChild("VIP_MTX_StackIncrease")
+	local wndMainGridContainer = self.wndMain:FindChild("MainGridContainer")
+	local nLeft, nTop, nRight, nBottom = wndMainGridContainer:GetOriginalLocation():GetOffsets()
+	if self.bStoreLinkValid and self.nPremiumTier == 0 then
+		nTop = nTop + wndVipMtxStackIncrease:GetHeight()
+	end
+	wndMainGridContainer:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+	
+	wndVipMtxStackIncrease:Show(self.bStoreLinkValid and self.nPremiumTier == 0)
+end
+
+-----------------------------------------------------------------------------------------------
+-- Store Updates
+-----------------------------------------------------------------------------------------------
+
+function SupplySatchel:RefreshStoreLink()
+	self.bStoreLinkValid = StorefrontLib.IsLinkValid(StorefrontLib.CodeEnumStoreLink.Signature)
+	
+	self:UpdatePremium()
+end
+
+function SupplySatchel:OnBecomePremium()
+	StorefrontLib.OpenLink(StorefrontLib.CodeEnumStoreLink.Signature)
 end
 
 -----------------------------------------------------------------------------------------------

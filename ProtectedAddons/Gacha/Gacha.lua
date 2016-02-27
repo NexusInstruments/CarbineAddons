@@ -244,6 +244,7 @@ function Gacha:SetUpRewardList()
 		[AccountItemLib.CodeEnumAccountCurrency.NCoins] = "AccountInventory_NCoins",
 		[AccountItemLib.CodeEnumAccountCurrency.Loyalty] = "AccountInventory_Loyalty",
 		[AccountItemLib.CodeEnumAccountCurrency.ServiceToken] = "AccountInventory_ServiceToken",
+		[AccountItemLib.CodeEnumAccountCurrency.ProtoBucks] = "AccountInventory_ProtoBucks",
 	}
 	
 	local tQualityColor =
@@ -258,12 +259,16 @@ function Gacha:SetUpRewardList()
 	}
 
 	local tRewardList = {}
-	for idx, itemReward in pairs(tLootList.arItems or {}) do
-		table.insert(tRewardList, {strRewardName = itemReward:GetName(), eQuality = itemReward:GetItemQuality(), itemReward = itemReward})
+	if tLootList.arItems ~= nil then
+		for idx, itemInfo in pairs(tLootList.arItems) do
+			table.insert(tRewardList, {strRewardName = itemInfo.itemReward:GetName(), eQuality = itemInfo.itemReward:GetItemQuality(), itemReward = itemInfo.itemReward, fProbability = itemInfo.fProbability})
+		end
 	end
-		
-	for idx, monPrice in pairs(tLootList.arAccountCurrencies or {}) do
-		table.insert(tRewardList, {strRewardName = tCurrenciesNames[monPrice:GetMoneyType()].." : ".. monPrice:GetMoneyAmount(), eQuality = Item.CodeEnumItemQuality.Good})--Currencies are hard coded to all be "Good" in gacha
+
+	if tLootList.arAccountCurrencies ~= nil then
+		for idx, monInfo in pairs(tLootList.arAccountCurrencies) do
+			table.insert(tRewardList, {strRewardName = tCurrenciesNames[monInfo.monReward:GetMoneyType()].." : ".. monInfo.monReward:GetMoneyAmount(), eQuality = Item.CodeEnumItemQuality.Good, fProbability = monInfo.fProbability})--Currencies are hard coded to all be "Good" in gacha
+		end
 	end
 
 	--Sort Items to Highest Quality First
@@ -282,6 +287,12 @@ function Gacha:SetUpRewardList()
 			wndItemIcon:GetWindowSubclass():SetItem(tRewardInfo.itemReward)
 			wndListItem:SetData(tRewardInfo.itemReward)
 		end
+
+		local strProbability = ""
+		if tRewardInfo.fProbability then
+			strProbability = string.format("%03.2f", tRewardInfo.fProbability) .. "%"
+		end
+		wndListItem:FindChild("Probability"):SetText(strProbability)
 	end
 	wndRewardList:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end

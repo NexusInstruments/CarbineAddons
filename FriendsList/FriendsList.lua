@@ -1393,7 +1393,7 @@ function FriendsList:OnAddRadioBtn(wndHandler, wndControl)
 		wndCurr:FindChild("AddMemberNoteEditBox"):SetText(strPrevNote)
 		wndCurr:FindChild("AddMemberEditBox"):SetText(strPrevPlayer)
 		wndCurr:FindChild("AddMemberEditBox"):SetFocus()
-		wndCurr:FindChild("AddMemberEditBox"):SetSel(string.len(strPrevPlayer))
+		wndCurr:FindChild("AddMemberEditBox"):SetSel(Apollo.StringLength(strPrevPlayer))
 		wndPrev:Show(false)
 	end
 	

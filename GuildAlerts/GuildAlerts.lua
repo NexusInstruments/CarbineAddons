@@ -277,7 +277,7 @@ function GuildAlerts:GenerateAlert(guildSender, strName, nRank, eResult )
 		
 		if nRank and nRank ~= 0 then
 			strRank = guildSender:GetRanks()[nRank].strName
-			if not strRank or not string.len(strRank) then
+			if not strRank or not Apollo.StringLength(strRank) then
 				strRank = '#' .. tostring(nRank)
 			end
 		end

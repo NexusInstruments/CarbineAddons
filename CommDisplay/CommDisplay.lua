@@ -196,7 +196,7 @@ function CommDisplay:OnCommunicator_ShowQueuedMsg(tMessage)
 			end
 		end
 		
-		if strMessageText == nil or string.len(strMessageText) == 0 then
+		if strMessageText == nil or Apollo.StringLength(strMessageText) == 0 then
 			strMessageText = ""
 		end
 	
@@ -452,7 +452,9 @@ function CommDisplay:DrawLootItem(tCurrReward, wndParentArg)
 	end
 
 	if wndCurrReward then
-		wndCurrReward:FindChild("LootIcon"):SetSprite(strIconSprite)
+		local wndLootIcon = wndCurrReward:FindChild("LootIcon")
+		wndLootIcon:SetSprite(strIconSprite)
+		wndLootIcon:SetText(tCurrReward.nAmount > 1 and tCurrReward.nAmount or "")
 	end
 end
 

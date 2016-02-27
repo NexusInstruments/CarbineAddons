@@ -13,12 +13,6 @@ end
 
 --------------------------------------------------------------------------------------------------
 
-function GetUnicodeStringLength(str)
-	local _, count = string.gsub(str, "[^\128-\193]", "")
-	
-	return count
-end
-
 function ConvertSecondsToTimer(fSeconds, nDecimals)	
 	local strResult = ""
 	local nHours = math.floor(fSeconds / 3600)

@@ -87,7 +87,6 @@ function Warparty:OnDocumentReady()
 	Apollo.RegisterEventHandler("CharacterEntitlementUpdate",		"UpdateWarpartyForm", self)
 	Apollo.RegisterEventHandler("AccountEntitlementUpdate",			"UpdateWarpartyForm", self)
 	
-	self.bHasWarpartyManagement = AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0 or AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.FullGuildsAccess) > 0
 	self.bOkayToReload = true
 end
 
@@ -207,7 +206,7 @@ function Warparty:ResetRosterMemberButtons()
 		
 		self.tWndRefs.wndMain:FindChild("RosterOptionBtnRemove"):Enable(bSomeRowIsPicked and bTargetIsUnderMyRank)
 
-		self.tWndRefs.wndMain:FindChild("RosterOptionBtnAdd"):Show(tMyRankPermissions and tMyRankPermissions.bInvite and self.bHasWarpartyManagement)
+		self.tWndRefs.wndMain:FindChild("RosterOptionBtnAdd"):Show(tMyRankPermissions and tMyRankPermissions.bInvite and GuildLib.CanInvite(GuildLib.GuildType_WarParty))
 		self.tWndRefs.wndMain:FindChild("RosterOptionBtnRemove"):Show(tMyRankPermissions and tMyRankPermissions.bKick)
 
 		self.tWndRefs.wndMain:FindChild("RosterOptionBtnPromote"):Enable(bSomeRowIsPicked and bTargetIsUnderMyRank)
@@ -302,7 +301,7 @@ function Warparty:OnRosterRemoveMemberYesClick(wndHandler, wndControl)
 end
 
 function Warparty:OnAddMemberEditBoxReturn(wndHandler, wndControl, strText)
-	if wndHandler and wndHandler:GetData() and string.len(strText) > 0 then -- wndHandler is 'AddMemberEditBox' with data uGuild
+	if wndHandler and wndHandler:GetData() and Apollo.StringLength(strText) > 0 then -- wndHandler is 'AddMemberEditBox' with data uGuild
 		-- TODO: Additional string validation
 		wndHandler:GetData():Invite(strText)
 	end
@@ -313,7 +312,7 @@ function Warparty:OnAddMemberConfirmBtn(wndHandler, wndControl)
 	if wndHandler and wndHandler:GetParent():FindChild("AddMemberEditBox") then
 		local wndEditBox = wndHandler:GetParent():FindChild("AddMemberEditBox")
 
-		if wndEditBox and wndEditBox:GetData() and string.len(wndEditBox:GetText()) > 0 then
+		if wndEditBox and wndEditBox:GetData() and Apollo.StringLength(wndEditBox:GetText()) > 0 then
 			-- TODO: Additional string validation
 			wndEditBox:GetData():Invite(wndEditBox:GetText())
 		end
@@ -503,7 +502,7 @@ function Warparty:BuildRosterList(guildOwner, tRoster)
 	-- Maintain the state of the AddMemberContainer if already opened
 	if self.tWndRefs.wndMain:FindChild("RosterOptionBtnAdd"):IsChecked() then
 		local wndAddMemberEditBox = self.tWndRefs.wndMain:FindChild("AddMemberEditBox")
-		local nStringLen = string.len(wndAddMemberEditBox:GetText())
+		local nStringLen = Apollo.StringLength(wndAddMemberEditBox:GetText())
 		wndAddMemberEditBox:SetSel(nStringLen, nStringLen)
 		self.tWndRefs.wndMain:FindChild("AddMemberContainer"):Show(true)
 	end
@@ -848,7 +847,7 @@ function Warparty:HelperValidateAndRefreshRankSettingsWindow(wndSettings)
 	local strName = wndSettings:FindChild("OptionString"):GetText()
 	
 	if wndLimit ~= nil then
-		local nNameLength = string.len(strName or "")
+		local nNameLength = Apollo.StringLength(strName or "")
 		
 		wndLimit:SetText(string.format("(%d/%d)", nNameLength, GameLib.GetTextTypeMaxLength(GameLib.CodeEnumUserText.GuildName)))
 		
@@ -945,12 +944,11 @@ function Warparty:UpdateWarpartyForm(tEntitlementInfo)
 	if not bFree and not bGivenEntitlement then
 		return
 	end
-	self.bHasWarpartyManagement = AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0 or AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.FullGuildsAccess) > 0
 	local bShow = false
 	local guildOwner = self.tWndRefs.wndMain:FindChild("AddMemberEditBox"):GetData()
 	if guildOwner and guildOwner:GetMyRank() then
 		local tMyRankPermissions = guildOwner:GetRanks()[guildOwner:GetMyRank()]
-		bShow = tMyRankPermissions and tMyRankPermissions.bInvite and self.bHasWarpartyManagement
+		bShow = tMyRankPermissions and tMyRankPermissions.bInvite and GuildLib.CanInvite(GuildLib.GuildType_WarParty)
 	end
 	self.tWndRefs.wndMain:FindChild("RosterOptionBtnAdd"):Show(bShow)
 end

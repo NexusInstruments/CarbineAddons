@@ -591,7 +591,7 @@ function NeighborsList:OnNeighborInviteAccepted(strName)
 	end
 
     local strMessage = Apollo.GetString("Neighbors_InviteAcceptedSelf")
-    if string.len(strName) > 1 then
+    if Apollo.StringLength(strName) > 1 then
         strMessage = String_GetWeaselString(Apollo.GetString("Neighbors_InviteAccepted"), strName)
     end
 	if self.wndMain:IsShown() then
@@ -614,7 +614,7 @@ function NeighborsList:OnNeighborInviteDeclined(strName)
 	end
 
     local strMessage = Apollo.GetString("Neighbors_InvitationExpired")
-    if string.len(strName) > 1 then
+    if Apollo.StringLength(strName) > 1 then
         strMessage = String_GetWeaselString(Apollo.GetString("Neighbors_RequestDeclined"), strName)
     end
 	if self.wndMain:IsShown() then

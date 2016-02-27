@@ -74,6 +74,7 @@ function ObjectiveTracker:OnDocumentReady()
 	Apollo.RegisterEventHandler("WindowManagementReady", 			"OnWindowManagementReady", self)
 	Apollo.RegisterEventHandler("WindowManagementUpdate", 			"OnWindowManagementUpdate", self)
 	Apollo.RegisterEventHandler("OptionsUpdated_QuestTracker", 		"OnOptionsUpdated", self)
+	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 		"OnTutorial_RequestUIAnchor", self)
 	
 	Apollo.RegisterEventHandler("ObjectiveTracker_ExternalRequestRedraw", 	"OnResizeAll", self)
 
@@ -185,6 +186,27 @@ function ObjectiveTracker:OnOptionsUpdated()
 	end
 	
 	self:OnResizeAll()
+end
+
+function ObjectiveTracker:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
+	local tAnchors = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.PublicEventTrackerButton] 	= true,
+	}
+
+	if not tAnchors[eAnchor] then
+		return
+	end
+
+	local wndButtons = self.wndButtonContainer:FindChild("Buttons")
+	local tAnchorMapping = 
+	{
+		[GameLib.CodeEnumTutorialAnchor.PublicEventTrackerButton] = wndButtons:FindChildByUserData(Apollo.GetString("PublicEventTracker_PublicEvents")),
+	}
+
+	if tAnchorMapping[eAnchor] then
+		Event_FireGenericEvent("Tutorial_ShowCallout", eAnchor, idTutorial, strPopupText, tAnchorMapping[eAnchor])
+	end
 end
 
 function ObjectiveTracker:OnAddonNew(tAddonSettings)

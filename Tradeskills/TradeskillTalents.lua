@@ -115,13 +115,13 @@ function TradeskillTalents:BuildColumn(wndParent, tData)
 				if tTalent.bActive then
 					bPicked = true
 					strIcon = "ClientSprites:Icon_Windows_UI_CRB_Checkmark"
-				elseif string.len(strIcon) == 0 then
+				elseif Apollo.StringLength(strIcon) == 0 then
 					strIcon = "ClientSprites:Icon_ItemMisc_UI_Item_Gears"
 				end
 				wndTalent:FindChild("TalentItemIcon"):SetSprite(strIcon)
 
 				local strName = Apollo.GetString("Tradeskills_TalentPlaceholder")
-				if string.len(tTalent.strName) > 0 then
+				if Apollo.StringLength(tTalent.strName) > 0 then
 					strName = tTalent.strName
 				end
 				wndTalent:FindChild("TalentItemIcon"):SetTooltip(

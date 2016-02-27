@@ -8,8 +8,12 @@ require "Unit"
 require "GameLib"
 require "P2PTrading"
 require "Apollo"
+require "AccountItemLib"
 
 local Trading = {}
+
+local kstrValidItemIcon		= "UI_BK3_ItemDrag_DestinationNoGlow"
+local kstrInvalidItemIcon	= "UI_BK3_ItemDrag_DestinationDeniedNoGlow"
 
 local knSaveVersion = 1
 local knMaxTradeItems = 8
@@ -83,6 +87,9 @@ function Trading:OnDocumentReady()
 	Apollo.RegisterEventHandler("GenericEvent_StartCraftingGrid",				"OnCraftingCloseWindow", self)
 	Apollo.RegisterEventHandler("GenericEvent_CraftingResume_OpenEngraving",	"OnCraftingCloseWindow", self)
 
+	Apollo.RegisterEventHandler("PremiumTierChanged", 				"OnPremiumTierChanged", self)
+	Apollo.RegisterEventHandler("MoneyTradeLimitChanged",			"OnMoneyTradeLimitChanged", self)
+
 	self.wndTradeInvite 	= Apollo.LoadForm(self.xmlDoc, "TradeInvite", nil, self)
 	self.wndDeclineNotice 	= Apollo.LoadForm(self.xmlDoc, "DeclineNotice", nil, self)
 	self.wndTradeForm 		= Apollo.LoadForm(self.xmlDoc, "SecureTrade", nil, self)
@@ -100,15 +107,25 @@ function Trading:OnDocumentReady()
 
 	self.wndTradeForm:FindChild("AcceptBtn"):Enable(false)
 
-	local wndYourCash = self.wndTradeForm:FindChild("YourCashComplex:YourCash")
-	wndYourCash:SetData(0)
-	wndYourCash:SetAmountLimit(knMaxCopperTrade)
+	local wndYourOfferContainer = nil
+	if AccountItemLib.GetPremiumSystem() == AccountItemLib.CodeEnumPremiumSystem.VIP then
+		self.wndTradeForm:FindChild("YouOfferContainer"):Show(false)
+		wndYourOfferContainer = self.wndTradeForm:FindChild("YouOfferLimitedContainer")
+		self.wndYourCashTradeLimit = wndYourOfferContainer:FindChild("YourCashTradeLimit")
+	else
+		self.wndTradeForm:FindChild("YouOfferLimitedContainer"):Show(false)
+		wndYourOfferContainer = self.wndTradeForm:FindChild("YouOfferContainer")
+	end
+	wndYourOfferContainer:Show(true)
+	self.wndYourCash = wndYourOfferContainer:FindChild("YourCash")
+	self.wndYourCash:SetData(0)
+	self.wndYourCash:SetAmountLimit(knMaxCopperTrade)
 
     self.tYourItem = {}
 	self.tPartnerItem = {}
 
 	for idx = 1, knMaxTradeItems do
-		self.tYourItem[idx] = self.wndTradeForm:FindChild("YourItem" .. tostring(idx))
+		self.tYourItem[idx] = wndYourOfferContainer:FindChild("YourItem" .. tostring(idx))
 		self.tPartnerItem[idx] = self.wndTradeForm:FindChild("PartnerItem" .. tostring(idx))
 	end
 
@@ -124,8 +141,11 @@ function Trading:OnDocumentReady()
 			self:OnP2PTradeInvite(self.unitPartner)
 		else
 			self.wndTradeForm:Show(true)
+			self:OnMoneyTradeLimitChanged()
 			self.unitTradePartner = self.unitPartner
-
+			if P2PTrading.GetMyTradeMoney() ~= nil then
+				self.wndYourCash:SetAmount(P2PTrading.GetMyTradeMoney():GetAmount())
+			end
 			if self.bInviteAccepted then
 				self:OnP2PTradeResult(P2PTrading.P2PTradeResultCode_PlayerAcceptedInvite)
 			else
@@ -188,7 +208,6 @@ function Trading:UpdateTrade()
 		return
 	end
 
-	local nMyCashOffer = P2PTrading.GetMyTradeMoney():GetAmount()
 	local nPartnerCashOffer = P2PTrading.GetPartnerTradeMoney():GetAmount()
 
 	local wndItem = nil
@@ -202,19 +221,24 @@ function Trading:UpdateTrade()
 		end
 
 		wndItem:Show(true)
-		wndItem:SetSprite(tCurrItemData.strIcon)
-		wndItem:GetWindowSubclass():SetItem(tCurrItemData.itemTrading)
+		local wndItemIcon = wndItem:FindChild("Icon")
+		wndItemIcon:SetSprite(tCurrItemData.strIcon)
+		wndItemIcon:GetWindowSubclass():SetItem(tCurrItemData.itemTrading)
 		wndItem:SetData(tCurrItemData)
 		if tCurrItemData.nQuantity > 1 then
-			wndItem:SetText(tostring(tCurrItemData.nQuantity))
+			wndItemIcon:SetText(tostring(tCurrItemData.nQuantity))
 		else
-			wndItem:SetText("")
+			wndItemIcon:SetText("")
 		end
 
 		self:HelperBuildItemTooltip(wndItem, tCurrItemData)
 	end
-
-	self.wndTradeForm:FindChild("YourCash"):SetAmount(nMyCashOffer)
+	if nMyOffers + 1 <= knMaxTradeItems then
+		self.nNextEmptySlot = nMyOffers + 1
+	else
+		self.nNextEmptySlot = nil
+	end
+	
 	self.wndTradeForm:FindChild("PartnerCash"):SetAmount(nPartnerCashOffer)
 
 	local wndAcceptBtn = self.wndTradeForm:FindChild("AcceptBtn")
@@ -233,6 +257,11 @@ function Trading:OnItemMouseButtonDown(wndHandler, wndControl, eButton, nX, nY, 
 	end
 
 	P2PTrading.RemoveItem(tItem.nId)
+	if self.nNextEmptySlot == nil then
+		self.nNextEmptySlot = knMaxTradeItems
+	end
+	self.tYourItem[self.nNextEmptySlot]:FindChild("Icon"):SetSprite("")
+	self.nNextEmptySlot = self.nNextEmptySlot - 1
 end
 
 function Trading:OnP2PTradeChange()
@@ -273,7 +302,7 @@ function Trading:OnP2PTradeResult(eResult)
 		self.tPendingItems = {}
 		self:UpdateTrade()
 		self.wndTradeForm:FindChild("HeaderBGText"):SetText(String_GetWeaselString(Apollo.GetString("Trading_TradingWith"), self.unitTradePartner:GetName()))
-		self.wndTradeForm:FindChild("YourCash"):Enable(true)
+		self.wndYourCash:Enable(true)
 		self:OnUpdate()
 	end
 
@@ -302,6 +331,7 @@ function Trading:OnAcceptTradeBtn(wndHandler, wndControl)
 	self.wndTradeInvite:Show(false)
 	P2PTrading.AcceptInvite()
 	self.wndTradeForm:Show(true)
+	self:OnMoneyTradeLimitChanged()
 	self:UpdateTrade()
 end
 
@@ -325,15 +355,17 @@ function Trading:OnP2PTradeWithTarget(unitTarget, strType, itemData)
 	local eResult = P2PTrading.InitiateTrade(unitTarget)
 	if eResult == P2PTrading.P2PTradeError_Ok then
 		self.wndTradeForm:Show(true)
+		self:OnMoneyTradeLimitChanged()
 		self.bInitiator = true
 		self.bTradeIsActive = false
 		self.unitTradePartner = unitTarget
 		self.wndTradeForm:FindChild("HeaderBGText"):SetText(String_GetWeaselString(Apollo.GetString("Trading_TradingWith"), self.unitTradePartner:GetName()))
 		self.tPendingItems = {}
+		self.wndConfirmBlocker:Show(not self.bTradeIsActive)
 		if strType and strType == "DDBagItem" then
 			self.tPendingItems[1] = itemData
 		end
-		self.wndTradeForm:FindChild("YourCash"):Enable(false)
+		self.wndYourCash:Enable(false)
 	end
 
 	if self.wndDeclineNotice:IsVisible() then
@@ -349,7 +381,18 @@ function Trading:OnP2PTradeQueryDragDrop(wndHandler, wndControl, nX, nY, wndSour
 		return Apollo.DragDropQueryResult.Invalid
 	end
 	if strType == "DDBagItem" then
+		local itemSource = Item.GetItemFromInventoryLoc(nValue)
+		if itemSource:IsAlwaysTradeable() then
+			if self.nNextEmptySlot ~= nil then
+				self.tYourItem[self.nNextEmptySlot]:FindChild("Icon"):SetSprite(kstrValidItemIcon)
+			end
 		return Apollo.DragDropQueryResult.Accept
+		else
+			if self.nNextEmptySlot ~= nil then
+				self.tYourItem[self.nNextEmptySlot]:FindChild("Icon"):SetSprite(kstrInvalidItemIcon)
+			end
+			return Apollo.DragDropQueryResult.Ignore
+		end
 	end
 	return Apollo.DragDropQueryResult.Invalid
 end
@@ -396,11 +439,21 @@ function Trading:OnP2PTradeDragDrop(wndHandler, wndControl, nX, nY, wndSource, s
 	return false
 end
 
+function Trading:OnP2PTradeMouseExit(wndHandler, wndControl, nX, nY)
+	if wndHandler ~= wndControl or self.wndTradeForm ~= wndControl then
+		return
+	end
+	
+	if self.nNextEmptySlot ~= nil then
+		self.tYourItem[self.nNextEmptySlot]:FindChild("Icon"):SetSprite("")
+	end
+end
+
 function Trading:OnCommitCancel()
 	if P2PTrading.AmICommitted() then
 		if self.wndTradeForm and self.wndTradeForm:IsValid() then
 			P2PTrading.SetMoney(0)
-			self.wndTradeForm:FindChild("YourCash"):SetData(0)
+			self.wndYourCash:SetData(0)
 		end
 		P2PTrading.UnCommit()
 		self:OnCancelBtn() -- TODO TEMP!!!!!! Until uncommit is fixed
@@ -409,22 +462,22 @@ function Trading:OnCommitCancel()
 	end
 end
 
-function Trading:OnCashAmountChanged(wndHandler, wndControl)
-	local wndYourCash = self.wndTradeForm:FindChild("YourCash")
-	local nNewAmount = wndYourCash:GetAmount()
-	local nOldAmount = wndYourCash:GetData()
+function Trading:OnCashAmountChanged(wndHandler, wndControl, monNewAmount, monOldAmount)
+	local nOldAmount = self.wndYourCash:GetData()
+	local nNewAmount = monNewAmount:GetAmount()
 
 	-- Limit to current cash
 	local nPlayerCash = GameLib.GetPlayerCurrency():GetAmount()
 	if nNewAmount > nPlayerCash then
 		nNewAmount = nPlayerCash
+		self.wndYourCash:SetAmount(nNewAmount)
 	end
 
-	if (nNewAmount ~= nOldAmount)then
+	if nNewAmount ~= nOldAmount then
 		P2PTrading.SetMoney(nNewAmount)
 	end
 
-	wndYourCash:SetData(nNewAmount)
+	self.wndYourCash:SetData(nNewAmount)
 end
 
 function Trading:OnP2PTradeCommit()
@@ -441,6 +494,18 @@ function Trading:OnCraftingCloseWindow()
 	self.wndTradeInvite:Show(false)
 	P2PTrading.CancelTrade()
 	P2PTrading.DeclineInvite()
+end
+
+function Trading:OnMoneyTradeLimitChanged()
+	if self.wndYourCashTradeLimit then
+		local monMaxCashTrade = GameLib.GetMoneyTradeLimit()
+		if monMaxCashTrade == nil then
+			return
+		end
+		
+		self.wndYourCashTradeLimit:SetAmount(monMaxCashTrade)
+		self.wndYourCash:SetAmountLimit(monMaxCashTrade)
+	end
 end
 
 -------------------------------------------------------------------------------------
@@ -497,28 +562,29 @@ function Trading:HelperResetTrade()
 	self.tPendingItems = {}
 
 	self.wndTradeForm:FindChild("AcceptBtn"):Enable(false)
-	self.wndTradeForm:FindChild("YourCash"):SetData(0)
+	self.wndYourCash:SetData(0)
 	self.wndTradeForm:FindChild("CommitIndicator"):Show(false)
 	self.wndTradeInvite:Show(false)
 	self.wndTradeForm:Show(false)
 	self.wndConfirmBlocker:Show(false)
+	self.wndYourCash:SetAmount(0)
 end
 
 function Trading:HelperResetItems()
 	for idx = 1, knMaxTradeItems do
-		self.tYourItem[idx]:GetWindowSubclass():SetItem(nil)
-		self.tYourItem[idx]:SetText("")
-		self.tYourItem[idx]:SetSprite("")
+		local wndItemIcon = self.tYourItem[idx]:FindChild("Icon")
+		wndItemIcon:GetWindowSubclass():SetItem(nil)
+		wndItemIcon:SetText("")
+		wndItemIcon:SetSprite("")
 		self.tYourItem[idx]:SetData(nil)
 		self.tYourItem[idx]:SetTooltipDoc(nil)
-		self.tPartnerItem[idx]:GetWindowSubclass():SetItem(nil)
-		self.tPartnerItem[idx]:SetText("")
-		self.tPartnerItem[idx]:SetSprite("")
+		wndItemIcon = self.tPartnerItem[idx]:FindChild("Icon")
+		wndItemIcon:GetWindowSubclass():SetItem(nil)
+		wndItemIcon:SetText("")
+		wndItemIcon:SetSprite("")
 		self.tPartnerItem[idx]:SetData(nil)
 		self.tPartnerItem[idx]:SetTooltipDoc(nil)
 	end
-
-	self.wndTradeForm:FindChild("YourCash"):SetAmount(0)
 	self.wndTradeForm:FindChild("PartnerCash"):SetAmount(0)
 end
 
@@ -526,6 +592,20 @@ function Trading:HelperBuildItemTooltip(wndArg, tItemData)
 	wndArg:SetTooltipDoc(nil)
 	Tooltip.GetItemTooltipForm(self, wndArg, tItemData.itemTrading, {bPrimary = true, bSelling = false, itemModData = tItemData.itemModData, nStackCount = tItemData.nStackCount})
 	local itemEquipped = tItemData.itemTrading:GetEquippedItemForItemType()
+end
+
+---------------------------------------------------------------------------------------------------
+-- Premium Updates
+---------------------------------------------------------------------------------------------------
+
+function Trading:OnPremiumTierChanged(ePremiumSystem, nTier)
+	if self.wndTradeForm == nil or not self.wndTradeForm:IsValid() or ePremiumSystem ~= AccountItemLib.CodeEnumPremiumSystem.VIP then
+		return
+	end
+	
+	if AccountItemLib.GetPlayerRewardProperty(AccountItemLib.CodeEnumRewardProperty.Trading).nValue == 0 then
+		self:OnCancelBtn()
+	end
 end
 
 ---------------------------------------------------------------------------------------------------

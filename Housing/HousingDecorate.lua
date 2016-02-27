@@ -110,9 +110,8 @@ function HousingDecorate:OnLoad()
 	
 	Apollo.RegisterEventHandler("HousingResult", 					"OnHousingResult", self)
 	
-	Apollo.RegisterEventHandler("CharacterEntitlementUpdate",		"OnEntitlementUpdate", self)
-	Apollo.RegisterEventHandler("AccountEntitlementUpdate",			"OnEntitlementUpdate", self)
-	Apollo.RegisterEventHandler("StoreLinksRefresh",						"RefreshStoreLink", self)
+	Apollo.RegisterEventHandler("UpdateRewardProperties",			"OnRewardPropertiesUpdate", self)
+	Apollo.RegisterEventHandler("StoreLinksRefresh",				"RefreshStoreLink", self)
 	
 	Apollo.RegisterTimerHandler("HousingDecorIconTimer", 			"OnDecorIconUpdate", self)
 	Apollo.RegisterTimerHandler("HousingDecorListRefreshTimer", 	"OnListRefresh", self)
@@ -2297,16 +2296,22 @@ function HousingDecorate:OnHousingResult(strName, eResult)
     end
 end
 
-function HousingDecorate:OnEntitlementUpdate(tEntitlementInfo)
-	if not self.wndDecorate or not self.wndDecorate:IsVisible() or tEntitlementInfo.nEntitlementId ~= AccountItemLib.CodeEnumEntitlement.ExtraDecorSlots then
+function HousingDecorate:OnRewardPropertiesUpdate(tUpdatedRewardProperties)
+	if not self.wndDecorate or not self.wndDecorate:IsVisible() then
 		return
 	end
-	self:UpdateDecorLimits()
+
+	for idx, tProperty in pairs(tUpdatedRewardProperties) do
+		if tProperty.eRewardProperty == AccountItemLib.CodeEnumRewardProperty.ExtraDecorSlots then
+			self:UpdateDecorLimits()
+			return
+		end
+	end
 end
 
 function HousingDecorate:RefreshStoreLink()
 	self.bStoreLinkValid = StorefrontLib.IsLinkValid(StorefrontLib.CodeEnumStoreLink.ExtraDecor)
-	self:OnEntitlementUpdate( { nEntitlementId = AccountItemLib.CodeEnumEntitlement.ExtraDecorSlots } )
+	self:OnRewardPropertiesUpdate( { { eRewardProperty = AccountItemLib.CodeEnumRewardProperty.ExtraDecorSlots, nObjectId = 0 } } )
 end
 
 function HousingDecorate:OnIncreaseLimits()

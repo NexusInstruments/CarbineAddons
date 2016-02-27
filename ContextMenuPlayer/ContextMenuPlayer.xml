@@ -55,7 +55,7 @@
         <Event Name="ButtonUncheck" Function="OnRegularBtn"/>
         <Control Class="Window" LAnchorPoint="0" LAnchorOffset="4" TAnchorPoint="0" TAnchorOffset="4" RAnchorPoint="1" RAnchorOffset="-4" BAnchorPoint="1" BAnchorOffset="-4" RelativeToClient="1" Font="Default" Text="" Template="Default" TooltipType="OnCursor" Name="BtnMarkerIconSprite" BGColor="white" TextColor="white" TooltipColor="" Sprite="" Picture="1" IgnoreMouse="1" NewControlDepth="1" Tooltip=""/>
         <Control Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="0" RelativeToClient="1" Font="Default" Text="" Template="Default" TooltipType="OnCursor" Name="BtnMarkerMouseCatcher" BGColor="white" TextColor="white" TooltipColor="">
-            <Event Name="MouseButtonUp" Function="OnRegularBtn"/>
+            <Event Name="MouseButtonDown" Function="OnRegularBtn"/>
         </Control>
     </Form>
     <Form Class="Window" LAnchorPoint="0.5" LAnchorOffset="-225" TAnchorPoint="0.5" TAnchorOffset="-190" RAnchorPoint="0.5" RAnchorOffset="225" BAnchorPoint="0.5" BAnchorOffset="190" RelativeToClient="1" Font="Default" Text="" Template="Default" Name="ReportChat_YesNo" Border="0" Picture="1" SwallowMouseClicks="1" Moveable="1" Escapable="0" Overlapped="1" BGColor="white" TextColor="white" Sprite="BK3:UI_BK3_Holo_Framing_1" TransitionShowHide="1" TooltipColor="" Tooltip="">
@@ -90,12 +90,14 @@
         </Control>
         <Event Name="ButtonCheck" Function="OnBtnCheckboxMouseDown"/>
     </Form>
-    <Form Class="Button" Base="BK3:btnHolo_ListView_Mid" Font="CRB_InterfaceSmall_O" ButtonType="PushButton" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="0" BAnchorOffset="25" DT_VCENTER="1" DT_CENTER="1" TooltipType="OnCursor" Name="BtnRegular" BGColor="white" TextColor="white" TooltipColor="" NormalTextColor="UI_BtnTextGrayListNormal" PressedTextColor="UI_BtnTextGrayListPressed" FlybyTextColor="UI_BtnTextGrayListFlyby" PressedFlybyTextColor="UI_BtnTextGrayListPressedFlyby" DisabledTextColor="UI_BtnTextGrayListDisabled" RelativeToClient="1" Sprite="" Text="" TextId="" IgnoreMouse="0" TooltipFont="CRB_InterfaceSmall_O" Tooltip="">
-        <Event Name="ButtonSignal" Function="OnRegularBtn"/>
-        <Control Class="Window" LAnchorPoint="0" LAnchorOffset="8" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="-2" RelativeToClient="1" Font="CRB_InterfaceSmall" Text="" Template="Default" TooltipType="OnCursor" Name="BtnText" BGColor="white" TextColor="UI_BtnTextBlueNormal" TooltipColor="" TextId="Challenges_NoProgress" DT_VCENTER="1" Visible="1" IgnoreMouse="1"/>
-        <Control Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="0" RelativeToClient="1" Font="Default" Text="" Template="Default" TooltipType="OnCursor" Name="BtnMouseCatcher" BGColor="white" TextColor="white" TooltipColor="" Visible="1" HideInEditor="0" Tooltip="">
-            <Event Name="MouseEnter" Function="OnBtnRegularMouseEnter"/>
-            <Event Name="MouseExit" Function="OnBtnRegularMouseExit"/>
+    <Form Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="0" BAnchorOffset="25" RelativeToClient="1" Font="Default" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="BtnRegularContainer" Border="0" Picture="0" SwallowMouseClicks="1" Moveable="0" Escapable="0" Overlapped="1" TooltipColor="" IgnoreMouse="1">
+        <Control Class="Button" Base="BK3:btnHolo_ListView_Mid" Font="CRB_InterfaceSmall_O" ButtonType="PushButton" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="0" DT_VCENTER="1" DT_CENTER="1" TooltipType="OnCursor" Name="BtnRegular" BGColor="white" TextColor="white" TooltipColor="" NormalTextColor="UI_BtnTextGrayListNormal" PressedTextColor="UI_BtnTextGrayListPressed" FlybyTextColor="UI_BtnTextGrayListFlyby" PressedFlybyTextColor="UI_BtnTextGrayListPressedFlyby" DisabledTextColor="UI_BtnTextGrayListDisabled" RelativeToClient="1" Sprite="" Text="" TextId="" IgnoreMouse="0" Overlapped="1" TooltipFont="CRB_InterfaceSmall_O" Tooltip="" DoNotBlockTooltip="1">
+            <Event Name="ButtonSignal" Function="OnRegularBtnParent"/>
+            <Control Class="Window" LAnchorPoint="0" LAnchorOffset="8" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="-2" RelativeToClient="1" Font="CRB_InterfaceSmall" Text="" Template="Default" TooltipType="OnCursor" Name="BtnText" BGColor="white" TextColor="UI_BtnTextBlueNormal" TooltipColor="" TextId="Challenges_NoProgress" DT_VCENTER="1" Visible="1" IgnoreMouse="1" Overlapped="1" DoNotBlockTooltip="1"/>
+            <Control Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="0" RelativeToClient="1" Font="Default" Text="" Template="Default" TooltipType="OnCursor" Name="BtnMouseCatcher" BGColor="white" TextColor="white" TooltipColor="" Visible="1" HideInEditor="0" Tooltip="" IgnoreMouse="1" Overlapped="1" DoNotBlockTooltip="1">
+                <Event Name="MouseEnter" Function="OnBtnRegularMouseEnter"/>
+                <Event Name="MouseExit" Function="OnBtnRegularMouseExit"/>
+            </Control>
         </Control>
     </Form>
 </Forms>

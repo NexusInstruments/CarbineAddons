@@ -20,6 +20,7 @@ local karStatusTextString =
 	"Options_AddonLoaded",
 	"Options_AddonSuspended",
 	"Options_AddonRunningWithErrors",
+	"Options_AddonRunningWithDeprecation",
 	"",
 }
 
@@ -31,18 +32,20 @@ local karStatusText =
 	"CRB_ModuleStatus_Loaded",
 	"CRB_ModuleStatus_Suspended",
 	"CRB_ModuleStatus_RunningWithErrors",
+	"CRB_ModuleStatus_RunningWithDeprecation",
 	"CRB_ModuleStatus_RunningOk",
 }
 
 local karSortingConstants = 
 {
-	[OptionsScreen.CodeEnumAddonStatus.ParsingError] 		= "1",
-	[OptionsScreen.CodeEnumAddonStatus.Invalid] 			= "1",
-	[OptionsScreen.CodeEnumAddonStatus.Suspended] 			= "1",
-	[OptionsScreen.CodeEnumAddonStatus.RunningWithError] 	= "2",
-	[OptionsScreen.CodeEnumAddonStatus.NotLoaded] 			= "3",
-	[OptionsScreen.CodeEnumAddonStatus.Loaded] 				= "4",
-	[OptionsScreen.CodeEnumAddonStatus.RunningOk] 			= "5",
+	[OptionsScreen.CodeEnumAddonStatus.ParsingError]			= "1",
+	[OptionsScreen.CodeEnumAddonStatus.Invalid]					= "1",
+	[OptionsScreen.CodeEnumAddonStatus.Suspended]				= "1",
+	[OptionsScreen.CodeEnumAddonStatus.RunningWithError]		= "2",
+	[OptionsScreen.CodeEnumAddonStatus.RunningWithDeprecation]	= "2",
+	[OptionsScreen.CodeEnumAddonStatus.NotLoaded]				= "3",
+	[OptionsScreen.CodeEnumAddonStatus.Loaded]					= "4",
+	[OptionsScreen.CodeEnumAddonStatus.RunningOk]				= "5",
 }
 
 local karStatusColors =
@@ -52,6 +55,7 @@ local karStatusColors =
 	ApolloColor.new("Reddish"),
 	ApolloColor.new("AddonLoaded"),
 	ApolloColor.new("Reddish"),
+	ApolloColor.new("AddonWarning"),
 	ApolloColor.new("AddonWarning"),
 	ApolloColor.new("AddonOk"),
 }
@@ -835,10 +839,12 @@ function OptionsAddon:OnDocumentReady()
 		{wnd = self.wndControls:FindChild("MouseLookIdleBtn"),					consoleVar = "player.mouseLookWhileIdle",						requiresRestart = false},
 		{wnd = self.wndControls:FindChild("MouseLookMovingBtn"),				consoleVar = "player.mouseLookWhileMoving",						requiresRestart = false},
 		{wnd = self.wndControls:FindChild("MouseLookCombatBtn"),				consoleVar = "player.mouseLookWhileCombat",						requiresRestart = false},
+		{wnd = self.wndControls:FindChild("MouseLookPositionalAOEtBtn"),		consoleVar = "player.mouseLookWhilePositionalAOESpell",			requiresRestart = false},
 		{wnd = self.wndControls:FindChild("DashDirectionalBtn"),				consoleVar = "player.directionalDashBackward",					requiresRestart = false},
 		{wnd = self.wndControls:FindChild("ClickToMoveBtn"),					consoleVar = "player.clickToMove",								requiresRestart = false},
 		{wnd = self.wndControls:FindChild("MoveToBtn"),							consoleVar = "player.moveToTargetOnSelfAOE",					requiresRestart = false},
 		{wnd = self.wndControls:FindChild("MoveActivateBtn"),					consoleVar = "player.moveToActivate",							requiresRestart = false},
+		{wnd = self.wndControls:FindChild("InvertMouse"),						consoleVar = "camera.invertMouse",								requiresRestart = false},
 
 		-- Combat
 		{wnd = self.wndTargeting:FindChild("StickyTargetingBtn"),				consoleVar = "player.stickyTargeting",							requiresRestart = false},
@@ -1041,7 +1047,7 @@ function OptionsAddon:OnSearchEditBoxChanged(wndHandler, wndControl, strText)
 		self:ResetAddonGrid()
 	else
 		for idx, tAddon in ipairs(self.tAddons) do
-			local strAddonNameSubString = string.sub(tAddon.strName, 1 ,  string.len(strText))
+			local strAddonNameSubString = string.sub(tAddon.strName, 1 ,  Apollo.StringLength(strText))
 			if Apollo.StringToLower(strAddonNameSubString) == Apollo.StringToLower(strText) then
 				self:HelperAddToGrid(wndGrid, tAddon)
 			end
@@ -1225,7 +1231,7 @@ function OptionsAddon:UpdateAddonGridRow(wndGrid, nRow, tAddon)
 
 	local strReplace = ""
 	for idx, strAddon in ipairs(tAddon.arReplacedAddons) do
-		if string.len(strReplace) > 0 then
+		if Apollo.StringLength(strReplace) > 0 then
 			strReplace = String_GetWeaselString(Apollo.GetString("Archive_TextList"), strReplace, strAddon)
 		else
 			strReplace = strAddon

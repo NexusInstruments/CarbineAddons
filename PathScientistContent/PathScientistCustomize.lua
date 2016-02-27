@@ -411,7 +411,7 @@ end
 
 function PathScientistCustomize:OnRenameFrameEditBoxChanged(wndHandler, wndControl)
 	local strInput = wndHandler:GetText()
-	if strInput and string.len(strInput) > 0 then
+	if strInput and Apollo.StringLength(strInput) > 0 then
 		local bIsTextValid = GameLib.IsTextValid(strInput, GameLib.CodeEnumUserText.ScientistScanbotName, GameLib.CodeEnumUserTextFilterClass.Strict) and strInput ~= GameLib.GetPlayerUnit():GetName()
 
 		self.wndMain:FindChild("RenameFrameUpdate"):Enable(bIsTextValid)

@@ -4,6 +4,7 @@
 -----------------------------------------------------------------------------------------------
 
 require "Window"
+require "PathMission"
 
 local PathScientistExperimentation = {}
 local kstrButtonStatePass = Apollo.GetString("ScientistMission_Success")

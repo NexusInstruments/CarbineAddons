@@ -187,7 +187,7 @@ function Credits:NextCredit()
 			local nMaxHeight = wndName:GetLocation():ToTable().nOffsets[4]
 			for idx,strTitle in ipairs(tCredit.arTitles) do
 				local wndTitle = wnd:FindChild("Title"..tostring(idx))
-				if wndTitle ~= nil and (idx <= 1 or string.len(strTitle) > 0) then
+				if wndTitle ~= nil and (idx <= 1 or Apollo.StringLength(strTitle) > 0) then
 					wndTitle:SetText(strTitle)
 					nMaxHeight = wndTitle:GetLocation():ToTable().nOffsets[4]
 				end

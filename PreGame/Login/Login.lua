@@ -64,7 +64,7 @@ function Login:OnLoad()
 	end
 	
 	self.wndServerMessage:SetAML(string.format("<T Font=\"CRB_Interface10_B\" TextColor=\"BurntYellow\">%s</T>", strAllMessage))
-	self.wndServerMessagesContainer:Show(string.len(strAllMessage or "") > 0)
+	self.wndServerMessagesContainer:Show(Apollo.StringLength(strAllMessage or "") > 0)
 	local nWidth, nHeight = self.wndServerMessage:SetHeightToContentHeight()
 	local nLeft, nTop, nRight, nBottom = self.wndServerMessagesContainer:GetAnchorOffsets()
 	self.wndServerMessagesContainer:SetAnchorOffsets(nLeft, nTop, nRight, nTop + math.min(75, nHeight + 5))

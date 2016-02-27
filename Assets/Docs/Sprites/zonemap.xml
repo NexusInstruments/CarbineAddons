@@ -13,13 +13,34 @@
     <Sprite Name="UI_WorldMap_Position" Cycle="1">
         <Frame Texture="UI\Assets\Textures\UI_WorldMap_2.tex" x0="340" x1="340" x2="340" x3="340" x4="411" x5="411" y0="347" y1="347" y2="347" y3="347" y4="414" y5="414" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
+    <Sprite Name="UI_ZoneMap_GlobeNexus" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_WorldMapBG_Nexus.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="1024" y0="0" y1="0" y2="0" y3="0" y4="0" y5="1024" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="UI_ZoneMap_RewardProgressBar" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_ZoneMapRewardTrack.tex" x0="0" x1="0" x2="0" x3="5" x4="6" x5="7" y0="0" y1="0" y2="0" y3="0" y4="0" y5="30" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="UI_ZoneMap_RewardProgressBarBackground" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_ZoneMapRewardTrack.tex" x0="174" x1="179" x2="183" x3="285" x4="285" x5="285" y0="0" y1="0" y2="0" y3="0" y4="0" y5="98" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="UI_ZoneMap_RewardProgressEndResultSpinner1" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_ZoneMapRewardTrack.tex" x0="47" x1="47" x2="47" x3="48" x4="173" x5="174" y0="0" y1="0" y2="0" y3="0" y4="124" y5="124" Stretchy="1" HotspotX="0" HotspotY="0" Duration="3.000" StartColor="UI_AlphaPercent30" EndColor="UI_AlphaPercent30" StartOrientation="359"/>
+    </Sprite>
+    <Sprite Name="UI_ZoneMap_RewardProgressEndResultSpinner2" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_ZoneMapRewardTrack.tex" x0="47" x1="47" x2="47" x3="48" x4="173" x5="174" y0="0" y1="0" y2="0" y3="0" y4="124" y5="124" Stretchy="1" HotspotX="0" HotspotY="0" Duration="8.000" StartColor="UI_AlphaPercent80" EndColor="UI_AlphaPercent80" EndOrientation="359"/>
+    </Sprite>
+    <Sprite Name="UI_ZoneMap_RewardProgressCap" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_ZoneMapRewardTrack.tex" x0="10" x1="10" x2="10" x3="10" x4="10" x5="46" y0="7" y1="7" y2="7" y3="7" y4="7" y5="70" Stretchy="1" HotspotX="19" HotspotY="43" Duration="8.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Composite Name="UI_ZoneMap_RewardProgressEndResultsComposite" Cycle="1">
+        <Layer Name="UI_ZoneMap_RewardProgressEndResultSpinner1"/>
+        <Layer Name="UI_ZoneMap_RewardProgressEndResultSpinner2"/>
+    </Composite>
     <AutoButton Name="btnWorldMap_Home" Texture="UI\Assets\Textures\UI_WorldMap_2.tex" x0="251" x1="420" x2="420" x3="420" x4="420" x5="420" y0="0" y1="188" y2="188" y3="188" y4="188" y5="188" Stretchy="1" StateBits="7" Direction="Across"/>
     <AutoButton Name="btnWorldMap_GrabberExpandCollapse" Texture="UI\Assets\Textures\UI_WorldMap_2.tex" x0="260" x1="313" x2="313" x3="313" x4="313" x5="313" y0="232" y1="342" y2="342" y3="342" y4="342" y5="342" Stretchy="1" StateBits="31" Direction="Across"/>
     <AutoButton Name="btnWorldMap_Zone2" Texture="UI\Assets\Textures\UI_WorldMap_1.tex" x0="0" x1="310" x2="310" x3="310" x4="310" x5="310" y0="0" y1="299" y2="299" y3="299" y4="299" y5="299" Stretchy="1" StateBits="7" Direction="Down"/>
     <AutoButton Name="btnWorldMap_Zone3" Texture="UI\Assets\Textures\UI_WorldMap_1.tex" x0="310" x1="635" x2="635" x3="635" x4="635" x5="635" y0="2" y1="310" y2="310" y3="310" y4="310" y5="310" Stretchy="1" StateBits="7" Direction="Down"/>
     <AutoButton Name="btnWorldMap_Zone4" Texture="UI\Assets\Textures\UI_WorldMap_1.tex" x0="631" x1="949" x2="949" x3="949" x4="949" x5="949" y0="0" y1="300" y2="300" y3="300" y4="300" y5="300" Stretchy="1" StateBits="7" Direction="Down"/>
     <AutoButton Name="btnWorldMap_OffWorld1" Texture="UI\Assets\Textures\UI_WorldMap_2.tex" x0="0" x1="252" x2="252" x3="252" x4="252" x5="252" y0="421" y1="691" y2="691" y3="691" y4="691" y5="691" Stretchy="1" StateBits="7" Direction="Across"/>
-    <Sprite Name="UI_ZoneMap_GlobeNexus" Cycle="1">
-        <Frame Texture="UI\Assets\Textures\UI_WorldMapBG_Nexus.tex" x0="0" x1="0" x2="0" x3="0" x4="0" x5="1024" y0="0" y1="0" y2="0" y3="0" y4="0" y5="1024" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
-    </Sprite>
+    <AutoButton Name="btnWorldMap_EndReward" Texture="UI\Assets\Textures\UI_ZoneMapRewardTrack.tex" x0="278" x1="278" x2="278" x3="278" x4="278" x5="386" y0="0" y1="0" y2="0" y3="0" y4="0" y5="80" Stretchy="1" StateBits="21" Direction="Down"/>
+    <AutoButton Name="btnWorldMap_ZoneArcterra" Texture="UI\Assets\Textures\UI_WorldMap_2.tex" x0="0" x1="158" x2="158" x3="158" x4="158" x5="158" y0="693" y1="855" y2="855" y3="855" y4="855" y5="855" Stretchy="1" StateBits="7" Direction="Across"/>
 </Sprites>

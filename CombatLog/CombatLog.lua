@@ -81,6 +81,7 @@ function CombatLog:OnDocumentReady()
 	Apollo.RegisterEventHandler("CombatLogModifying", 				"OnCombatLogModifying", self)
 	Apollo.RegisterEventHandler("CombatLogLAS",						"OnCombatLogLAS", self)
 	Apollo.RegisterEventHandler("CombatLogBuildSwitch",				"OnCombatLogBuildSwitch", self)
+	Apollo.RegisterEventHandler("CombatLogHealingAbsorption", 		"OnCombatLogHealingAbsorption", self)
 
 	Apollo.RegisterEventHandler("CombatLogString", 					"PostOnChannel", self)
 	Apollo.RegisterEventHandler("UpdatePathXp", 					"OnPathExperienceGained", self)
@@ -492,6 +493,11 @@ function CombatLog:OnCombatLogHeal(tEventArgs)
 		local strOverhealAmount = string.format("<T TextColor=\"white\">%s</T>", tEventArgs.nOverheal)
 		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_Overheal"), strResult, strOverhealAmount)
 	end
+	
+	if tEventArgs.nAbsorption and tEventArgs.nAbsorption > 0 then
+		local strAmountAbsorbed = string.format("<T TextColor=\"white\">%s</T>", tEventArgs.nAbsorption)
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_DamageAbsorbed"), strResult, strAmountAbsorbed)
+	end
 
 	if tEventArgs.eCombatResult == GameLib.CodeEnumCombatResult.Critical then
 		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_Critical"), strResult)
@@ -520,6 +526,11 @@ function CombatLog:OnCombatLogMultiHeal(tEventArgs)
 		local strOverhealAmount = string.format("<T TextColor=\"white\">%s</T>", tEventArgs.nOverheal)
 		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_Overheal"), strResult, strOverhealAmount)
 	end
+	
+	if tEventArgs.nAbsorption and tEventArgs.nAbsorption > 0 then
+		local strAmountAbsorbed = string.format("<T TextColor=\"white\">%s</T>", tEventArgs.nAbsorption)
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_DamageAbsorbed"), strResult, strAmountAbsorbed)
+	end
 
 	if tEventArgs.eCombatResult == GameLib.CodeEnumCombatResult.Critical then
 		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_Critical"), strResult)
@@ -542,6 +553,23 @@ function CombatLog:OnCombatLogModifyInterruptArmor(tEventArgs)
 end
 
 function CombatLog:OnCombatLogAbsorption(tEventArgs)
+	local tCastInfo = self:HelperCasterTargetSpell(tEventArgs, true, true, true)
+
+	tCastInfo.strSpellName = string.format("<T Font=\"%s\">%s</T>", kstrFontBold, tCastInfo.strSpellName)
+	local strDamageColor = self:HelperDamageColor(tEventArgs.eDamageType)
+	local strAbsorbAmount = string.format("<T TextColor=\"%s\">%s</T>", strDamageColor, tEventArgs.nAmount)
+
+	local strResult = String_GetWeaselString(Apollo.GetString("CombatLog_BaseSkillUse"), tCastInfo.strCaster, tCastInfo.strSpellName, tCastInfo.strTarget)
+	strResult = String_GetWeaselString(Apollo.GetString("CombatLog_GrantAbsorption"), strResult, strAbsorbAmount)
+
+	if tEventArgs.eCombatResult == GameLib.CodeEnumCombatResult.Critical then
+		self:PostOnChannel("Absorption")
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_Critical"), strResult)
+	end
+	self:PostOnChannel(string.format("<T TextColor=\"%s\">%s</T>", tCastInfo.strColor, strResult))
+end
+
+function CombatLog:OnCombatLogHealingAbsorption(tEventArgs)
 	local tCastInfo = self:HelperCasterTargetSpell(tEventArgs, true, true, true)
 
 	tCastInfo.strSpellName = string.format("<T Font=\"%s\">%s</T>", kstrFontBold, tCastInfo.strSpellName)
@@ -640,6 +668,12 @@ end
 -----------------------------------------------------------------------------------------------
 function CombatLog:OnCombatLogLifeSteal(tEventArgs)
 	local strResult = String_GetWeaselString(Apollo.GetString("CombatLogLifesteal"), tEventArgs.unitCaster:GetName(), tEventArgs.nHealthStolen)
+	
+	if tEventArgs.nAbsorption and tEventArgs.nAbsorption > 0 then
+		local strAmountAbsorbed = string.format("<T TextColor=\"white\">%s</T>", tEventArgs.nAbsorption)
+		strResult = String_GetWeaselString(Apollo.GetString("CombatLog_DamageAbsorbed"), strResult, strAmountAbsorbed)
+	end
+	
 	self:PostOnChannel(string.format("<T TextColor=\"%s\">%s</T>", self:HelperPickColor(tEventArgs), strResult))
 end
 
@@ -680,6 +714,11 @@ function CombatLog:OnCombatLogTransference(tEventArgs)
 				end
 				strAmount = string.format("<T TextColor=\"white\">%s</T>", tHeal.nOverheal)
 				strResult = String_GetWeaselString(strOverhealString, strResult, strAmount)
+			end
+			
+			if tHeal.nAbsorption and tHeal.nAbsorption > 0 then
+				local strAmountAbsorbed = string.format("<T TextColor=\"white\">%s</T>", tHeal.nAbsorption)
+				strResult = String_GetWeaselString(Apollo.GetString("CombatLog_DamageAbsorbed"), strResult, strAmountAbsorbed)
 			end
 
 			if tEventArgs.eCombatResult == GameLib.CodeEnumCombatResult.Critical then
@@ -1114,10 +1153,6 @@ function CombatLog:OnMappedOptionsCheckbox(wndHandler, wndControl, eMouseButton)
 end
 
 function CombatLog:OnCancel(wndHandler, wndControl, eMouseButton)
-	self.wndOptions:Close()
-end
-
-function CombatLog:OnOK(wndHandler, wndControl, eMouseButton)
 	self.wndOptions:Close()
 end
 

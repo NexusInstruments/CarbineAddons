@@ -8,41 +8,66 @@ require "MatchingGame"
 
 local MatchTracker = {}
 
+--Sprites
+local strHTLMatchIndicator = "CRB_WindowAnimationSprites:sprWinAnim_BirthSmallTemp"
+
 --Colors
-local kcrAttack = ApolloColor.new("ffff3030")
-local kcrDefend = ApolloColor.new("ff30ff30")
+local kcrRed = ApolloColor.new("ffff3030")
+local kcrBlue = ApolloColor.new("ff00deff")
+local kcrNeutral = "UI_TextMetalBodyHighlight"
 
 local LuaEnumTeam = 
 {
 	Red 	= 0,
 	Blue 	= 1,
 	Neutral = 2,
-	Stolen 	= 9,
+	RedStole 			= 3,
+	RedStoleDropped 	= 4,
+	BlueStole 			= 5,
+	BlueStoleDropped 	= 6,
 }
 
 local ktRavelIdToCTFWindowName =
 {
+	[LuaEnumTeam.Neutral] 			= "CTFNeutralFlag",
 	[LuaEnumTeam.Red] 		= "CTFRedHaveFlag",
+	[LuaEnumTeam.RedStole] 			= "CTFRedStoleFlag",
+	[LuaEnumTeam.RedStoleDropped] 	= "CTFRedStoleDropped",
 	[LuaEnumTeam.Blue] 		= "CTFBlueHaveFlag",
-	[LuaEnumTeam.Neutral] 	= "CTFNeutralFlag",
-	[LuaEnumTeam.Stolen] 	= "CTFStolenFlag",
+	[LuaEnumTeam.BlueStole] 		= "CTFBlueStoleFlag",
+	[LuaEnumTeam.BlueStoleDropped] 	= "CTFBlueStoleDropped",
 }
 
-local nHoldLineObjective = 3
-
-local ktHoldLineObjectiveCountToName =
+local ktCTFMaskSprites =
 {
-	[0] = Apollo.GetString("MatchTracker_CrucibleOfBlood"),
-	[1] = Apollo.GetString("MatchTracker_ChamberOfGreatDark"),
-	[2] = Apollo.GetString("MatchTracker_CourtOfJudges"),
+	Red			= "CRB_InterfaceMenuList:spr_Walatiki_MaskRed_Flag",
+	RedEmpty	= "CRB_InterfaceMenuList:spr_Walatiki_MaskRed__Flag_Empty",
+	Blue 		= "CRB_InterfaceMenuList:spr_Walatiki_MaskBlue_Flag",
+	BlueEmpty 	= "CRB_InterfaceMenuList:spr_Walatiki_MaskBlue__Flag_Empty",
 }
 
-
-local ktHoldLineCaptureStatus =
+local ktCTFMaskStatus = 
 {
-	[0] = { htlStatus = Apollo.GetString("CRB_Captured"), spriteName = "ClientSprites:Icon_ItemMisc_UI_Item_Crafting_Special_3" },
-	[1] = { htlStatus = Apollo.GetString("ZoneStateContested"), spriteName = "ClientSprites:Icon_ItemMisc_UI_Item_Crafting_Special_1"},
-	[2] = { htlStatus = Apollo.GetString("MatchTracker_Gated"), spriteName = "ClientSprites:Icon_ItemMisc_UI_Item_Crafting_Special_1b"}
+	[LuaEnumTeam.Neutral] 			= false,
+	[LuaEnumTeam.Red] 				= false,
+	[LuaEnumTeam.RedStole] 			= false,
+	[LuaEnumTeam.RedStoleDropped] 	= false,
+	[LuaEnumTeam.Blue] 				= false,
+	[LuaEnumTeam.BlueStole] 		= false,
+	[LuaEnumTeam.BlueStoleDropped] 	= false,
+}
+
+local ktHTLTeamInfo = 
+{
+	Red = {	eNum = 6, kcrColor = kcrRed, strWndIndicator = "RoundTracker:RedWin", bHasWon  = false, peoProgress = 5170 },
+	Blue = { eNum = 7, kcrColor = kcrBlue, strWndIndicator = "RoundTracker:BlueWin", bHasWon  = false, peoProgress = 5171 },
+}
+
+local ktHTLRoundTracker =
+{
+	[1] = 5173,
+	[2] = 5174,
+	[3] = 5203,
 }
 
 local ktPvPEventTypes =
@@ -97,18 +122,18 @@ function MatchTracker:OnSave(eType)
 		end
 	end
 	
-	local locHTLLocation = self.wndHoldLineFloater and self.wndHoldLineFloater:GetLocation() or self.locSavedWindowLoc
-	
 	local tSaved = 
 	{
-		tHTLWindowLocation = locHTLLocation and locHTLLocation:ToTable() or nil,
 		nSaveVersion = knSaveVersion,
 		tSavedCTFFlags = 
 		{
-			bNeutral = self.tWndRefs.wndMatchTracker and self.tWndRefs.wndMatchTracker:FindChild("CTFNeutralFlag"):IsVisible() or nil,
-			bRed = self.tWndRefs.wndMatchTracker and self.tWndRefs.wndMatchTracker:FindChild("CTFRedHaveFlag"):IsVisible() or nil,
-			bStolen = self.tWndRefs.wndMatchTracker and self.tWndRefs.wndMatchTracker:FindChild("CTFStolenFlag"):IsVisible() or nil,
-			bBlue = self.tWndRefs.wndMatchTracker and self.tWndRefs.wndMatchTracker:FindChild("CTFBlueHaveFlag"):IsVisible() or nil
+			[LuaEnumTeam.Neutral] = self.tWndRefs.wndMatchTracker and self.tWndRefs.wndMatchTracker:FindChild("CTFNeutralFlag"):IsVisible() or false,
+			[LuaEnumTeam.Red] = self.tWndRefs.wndMatchTracker and self.tWndRefs.wndMatchTracker:FindChild("CTFRedHaveFlag"):IsVisible() or false,
+			[LuaEnumTeam.RedStole] = self.tWndRefs.wndMatchTracker and self.tWndRefs.wndMatchTracker:FindChild("CTFRedStoleFlag"):IsVisible() or false,
+			[LuaEnumTeam.RedStoleDropped] = self.tWndRefs.wndMatchTracker and self.tWndRefs.wndMatchTracker:FindChild("CTFRedStoleDropped"):IsVisible() or false,
+			[LuaEnumTeam.Blue] = self.tWndRefs.wndMatchTracker and self.tWndRefs.wndMatchTracker:FindChild("CTFBlueHaveFlag"):IsVisible() or false,
+			[LuaEnumTeam.BlueStole]= self.tWndRefs.wndMatchTracker and self.tWndRefs.wndMatchTracker:FindChild("CTFBlueStoleFlag"):IsVisible() or false,
+			[LuaEnumTeam.BlueStoleDropped]= self.tWndRefs.wndMatchTracker and self.tWndRefs.wndMatchTracker:FindChild("CTFBlueStoleDropped"):IsVisible() or false,
 		},
 	}
 	
@@ -180,15 +205,9 @@ function MatchTracker:ResetTracker()
 		return
 	end
 
-	if self.wndHoldLineFloater and self.wndHoldLineFloater:IsValid() then
-		self.locSavedWindowLoc = self.wndHoldLineFloater:GetLocation()
-		self.wndHoldLineFloater:Destroy()
-	end
-	
 	self.tWndRefs.wndMatchTracker 	= Apollo.LoadForm(self.xmlDoc, "MatchTracker", "FixedHudStratum", self)
 	
 	self.match 					= nil
-	self.wndHoldLineFloater 	= nil
 	self.nHTLHintArrow 			= nil
 	self.nHTLTimeToBeat 		= 0
 	self.nHTLCaptureMod			= 0
@@ -220,7 +239,8 @@ function MatchTracker:ResetTracker()
 	Apollo.RegisterEventHandler("PvP_HTL_Respawn", 						"OnHTLRespawn", self)
 	Apollo.RegisterEventHandler("PvP_HTL_CaptureModifier", 				"OnHTLCaptureMod", self)
 	Apollo.RegisterEventHandler("PvP_HTL_PrepPhase",					"OnHTLPrepPhase", self)
-
+	Apollo.RegisterEventHandler("PVP_BG_HALLS_ROUND_WINNER", 			"UpdateHTLRound", self)
+	
 	-- Load window types
 	self.tWndRefs.tMatchWnd = {
 		[PublicEvent.PublicEventType_PVP_Arena] 					= self.tWndRefs.wndMatchTracker:FindChild("DeathMatchInfo"),
@@ -228,19 +248,13 @@ function MatchTracker:ResetTracker()
 		[PublicEvent.PublicEventType_PVP_Battleground_HoldTheLine] 	= self.tWndRefs.wndMatchTracker:FindChild("HoldLineMatchInfo"),
 	}
 	
+	--Transfer saved flags to active mask status
 	if self.tSavedCTFFlags then
-		self.tWndRefs.wndMatchTracker:FindChild("CTFNeutralFlag"):Show(self.tSavedCTFFlags.bNeutral or false)
-		self.tWndRefs.wndMatchTracker:FindChild("CTFRedHaveFlag"):Show(self.tSavedCTFFlags.bRed or false)
-		self.tWndRefs.wndMatchTracker:FindChild("CTFStolenFlag"):Show(self.tSavedCTFFlags.bStolen or false)
-		self.tWndRefs.wndMatchTracker:FindChild("CTFBlueHaveFlag"):Show(self.tSavedCTFFlags.bBlue or false)
-		self.tWndRefs.wndMatchTracker:FindChild("CTFAlertContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.Middle)
+		for eState, bIsShown in pairs(self.tSavedCTFFlags) do
+			ktCTFMaskStatus[eState] = bIsShown
+		end
+		self:ShowAppropriateMessages()
 	end
-
-	-- Initialization/Formatting
-	self.tWndRefs.tMatchWnd[PublicEvent.PublicEventType_PVP_Battleground_Vortex]:FindChild("CTFStolenFlag"):SetData(0)
-	self.tWndRefs.tMatchWnd[PublicEvent.PublicEventType_PVP_Battleground_Vortex]:FindChild("CTFNeutralFlag"):SetData(0)
-	self.tWndRefs.tMatchWnd[PublicEvent.PublicEventType_PVP_Battleground_Vortex]:FindChild("CTFRedHaveFlag"):SetData(0)
-	self.tWndRefs.tMatchWnd[PublicEvent.PublicEventType_PVP_Battleground_Vortex]:FindChild("CTFBlueHaveFlag"):SetData(0)
 
 	if MatchingGame.IsInMatchingGame() or MatchingGame.IsInPVPGame() then
 		self:OnMatchEntered()
@@ -251,6 +265,12 @@ function MatchTracker:OnMatchEntered()
 	if MatchingGame:IsInPVPGame() then
 		Apollo.StartTimer("OneSecMatchTimer")
 	end
+	
+	if self.tSavedCTFFlags then -- Clear any saved flags
+		for eState, bIsShown in pairs(self.tSavedCTFFlags) do
+			self.tSavedCTFFlags[eState] = false
+		end
+	end	
 end
 
 function MatchTracker:OnMatchExited()
@@ -258,11 +278,6 @@ function MatchTracker:OnMatchExited()
 	if self.tWndRefs.wndMatchTracker ~= nil and self.tWndRefs.wndMatchTracker:IsValid() then
 		self.tWndRefs.wndMatchTracker:Destroy()
 		self.tWndRefs = {}
-	end
-	if self.wndHoldLineFloater and self.wndHoldLineFloater:IsValid() then
-		self.locSavedWindowLoc = self.wndHoldLineFloater:GetLocation()
-		self.wndHoldLineFloater:Destroy()
-		self.wndHoldLineFloater = nil
 	end
 	self.nHTLTimeToBeat = 0
 	if self.tLastResTeam then
@@ -277,6 +292,12 @@ function MatchTracker:OnMatchExited()
 	self.peMatch = nil
 	self.tZombieEvent = nil
 	
+	if self.tSavedCTFFlags then
+		for eState, bIsShown in pairs(self.tSavedCTFFlags) do
+			self.tSavedCTFFlags[eState] = false
+		end
+	end
+
 	Apollo.RemoveEventHandler("PVPMatchFinished",					self)
 	Apollo.RemoveEventHandler("PVPMatchStateUpdated",				self)
 	Apollo.RemoveEventHandler("PVPDeathmatchPoolUpdated",			self)
@@ -292,6 +313,7 @@ function MatchTracker:OnMatchExited()
 	Apollo.RemoveEventHandler("PvP_HTL_Respawn", 					self)
 	Apollo.RemoveEventHandler("PvP_HTL_CaptureModifier", 			self)
 	Apollo.RemoveEventHandler("PvP_HTL_PrepPhase",					self)
+	Apollo.RemoveEventHandler("PVP_BG_HALLS_ROUND_WINNER", 			self)
 end
 
 function MatchTracker:OnMatchPvpInactivityAlert(nRemainingTimeMs)
@@ -333,28 +355,33 @@ function MatchTracker:OnOneSecMatchTimer()
 	self.tWndRefs.wndMatchTracker:FindChild("TimerLabel"):SetText(self:HelperTimeString(tMatchState.fTimeRemaining))
 	
 	if not self.peMatch then
+		local eMatchType = nil
+
 		for key, peCurrent in pairs(PublicEvent.GetActiveEvents()) do
 			local eType = peCurrent:GetEventType()
 			
-			if eType == PublicEvent.PublicEventType_PVP_Battleground_Vortex then
+			if eType == PublicEvent.PublicEventType_SubEvent then
+				self.peMatchSub = peCurrent
+			else
 				self.peMatch = peCurrent
+				eMatchType = eType
+			end
+		end
+		
+		if eMatchType ~= nil then
+			if eMatchType == PublicEvent.PublicEventType_PVP_Battleground_Vortex then
 				self:SetupFlags(tMatchState)
-				self:OnShowTeamAlert(peCurrent)
-				break
-			elseif eType == PublicEvent.PublicEventType_PVP_Battleground_HoldTheLine or eType == PublicEvent.PublicEventType_PVP_Arena then
-				self.peMatch = peCurrent
-				break
-			elseif eType == PublicEvent.PublicEventType_PVP_Warplot or PublicEvent.PublicEventType_PVP_Battleground_Sabotage then
-				self.peMatch = peCurrent
-				self:OnShowTeamAlert(peCurrent)
-				break
+				self:OnShowTeamAlert(self.peMatch)
+			elseif eMatchType == PublicEvent.PublicEventType_PVP_Battleground_HoldTheLine then
+				self:SetupHTLScreen(self.peMatch)
+			elseif eMatchType == PublicEvent.PublicEventType_PVP_Warplot or eMatchType == PublicEvent.PublicEventType_PVP_Battleground_Sabotage then
+				self:OnShowTeamAlert(self.peMatch)
 			end
 		end
 	end
-
+	
 	if tMatchState.eState == MatchingGame.PVPGameState.Preparation then
 		self.tWndRefs.wndMatchTracker:FindChild("BGArt"):Show(false)
-		self:HideHoldLineScreen()
 		return
 	elseif tMatchState.eState == MatchingGame.PVPGameState.Finished then
 		self.tWndRefs.wndMatchTracker:FindChild("BGArt"):Show(true)
@@ -367,7 +394,7 @@ function MatchTracker:OnOneSecMatchTimer()
 		if eType == PublicEvent.PublicEventType_PVP_Battleground_Vortex then
 			self:DrawCTFScreen(self.peMatch)
 		elseif eType == PublicEvent.PublicEventType_PVP_Battleground_HoldTheLine then
-			self:DrawHoldLineScreen(self.peMatch)
+			self:DrawHTLScreen(self.peMatch)
 			-- TODO: Other types
 		end
 	end
@@ -383,11 +410,6 @@ end
 -----------------------------------------------------------------------------------------------
 
 function MatchTracker:OnPVPMatchFinished(eWinner, eReason)
-	if self.wndHoldLineFloater and self.wndHoldLineFloater:IsValid() then
-		self.locSavedWindowLoc = self.wndHoldLineFloater:GetLocation()
-		self.wndHoldLineFloater:Destroy()
-		self.wndHoldLineFloater = nil
-	end
 	if not self.tWndRefs.wndMatchTracker or not self.tWndRefs.wndMatchTracker:IsValid() then
 		self:ResetTracker()
 	end
@@ -426,12 +448,12 @@ end
 -- CTF Events
 -----------------------------------------------------------------------------------------------
 function MatchTracker:SetupFlags(tMatchState)
-	local strLeftSprite = "ClientSprites:Icon_Mission_Explorer_ClaimTerritory"
-	local strRightSprite = "ClientSprites:Icon_Mission_Explorer_ClaimTerritory_TEMP_Red"
+	local strLeftSprite = ktCTFMaskSprites.BlueEmpty
+	local strRightSprite = ktCTFMaskSprites.RedEmpty
 	
 	if tMatchState.eMyTeam == LuaEnumTeam.Red then
-		strLeftSprite = "ClientSprites:Icon_Mission_Explorer_ClaimTerritory_TEMP_Red"
-		strRightSprite = "ClientSprites:Icon_Mission_Explorer_ClaimTerritory"
+		strLeftSprite = ktCTFMaskSprites.RedEmpty
+		strRightSprite = ktCTFMaskSprites.BlueEmpty
 	end
 	
 	local tLeftChildren = self.tWndRefs.tMatchWnd[PublicEvent.PublicEventType_PVP_Battleground_Vortex]:FindChild("CTFLeftFrame"):GetChildren()
@@ -441,6 +463,26 @@ function MatchTracker:SetupFlags(tMatchState)
 		tLeftChildren[idx]:SetSprite(strLeftSprite)
 		tRightChildren[idx]:SetSprite(strRightSprite)
 	end
+	
+	local wndInfo = self.tWndRefs.tMatchWnd[PublicEvent.PublicEventType_PVP_Battleground_Vortex]
+	local eTeam = MatchingGame.GetPVPMatchState().eMyTeam
+	local bIsBlue = eTeam == LuaEnumTeam.Blue
+	local wndCTFYourTeam = self.tWndRefs.wndMatchTracker:FindChild("CTFYourTeam")
+	local wndCTFEnemyTeam = self.tWndRefs.wndMatchTracker:FindChild("CTFEnemyTeam")
+	local wndLeftFrame = wndInfo:FindChild("CTFLeftFrame")
+	local wndRightFrame = wndInfo:FindChild("CTFRightFrame")
+	
+	if bIsBlue then
+		wndCTFYourTeam:SetTextColor("BrightSkyBlue")
+		wndCTFEnemyTeam:SetTextColor("UI_BtnTextGrayListNormal")
+		wndLeftFrame:SetData(LuaEnumTeam.Blue)
+		wndRightFrame:SetData(LuaEnumTeam.Red)
+	else
+		wndCTFYourTeam:SetTextColor("Orangered")
+		wndCTFEnemyTeam:SetTextColor("UI_BtnTextGrayListNormal")
+		wndLeftFrame:SetData(LuaEnumTeam.Red)
+		wndRightFrame:SetData(LuaEnumTeam.Blue)
+	end	
 end
 
 function MatchTracker:OnCTFFlagCollected(nArg) -- This is picking up a neutral flag
@@ -449,12 +491,21 @@ function MatchTracker:OnCTFFlagCollected(nArg) -- This is picking up a neutral f
 end
 
 function MatchTracker:OnCTFFlagStolenDroppedCollected(nArg) -- This is someone picking up/relaying a stolen flag
-	self:HelperCTFMinusOneFlag(LuaEnumTeam.Stolen)		--Stolen flag is no longer stolen
-	self:HelperCTFPlusOneFlag(nArg == LuaEnumTeam.Blue and LuaEnumTeam.Blue or LuaEnumTeam.Red) --One side gains a flag
+	if nArg == 1 then
+		self:HelperCTFPlusOneFlag(LuaEnumTeam.BlueStole)		-- Blue team picks up red mask that they're stealing.
+		self:HelperCTFMinusOneFlag(LuaEnumTeam.BlueStoleDropped)	--Unclaimed red mask has been picked up again by Blue Team.
+	elseif nArg == 2 then
+		self:HelperCTFPlusOneFlag(LuaEnumTeam.RedStole)		-- Red team picks up blue mask that they're stealing.
+		self:HelperCTFMinusOneFlag(LuaEnumTeam.RedStoleDropped)		--Unclaimed blue mask has been picked up again by Red Team.
+	end
 end
 
 function MatchTracker:OnCTFFlagRecovered(nArg) -- This is a stolen flag despawning
-	self:HelperCTFMinusOneFlag(LuaEnumTeam.Stolen)
+	if nArg == 1 then -- Red team recovered their mask. Remove unclaimed red mask.
+		self:HelperCTFMinusOneFlag(LuaEnumTeam.RedStoleDropped)
+	elseif nArg == 2 then -- Blue team recovered their mask. Remove unclaimed blue mask.
+		self:HelperCTFMinusOneFlag(LuaEnumTeam.BlueStoleDropped)
+	end
 end
 
 function MatchTracker:OnCTFFlagSpawned(nArg)
@@ -466,12 +517,12 @@ function MatchTracker:OnCTFFlagDespawned()
 end
 
 function MatchTracker:OnCTFFlagDropped(nArg)
-	if nArg == 1 then--Blue Team stole Red's Flag
-		self:HelperCTFMinusOneFlag(LuaEnumTeam.Red)  --Red loses flag
-		self:HelperCTFPlusOneFlag(LuaEnumTeam.Stolen)	--One flag is stolen
-	elseif nArg == 2 then--Red Team stole Blue's Flag
-		self:HelperCTFMinusOneFlag(LuaEnumTeam.Blue)	--Blue lose flag
-		self:HelperCTFPlusOneFlag(LuaEnumTeam.Stolen)	--One flag is stolen
+	if nArg == 1 then -- Red team stole blue mask
+		self:HelperCTFMinusOneFlag(LuaEnumTeam.RedStole)	-- Remove indicator for red moving a blue mask.
+		self:HelperCTFPlusOneFlag(LuaEnumTeam.RedStoleDropped)	-- Show indicator for an unclaimed blue mask.
+	elseif nArg == 2 then--Blue Team stole red mask
+		self:HelperCTFMinusOneFlag(LuaEnumTeam.BlueStole)	-- Remove indicator for blue team moving a red mask.
+		self:HelperCTFPlusOneFlag(LuaEnumTeam.BlueStoleDropped)	-- Show indicator for an unclaimed red mask.
 	elseif nArg == 3 then--Blue Team Dropped Neutral Flag
 		self:HelperCTFMinusOneFlag(LuaEnumTeam.Blue)	--Red loses flag
 		self:HelperCTFPlusOneFlag(LuaEnumTeam.Neutral)	--Flag is on the ground
@@ -482,43 +533,86 @@ function MatchTracker:OnCTFFlagDropped(nArg)
 end
 
 function MatchTracker:OnCTFFlagStollen(nArg)
-	self:HelperCTFPlusOneFlag(nArg == LuaEnumTeam.Blue and LuaEnumTeam.Blue or LuaEnumTeam.Red) --One side steals a flag
+	if nArg == 1 then
+		self:HelperCTFPlusOneFlag(LuaEnumTeam.BlueStole) --One side steals a flag
+	elseif nArg == 2 then
+		self:HelperCTFPlusOneFlag(LuaEnumTeam.RedStole) --One side steals a flag	
+	end
 end
 
 function MatchTracker:OnCTFFlagSocketed(nArg)
-	self:HelperCTFMinusOneFlag(nArg == LuaEnumTeam.Blue and LuaEnumTeam.Blue or LuaEnumTeam.Red) --One side sockets a flag
+	--Need some extra logic to determine whether the capped flag was stolen or neutral.
+	if nArg == 1 then 
+		if ktCTFMaskStatus[LuaEnumTeam.BlueStole] then
+			self:HelperCTFMinusOneFlag(LuaEnumTeam.BlueStole)
+		else 
+			self:HelperCTFMinusOneFlag(LuaEnumTeam.Blue)
+		end
+	elseif nArg == 2 then
+		if ktCTFMaskStatus[LuaEnumTeam.RedStole] then	
+			self:HelperCTFMinusOneFlag(LuaEnumTeam.RedStole)
+		else 
+			self:HelperCTFMinusOneFlag(LuaEnumTeam.Red)
+		end	
+	end	
 end
 
-function MatchTracker:HelperCTFPlusOneFlag(nArg)
-	local strWindowName = ktRavelIdToCTFWindowName[nArg]
+function MatchTracker:HelperCTFPlusOneFlag(eState)
+	local strWindowName = ktRavelIdToCTFWindowName[eState]
+	local wndAlertAnimation = self.tWndRefs.wndMatchTracker:FindChild(strWindowName):FindChild("AlertAnimation")
+
 	if strWindowName and self.tWndRefs.wndMatchTracker then
-		local nAmount = self.tWndRefs.wndMatchTracker:FindChild(strWindowName):GetData() + 1
-		self.tWndRefs.wndMatchTracker:FindChild(strWindowName):SetData(nAmount)
+		ktCTFMaskStatus[eState] = true
+		wndAlertAnimation:SetSprite("CRB_InterfaceMenuList:spr_anim_WalatikiAlertBurst")
 	end
 	self:ShowAppropriateMessages()
 end
 
-function MatchTracker:HelperCTFMinusOneFlag(nArg)
-	local strWindowName = ktRavelIdToCTFWindowName[nArg]
+function MatchTracker:HelperCTFMinusOneFlag(eState)
+	local strWindowName = ktRavelIdToCTFWindowName[eState]
 	if strWindowName and self.tWndRefs.wndMatchTracker then
-		local nAmount = math.max(0, self.tWndRefs.wndMatchTracker:FindChild(strWindowName):GetData() - 1)
-		self.tWndRefs.wndMatchTracker:FindChild(strWindowName):SetData(nAmount)
+		ktCTFMaskStatus[eState] = false
 	end
 	self:ShowAppropriateMessages()
 end
 
 function MatchTracker:ShowAppropriateMessages()
-	local bShowRed = self.tWndRefs.wndMatchTracker:FindChild("CTFRedHaveFlag"):GetData() > 0
-	local bShowBlue = self.tWndRefs.wndMatchTracker:FindChild("CTFBlueHaveFlag"):GetData() > 0
-	local bShowStolen = self.tWndRefs.wndMatchTracker:FindChild("CTFStolenFlag"):GetData() > 0
-	local bShowNeutral = self.tWndRefs.wndMatchTracker:FindChild("CTFNeutralFlag"):GetData() > 0
+	local wndAlertContainer = self.tWndRefs.wndMatchTracker:FindChild("CTFAlertContainer")
+	local wndCTFNeutralFlag = self.tWndRefs.wndMatchTracker:FindChild("CTFNeutralFlag")
+		
+	for eState, bIsShown in pairs(ktCTFMaskStatus) do
+		local strMaskName = ktRavelIdToCTFWindowName[eState]
+		local wndMask = self.tWndRefs.wndMatchTracker:FindChild(strMaskName)
+		
+		if bIsShown then
+			wndMask:Show(true)
+		else
+			wndMask:Show(false)
+		end
+	end	
 	
-	self.tWndRefs.wndMatchTracker:FindChild("CTFRedHaveFlag"):Show(bShowRed )
-	self.tWndRefs.wndMatchTracker:FindChild("CTFBlueHaveFlag"):Show(bShowBlue)
-	self.tWndRefs.wndMatchTracker:FindChild("CTFStolenFlag"):Show(bShowStolen)
-	self.tWndRefs.wndMatchTracker:FindChild("CTFNeutralFlag"):Show(bShowNeutral)
-	self.tWndRefs.wndMatchTracker:FindChild("CTFAlertContainer"):Show(bShowRed or bShowBlue or bShowStolen or bShowNeutral)
-	self.tWndRefs.wndMatchTracker:FindChild("CTFAlertContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.Middle)
+	-- Adjust the width of the alert container based on how many icons are active
+	local nIconWidth = wndCTFNeutralFlag:GetWidth()
+	local nAlertContainerLeft, nAlertContainerTop, nAlertContainerRight, nAlertContainerBottom = wndAlertContainer:GetAnchorOffsets();
+	local nAlertContainerHorizCenter = (nAlertContainerLeft + nAlertContainerRight)/2
+	local nNewAlertContainerWidth = 0
+	local nActiveIcons = 0
+	
+	for eState, bIsShown in pairs(ktCTFMaskStatus) do
+		if bIsShown then 
+			nActiveIcons = nActiveIcons + 1
+		end  
+	end
+	
+	if nActiveIcons > 0 then
+		wndAlertContainer:Show(true)	
+	else
+		wndAlertContainer:Show(false)	
+	end
+	
+	nNewAlertContainerHorizOffset = ((nIconWidth * nActiveIcons) + nIconWidth)/2
+	wndAlertContainer:SetAnchorOffsets(-nNewAlertContainerHorizOffset + nAlertContainerHorizCenter, nAlertContainerTop, nNewAlertContainerHorizOffset + nAlertContainerHorizCenter, nAlertContainerBottom)
+	wndAlertContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.Middle)	
 end
 
 -----------------------------------------------------------------------------------------------
@@ -567,19 +661,12 @@ function MatchTracker:DrawCTFScreen(peMatch)
 	self:HelperClearMatchesExcept(PublicEvent.PublicEventType_PVP_Battleground_Vortex)
 	local wndInfo = self.tWndRefs.tMatchWnd[PublicEvent.PublicEventType_PVP_Battleground_Vortex]
 	wndInfo:SetData(peMatch)
-
-	local eTeam = MatchingGame.GetPVPMatchState().eMyTeam
-	local bIsBlue = eTeam == LuaEnumTeam.Blue
-	local wndCTFYourTeam = self.tWndRefs.wndMatchTracker:FindChild("CTFYourTeam")
-	local wndCTFEnemyTeam = self.tWndRefs.wndMatchTracker:FindChild("CTFEnemyTeam")
 	
-	if bIsBlue then
-		wndCTFYourTeam:SetTextColor("BrightSkyBlue")
-		wndCTFEnemyTeam:SetTextColor("Orangered")
-	else
-		wndCTFYourTeam:SetTextColor("Orangered")
-		wndCTFEnemyTeam:SetTextColor("BrightSkyBlue")
-	end
+	local strBlueCappedSprite = ktCTFMaskSprites.Blue
+	local strRedCappedSprite = ktCTFMaskSprites.Red
+	local strBlueEmptySprite = ktCTFMaskSprites.BlueEmpty
+	local strRedEmptySprite = ktCTFMaskSprites.RedEmpty
+
 
 	for idObjective, peoCurrent in pairs(peMatch:GetObjectives()) do
 		local wndToUse = wndInfo:FindChild("CTFLeftFrame")
@@ -592,9 +679,17 @@ function MatchTracker:DrawCTFScreen(peMatch)
 			local wndFlag = wndToUse:FindChild("FlagIcon" .. idx)
 			
 			if wndFlag and idx > peoCurrent:GetCount() then
-				wndFlag:SetBGColor(ApolloColor.new("ff444444"))
+				if wndToUse:GetData() == LuaEnumTeam.Blue then
+					wndFlag:SetSprite(strBlueEmptySprite)
+				else
+					wndFlag:SetSprite(strRedEmptySprite)
+				end
 			elseif wndFlag then
-				wndFlag:SetBGColor(ApolloColor.new("ffffffff"))
+				if wndToUse:GetData() == LuaEnumTeam.Blue then
+					wndFlag:SetSprite(strBlueCappedSprite)
+				else
+					wndFlag:SetSprite(strRedCappedSprite)
+				end
 			end
 		end
 	end
@@ -603,217 +698,104 @@ end
 -----------------------------------------------------------------------------------------------
 -- Hold The Line
 -----------------------------------------------------------------------------------------------
-function MatchTracker:HideHoldLineScreen()
-	self.tWndRefs.tMatchWnd[PublicEvent.PublicEventType_PVP_Battleground_HoldTheLine]:Show(false)
-	if self.wndHoldLineFloater and self.wndHoldLineFloater:IsShown() then
-		self.wndHoldLineFloater:Destroy()
-		self.wndHoldLineFloater = nil
-	end
-end
-
-function MatchTracker:DrawHoldLineScreen(peMatch)
+function MatchTracker:SetupHTLScreen(peMatch)
 	if not peMatch then return end
-
-	if not self.wndHoldLineFloater or not self.wndHoldLineFloater:IsValid() then
-		self.wndHoldLineFloater = Apollo.LoadForm(self.xmlDoc, "HoldTheLinePvPForm", nil, self)
-		
-		if self.locSavedWindowLoc then
-			self.wndHoldLineFloater:MoveToLocation(self.locSavedWindowLoc)
-		end
-	end
-
 	self:HelperClearMatchesExcept(PublicEvent.PublicEventType_PVP_Battleground_HoldTheLine)
 	local wndDatachron = self.tWndRefs.tMatchWnd[PublicEvent.PublicEventType_PVP_Battleground_HoldTheLine]
-	local wndFloat = self.wndHoldLineFloater
-	local strTitleText = ""
-	local nTotalTime = 0;
+	local wndParent = self.tWndRefs.tMatchWnd[PublicEvent.PublicEventType_PVP_Battleground_HoldTheLine]
 	wndDatachron:SetData(peMatch)
-	
-	--1420 - PvP Hold The Line Volume Capture Point 1
-	peoCurrent = peMatch:GetObjective(1420)
-	--1002 - PvP Hold The Line Capture Point 1a
-	peoEastCapturePoint = peMatch:GetObjective(1002)
-	--1003 - PvP Hold The Line Capture Point 1b 
-	peoWestCapturePoint = peMatch:GetObjective(1003)	
-	
-	--1300 - PvP Hold The Line Volume Capture Point 2 
-	if peoCurrent:GetStatus() ~= PublicEventObjective.PublicEventStatus_Active then
-		peoCurrent = peMatch:GetObjective(1300)
-		
-		--1312 - PvP Hold The Line Capture Point 2a
-		peoEastCapturePoint = peMatch:GetObjective(1312)
-		--1313 - PvP Hold The Line Capture Point 2b 
-		peoWestCapturePoint = peMatch:GetObjective(1313)
-	end
-	
-	--1421 - PvP Hold The Line Volume Capture Point 3 
-	if peoCurrent:GetStatus() ~= PublicEventObjective.PublicEventStatus_Active then
-		peoCurrent = peMatch:GetObjective(1421)
-		
-		--1401 - PvP Hold The Line Capture Point 3a
-		peoEastCapturePoint = peMatch:GetObjective(1401)
-		--1402 - PvP Hold The Line Capture Point 3b
-		peoWestCapturePoint = peMatch:GetObjective(1402)
-	end
-	
-	if peoCurrent ~= nil then
-		local nLastValue = wndFloat:FindChild("MainProgBar"):GetData() or 0
-		local nMaxValue = peoCurrent:GetRequiredCount()
-		local nCurrValue = math.min(peoCurrent:GetCount(), nMaxValue)
-		
-		wndFloat:FindChild("TitleText"):SetData(nCurrValue)
-		wndFloat:FindChild("MainProgBar"):SetData(nCurrValue)
-		wndFloat:FindChild("MainProgBar"):SetMax(nMaxValue)
-		wndFloat:FindChild("MainProgBar"):SetProgress(nCurrValue, 1.5)
-		
-		if nLastValue <= 0 or nLastValue > nCurrValue then
-			wndFloat:FindChild("MainProgBar"):SetProgress(nCurrValue)
-		end
 
-		if not self.nHTLHintArrow or self.nHTLHintArrow ~= peoCurrent then
-			wndDatachron:FindChild("HoldLineMouseCatcher"):SetData(peoCurrent)
-			self.nHTLHintArrow = peoCurrent
-			self.nHTLHintArrow:ShowHintArrow()
-		end
-		
-		local bBlueIsAttacking = false;
-		local bIsBlue = MatchingGame.GetPVPMatchState().eMyTeam == LuaEnumTeam.Blue
-		local bMyTeam = peoCurrent:GetTeam() == peMatch:GetJoinedTeam()
-		if (bMyTeam and bIsBlue) or (not bMyTeam and not bIsBlue)  then
-			bBlueIsAttacking = true;
-		end
-		
-		--setup textures
-		if nCurrValue <= 0 or nCurrValue == nil or nCurrValue > 99 or nLastValue <= 0 then
-			if bBlueIsAttacking then
-				wndFloat:FindChild("ProgressFrame"):SetSprite("spr_HoldTheLine_BlueFrame")
-				wndFloat:FindChild("Charge1"):SetSprite("spr_HoldTheLine_BlueCharge1")
-				wndFloat:FindChild("Charge2"):SetSprite("spr_HoldTheLine_BlueCharge2")
-				wndFloat:FindChild("animCharge1"):SetSprite("spr_HoldTheLine_animBlueSpark1")
-				wndFloat:FindChild("animCharge2"):SetSprite("spr_HoldTheLine_animBlueSpark2")
-				wndFloat:FindChild("Completed1"):SetSprite("spr_HoldTheLine_BlueCheckLeft")
-				wndFloat:FindChild("Completed2"):SetSprite("spr_HoldTheLine_BlueCheckRight")
-				wndFloat:FindChild("ProgressFrame"):SetSprite("spr_HoldTheLine_BlueFrame")
-				wndFloat:FindChild("MainProgBar"):SetFullSprite("spr_HoldTheLine_BlueFill")
-				wndFloat:FindChild("TitleText"):SetTextColor("ff81ffef");
-				
-				if bIsBlue then
-					wndFloat:FindChild("SecondaryArrow1"):SetSprite("spr_HoldTheLine_IconBlueOffense")
-					wndFloat:FindChild("SecondaryArrow2"):SetSprite("spr_HoldTheLine_IconBlueOffense")
-				else
-					wndFloat:FindChild("SecondaryArrow1"):SetSprite("spr_HoldTheLine_IconRedDefense")
-					wndFloat:FindChild("SecondaryArrow2"):SetSprite("spr_HoldTheLine_IconRedDefense")
-				end
-
-			else
-				wndFloat:FindChild("ProgressFrame"):SetSprite("spr_HoldTheLine_RedFrame")
-				wndFloat:FindChild("Charge1"):SetSprite("spr_HoldTheLine_RedCharge1")
-				wndFloat:FindChild("Charge2"):SetSprite("spr_HoldTheLine_RedCharge2")
-				wndFloat:FindChild("animCharge1"):SetSprite("spr_HoldTheLine_animRedSpark1")
-				wndFloat:FindChild("animCharge2"):SetSprite("spr_HoldTheLine_animRedSpark2")
-				wndFloat:FindChild("Completed1"):SetSprite("spr_HoldTheLine_RedCheckLeft")
-				wndFloat:FindChild("Completed2"):SetSprite("spr_HoldTheLine_RedCheckRight")
-				wndFloat:FindChild("ProgressFrame"):SetSprite("spr_HoldTheLine_RedFrame")
-				wndFloat:FindChild("MainProgBar"):SetFullSprite("spr_HoldTheLine_RedFill")
-				wndFloat:FindChild("TitleText"):SetTextColor("fffaef91");
-				
-				if bIsBlue then
-					wndFloat:FindChild("SecondaryArrow1"):SetSprite("spr_HoldTheLine_IconBlueDefense")
-					wndFloat:FindChild("SecondaryArrow2"):SetSprite("spr_HoldTheLine_IconBlueDefense")
-				else
-					wndFloat:FindChild("SecondaryArrow1"):SetSprite("spr_HoldTheLine_IconRedOffense")
-					wndFloat:FindChild("SecondaryArrow2"):SetSprite("spr_HoldTheLine_IconRedOffense")
-				end
-			end
-		end
+	-- Reset round trackers
+	local tRoundIndicators = wndParent:FindChild("RoundTracker"):GetChildren()
+	for idx, wndName in pairs(tRoundIndicators) do
+		local strWndName = wndName:GetName()
+		wndParent:FindChild("RoundTracker:"..strWndName ..":Indicator"):SetBGColor(kcrNeutral)
 	end
 	
-	wndFloat:FindChild("Charge1"):SetOpacity(0.15)
-	wndFloat:FindChild("Charge2"):SetOpacity(0.15)
-	
-	if peoEastCapturePoint ~= nil then
-		wndFloat:FindChild("Completed1"):Show(peoEastCapturePoint:GetCount() == peoEastCapturePoint:GetRequiredCount())
-		wndFloat:FindChild("Charge1"):Show(peoEastCapturePoint:GetCount() == peoEastCapturePoint:GetRequiredCount())
-		wndFloat:FindChild("animCharge1"):Show(peoEastCapturePoint:GetCount() == peoEastCapturePoint:GetRequiredCount())
-		wndFloat:FindChild("SecondaryArrow1"):Show(peoEastCapturePoint:GetCount() == 1)
+	-- Display labels to indicate team assignment
+	local eTeam = peMatch:GetJoinedTeam()
+	local wndBlueTeam = wndParent:FindChild("BlueTeam")
+	local wndBlueTeamText = wndBlueTeam:FindChild("TeamText")
+	local wndRedTeam = wndParent:FindChild("RedTeam")
+	local wndRedTeamText = wndRedTeam:FindChild("TeamText")
+			
+	if eTeam == ktHTLTeamInfo["Blue"].eNum  then -- Your team is blue
+		wndBlueTeam:FindChild("Highlight"):Show(true)
+		wndRedTeam:FindChild("Highlight"):Show(false)
+		wndBlueTeamText:SetText(Apollo.GetString("MatchTracker_YourTeam"))
+		wndBlueTeamText:SetTextColor(kcrBlue)
+		wndRedTeamText:SetText(Apollo.GetString("MatchTracker_EnemyTeam"))
+		wndRedTeamText:SetTextColor(kcrNeutral)
+	elseif eTeam == ktHTLTeamInfo["Red"].eNum then -- Your team is red
+		wndRedTeam:FindChild("Highlight"):Show(true)
+		wndBlueTeam:FindChild("Highlight"):Show(false)
+		wndRedTeamText:SetText(Apollo.GetString("MatchTracker_YourTeam"))
+		wndRedTeamText:SetTextColor(kcrRed)
+		wndBlueTeamText:SetText(Apollo.GetString("MatchTracker_EnemyTeam"))
+		wndBlueTeamText:SetTextColor(kcrNeutral)
 	end
 	
-	if peoWestCapturePoint ~= nil then
-		wndFloat:FindChild("Completed2"):Show(peoWestCapturePoint:GetCount() == peoWestCapturePoint:GetRequiredCount())
-		wndFloat:FindChild("Charge2"):Show(peoWestCapturePoint:GetCount() == peoWestCapturePoint:GetRequiredCount())
-		wndFloat:FindChild("animCharge2"):Show(peoWestCapturePoint:GetCount() == peoWestCapturePoint:GetRequiredCount())
-		wndFloat:FindChild("SecondaryArrow2"):Show(peoWestCapturePoint:GetCount() == 1)
-	end
-	
-	peoScriptCurrent = peMatch:GetObjective(970)
-
-	local nCount = peoScriptCurrent:GetCount()
-	local nPercent =  wndFloat:FindChild("TitleText"):GetData() or 0
-	strTitleText = String_GetWeaselString(Apollo.GetString("MatchTracker_ObjectiveProgress"), nPercent, ktHoldLineObjectiveCountToName[nCount])
-
-	local bAttacking = peoScriptCurrent:GetTeam() == peMatch:GetJoinedTeam()
-	local wndHoldLineTitle = wndDatachron:FindChild("HoldLineTitle")
-	local wndHoldLineObjective = wndDatachron:FindChild("HoldLineObjective")
-	wndHoldLineObjective:SetText(ktHoldLineObjectiveCountToName[nCount])
-		
-	if bAttacking then 
-		wndHoldLineTitle:SetText(Apollo.GetString("MatchTracker_YouAreAttacking"))
-		wndHoldLineTitle:SetTextColor(kcrAttack)
-		wndHoldLineObjective:SetTextColor(kcrAttack)		
-	else
-		wndHoldLineTitle:SetText(Apollo.GetString("MatchTracker_YouAreDefending"))
-		wndHoldLineTitle:SetTextColor(kcrDefend)
-		wndHoldLineObjective:SetTextColor(kcrDefend)		
-	end
-
-	for idx = 0, nHoldLineObjective-1 do
-		local wndObjectiveIcon = wndDatachron:FindChild("HoldLineIcon" .. idx)
-	
-		if idx < nCount then
-			local strTooltip = ktHoldLineObjectiveCountToName[idx].. " " .. String_GetWeaselString(Apollo.GetString("CRB_Parenthese"), ktHoldLineCaptureStatus[0].htlStatus)
-			wndObjectiveIcon:SetSprite(ktHoldLineCaptureStatus[0].spriteName)
-			wndObjectiveIcon:SetTooltip(strTooltip)
-		elseif idx == nCount then
-			local strTooltip = ktHoldLineObjectiveCountToName[idx].. " " .. String_GetWeaselString(Apollo.GetString("CRB_Parenthese"), ktHoldLineCaptureStatus[1].htlStatus)
-			wndObjectiveIcon:SetSprite(ktHoldLineCaptureStatus[1].spriteName)
-			wndObjectiveIcon:SetTooltip(strTooltip)
-		else 
-			local strTooltip = ktHoldLineObjectiveCountToName[idx].. " " .. String_GetWeaselString(Apollo.GetString("CRB_Parenthese"), ktHoldLineCaptureStatus[2].htlStatus)		
-			wndObjectiveIcon:SetSprite(ktHoldLineCaptureStatus[2].spriteName)
-			wndObjectiveIcon:SetTooltip(strTooltip)
-		end
-	end
-	
-	nTotalTime = peoScriptCurrent:GetTotalTime() / 1000;
-	self.tWndRefs.wndMatchTracker:FindChild("TimerLabel"):SetText(self:HelperTimeString((peoScriptCurrent:GetTotalTime() - peoScriptCurrent:GetElapsedTime()) / 1000))
-	self.wndHoldLineFloater:FindChild("TimerText"):SetText(self:HelperTimeString((peoScriptCurrent:GetTotalTime() - peoScriptCurrent:GetElapsedTime()) / 1000))
-	
-	wndFloat:FindChild("TitleTextRight"):SetText("")
-	wndFloat:FindChild("CaptureModText"):SetText(string.format("%s%s", self.nHTLCaptureMod, "x"))
-	
-	local tMatchState = MatchingGame:GetPVPMatchState()
-	if self.nHTLTimeToBeat and self.nHTLTimeToBeat > 0 and tMatchState and self.bHTLAttacking then
-		strTimerText = String_GetWeaselString(Apollo.GetString("MatchTracker_FinalRoundTimer"), self:HelperTimeString(tMatchState.fTimeRemaining))
-		wndFloat:FindChild("TitleTextRight"):SetText(String_GetWeaselString(Apollo.GetString("MatchTracker_TimeToBeat"), self:HelperTimeString(nTotalTime - self.nHTLTimeToBeat)))
-	elseif self.nHTLTimeToBeat and self.nHTLTimeToBeat > 0 and tMatchState then
-		strTimerText = String_GetWeaselString(Apollo.GetString("MatchTracker_FinalRoundTimer"), self:HelperTimeString(tMatchState.fTimeRemaining))
-		wndFloat:FindChild("TitleTextRight"):SetText(String_GetWeaselString(Apollo.GetString("MatchTracker_HoldTheLineTimer"), self:HelperTimeString(nTotalTime - self.nHTLTimeToBeat)))
-	elseif tMatchState and tMatchState.fTimeRemaining > 0 then
-		wndFloat:FindChild("TitleTextRight"):SetText(String_GetWeaselString(Apollo.GetString("MatchTracker_StartTimer"), self:HelperTimeString(tMatchState.fTimeRemaining)))
-	elseif tMatchState then
-		--strTitleTextRight = Apollo.GetString("MatchTracker_Waiting")
-	else
-		--strTitleTextRight = Apollo.GetString("MatchTracker_MatchProgressWaiting")
-	end
-	
-	wndFloat:FindChild("TitleText"):SetText(strTitleText)
+	-- Update round status
+	self:UpdateHTLRound()
 end
 
-function MatchTracker:OnHTLTimeToBeat(nSeconds, bAttacking)
-	if self.wndHoldLineFloater and self.wndHoldLineFloater:IsValid() then
-		self.nHTLTimeToBeat = nSeconds
-		self.bHTLAttacking = bAttacking
+function MatchTracker:UpdateHTLRound(nRound, nWinner)
+	local wndParent = self.tWndRefs.tMatchWnd[PublicEvent.PublicEventType_PVP_Battleground_HoldTheLine]
+		
+	ktHTLTeamInfo["Red"].bHasWon = false
+	ktHTLTeamInfo["Blue"].bHasWon = false	
+	
+	if not self.peMatchSub then
+		for key, peCurrent in pairs(PublicEvent.GetActiveEvents()) do
+			local eType = peCurrent:GetEventType()
+			if eType == PublicEvent.PublicEventType_SubEvent then
+				self.peMatchSub = peCurrent
+				break
+			end		
+		end
 	end
+	
+	-- Update round indicators on reload
+	if self.peMatchSub then
+		Sound.Play(Sound.PlayUICraftingSuccess)	
+		for idx, nObjectiveId in pairs(ktHTLRoundTracker) do
+			local peoRoundWinner = self.peMatchSub:GetObjective(nObjectiveId)
+			local nRoundWinner = peoRoundWinner:GetOwningTeam()
+			for strTeam, tInfo in pairs(ktHTLTeamInfo) do
+				-- If this is the team's second win, their own dot and Match Point will always be filled
+				if nRoundWinner == ktHTLTeamInfo[strTeam].eNum and ktHTLTeamInfo[strTeam].bHasWon == true then 
+					wndParent:FindChild("RoundTracker:MatchPoint:Indicator"):SetBGColor(ktHTLTeamInfo[strTeam].kcrColor)
+					wndParent:FindChild("RoundTracker:MatchPoint:Flash"):SetSprite(strHTLMatchIndicator)
+					wndParent:FindChild(ktHTLTeamInfo[strTeam].strWndIndicator..":Indicator"):SetBGColor(ktHTLTeamInfo[strTeam].kcrColor)
+					wndParent:FindChild(ktHTLTeamInfo[strTeam].strWndIndicator..":Flash"):SetSprite(strHTLMatchIndicator)
+				-- If this is the team's first win, only their own dot should be filled. 
+				elseif nRoundWinner == ktHTLTeamInfo[strTeam].eNum then
+					wndParent:FindChild(ktHTLTeamInfo[strTeam].strWndIndicator..":Indicator"):SetBGColor(ktHTLTeamInfo[strTeam].kcrColor)
+					wndParent:FindChild(ktHTLTeamInfo[strTeam].strWndIndicator..":Flash"):SetSprite(strHTLMatchIndicator)
+					end
+					
+				-- Assign a win to the appropriate team
+				if nRoundWinner == ktHTLTeamInfo[strTeam].eNum then
+					ktHTLTeamInfo[strTeam].bHasWon = true
+				end
+			end		
+		end
+	end
+end
+
+function MatchTracker:DrawHTLScreen(peMatch)
+	local wndParent = self.tWndRefs.tMatchWnd[PublicEvent.PublicEventType_PVP_Battleground_HoldTheLine]
+		
+	-- Get objective information
+	local peoRedProgress = peMatch:GetObjective(ktHTLTeamInfo["Red"].peoProgress)
+	local peoBlueProgress = peMatch:GetObjective(ktHTLTeamInfo["Blue"].peoProgress)
+
+	-- Update health
+	local nRedProgress = peoRedProgress:GetCount()
+	local nBlueProgress = peoBlueProgress:GetCount()
+	
+	wndParent:FindChild("RedTeam:ProgressBar"):SetProgress(nRedProgress)
+	wndParent:FindChild("BlueTeam:ProgressBar"):SetProgress(nBlueProgress)
 end
 
 function MatchTracker:OnHoldLineMouseCatcherClick(wndHandler, wndControl)
@@ -835,7 +817,7 @@ end
 function MatchTracker:OnHTLPrepPhase(bPreping)
 	if self.peMatch ~= nil then
 		self.nHTLCaptureMod = 0
-		self:DrawHoldLineScreen(self.peMatch)
+		self:DrawHTLScreen(self.peMatch)
 	end
 end
 
@@ -884,7 +866,7 @@ function MatchTracker:HelperClearMatchesExcept(nShow) -- hides all other window 
 	for idx, wnd in pairs(self.tWndRefs.tMatchWnd) do
 		wnd:Show(false)
 	end
-
+	
 	if nShow ~= nil then
 		self.tWndRefs.tMatchWnd[nShow]:Show(true)
 	end

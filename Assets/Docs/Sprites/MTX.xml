@@ -70,7 +70,7 @@
         <Frame Texture="UI\Assets\Textures\UI_BK3_MTX_01.tga" x0="309" x1="309" x2="309" x3="309" x4="309" x5="405" y0="240" y1="240" y2="240" y3="240" y4="240" y5="320" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
     <Sprite Name="UI_BK3_MTX_Callout_SalesTag" Cycle="1">
-        <Frame Texture="UI\Assets\Textures\UI_BK3_MTX_01.tga" x0="309" x1="339" x2="347" x3="379" x4="379" x5="379" y0="320" y1="394" y2="394" y3="394" y4="394" y5="394" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+        <Frame Texture="UI\Assets\Textures\UI_BK3_MTX_01.tga" x0="323" x1="339" x2="347" x3="366" x4="366" x5="366" y0="338" y1="375" y2="375" y3="375" y4="375" y5="375" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
     <Sprite Name="UI_BK3_MTX_Pricing_BG" Cycle="1">
         <Frame Texture="UI\Assets\Textures\UI_BK3_MTX_01.tga" x0="0" x1="9" x2="67" x3="67" x4="67" x5="76" y0="431" y1="454" y2="454" y3="454" y4="454" y5="454" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>

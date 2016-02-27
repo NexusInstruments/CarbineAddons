@@ -674,7 +674,7 @@ function Achievements:BuildSimpleAchievement(wndContainer, achData)
 	local eBaseCategory = achData:GetCategoryId()
 	local eCategory = eBaseCategory
 	local strSprite = ""
-	
+
 	while eCategory and eCategory ~= 0 and strSprite == "" do
 		if self.tAchievementIconsText[eCategory] then
 			strSprite = self.tAchievementIconsText[eCategory]
@@ -915,7 +915,7 @@ function Achievements:HelperCheckFilters(achFiltered)
 	if bResult and strSearchString then
 		-- Find the first character of a word or an exact match from the start
 		local strAchieveName = achFiltered:GetName():lower()
-		bResult = strAchieveName:find(" "..strSearchString, 1, true) or string.sub(strAchieveName, 0, string.len(strSearchString)) == strSearchString
+		bResult = strAchieveName:find(" "..strSearchString, 1, true) or string.sub(strAchieveName, 0, Apollo.StringLength(strSearchString)) == strSearchString
 	end
 
 	return bResult

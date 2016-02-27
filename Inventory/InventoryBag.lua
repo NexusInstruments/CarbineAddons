@@ -200,6 +200,7 @@ function InventoryBag:OnDocumentReady()
 	Apollo.RegisterEventHandler("LootStackItemSentToTradeskillBag", 		"OnLootstackItemSentToTradeskillBag", self)
 	Apollo.RegisterEventHandler("SupplySatchelOpen", 						"OnSupplySatchelOpen", self)
 	Apollo.RegisterEventHandler("SupplySatchelClosed", 						"OnSupplySatchelClosed", self)
+	Apollo.RegisterEventHandler("PremiumTierChanged",						"UpdateBagBlocker", self)
 	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 				"OnTutorial_RequestUIAnchor", self)
 
 	-- TODO Refactor: Investigate these two, we may not need them if we can detect the origin window of a drag
@@ -258,6 +259,8 @@ function InventoryBag:OnDocumentReady()
 	self.wndIconBtnSortDropDown = self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown")
 	self.wndIconBtnSortDropDown:AttachWindow(self.wndIconBtnSortDropDown:FindChild("ItemSortPrompt"))
 
+	self:UpdateBagBlocker()
+	
 	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)
 	self:OnWindowManagementReady()
 end
@@ -787,6 +790,27 @@ function InventoryBag:OnGenerateTooltip(wndControl, wndHandler, tType, item)
 		Tooltip.GetItemTooltipForm(self, wndControl, item, {bPrimary = true, bSelling = false, itemCompare = itemEquipped})
 		-- Tooltip.GetItemTooltipForm(self, wndControl, itemEquipped, {bPrimary = false, bSelling = false, itemCompare = item})
 	end
+end
+
+---------------------------------------------------------------------------------------------------
+-- Premium Updates
+---------------------------------------------------------------------------------------------------
+
+function InventoryBag:UpdateBagBlocker(ePremiumSystem, nTier)
+	if ePremiumSystem == nil then
+		ePremiumSystem = AccountItemLib.GetPremiumSystem()
+	end
+	
+	if ePremiumSystem ~= AccountItemLib.CodeEnumPremiumSystem.VIP or self.wndMain == nil or not self.wndMain:IsValid() then
+		return
+	end
+	
+	if nTier == nil then
+		nTier = AccountItemLib.GetPremiumTier()
+	end
+	
+	local wndBlockerVIPLapse = self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureBags:OptionsConfigureBagsBG:BlockerVIPLapse")
+	wndBlockerVIPLapse:Show(nTier == 0)
 end
 
 ---------------------------------------------------------------------------------------------------

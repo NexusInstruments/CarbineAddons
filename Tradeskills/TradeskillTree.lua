@@ -349,7 +349,7 @@ function TradeskillTree:OnHAMItemBtnShowExtraInfo(wndHandler, wndControl) -- Not
 		strDescription = strDescription .. "<P Font=\"CRB_InterfaceMedium_B\" TextColor=\"ff7fffb9\" Align=\"Center\"> (" .. nNumCompleted .. "/" .. nNumNeeded .. ")</P>"
 	end
 
-	if wndParent:FindChild("ItemTitle") and wndParent:FindChild("ItemTitle"):GetData() and string.len(wndParent:FindChild("ItemTitle"):GetData()) > 0 then
+	if wndParent:FindChild("ItemTitle") and wndParent:FindChild("ItemTitle"):GetData() and Apollo.StringLength(wndParent:FindChild("ItemTitle"):GetData()) > 0 then
 		strDescription = strDescription .. wndParent:FindChild("ItemTitle"):GetData()
 	end
 
@@ -452,12 +452,12 @@ function TradeskillTree:OnHAMItemBtnShowExtraInfo(wndHandler, wndControl) -- Not
 			local wndReward = Apollo.LoadForm(self.xmlDoc, "ItemReward", wndCurr:FindChild("ExtraInfoRewardContainer"), self)
 
 			local strIcon = tBonus.strIcon
-			if string.len(strIcon) == 0 then
+			if Apollo.StringLength(strIcon) == 0 then
 				strIcon = "ClientSprites:Icon_ItemMisc_UI_Item_Gears"
 			end
 
 			local strName = tBonus.strName
-			if string.len(strName) == 0 then
+			if Apollo.StringLength(strName) == 0 then
 				strName = Apollo.GetString("Tradeskills_TalentPlaceholder")
 			end
 

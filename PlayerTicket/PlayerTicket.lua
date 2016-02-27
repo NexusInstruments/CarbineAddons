@@ -100,7 +100,7 @@ function PlayerTicketDialog:OnGenericEvent_OpenReportPlayerTicket(strMessage, bA
 	self:PopulateTypePicker()
 	self.tWindowMap["Category"]:SetCurrentRow(2)
 	self.tWindowMap["PlayerTicketTextEntry"]:SetText(strMessage or "")
-	local nLength = string.len(strMessage or "")
+	local nLength = Apollo.StringLength(strMessage or "")
 	self.tWindowMap["PlayerTicketTextEntry"]:SetSel(nLength,nLength)
 	self:PopulateSubtypeCombo() -- After picking a Category
 end

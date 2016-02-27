@@ -139,7 +139,7 @@ function Reputation:SortReps(tRepTable)
 	self.tSubLabels = {}
 	self.tProgress = {}
 	for idx, tReputation in pairs(tRepTable) do
-		local bHasParent = tReputation.strParent and string.len(tReputation.strParent) > 0
+		local bHasParent = tReputation.strParent and Apollo.StringLength(tReputation.strParent) > 0
 		if not bHasParent then
 			table.insert(self.tTopLabels, tReputation)
 		elseif tReputation.bIsLabel then

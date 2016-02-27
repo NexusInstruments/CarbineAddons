@@ -2,10 +2,15 @@ require "Window"
 require "MailSystemLib"
 require "GameLib"
 require "Apollo"
+require "P2PTrading"
+require "AccountItemLib"
 
 local Mail 			= {}
 local MailCompose 	= {}
 local MailReceived 	= {}
+
+local kstrValidItemIcon			= "UI_BK3_ItemDrag_DestinationNoGlow"
+local kstrInvalidItemIcon		= "UI_BK3_ItemDrag_DestinationDeniedNoGlow"
 
 local kstrNewMailIcon 	= "Icon_Windows_UI_NewMail"
 local kstrReadMailIcon 	= "Icon_Windows_UI_ReadMail"
@@ -23,6 +28,8 @@ local kcrTextWarningColor 	= CColor.new(0.7, 0.7, 0.0, 1.0)
 local kcrTextExpiringColor 	= CColor.new(0.7, 0.0, 0.0, 1.0)
 
 local knOpenMailThreshold = 5
+local knMaxAttachments = 10
+local knMaxTradeLimit = 999999999 -- Ensure number doesn't exceed the container size
 
 local knSaveVersion = 1
 
@@ -131,7 +138,7 @@ function Mail:OnInterfaceMenuListHasLoaded()
 end
 
 function Mail:OnWindowManagementReady()
-	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("Mail_ComposeLabel"), nSaveVersion=2})
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("Mail_ComposeLabel"), nSaveVersion=4})
 	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("InterfaceMenu_Mail")})
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("InterfaceMenu_Mail")})
 end
@@ -641,7 +648,7 @@ function Mail:UpdateListItem(wndMailItem, msgMail)
 
 	wndMailItem:FindChild("CODOverlay"):Show(not tMsgInfo.monCod:IsZero())
 
-	for idx = 1, 10 do
+	for idx = 1, knMaxAttachments do
 		local tAttachment = tMsgInfo.arAttachments[idx]
 		local strChild = "AttachedItem" .. tostring(idx)
 		local wndListItem = wndMailItem:FindChild(strChild)
@@ -871,26 +878,48 @@ function MailCompose:Init(luaMailSystem)
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("Mail_ComposeLabel"), nSaveVersion=2})
 	
 	Apollo.RegisterEventHandler("SuggestedMenuResult",					"OnSuggestedMenuResult", self)
-	Apollo.RegisterEventHandler("AccountPrivilegeRestrictionUpdate", 		"OnAccountPrivilegeRestrictionUpdate", self)
+	Apollo.RegisterEventHandler("AccountPrivilegeRestrictionUpdate", 	"OnAccountPrivilegeRestrictionUpdate", self)
+	Apollo.RegisterEventHandler("MoneyTradeLimitChanged",				"OnMoneyTradeLimitChanged", self)
+	Apollo.RegisterEventHandler("PremiumTierChanged",					"OnPremiumTierOrPlayerLevelChanged", self)
+	Apollo.RegisterEventHandler("PlayerLevelChange",					"OnPremiumTierOrPlayerLevelChanged", self)
+	Apollo.RegisterEventHandler("StoreLinksRefresh",					"RefreshStoreLink", self)
 
-	self.wndNameEntry 			= self.wndMain:FindChild("NameEntryText")  --The player inputs the recipient here
-	self.wndRealmEntry 			= self.wndMain:FindChild("RealmEntryText")  --The player inputs the recipient here
-	self.wndSubjectEntry 		= self.wndMain:FindChild("SubjectEntryText")  --The player inputs the subject here
-	self.wndMessageEntryText 	= self.wndMain:FindChild("MessageEntryText")  --The player inputs the message here
-	self.wndCashEntryBlock 		= self.wndMain:FindChild("CashEntryBlock")  --Blocker stays on until the player hits Send Money or COD
-	self.wndGoldEntryText 		= self.wndMain:FindChild("GoldEntryText")  --The system supplies the mail cost here
-	self.wndCashSendBtn 		= self.wndMain:FindChild("CashSendBtn")  --For disabling send/request money radio's.
-	self.wndCashCODBtn 			= self.wndMain:FindChild("CashCODBtn")  --For disabling send/request money radio's.
-	self.wndCashWindow 			= self.wndMain:FindChild("CashWindow")
-	self.wndCostWindow 			= self.wndMain:FindChild("MailCostWindow") -- for the cost of sending the message.
-	self.wndSendBtn 			= self.wndMain:FindChild("SendBtn")
-	self.wndArtAttLabel 		= self.wndMain:FindChild("ArtAttLabel")
-	self.wndAttachmentBlocker 	= self.wndMain:FindChild("AttachmentMailboxBlocker")
-	self.wndInstantDelivery 	= self.wndMain:FindChild("InstantDeliveryBtn")
-	self.wndHourDelivery		= self.wndMain:FindChild("HourDeliveryBtn")
-	self.wndDayDelivery			= self.wndMain:FindChild("DayDeliveryBtn")
+	self.wndNameEntry 				= self.wndMain:FindChild("NameEntryText")  --The player inputs the recipient here
+	self.wndRealmEntry 				= self.wndMain:FindChild("RealmEntryText")  --The player inputs the recipient here
+	self.wndSubjectEntry 			= self.wndMain:FindChild("SubjectEntryText")  --The player inputs the subject here
+	self.wndMessageEntryText	 	= self.wndMain:FindChild("MessageEntryText")  --The player inputs the message here
 	
-	self.wndPreviousFocus		= self.wndMain:FindChild("NameEntryText")  --default focus to recipient
+	self.wndAttachmentBlocker 		= self.wndMain:FindChild("AttachmentMailboxBlocker")
+	self.bCashTradeLimited = AccountItemLib.GetPremiumSystem() == AccountItemLib.CodeEnumPremiumSystem.VIP
+	local wndCashEntry = nil
+	if self.bCashTradeLimited then
+		wndCashEntry 				= self.wndMain:FindChild("CashEntryLimited")
+		self.wndCashTradeLimit		= wndCashEntry:FindChild("CashTradeLimit")
+		self.wndCashTradeLimit:SetAmount(GameLib.GetMoneyTradeLimit())
+		self.wndMain:FindChild("CashEntry"):Show(false)
+		local nMinTradeLevel = P2PTrading.GetMinimumTradeLevel()
+		self.wndAttachmentBlocker:FindChild("TitleLevel"):SetText(String_GetWeaselString(Apollo.GetString("Mail_LevelTradeRequirements"), nMinTradeLevel))
+		self.wndAttachmentBlocker:FindChild("Title"):SetText(String_GetWeaselString(Apollo.GetString("Mail_TradeRequirements"), nMinTradeLevel))
+	else
+		wndCashEntry 				= self.wndMain:FindChild("CashEntry")
+		self.wndMain:FindChild("CashEntryLimited"):Show(false)
+	end
+	self.wndCashEntryBlock 			= wndCashEntry:FindChild("CashEntryBlock")  --Blocker stays on until the player hits Send Money or COD
+	self.wndCashSendBtn 			= wndCashEntry:FindChild("CashSendBtn")  --For disabling send/request money radio's.
+	self.wndCashCODBtn 				= wndCashEntry:FindChild("CashCODBtn")  --For disabling send/request money radio's.
+	self.wndCashWindow 				= wndCashEntry:FindChild("CashWindow")
+	wndCashEntry:Show(true)
+	
+	self.wndCostWindow 				= self.wndMain:FindChild("MailCostWindow") -- for the cost of sending the message.
+	self.wndSendBtn 				= self.wndMain:FindChild("SendBtn")
+	self.wndArtAttLabel 			= self.wndMain:FindChild("ArtAttLabel")
+	self.wndAttachedItemsBack		= self.wndMain:FindChild("AttachedItemsBack")
+	self.wndAttachedItemsBlocker	= self.wndMain:FindChild("AttachmentBlocker") --For preventing invalid item indicators from stuttering on clicking attachment
+	self.wndInstantDelivery 		= self.wndMain:FindChild("InstantDeliveryBtn")
+	self.wndHourDelivery			= self.wndMain:FindChild("HourDeliveryBtn")
+	self.wndDayDelivery				= self.wndMain:FindChild("DayDeliveryBtn")
+	
+	self.wndPreviousFocus			= self.wndMain:FindChild("NameEntryText")  --default focus to recipient
 	
 	local luaSubclass = self.wndNameEntry:GetWindowSubclass()
 	if luaSubclass then
@@ -914,18 +943,21 @@ function MailCompose:Init(luaMailSystem)
 	self.arWndAttachmentIcon = {}
 	self.arAttachments = {}
 
-	for idx = 1, 10 do
+	for idx = 1, knMaxAttachments do
 		local strChild = "SlotBack." .. tostring(idx)
 		local wndComposeAttachment = self.wndMain:FindChild(strChild)
 		wndComposeAttachment:SetData(idx)
 		self.arWndAttachmentIcon[idx] = wndComposeAttachment:FindChild("Icon")
 	end
+	self.tDragDrop = { itemSource = nil, nNextEmptyAttachementSlotIndex = 1, bIsModeSet = false }
 
 	self.nDeliverySpeed = MailSystemLib.MailDeliverySpeed_Hour
 	self.wndHourDelivery:SetCheck(true)
 
 	self.luaMailSystem:CascadeWindow(self.wndMain)
 
+	self:RefreshStoreLink()
+	self:UpdatePlayerRewardProperties()
 	self:UpdateControls()
 	self:WindowToFront()
 end
@@ -971,15 +1003,27 @@ function MailCompose:WindowToFront()
 end
 
 function MailCompose:OnQueryDragDrop(wndHandler, wndControl, nX, nY, wndSource, strType, nValue)
+	self.tDragDrop.bIsModeSet = false
 	if self.wndMain ~= wndHandler then
 		return Apollo.DragDropQueryResult.PassOn
 	end
 
 	if strType == "DDBagItem" then
-		if #self.arAttachments > 10 then
+		if #self.arAttachments > knMaxAttachments then
 			return Apollo.DragDropQueryResult.Invalid
 		end
-		return Apollo.DragDropQueryResult.Accept
+		
+		self.tDragDrop.bIsModeSet = true
+		if self.tDragDrop.itemSource == nil then
+			self.tDragDrop.itemSource = Item.GetItemFromInventoryLoc(nValue)
+		end
+		if self.tDragDrop.itemSource:IsAlwaysTradeable() then
+			self.wndAttachedItemsBlocker:Show(false) --Allow clicking on attach slots
+			return Apollo.DragDropQueryResult.Accept
+		else
+			self.wndAttachedItemsBlocker:Show(true) --Prevent drop indicator from stuttering when clicking attach slots with untradable items
+			return Apollo.DragDropQueryResult.Ignore
+		end
 	end
 
 	return Apollo.DragDropQueryResult.Invalid
@@ -989,9 +1033,39 @@ function MailCompose:OnDragDrop(wndHandler, wndControl, nX, nY, wndSource, strTy
 	if self.wndMain ~= wndHandler or strType ~= "DDBagItem" then
 		return
 	end
+	
+	if self.tDragDrop.itemSource == nil then
+		self.tDragDrop.itemSource = Item.GetItemFromInventoryLoc(nValue)
+	end
+	if not self.tDragDrop.itemSource:IsAlwaysTradeable() then
+		return
+	end
 
 	self:AppendAttachment(nValue)
 	self:OnGainedFocus()
+	
+	self.tDragDrop.bIsModeSet = false
+	self.tDragDrop.itemSource = nil
+end
+
+function MailCompose:OnMouseMove(wndHandler, wndControl, nX, nY)
+	if not self.tDragDrop.bIsModeSet or self.tDragDrop.nNextEmptyAttachementSlotIndex == nil then
+		return
+	end
+	
+	if self.wndMain:IsMouseTarget() or self.wndAttachedItemsBlocker:IsMouseTarget() then
+		
+		if self.tDragDrop.itemSource ~= nil then
+			if self.tDragDrop.itemSource:IsAlwaysTradeable() then
+				self.arWndAttachmentIcon[self.tDragDrop.nNextEmptyAttachementSlotIndex]:SetSprite(kstrValidItemIcon)
+			else
+				self.arWndAttachmentIcon[self.tDragDrop.nNextEmptyAttachementSlotIndex]:SetSprite(kstrInvalidItemIcon)
+			end
+		end
+		
+	else
+		self.arWndAttachmentIcon[self.tDragDrop.nNextEmptyAttachementSlotIndex]:SetSprite("")
+	end
 end
 
 function MailCompose:OnMailAddAttachment(nValue)
@@ -1012,7 +1086,7 @@ function MailCompose:AppendAttachment(nValue)
 	
 	--Not allowed to send soulbound items.
 	local itemAttach = Item.GetItemFromInventoryLoc(nValue)
-	if itemAttach and itemAttach:IsSoulbound() then
+	if itemAttach and not itemAttach:IsAlwaysTradeable() then
 		self.luaMailSystem:OnMailResult(GameLib.CodeEnumGenericError.Mail_CannotTransferItem)
 		return
 	end
@@ -1021,8 +1095,12 @@ function MailCompose:AppendAttachment(nValue)
 
 	self.tMyBlocks[nValue] = nValue
 
-
 	self.arAttachments[nNewPos] = nValue
+	if nNewPos + 1 <= knMaxAttachments then
+		self.tDragDrop.nNextEmptyAttachementSlotIndex = nNewPos + 1
+	else
+		self.tDragDrop.nNextEmptyAttachementSlotIndex = nil
+	end
 	self:UpdateControls()
 end
 
@@ -1039,7 +1117,7 @@ function MailCompose:UpdateControls()
 		self.wndCashSendBtn:SetCheck(false)
 		self.wndCashWindow:SetAmount(0)
     end
-	self.wndAttachmentBlocker:Show(not bAtMailbox)
+	self.wndAttachmentBlocker:Show(not bAtMailbox or not self.bCanTrade)
 
 
 	-- update attachment icons
@@ -1054,7 +1132,17 @@ function MailCompose:UpdateControls()
 			Tooltip.GetItemTooltipForm(self, wndIcon, itemAttachment, { bPrimary = true, bSelling = false })
 			bHasAttachments = true
 		else
-			wndIcon:SetSprite("")
+			if self.tDragDrop.bIsModeSet and self.tDragDrop.nNextEmptyAttachementSlotIndex ~= nil and self.tDragDrop.nNextEmptyAttachementSlotIndex == idx then
+				if self.tDragDrop.itemSource ~= nil then
+					if self.tDragDrop.itemSource:IsAlwaysTradeable() then
+						wndIcon:SetSprite(kstrValidItemIcon)
+					else
+						wndIcon:SetSprite(kstrInvalidItemIcon)
+					end
+				end
+			else
+				wndIcon:SetSprite("")
+			end
 			wndIcon:SetText("")
 			wndIcon:SetTooltipDoc(nil)
 			GameLib:GetPlayerUnit():UnlockInventorySlot(self.arAttachments[idx])
@@ -1081,7 +1169,7 @@ function MailCompose:UpdateControls()
 		end
 	else
     	self.wndCashCODBtn:Enable(bAtMailbox)
-
+		self.wndCashEntryBlock:Show(false)
 		self.wndInstantDelivery:Enable(true)
 		self.wndHourDelivery:Enable(true)
 		self.wndDayDelivery:Enable(true)
@@ -1097,9 +1185,9 @@ function MailCompose:UpdateControls()
 	local monCoD = 0
 	local monGift = 0
 	if self.wndCashCODBtn:IsChecked() then
-		monCoD = self.wndCashWindow:GetCurrency()
+		monCoD = self.wndCashWindow:GetAmount()
 	elseif self.wndCashSendBtn:IsChecked() then
-		monGift = self.wndCashWindow:GetCurrency()
+		monGift = self.wndCashWindow:GetAmount()
 	end
 
 	local strTo = self.wndNameEntry:GetText()
@@ -1109,10 +1197,10 @@ function MailCompose:UpdateControls()
 
 	-- Enable / Disable Send
 	local bSubjectValid = GameLib.IsTextValid(strSubject, GameLib.CodeEnumUserText.MailSubject, GameLib.CodeEnumUserTextFilterClass.Strict)
-	self.wndMain:FindChild("InvalidSubjectInputWarning"):Show(string.len(strSubject) > 0 and not bSubjectValid)
+	self.wndMain:FindChild("InvalidSubjectInputWarning"):Show(Apollo.StringLength(strSubject) > 0 and not bSubjectValid)
 
 	local bBodyValid = GameLib.IsTextValid(strMessage, GameLib.CodeEnumUserText.MailBody, GameLib.CodeEnumUserTextFilterClass.Strict)
-	self.wndMain:FindChild("InvalidBodyInputWarning"):Show(string.len(strMessage) > 0 and not bBodyValid)
+	self.wndMain:FindChild("InvalidBodyInputWarning"):Show(Apollo.StringLength(strMessage) > 0 and not bBodyValid)
 
 	local bCanSend = strTo ~= "" and strRealm ~= "" and strSubject ~= "" and strMessage ~= "" and (not bHasAttachments or bAtMailbox)
 	local bRestricted = GameLib.IsPrivilegeRestricted(GameLib.CodeEnumAccountPrivilegeRestriction.Chat)
@@ -1147,7 +1235,7 @@ end
 function MailCompose.LimitTextEntry(wndCompose, nCharacterLimit)
 
 	local strCurrent = wndCompose:GetText()
-	if string.len(strCurrent) > nCharacterLimit then
+	if Apollo.StringLength(strCurrent) > nCharacterLimit then
 		local strNew = string.sub(strCurrent, 0, nCharacterLimit)
 		wndCompose:SetText(strNew)
 		wndCompose:SetSel(nCharacterLimit, nCharacterLimit)
@@ -1207,7 +1295,6 @@ function MailCompose:OnSuggestedMenuResult(tInfo, nTextBoxId)
 end
 
 function MailCompose:OnClickAttachment(wndHandler, wndControl)
-
 	if wndHandler ~= wndControl then
 		return
 	end
@@ -1216,14 +1303,25 @@ function MailCompose:OnClickAttachment(wndHandler, wndControl)
 	if iAttach == nil then
 		return
 	end
-
+	
 	GameLib:GetPlayerUnit():UnlockInventorySlot(self.arAttachments[iAttach])
 	self.arAttachments[iAttach] = nil
-	for idx = iAttach, 10 do
-		if idx < 10 then
+	
+	local bFindNewSlotIndex = self.tDragDrop.nNextEmptyAttachementSlotIndex == nil or self.tDragDrop.nNextEmptyAttachementSlotIndex > iAttach or self.arAttachments[self.tDragDrop.nNextEmptyAttachementSlotIndex] ~= nil
+	if bFindNewSlotIndex then
+		self.tDragDrop.nNextEmptyAttachementSlotIndex = iAttach
+		self.tDragDrop.bIsModeSet = false
+	end
+	for idx = iAttach, knMaxAttachments do
+		if idx < knMaxAttachments then
 			self.arAttachments[idx] = self.arAttachments[idx + 1]
 		else
 			self.arAttachments[idx] = nil
+		end
+		
+		-- Search for an empty attachement slot
+		if bFindNewSlotIndex and self.arAttachments[self.tDragDrop.nNextEmptyAttachementSlotIndex] ~= nil then
+			self.tDragDrop.nNextEmptyAttachementSlotIndex = idx
 		end
 	end
 
@@ -1237,6 +1335,20 @@ function MailCompose:OnCancelBtn(wndHandler, wndControl)
 	self.wndMain:Close()
 end
 
+function MailCompose:OnMouseExit(wndHandler, wndControl)
+	if wndHandler ~= wndControl then
+		return
+	end
+	
+	if self.tDragDrop.nNextEmptyAttachementSlotIndex ~= nil then
+		self.arWndAttachmentIcon[self.tDragDrop.nNextEmptyAttachementSlotIndex]:SetSprite("") --Clear drag drop indicator
+	end
+	
+	if self.tDragDrop.bIsModeSet then
+		self.tDragDrop.itemSource = nil
+		self.wndAttachedItemsBlocker:Show(false)
+	end
+end
 
 --Controls for sending money. Not running these as a Radio group, as we need the player to be able to Uncheck both
 function MailCompose:OnMoneyCODCheck(wndHandler, wndControl)
@@ -1248,7 +1360,7 @@ function MailCompose:OnMoneyCODCheck(wndHandler, wndControl)
 	self.wndCashEntryBlock:Show(true)
 	self.wndCashWindow:Enable(true)
 	self.wndCashWindow:SetFocus()
-	self.wndCashWindow:SetAmountLimit(9999999)
+	self:UpdateTradeLimit()
 	self:UpdateControls()
 end
 
@@ -1270,10 +1382,10 @@ function MailCompose:OnMoneySendCheck(wndHandler, wndControl)
 	end
 
 	self.wndCashCODBtn:SetCheck(false)
-	self.wndCashEntryBlock:Show(true)
+	self.wndCashEntryBlock:Show(false)
 	self.wndCashWindow:Enable(true)
 	self.wndCashWindow:SetFocus()
-	self.wndCashWindow:SetAmountLimit(GameLib.GetPlayerCurrency())
+	self:UpdateTradeLimit(GameLib.GetPlayerCurrency():GetAmount())
 	self:UpdateControls()
 end
 
@@ -1291,8 +1403,28 @@ end
 
 
 function MailCompose:OnPlayerCurrencyChanged()
-	self.wndCashWindow:SetAmountLimit(GameLib.GetPlayerCurrency())
+	self:UpdateTradeLimit(GameLib.GetPlayerCurrency():GetAmount())
 	self:UpdateControls()
+end
+
+
+function MailCompose:OnMoneyTradeLimitChanged()
+	self:UpdateTradeLimit()
+end
+
+
+function MailCompose:UpdateTradeLimit(nLimit)
+	local nTradeLimit = nil
+	local monTradeLimit = GameLib.GetMoneyTradeLimit()
+	
+	if monTradeLimit == nil then
+		nTradeLimit = knMaxTradeLimit
+	elseif nLimit ~= nil then
+		nTradeLimit = math.min(nLimit, monTradeLimit:GetAmount())
+	else
+		nTradeLimit = monTradeLimit:GetAmount()
+	end
+	self.wndCashWindow:SetAmountLimit(nTradeLimit)
 end
 
 
@@ -1316,6 +1448,42 @@ function MailCompose:OnDayDeliveryCheck( wndHandler, wndControl, eMouseButton )
 	self:UpdateControls()
 end
 
+-----------------------------------------------------------------------------------------------
+-- Premium System Updates
+-----------------------------------------------------------------------------------------------
+function MailCompose:OnPremiumTierOrPlayerLevelChanged()
+	local bCanTrade = self.bCanTrade
+	self:UpdatePlayerRewardProperties()
+	if bCanTrade ~= self.bCanTrade then
+		self:UpdateControls()
+	end
+end
+
+function MailCompose:UpdatePlayerRewardProperties()
+	self.bCanTrade = AccountItemLib.GetPremiumSystem() == AccountItemLib.CodeEnumPremiumSystem.Hybrid or AccountItemLib.GetPlayerRewardProperty(AccountItemLib.CodeEnumRewardProperty.Trading).nValue ~= 0
+	
+	if self.wndMain ~= nil and self.wndMain:IsValid() then
+		self.wndAttachmentBlocker:FindChild("BlockerBase"):Show(self.bCanTrade)
+		self.wndAttachmentBlocker:FindChild("BlockerVIP"):Show(not self.bCanTrade)
+	end
+end
+
+-----------------------------------------------------------------------------------------------
+-- Store Updates
+-----------------------------------------------------------------------------------------------
+function MailCompose:RefreshStoreLink()
+	self.bStoreLinkValid = StorefrontLib.IsLinkValid(StorefrontLib.CodeEnumStoreLink.Signature)
+	
+	if self.wndMain ~= nil and self.wndMain:IsValid() then
+		local wndAttachmentBlockerVIP = self.wndAttachmentBlocker:FindChild("BlockerVIP")
+		wndAttachmentBlockerVIP:FindChild("ContainerVIP"):Show(self.bStoreLinkValid)
+		wndAttachmentBlockerVIP:FindChild("TitleLevel"):Show(not self.bStoreLinkValid)
+	end
+end
+
+function MailCompose:OnBecomePremium()
+	StorefrontLib.OpenLink(StorefrontLib.CodeEnumStoreLink.Signature)
+end
 
 --------------------/Received Message Controls/-----------------------------
 
@@ -1356,7 +1524,7 @@ function MailReceived:Init(luaMailSystem, msgMail) -- Reading, not composing
 		self.wndMain:MoveToLocation(self.luaMailSystem.locSavedMessageWindowLoc)
 	end
 
-	for idx = 1, 10 do
+	for idx = 1, knMaxAttachments do
 		local wndItemSlotBack = self.wndMain:FindChild("ItemSlotBack." .. tostring(idx))
 		self.arWndAttachmentIcon[idx] = wndItemSlotBack:FindChild("Icon")
 	end

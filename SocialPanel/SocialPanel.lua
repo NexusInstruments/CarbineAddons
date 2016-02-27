@@ -74,10 +74,9 @@ function SocialPanel:OnDocumentReady()
 	Apollo.RegisterEventHandler("FriendshipUpdateOnline", 				"CalcFriendInvites", self)
 	Apollo.RegisterEventHandler("FriendshipRemove", 					"OnFriendshipRemove", self)
 	Apollo.RegisterEventHandler("FriendshipAccountFriendRemoved",		"OnFriendshipRemove", self)
-	
-	Apollo.RegisterEventHandler("CharacterEntitlementUpdate",			"OnEntitlementUpdate", self)
-	Apollo.RegisterEventHandler("AccountEntitlementUpdate",				"OnEntitlementUpdate", self)
-	Apollo.RegisterEventHandler("StoreLinksRefresh",				"RefreshStoreLink", self)
+
+	Apollo.RegisterEventHandler("PremiumTierChanged",					"SetCircleAccess", self)
+	Apollo.RegisterEventHandler("StoreLinksRefresh",					"RefreshStoreLink", self)
 	
 	self.timerRemovedMemberDelay = ApolloTimer.Create(0.2, false, "CalcFriendInvites", self)
 	self.timerRemovedMemberDelay:Stop()
@@ -96,7 +95,7 @@ function SocialPanel:OnToggleSocialWindow(strArg) -- 1st Arg may be objects from
 		self.tWndRefs.wndMain:Invoke()
 		self:FullyDrawSplashScreen()
 
-		if strArg and type(strArg) == "string" and string.len(strArg) > 0 then
+		if strArg and type(strArg) == "string" and Apollo.StringLength(strArg) > 0 then
 			self.tWndRefs.wndContactsFrame:Show(strArg == "ContactsFrame")
 			self.tWndRefs.wndNeighborsFrame:Show(strArg == "NeighborsFrame")
 			self.tWndRefs.wndGuildFrame:Show(strArg == "GuildFrame")
@@ -214,7 +213,7 @@ function SocialPanel:FullyDrawSplashScreen(bHide)
 	if nNumberOfCircles < knMaxNumberOfCircles then
 		self.tWndRefs.wndSplashCirclesAddItem = Apollo.LoadForm(self.xmlDoc, "SplashCirclesAddItem", self.tWndRefs.wndMain:FindChild("SplashCircleItemContainer"), self)
 		nNumberOfCircles = nNumberOfCircles + 1
-		self.tWndRefs.wndSplashCirclesAddItem:FindChild("SplashCirclesAddBtn"):Enable(AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0 or AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.FullGuildsAccess) > 0)
+		self.tWndRefs.wndSplashCirclesAddItem:FindChild("SplashCirclesAddBtn"):Enable(GuildLib.CanCreate(GuildLib.GuildType_Circle))
 		self:RefreshStoreLink()
 	end
 
@@ -313,7 +312,7 @@ end
 
 -- Special Circle Handlers
 function SocialPanel:OnSplashCirclesAddBtn(wndHandler, wndControl)
-	if (AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0 or AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.FullGuildsAccess) > 0) then
+	if GuildLib.CanCreate(GuildLib.GuildType_Circle) then
 		Event_FireGenericEvent("EventGeneric_OpenCircleRegistrationPanel", self.tWndRefs.wndMain)
 	else
 		StorefrontLib.OpenLink(StorefrontLib.CodeEnumStoreLink.Signature)
@@ -406,30 +405,33 @@ end
 -- Entitlement Updates
 ---------------------------------------------------------------------------------------------------
 
-function SocialPanel:OnEntitlementUpdate(tEntitlementInfo)
-	if not self.tWndRefs.wndMain then
+function SocialPanel:SetCircleAccess()
+	if not self.tWndRefs.wndSplashCirclesAddItem then
 		return
 	end
-	local wndSplashCirclesAddBtn = nil
-	if (tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.Signature or tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.Free or tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.FullGuildsAccess) and self.tWndRefs.wndSplashCirclesAddItem then
-		self.bHasFullCirclesAccess = AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0 or AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.FullGuildsAccess) > 0
-	end
-	if self.tWndRefs.wndSplashCirclesAddItem then
-		wndSplashCirclesAddBtn = self.tWndRefs.wndSplashCirclesAddItem:FindChild("SplashCirclesAddBtn")
-		wndSplashCirclesAddBtn:Enable(self.bHasFullCirclesAccess or self.bStoreLinkValid)
-		if self.bHasFullCirclesAccess then
-			wndSplashCirclesAddBtn:SetText(Apollo.GetString("SocialPanel_CreateCircle"))
-			self.tWndRefs.wndSplashCirclesAddItem:FindChild("MTX_Unlocked"):Show(true)
-		else
-			wndSplashCirclesAddBtn:SetText(Apollo.GetString("SocialPanel_UnlockCircles"))
+
+	local bHybridSystem = AccountItemLib.GetPremiumSystem() == AccountItemLib.CodeEnumPremiumSystem.Hybrid
+
+	self.bHasFullCirclesAccess = GuildLib.CanCreate(GuildLib.GuildType_Circle)
+	local wndSplashCirclesAddBtn = self.tWndRefs.wndSplashCirclesAddItem:FindChild("SplashCirclesAddBtn")
+	wndSplashCirclesAddBtn:Enable(self.bHasFullCirclesAccess or self.bStoreLinkValid)
+	if self.bHasFullCirclesAccess then
+		wndSplashCirclesAddBtn:SetText(Apollo.GetString("SocialPanel_CreateCircle"))
+		self.tWndRefs.wndSplashCirclesAddItem:FindChild("MTX_Unlocked"):Show(bHybridSystem)
+		wndSplashCirclesAddBtn:SetTooltipDoc(nil)
+	else
+		local strUnlockCircles = Apollo.GetString("SocialPanel_UnlockCircles")
+		wndSplashCirclesAddBtn:SetText(strUnlockCircles)
+		if bHybridSystem then
+			Tooltip.GetSignatureTooltipForm(self, self.tWndRefs.wndSplashCirclesAddItem, strUnlockCircles)
 		end
-		self.tWndRefs.wndSplashCirclesAddItem:FindChild("MTX_Callout"):Show(not self.bHasFullCirclesAccess and self.bStoreLinkValid)
 	end
+	self.tWndRefs.wndSplashCirclesAddItem:FindChild("MTX_Callout"):Show(bHybridSystem and not self.bHasFullCirclesAccess and self.bStoreLinkValid)
 end
 
 function SocialPanel:RefreshStoreLink()
 	self.bStoreLinkValid = StorefrontLib.IsLinkValid(StorefrontLib.CodeEnumStoreLink.Signature)
-	self:OnEntitlementUpdate( { nEntitlementId = AccountItemLib.CodeEnumEntitlement.FullGuildsAccess } )
+	self:SetCircleAccess()
 end
 
 local SocialPanelInst = SocialPanel:new()

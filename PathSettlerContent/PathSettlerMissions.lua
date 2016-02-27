@@ -13,6 +13,7 @@ require "Tooltip"
 require "XmlDoc"
 require "PlayerPathLib"
 require "AbilityBook"
+require "PathMission"
 
 local PathSettlerMissions = {}
 
@@ -344,7 +345,7 @@ function PathSettlerMissions:BuildChecklist(pmMission, tInfo)
 	self.wndMain:FindChild("ChecklistTitle"):SetText(pmMission:GetName())
 
 	for idx, tCurrInfo in pairs(tInfo) do
-		if tCurrInfo.strDescription and string.len(tCurrInfo.strDescription) > 0 then -- Since we get all 8 (including nil) entries and this is how we filter
+		if tCurrInfo.strDescription and Apollo.StringLength(tCurrInfo.strDescription) > 0 then -- Since we get all 8 (including nil) entries and this is how we filter
 			local wndCurr = self:FactoryProduce(self.wndMain:FindChild("ChecklistItemContainer"), "SettlerChecklistItem", idx)
 			wndCurr:FindChild("ChecklistItemBtn"):SetData({ pmMission, idx })
 			wndCurr:FindChild("ChecklistItemName"):SetText(tCurrInfo.strDescription)

@@ -795,15 +795,8 @@ function Costumes:HelperUpdatePageItems(nPageNumber)
 			wndCostumeBtn:Enable(bCanUse)
 			wndItemPreview:FindChild("DeprecatedIcon"):Show(self.arDisplayedItems[nItemIdx]:IsDeprecated())
 
-			if self.eSelectedSlot == GameLib.CodeEnumItemSlots.Weapon then
-				wndMannequin:SetCamera(ktClassToWeaponCamera[GameLib.GetPlayerUnit():GetClassId()])
-				wndMannequin:SetCostumeToCreatureId(knWeaponModelId)
-			else
-				wndMannequin:SetCamera(ktItemSlotToCamera[self.eSelectedSlot])
-				wndMannequin:SetCostumeToCreatureId(ktManneqinIds[self.unitPlayer:GetGender()])
-			end
-
-			wndMannequin:SetItem(self.arDisplayedItems[nItemIdx])
+			self:SetItemToWindow(wndMannequin, self.arDisplayedItems[nItemIdx])
+			
 			wndMannequin:SetSheathed(false)
 		else
 			wndItemPreview:Show(false)
@@ -1252,17 +1245,7 @@ function Costumes:OnItemUnlock(itemUnlock)
 	end
 
 	local wndConfirmPreview = self.wndUnlock:FindChild("CostumeWindow")
-
-	
-	local eItemSlot = ktItemSlotToEquippedItems[itemUnlock:GetSlot()]
-	if eItemSlot == GameLib.CodeEnumItemSlots.Weapon then
-		wndConfirmPreview:SetCostumeToCreatureId(knWeaponModelId)
-		wndConfirmPreview:SetCamera(ktItemCategoryToCamera[itemUnlock:GetItemCategory()] or ktClassToWeaponCamera[GameLib.GetPlayerUnit():GetClassId()])
-	else
-		wndConfirmPreview:SetCostumeToCreatureId(ktManneqinIds[GameLib.GetPlayerUnit():GetGender()])
-		wndConfirmPreview:SetCamera(ktItemSlotToCamera[eItemSlot])
-	end
-	wndConfirmPreview:SetItem(itemUnlock)
+	self:SetItemToWindow(wndConfirmPreview, itemUnlock)
 	
 	self:UpdateItemCount()
 
@@ -1424,18 +1407,8 @@ function Costumes:OnUnlockItemSelect(wndHandler, wndControl)
 		wndUnlockItemBtn:FindChild("UnlockItemsCount"):SetAML(strImportBtn)
 	end
 
-	local wndPreview = self.wndUnlockItems:FindChild("ItemPreview")
-	local eItemSlot = ktItemSlotToEquippedItems[itemUnlock:GetSlot()]
-
-	if eItemSlot == GameLib.CodeEnumItemSlots.Weapon then
-		wndPreview:SetCostumeToCreatureId(knWeaponModelId)
-		wndPreview:SetCamera(ktItemCategoryToCamera[itemUnlock:GetItemCategory()] or ktClassToWeaponCamera[GameLib.GetPlayerUnit():GetClassId()])
-	else
-		wndPreview:SetCostumeToCreatureId(ktManneqinIds[GameLib.GetPlayerUnit():GetGender()])
-		wndPreview:SetCamera(ktItemSlotToCamera[eItemSlot])
-	end
-
-	wndPreview:SetItem(itemUnlock)
+	local wndPreview = self.wndUnlockItems:FindChild("ItemPreview")	
+	self:SetItemToWindow(wndPreview, itemUnlock)
 end
 
 function Costumes:CloseItemUnlock(wndHandler, wndControl)
@@ -1785,8 +1758,17 @@ function Costumes:UpdateItemCount()
 	
 	if self.wndUnlock then
 		local wndContainer = self.wndUnlock:FindChild("Hologram")
-		local strUnlockItemCount = string.format('<P Font="CRB_InterfaceSmall" Align="Center"><T TextColor="UI_TextHoloBody">%s</T></P>', String_GetWeaselString(Apollo.GetString("Costumes_UnlockItemCount"), strUnlockedCurrent, { strLiteral = strUnlockedMax }))
-		wndContainer:FindChild("CostumeItemCount"):SetAML(strUnlockItemCount)
+		if tUnlockInfo.nCurrent < tUnlockInfo.nMax then
+			local strUnlockItemCountEnabled = string.format('<P Font="CRB_Button" Align="Center"><T TextColor="UI_BtnTextBlueNormal">%s</T></P>', String_GetWeaselString(Apollo.GetString("Costumes_UnlockLimitCount"), tostring(tUnlockInfo.nCurrent), { strLiteral = string.format('<T TextColor="LightGold">%d</T>', tUnlockInfo.nMax) }))	
+			wndContainer:FindChild("ConfirmBtn"):Enable(true)
+			local strImportBtn = string.format(strUnlockItemCountEnabled)	
+			wndContainer:FindChild("CostumeItemCount"):SetAML(strImportBtn)
+		else
+			local strUnlockItemCountDisabled = string.format('<P Font="CRB_Button" Align="Center"><T TextColor="UI_BtnTextBlueDisabled">%s</T></P>', String_GetWeaselString(Apollo.GetString("Costumes_UnlockLimitCount"), tostring(tUnlockInfo.nCurrent), tostring(tUnlockInfo.nMax)))
+			wndContainer:FindChild("ConfirmBtn"):Enable(false)
+			local strImportBtn = string.format(strUnlockItemCountDisabled)	
+			wndContainer:FindChild("CostumeItemCount"):SetAML(strImportBtn)
+		end
 	end
 end
 		
@@ -2006,6 +1988,37 @@ function Costumes:SortDisplayedItems()
 	end
 	
 	table.sort(self.arDisplayedItems, SortItems)
+end
+
+function Costumes:SetItemToWindow(wndCostume, itemDisplay)
+	local strCamera = nil
+	local idModel = nil
+	
+	local eItemSlot = ktItemSlotToEquippedItems[itemDisplay:GetSlot()]
+	if eItemSlot == GameLib.CodeEnumItemSlots.Weapon then
+		strCamera = ktItemCategoryToCamera[itemDisplay:GetItemCategory()]
+		idModel = knWeaponModelId
+		
+		if not strCamera then
+			local arRequirementInfo = itemDisplay:GetRequiredClass()
+			local eRequiredClass = nil
+			if #arRequirementInfo > 1 or #arRequirementInfo == 0 then
+				eRequiredClass = GameLib.GetPlayerUnit():GetClassId()
+			else
+				eRequiredClass = arRequirementInfo[1].idClassReq
+			end
+			
+			strCamera = ktClassToWeaponCamera[eRequiredClass]
+		end
+	else
+		strCamera = ktItemSlotToCamera[eItemSlot]
+		idModel = ktManneqinIds[GameLib.GetPlayerUnit():GetGender()]
+	end
+	
+	wndCostume:SetCostumeToCreatureId(idModel)
+	wndCostume:SetCamera(strCamera)
+	
+	wndCostume:SetItem(itemDisplay)
 end
 
 -----------------------------------------------------------------------------------------------

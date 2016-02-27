@@ -14,6 +14,7 @@ local kclrDefault = "ff62aec1"
 
 local karContinents =
 {
+	Apollo.GetString("CRB_Arcterra"),
 	Apollo.GetString("CRB_Eastern"),
 	Apollo.GetString("CRB_Western"),
 	Apollo.GetString("CRB_Central"),
@@ -69,6 +70,8 @@ local ktZoneNameToContinent =  -- TODO TEMP
 	[Apollo.GetString("Lore_HalonRing")] 					= Apollo.GetString("Lore_Offworld"),
 	[Apollo.GetString("Lore_ShiphandMissions")] 			= Apollo.GetString("Lore_Offworld"),
 	[Apollo.GetString("Lore_ShiphandInfestation")] 			= Apollo.GetString("Lore_Offworld"),
+	
+	[Apollo.GetString("CRB_Arcterra")]						= Apollo.GetString("CRB_Arcterra"),
 }
 
 function LoreWindow:new(o)
@@ -345,7 +348,7 @@ function LoreWindow:InitializeCollections()
 				self:HelperDrawDropdownZoneProgress(self.wndColTopZoneProgressContainer, tCurrZone.nZoneId, tCurrZone.strName)
 			end
 
-			tDuplicateList[tCurrZone.nZoneId] = true
+			tDuplicateList[tCurrZone.nZoneId] = tCurrZone.strName
 		end
 	end
 
@@ -516,7 +519,7 @@ function LoreWindow:SpawnAndDrawColReader(tArticleData, wndOrigin) -- wndOrigin 
 	tArticleData.strText:gsub("\n", "<T TextColor=\"0\">.</T></P><P Font=\"CRB_InterfaceMedium\" TextColor=\""..kclrDefault.."\">").."</P>")
 	self.wndColDisplay:FindChild("ArticleText"):SetHeightToContentHeight()
 
-	local bValidTBFAsset = tArticleData.eDatacubeType == DatacubeLib.DatacubeType_Chronicle and tArticleData.strAsset and string.len(tArticleData.strAsset) > 0
+	local bValidTBFAsset = tArticleData.eDatacubeType == DatacubeLib.DatacubeType_Chronicle and tArticleData.strAsset and Apollo.StringLength(tArticleData.strAsset) > 0
 	local strWndNameToUse = tArticleData.eDatacubeType == DatacubeLib.DatacubeType_Datacube and "ArticleDatacubeTitle" or "ArticleNonDatacubeTitle"
 	self.wndColDisplay:FindChild(strWndNameToUse):SetText(tArticleData.strTitle)
 	self.wndColDisplay:FindChild("TalesLargeCoverArt"):SetSprite(bValidTBFAsset and tArticleData.strAsset or "")

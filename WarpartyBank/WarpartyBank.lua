@@ -412,7 +412,7 @@ function WarpartyBank:BuildPermissionIndividualTab(wndParent, guildOwner, bCanEd
     if tCurrRankData.arBankTab[nBankTab].bDeposit then
         strSpriteDeposit = "ClientSprites:Icon_Windows_UI_CRB_Checkmark"
     end
-    if not strBankTabName or string.len(strBankTabName) == 0 then
+    if not strBankTabName or Apollo.StringLength(strBankTabName) == 0 then
         strBankTabName = Apollo.GetString("GuildBank_BankTab")
     end
 	
@@ -514,7 +514,7 @@ function WarpartyBank:OnBankTabBtnMgmt()
         for idx = 1, guildOwner:GetBankTabCount() do
             local wndCurr = nil
             local strBankTabName = guildOwner:GetBankTabName(nTabCounter)
-            if not strBankTabName or string.len(strBankTabName) == 0 then
+            if not strBankTabName or Apollo.StringLength(strBankTabName) == 0 then
                 strBankTabName = Apollo.GetString("GuildBank_BankTab")
             end
             wndCurr = Apollo.LoadForm(self.xmlDoc, "LeaderOptionsTabItemOld", wndParent:FindChild("MgmtBankTabContainer"), self)
@@ -539,7 +539,7 @@ function WarpartyBank:OnLeaderOptionsEditBoxChanged(wndHandler, wndControl)
     wndParent:FindChild("LeaderOptionsTabRenameBtn"):Enable(true)
 
     local strEntry = wndHandler:GetText()
-    if string.len(strEntry) > knMaxBankTabNameLength then
+    if Apollo.StringLength(strEntry) > knMaxBankTabNameLength then
         wndHandler:SetText(string.sub(strEntry, 0, knMaxBankTabNameLength))
         wndHandler:SetSel(knMaxBankTabNameLength)
     end
@@ -596,7 +596,7 @@ end
 
 function WarpartyBank:HelperUpdateHeaderText(strNewHeader)
     local strFinalHeader = strNewHeader
-    if not strNewHeader or string.len(strNewHeader) == 0 then
+    if not strNewHeader or Apollo.StringLength(strNewHeader) == 0 then
         strFinalHeader = Apollo.GetString("WarpartyBank_Title")
     end
     self.wndMain:FindChild("BGHeaderText"):SetText(strFinalHeader)

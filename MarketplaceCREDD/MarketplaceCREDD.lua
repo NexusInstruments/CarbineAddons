@@ -205,7 +205,7 @@ function MarketplaceCREDD:OnClose(wndHandler, wndControl, eMouseButton)
 end
 
 function MarketplaceCREDD:OnOpenListingsBtn(wndHandler, wndControl)
-	Event_FireGenericEvent("InterfaceMenu_ToggleMarketplaceListings")
+	Event_FireGenericEvent("ToggleListingsFromCREDD")
 end
 
 function MarketplaceCREDD:OnOpenInventoryBtn(wndHandler, wndControl)
@@ -317,7 +317,7 @@ function MarketplaceCREDD:RefreshBoundCredd()
 		self.tWindowMap["CreateBuyNowBtn"]:SetBGColor((bBuyTabChecked and nNowAmount <= nPlayerCash and nNowAmount > 0) and ApolloColor.new("green") or ApolloColor.new("white"))
 		self.tWindowMap["CreateSellNowBtn"]:Enable(nNowAmount > 0 and nNumBound > 0)
 
-		local nLaterAmount = self.tWindowMap["ActLaterPrice"]:GetAmount()
+		local nLaterAmount = self.tWindowMap["ActLaterPrice"]:GetAmount():GetAmount()
 		self.tWindowMap["ActLaterNoCashIcon"]:Show(bBuyTabChecked and nLaterAmount > nPlayerCash)
 		self.tWindowMap["CreateBuyOrderBtn"]:Enable(bBuyTabChecked and nLaterAmount <= nPlayerCash and nLaterAmount > 0)
 		self.tWindowMap["CreateBuyOrderBtn"]:SetBGColor((bBuyTabChecked and nLaterAmount <= nPlayerCash and nLaterAmount > 0) and ApolloColor.new("green") or ApolloColor.new("white"))
@@ -326,7 +326,6 @@ function MarketplaceCREDD:RefreshBoundCredd()
 end
 
 function MarketplaceCREDD:OnCashInputChanged(wndHandler, wndControl)
-	wndHandler:SetText(math.max(0, tonumber(wndHandler:GetAmount() or 0)))
 	self:RefreshBoundCredd() -- Will validate the buttons
 end
 
@@ -417,7 +416,7 @@ function MarketplaceCREDD:OnCreddTransactionBtn(wndHandler, wndControl, eMouseBu
 	self.tWindowMap["ConfirmationTitle"]:SetText(strTitle)
 	self.tWindowMap["ConfirmationSubtitle"]:SetText(strSubtitle)
 
-	local nCurrAmount = wndCurrAmount:GetAmount()
+	local nCurrAmount = wndCurrAmount:GetAmount():GetAmount()
 	self.tWindowMap["ConfirmationTaxText"]:Show(bBuy)
 	self.tWindowMap["ConfirmationTaxCash"]:Show(bBuy)
 	self.tWindowMap["ConfirmationBaseText"]:Show(bBuy)
@@ -428,7 +427,7 @@ function MarketplaceCREDD:OnCreddTransactionBtn(wndHandler, wndControl, eMouseBu
 	self.tWindowMap["ConfirmationBigCash"]:SetAmount(bBuy and (nCurrAmount + (nCurrAmount * CREDDExchangeLib.kfCREDDExchangeBuyTaxMultiplier) + CREDDExchangeLib.kCREDDExchangeBuyRake) or nCurrAmount)
 
 	self.tWindowMap["ConfirmationBigText"]:SetText(strBigText)
-	self.tWindowMap["ConfirmationYesBtn"]:SetActionData(GameLib.CodeEnumConfirmButtonType.CREDDExchangeSubmit, bBuy, wndCurrAmount:GetCurrency(), bNow) -- GOTCHA: Expects non-tax as input
+	self.tWindowMap["ConfirmationYesBtn"]:SetActionData(GameLib.CodeEnumConfirmButtonType.CREDDExchangeSubmit, bBuy, wndCurrAmount:GetAmount(), bNow) -- GOTCHA: Expects non-tax as input
 	self.tWindowMap["ConfirmationYesBtn"]:Enable(not bBuy or self.tWindowMap["ConfirmationBigCash"]:GetCurrency():GetAmount() <= GameLib.GetPlayerCurrency():GetAmount())
 end
 

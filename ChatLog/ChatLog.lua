@@ -14,6 +14,7 @@ require "CombatFloater"
 require "GroupLib"
 require "FriendshipLib"
 require "DatacubeLib"
+require "AccountItemLib"
 
 local ChatLog = {}
 local kcrInvalidColor = ApolloColor.new("InvalidChat")
@@ -28,6 +29,19 @@ local kstrDialogFont 			= "CRB_Dialog"
 local kstrDialogFontRP 			= "CRB_Dialog_I"
 
 local kstrGMIcon 				= "Icon_Windows_UI_GMIcon"
+local ktVIPIcons = 
+{
+	[1] = "CRB_CN:CRB_CN_VIP1_D",
+	[2] = "CRB_CN:CRB_CN_VIP2_D",
+	[3] = "CRB_CN:CRB_CN_VIP3_D",
+	[4] = "CRB_CN:CRB_CN_VIP4_D",
+	[5] = "CRB_CN:CRB_CN_VIP5_D",
+	[6] = "CRB_CN:CRB_CN_VIP6_D",
+	[7] = "CRB_CN:CRB_CN_VIP7_D",
+	[8] = "CRB_CN:CRB_CN_VIP8_D",
+	[9] = "CRB_CN:CRB_CN_VIP9_D",
+	[10] = "CRB_CN:CRB_CN_VIP10_D",
+}
 local knChannelListHeight = 275
 
 local knWindowStayOnScreenOffset = 50
@@ -158,10 +172,10 @@ function ChatLog:OnSave(eType)
 	if eType ~= GameLib.CodeEnumAddonSaveLevel.Character then
 		return nil
 	end
-	local wndChatOptionsContent = self.wndChatOptions:FindChild("ChatOptionsContent")
 
 	local nFoundFontSize = 2
 	if self.wndChatOptions then
+		local wndChatOptionsContent = self.wndChatOptions:FindChild("ChatOptionsContent")
 		if wndChatOptionsContent:FindChild("FontSizeSmall"):IsChecked() then
 			nFoundFontSize = 1
 		elseif wndChatOptionsContent:FindChild("FontSizeMedium"):IsChecked() then
@@ -183,7 +197,6 @@ function ChatLog:OnSave(eType)
 		nFontSize = nFoundFontSize,
 		bShowChannel = self.bShowChannel,
 		bShowTimestamp = self.bShowTimestamp,
-		bProfanityFilter = self.bProfanityFilter,
 		eRoleplayOption = self.eRoleplayOption,
 		bEnableChatLineFade = self.bEnableChatLineFade
 	}
@@ -229,6 +242,9 @@ function ChatLog:OnRestore(eType, tSavedData)
 	if tSavedData.bEnableBGFade ~= nil then
 		self.bEnableBGFade = tSavedData.bEnableBGFade
 	end
+	if tSavedData.bEnableChatLineFade ~= nil then
+		self.bEnableChatLineFade = tSavedData.bEnableChatLineFade
+	end
 	if tSavedData.nBGOpacity ~= nil then
 		self.nBGOpacity = tSavedData.nBGOpacity
 	end
@@ -238,14 +254,8 @@ function ChatLog:OnRestore(eType, tSavedData)
 	if tSavedData.bShowTimestamp ~= nil then
 		self.bShowTimestamp = tSavedData.bShowTimestamp
 	end
-	if tSavedData.bProfanityFilter ~= nil then
-		self.bProfanityFilter = tSavedData.bProfanityFilter
-	end
 	if tSavedData.eRoleplayOption then
 		self.eRoleplayOption = tSavedData.eRoleplayOption
-	end
-	if tSavedData.bEnableChatLineFade then
-		self.bEnableChatLineFade = tSavedData.bEnableChatLineFade
 	end
 	
 	self.nFontSize = tSavedData.nFontSize
@@ -268,6 +278,12 @@ function ChatLog:OnLoad()
 	self.xmlDoc = XmlDoc.CreateFromFile("ChatLog.xml")
 	self.xmlDoc:RegisterCallback("OnDocumentReady", self)
 	self.tRecent = {}
+	
+	self.bEnableNCFade = true
+	self.bEnableBGFade = true
+	self.bEnableChatLineFade = true
+	self.bShowChannel = true
+	self.bShowTimestamp = true
 end
 
 function ChatLog:OnDocumentReady()
@@ -360,7 +376,7 @@ function ChatLog:OnDocumentReady()
 	self.tLinks 			= {}
 	self.nNextLinkIndex 	= 1
 	self.nMaxChatLines 		= 256
-	self.twndItemLinkTooltips = {}
+	self.tWndItemLinkTooltips = {}
 
 	self.tEmotes = {}
 	local tEmotes = ChatSystemLib.GetEmotes()
@@ -373,12 +389,12 @@ function ChatLog:OnDocumentReady()
 
 	local wndOptionsContainer = self.wndChatOptions:FindChild("TwoOptionsContainer")
 
-	wndOptionsContainer:FindChild("SaveToLogOn"):SetCheck(Apollo.GetConsoleVariable("chat.saveLog"))
-	wndOptionsContainer:FindChild("SaveToLogOff"):SetCheck(not Apollo.GetConsoleVariable("chat.saveLog"))
+	local bSaveLog = Apollo.GetConsoleVariable("chat.saveLog")
+	wndOptionsContainer:FindChild("SaveToLogOn"):SetCheck(bSaveLog)
+	wndOptionsContainer:FindChild("SaveToLogOff"):SetCheck(not bSaveLog)
 	self.wndChatOptions:FindChild("ChatOptionsContent:RoleplayViewToggle_3"):SetCheck(true)
 	
 	if GameLib.GetGameMode() == GameLib.CodeEnumGameMode.China then
-		local wndOptionsContainer = self.wndChatOptions:FindChild("TwoOptionsContainer")
 		wndOptionsContainer:FindChild("Profanity"):Show(false)
 		
 		wndOptionsContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
@@ -389,10 +405,7 @@ function ChatLog:OnDocumentReady()
 	end
 
 	-- Profanity Filter Option
-	if self.bProfanityFilter == nil then
-		self.bProfanityFilter = true
-	end
-
+	self.bProfanityFilter = Apollo.GetConsoleVariable("chat.filter", self.bProfanityFilter)
 	wndOptionsContainer:FindChild("ProfanityOn"):SetData(true)
 	wndOptionsContainer:FindChild("ProfanityOff"):SetData(false)
 	wndOptionsContainer:FindChild("ProfanityOn"):SetCheck(self.bProfanityFilter) -- Default
@@ -426,41 +439,28 @@ function ChatLog:OnDocumentReady()
 	wndChatOptionsContent:FindChild("FontSizeMedium"):SetCheck(true) -- Default
 
 	-- Channel Options
-	local wndOptionsContainer = self.wndChatOptions:FindChild("TwoOptionsContainer")
-	if self.bShowChannel == nil then
-		self.bShowChannel = true
-	end
 	wndOptionsContainer:FindChild("ChannelShow"):SetData(true)
 	wndOptionsContainer:FindChild("ChannelShowOff"):SetData(false)
 	wndOptionsContainer:FindChild("ChannelShow"):SetCheck(self.bShowChannel)  -- Default
 	wndOptionsContainer:FindChild("ChannelShowOff"):SetCheck(not self.bShowChannel)
 
 	-- Timestamp
-	if self.bShowTimestamp == nil then
-		self.bShowTimestamp = true
-	end
 	wndOptionsContainer:FindChild("TimestampShow"):SetData(true)
 	wndOptionsContainer:FindChild("TimestampShowOff"):SetData(false)
 	wndOptionsContainer:FindChild("TimestampShow"):SetCheck(self.bShowTimestamp) -- Default
-	wndOptionsContainer:FindChild("TimestampShowOff"):SetData(not self.bShowTimestamp)
+	wndOptionsContainer:FindChild("TimestampShowOff"):SetCheck(not self.bShowTimestamp)
 
 	-- Background
-	if self.bEnableBGFade == nil then
-		self.bEnableBGFade = true
-	end
 	wndOptionsContainer:FindChild("EnableFadeBtn"):SetData(true)
 	wndOptionsContainer:FindChild("DisableFadeBtn"):SetData(false)
 	wndOptionsContainer:FindChild("EnableFadeBtn"):SetCheck(self.bEnableBGFade) -- Default
 	wndOptionsContainer:FindChild("DisableFadeBtn"):SetCheck(not self.bEnableBGFade)
 	
 	--Chat line format
-	if self.bEnableChatLineFade == nil then
-		self.bEnableChatLineFade = true
-	end
 	wndOptionsContainer:FindChild("EnableLineFadeBtn"):SetData(true)
 	wndOptionsContainer:FindChild("DisableLineFadeBtn"):SetData(false)
-	wndOptionsContainer:FindChild("EnableLineFadeBtn"):SetCheck(self.bEnableBGFade) -- Default
-	wndOptionsContainer:FindChild("DisableLineFadeBtn"):SetCheck(not self.bEnableBGFade)
+	wndOptionsContainer:FindChild("EnableLineFadeBtn"):SetCheck(self.bEnableChatLineFade) -- Default
+	wndOptionsContainer:FindChild("DisableLineFadeBtn"):SetCheck(not self.bEnableChatLineFade)
 	
 	-- Player Chat Bubbles
 	self.bEnablePlayerBubbles = Apollo.GetConsoleVariable("unit.playerTextBubbleEnabled") or false
@@ -597,26 +597,6 @@ function ChatLog:OnDocumentReady()
 			arWindowGroupMap[tWindowInfo.nTabGroup] = wndChat
 		else
 			arWindowGroupMap[tWindowInfo.nTabGroup]:AttachTab(wndChat)
-		end
-	end
-
-	if self.wndChatOptions then
-		local wndOptionsContainer = self.wndChatOptions:FindChild("TwoOptionsContainer")
-		wndOptionsContainer:FindChild("EnableLineFadeBtn"):SetCheck(self.bEnableNPCBubbles)
-		wndOptionsContainer:FindChild("DisableLineFadeBtn"):SetCheck(not self.bEnableNPCBubbles)
-		wndOptionsContainer:FindChild("EnableFadeBtn"):SetCheck(self.bEnableBGFade)
-		wndOptionsContainer:FindChild("DisableFadeBtn"):SetCheck(not self.bEnableBGFade)
-		self.wndChatOptions:FindChild("BGOpacitySlider"):SetValue(self.nBGOpacity)
-		wndOptionsContainer:FindChild("ChannelShow"):SetCheck(self.bShowChannel)
-		wndOptionsContainer:FindChild("ChannelShowOff"):SetCheck(not self.bShowChannel)
-		wndOptionsContainer:FindChild("TimestampShow"):SetCheck(self.bShowTimestamp)
-		wndOptionsContainer:FindChild("TimestampShowOff"):SetCheck(not self.bShowTimestamp)
-		wndOptionsContainer:FindChild("ProfanityOn"):SetCheck(self.bProfanityFilter)
-		wndOptionsContainer:FindChild("ProfanityOff"):SetCheck(not self.bProfanityFilter)
-		Apollo.SetConsoleVariable("chat.filter", self.bProfanityFilter)
-
-		for idx, channelCurrent in ipairs(ChatSystemLib.GetChannels() or {}) do
-			channelCurrent:SetProfanity(self.bProfanityFilter)
 		end
 	end
 
@@ -895,7 +875,7 @@ function ChatLog:HelperCheckForEmptyString(strText)
 
 	strFirstChar = string.find(strText, "%S")
 
-	bHasText = strFirstChar ~= nil and string.len(strFirstChar) > 0
+	bHasText = strFirstChar ~= nil and Apollo.StringLength(strFirstChar) > 0
 	return bHasText
 end
 
@@ -1055,7 +1035,7 @@ function ChatLog:OnChatJoinResult( strChanName, eResult )
 end
 
 function ChatLog:OnChatLineTimer()
-	nCurrentTimeMS = GameLib.GetGameTime()
+	local nCurrentTimeMS = GameLib.GetGameTime()
 	local nDeltaTimeMS = nCurrentTimeMS - self.nCurrentTimeMS
 	self.nCurrentTimeMS = nCurrentTimeMS
 	if nDeltaTimeMS < 0 then
@@ -1232,7 +1212,7 @@ function ChatLog:OnNodeClick(wndHandler, wndControl, strNode, tAttributes, eMous
 				if self.tLinks[nIndex].uItem then
 
 					local bWindowExists = false
-					for idx, wndCur in pairs(self.twndItemLinkTooltips or {}) do
+					for idx, wndCur in pairs(self.tWndItemLinkTooltips or {}) do
 						if wndCur:GetData() == self.tLinks[nIndex].uItem then
 							bWindowExists = true
 							break
@@ -1243,7 +1223,7 @@ function ChatLog:OnNodeClick(wndHandler, wndControl, strNode, tAttributes, eMous
 						local wndChatItemToolTip = Apollo.LoadForm("ChatLog.xml", "TooltipWindow", nil, self)
 						wndChatItemToolTip:SetData(self.tLinks[nIndex].uItem)
 
-						table.insert(self.twndItemLinkTooltips, wndChatItemToolTip)
+						table.insert(self.tWndItemLinkTooltips, wndChatItemToolTip)
 
 						local itemEquipped = self.tLinks[nIndex].uItem:GetEquippedItemForItemType()
 
@@ -1281,9 +1261,9 @@ function ChatLog:OnCloseItemTooltipWindow(wndHandler, wndControl)
 	local wndParent = wndControl:GetParent()
 	local itemData = wndParent:GetData()
 
-	for idx, wndCur in pairs(self.twndItemLinkTooltips) do
+	for idx, wndCur in pairs(self.tWndItemLinkTooltips) do
 		if wndCur:GetData() == itemData then
-			table.remove(self.twndItemLinkTooltips, idx)
+			table.remove(self.tWndItemLinkTooltips, idx)
 		end
 	end
 
@@ -1622,7 +1602,7 @@ function ChatLog:VerifyChannelVisibility(channelChecking, tInput, wndChat)
 			
 			--Occurs when not typing a message, just ending with sender name.
 			if not nSubstringStop then
-				nSubstringStop = string.len(strSend) 
+				nSubstringStop = Apollo.StringLength(strSend) 
 			end
 			
 			if strPattern ~= "" then
@@ -1756,7 +1736,7 @@ function ChatLog:OnInputChanged(wndHandler, wndControl, strText)
 		if tInput.bValidCommand then
 			strCommandName = tInput.channelCommand and tInput.channelCommand:GetCommand() ~= "" and tInput.channelCommand:GetCommand() or tInput.strCommand
 		end
-
+		local strCommandName = ""
 		if strCommandName ~= "" then
 			local strLowerCaseCommand = Apollo.StringToLower(strCommandName)
 			if self.tSuggestedFilterRules and self.tSuggestedFilterRules[strLowerCaseCommand] then
@@ -2020,8 +2000,54 @@ function ChatLog:DrawSettingsCombat(wndForm)
 	wndForm:FindChild("Input"):Show(false)
 end
 
+function ChatLog:BuildChatCommandsWindow(wndChat)
+	local wndChatCommands = wndChat:FindChild("ChatCommands")
+	local wndContent = wndChatCommands:FindChild("Content")
+	wndContent:DestroyChildren()
+
+	local tCommands = ChatSystemLib.GetCommands()
+	for idx, strCommand in pairs(tCommands) do 
+		if strCommand ~= "" and strCommand ~= nil then
+			local wndEntry = Apollo.LoadForm(self.xmlDoc, "CommandMenuEntry", wndContent, self)
+			wndEntry:SetText(String_GetWeaselString(Apollo.GetString("ChatLog_SlashPrefix"), strCommand))
+		end
+	end
+
+	wndContent:ArrangeChildrenVert()
+	wndChatCommands:Show(true)
+end
+
+function ChatLog:OnCommandMenuEntry(wndHandler, wndControl)
+	local wndChat = wndControl:GetParent():GetParent():GetParent()
+	local wndInput = wndChat:FindChild("Input")
+	local strText = wndHandler:GetText() .. " "
+
+	local strColor = "white"
+	wndInput:SetText(strText)
+	wndInput:SetTextColor(strColor)
+
+	wndInput:SetPrompt(strText)
+	wndInput:SetPromptColor(strColor)
+
+	wndInput:SetFocus()
+	wndInput:SetSel(strText:len(), -1)
+
+	wndControl:GetParent():GetParent():Show(false)
+end
+
 function ChatLog:OnBeginChat(wndHandler, wndControl)
-	wndControl:GetParent():FindChild("Input"):SetFocus()
+	local wndChat = wndControl:GetParent()
+	local wndChatCommands = wndChat:FindChild("ChatCommands")
+	if wndChatCommands:IsShown() then
+		return
+	end
+
+	local wndContent = wndChatCommands:FindChild("Content")
+	if #wndContent:GetChildren() > 0 then
+		wndChatCommands:Show(true)
+	else
+		self:BuildChatCommandsWindow(wndChat)
+	end
 end
 
 function ChatLog:OnItemSentToCrate(itemSentToCrate, nCount)
@@ -2521,11 +2547,24 @@ function ChatLog:HelperGenerateChatMessage(tQueuedMessage)
 			xml:AppendText( strWhisperNamePrefix, crText, self.strFontOption)
 
 			if tMessage.bGM then
-				xml:AppendImage(kstrGMIcon, 16, 16)
+				xml:AppendImage(kstrGMIcon, 20, 19)
+			elseif tMessage.nPremiumTier ~= nil and tMessage.nPremiumTier > 0 then
+				local ePremiumSystem = AccountItemLib.GetPremiumSystem()
+				local strSprite = ""
+				if ePremiumSystem == AccountItemLib.CodeEnumPremiumSystem.VIP then
+					strSprite = ktVIPIcons[tMessage.nPremiumTier]
+				elseif ePremiumSystem == AccountItemLib.CodeEnumPremiumSystem.Hybrid then
+					strSprite = "UI_BK3_PremiumCalloutBanner_Tiny"
+				end
+				
+				xml:AppendImage(strSprite, 20, 19)
 			end
 
-			local strCross = tMessage.bCrossFaction and "true" or "false"--has to be a string or a number due to code restriction
-			xml:AppendText( strDisplayName, crPlayerName, self.strFontOption, {strCharacterName = strWhisperName, nReportId = tMessage.nReportId , strCrossFaction = strCross}, "Source")
+			if tMessage.bCrossFaction == nil then
+				tMessage.bCrossFaction = false
+			end
+			
+			xml:AppendText( strDisplayName, crPlayerName, self.strFontOption, {strCharacterName = strWhisperName, nReportId = tMessage.nReportId , strCrossFaction = tostring(tMessage.bCrossFaction)}, "Source")
 		end
 		xml:AppendText( strPresenceState .. Apollo.GetString("Chat_ColonBreak"), crChannel, self.strFontOption, "Left")
 	end

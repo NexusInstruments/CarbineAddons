@@ -97,13 +97,13 @@ function HUDInteract:OnInteractiveUnitChanged(unitArg, strArg)
 		self:HideInteractWindows()
 		return
 	elseif self.bInteractTextOnUnit then
-		local strKeybindFullText = string.len(strArg) == 0 and Apollo.GetString("HUDAlert_Interact") or strArg
+		local strKeybindFullText = Apollo.StringLength(strArg) == 0 and Apollo.GetString("HUDAlert_Interact") or strArg
 		local nTextWidth = Apollo.GetTextWidth("CRB_InterfaceMedium_O", strKeybindFullText)
 		local nLeft, nTop, nRight, nBottom = self.wndInteractMarkerOnUnit:FindChild("InteractionOnUnitPopout"):GetAnchorOffsets()
 		self.wndInteractMarkerOnUnit:FindChild("InteractionOnUnitPopout"):SetAnchorOffsets(nLeft, nTop, math.max(50, nLeft + nTextWidth + 8), nBottom)
 		self.wndInteractMarkerOnUnit:FindChild("InteractionOnUnitFullText"):SetText(strKeybindFullText)
 	elseif not self.bDialogWindowUp then
-		local strKeybindFullText = string.len(strArg) == 0 and Apollo.GetString("HUDAlert_Interact") or strArg
+		local strKeybindFullText = Apollo.StringLength(strArg) == 0 and Apollo.GetString("HUDAlert_Interact") or strArg
 		self.wndMain:Show(true)
 		self.wndMain:FindChild("AlertItemKeybindText"):SetText(strKeybind)
 		self.wndMain:FindChild("KeybindFullText"):SetText(strKeybindFullText)

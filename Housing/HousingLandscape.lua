@@ -2272,12 +2272,12 @@ function HousingLandscape:PopulateCategoryList()
 	-- make sure the item list is empty to start with
 	self:DestroyCategoryList()
 	
-	nSortLeft, nSortTop, nSortRight, nSortBottom = self.wndSortByList:GetAnchorOffsets()
+	local nSortLeft, nSortTop, nSortRight, nSortBottom = self.wndSortByList:GetAnchorOffsets()
 	
     -- add 5 items
 	for idx = 1, 5 do
         self:AddCategoryItem(idx)
-        nItemHeight = self.tCategoryItems[idx]:GetHeight()
+        local nItemHeight = self.tCategoryItems[idx]:GetHeight()
 	    self.wndSortByList:SetAnchorOffsets(nSortLeft, nSortTop, nSortRight, nSortTop + idx * nItemHeight)
 	end
 	

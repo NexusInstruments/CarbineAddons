@@ -72,4 +72,25 @@
     <Sprite Name="Matchmaker_BG_BattlegroundsBoneshatter" Cycle="1">
         <Frame Texture="UI\Assets\Textures\Matchmarker_background_06.tex" x0="514" x1="514" x2="1020" x3="1020" x4="1020" x5="1020" y0="474" y1="474" y2="947" y3="947" y4="947" y5="947" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
+    <Sprite Name="Matchmaker_BG_WorldStory" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmaker_Background_WorldStory.tex" x0="0" x1="0" x2="0" x3="0" x4="939" x5="939" y0="0" y1="0" y2="0" y3="0" y4="900" y5="900" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_Adventures" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmaker_Background_Adventures.tex" x0="0" x1="0" x2="0" x3="0" x4="576" x5="576" y0="0" y1="0" y2="0" y3="0" y4="555" y5="555" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_Arenas" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmaker_Background_Arenas.tex" x0="0" x1="0" x2="0" x3="0" x4="763" x5="763" y0="0" y1="0" y2="0" y3="0" y4="733" y5="733" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_Battlegrounds" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmaker_Background_Battlegrounds.tex" x0="0" x1="0" x2="0" x3="0" x4="764" x5="764" y0="0" y1="0" y2="0" y3="0" y4="738" y5="738" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_Dungeons" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmaker_Background_Dungeons.tex" x0="0" x1="0" x2="0" x3="0" x4="692" x5="692" y0="0" y1="0" y2="0" y3="0" y4="667" y5="667" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_Warplots" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmaker_Background_Warplots.tex" x0="0" x1="0" x2="0" x3="0" x4="836" x5="836" y0="0" y1="0" y2="0" y3="0" y4="806" y5="806" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="Matchmaker_BG_Expeditions" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\Matchmaker_Background_Expeditions.tex" x0="0" x1="0" x2="0" x3="0" x4="784" x5="784" y0="0" y1="0" y2="0" y3="0" y4="756" y5="756" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
 </Sprites>

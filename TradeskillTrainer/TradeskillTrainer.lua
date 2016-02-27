@@ -44,7 +44,7 @@ function TradeskillTrainer:OnDocumentReady()
 end
 
 function TradeskillTrainer:OnWindowManagementReady()
-	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("DialogResponse_TradskillTraining")})
+	Event_FireGenericEvent("WindowManagementRegister", {strName = Apollo.GetString("DialogResponse_TradeskillTraining")})
 end
 
 function TradeskillTrainer:OnInvokeTradeskillTrainer(unitTrainer)

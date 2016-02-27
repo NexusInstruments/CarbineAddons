@@ -21,6 +21,7 @@ require "GroupLib"
 require "PlayerPathLib"
 require "GuildLib"
 require "GuildTypeLib"
+require "AccountItemLib"
 
 local Nameplates = {}
 
@@ -169,6 +170,20 @@ local karSavedProperties =
 	["bHideInCombat"] = { default=false, nControlType=0 }
 }
 
+local ktVIPIcons = 
+{
+	[1] = "CRB_CN:CRB_CN_VIP1_D",
+	[2] = "CRB_CN:CRB_CN_VIP2_D",
+	[3] = "CRB_CN:CRB_CN_VIP3_D",
+	[4] = "CRB_CN:CRB_CN_VIP4_D",
+	[5] = "CRB_CN:CRB_CN_VIP5_D",
+	[6] = "CRB_CN:CRB_CN_VIP6_D",
+	[7] = "CRB_CN:CRB_CN_VIP7_D",
+	[8] = "CRB_CN:CRB_CN_VIP8_D",
+	[9] = "CRB_CN:CRB_CN_VIP9_D",
+	[10] = "CRB_CN:CRB_CN_VIP10_D",
+}
+
 -----------------------------------------------------------------------------------------------
 -- Local function reference declarations
 -----------------------------------------------------------------------------------------------
@@ -248,6 +263,7 @@ function Nameplates:OnDocumentReady()
 	Apollo.RegisterEventHandler("UnitMemberOfGuildChange", 		"OnUnitMemberOfGuildChange", self)
 	Apollo.RegisterEventHandler("GuildChange", 					"OnGuildChange", self)
 	Apollo.RegisterEventHandler("UnitGibbed",					"OnUnitGibbed", self)
+	Apollo.RegisterEventHandler("PremiumTierChanged", 			"OnPremiumTierChanged", self)
 
 	local tRewardUpdateEvents = {
 		"QuestObjectiveUpdated", "QuestStateChanged", "ChallengeAbandon", "ChallengeLeftArea",
@@ -391,20 +407,6 @@ end
 function Nameplates:UpdateNameplateVisibility(tNameplate)
 	local unitOwner = tNameplate.unitOwner
 	local wndNameplate = tNameplate.wndNameplate
-	local bIsMounted = unitOwner:IsMounted()
-	local unitWindow = wndNameplate:GetUnit()
-
-	if bIsMounted and unitWindow == unitOwner then
-		if not tNameplate.bMounted then
-			wndNameplate:SetUnit(unitOwner:GetUnitMount(), 1)
-			tNameplate.bMounted = true
-		end
-	elseif not bIsMounted and unitWindow ~= unitOwner then
-		if tNameplate.bMounted then
-			wndNameplate:SetUnit(unitOwner, 1)
-			tNameplate.bMounted = false
-		end
-	end
 
 	local eDisposition = unitOwner:GetDispositionTo(self.unitPlayer)
 	local nCon = self:HelperCalculateConValue(unitOwner)
@@ -502,7 +504,7 @@ function Nameplates:OnUnitCreated(unitNew) -- build main options here
 		bIsCluster 		= false,
 		bIsCasting 		= false,
 		bGibbed			= false,
-		bIsMounted		= false,
+		bIsPlayer		= strNewUnitType == "Player",
 		bShowPvpMatch	= MatchingGame.IsInPVPGame() and (strNewUnitType == "Player" or strNewUnitType == "Esper Pet" or strNewUnitType == "Pet"),
 		bIsGuildMember 	= self.guildDisplayed and self.guildDisplayed:IsUnitMember(unitNew) or false,
 		bIsWarPartyMember = self.guildWarParty and self.guildWarParty:IsUnitMember(unitNew) or false,
@@ -527,6 +529,7 @@ function Nameplates:OnUnitCreated(unitNew) -- build main options here
 			level = wnd:FindChild("Container:Health:Level"),
 			wndGuild = wnd:FindChild("Guild"),
 			wndName = wnd:FindChild("NameRewardContainer:Name"),
+			premiumIcon = wnd:FindChild("NameRewardContainer:PremiumIcon"),
 			certainDeath = wnd:FindChild("TargetAndDeathContainer:CertainDeath"),
 			targetScalingMark = wnd:FindChild("TargetScalingMark"),
 			nameRewardContainer = wnd:FindChild("NameRewardContainer:RewardContainer"),
@@ -549,6 +552,10 @@ function Nameplates:OnUnitCreated(unitNew) -- build main options here
 		tNameplate.wnd.certainDeath:SetSprite(ksprPvpTarget)
 	else
 		tNameplate.wnd.certainDeath:SetSprite(ksprHighLevel)
+	end
+
+	if not tNameplate.bIsPlayer then
+		tNameplate.wnd.premiumIcon:Show(false)
 	end
 
 	self.arUnit2Nameplate[idUnit] = tNameplate
@@ -619,7 +626,7 @@ function Nameplates:ColorNameplate(tNameplate) -- Every frame
 	local unitController = unitOwner:GetUnitOwner() or unitOwner
 	local strUnitType = unitOwner:GetType()
 
-	if strUnitType == "Player" or strUnitType == "Pet" or strUnitType == "Esper Pet" then
+	if tNameplate.bIsPlayer or strUnitType == "Pet" or strUnitType == "Esper Pet" then
 		if eDisposition == Unit.CodeEnumDisposition.Friendly or unitOwner:IsThePlayer() then
 			crColorToUse = kcrUnflaggedAlly
 			if unitController:IsPvpFlagged() then
@@ -662,7 +669,6 @@ end
 function Nameplates:DrawName(tNameplate)
 	local wndNameplate = tNameplate.wndNameplate
 	local unitOwner = tNameplate.unitOwner
-
 	local wndName = tNameplate.wnd.wndName
 	local bUseTarget = tNameplate.bIsTarget
 	local bShow = self.bShowNameMain
@@ -670,10 +676,12 @@ function Nameplates:DrawName(tNameplate)
 		bShow = self.bShowNameTarget
 	end
 
-	if wndName:IsShown() ~= bShow then
+	local bVisibilityChange = wndName:IsShown() ~= bShow 
+	if bVisibilityChange then
 		wndName:Show(bShow)
 	end
 
+	local nPreviousHalfWidth = tNameplate.nBiggestHalf
 	if bShow then
 		local strNewName
 		if self.bShowTitle then
@@ -688,18 +696,24 @@ function Nameplates:DrawName(tNameplate)
 
 			-- Need to consider guild as well for the resize code
 			local strNewGuild = unitOwner:GetAffiliationName()
-			if unitOwner:GetType() == "Player" and strNewGuild ~= nil and strNewGuild ~= "" then
+			if tNameplate.bIsPlayer and strNewGuild ~= nil and strNewGuild ~= "" then
 				strNewGuild = String_GetWeaselString(Apollo.GetString("Nameplates_GuildDisplay"), strNewGuild)
 			end
 
+			tNameplate.nHalfNameWidth = Apollo.GetTextWidth("Nameplates", strNewName) / 2
+			tNameplate.nHalfGuildWidth = Apollo.GetTextWidth("CRB_Interface9_BO", strNewGuild) / 2
+
 			-- Resize
-			local wndNameplate = tNameplate.wndNameplate
 			local nLeft, nTop, nRight, nBottom = wndNameplate:GetAnchorOffsets()
-			local nHalfNameWidth = math.ceil(math.max(Apollo.GetTextWidth("Nameplates", strNewName), Apollo.GetTextWidth("CRB_Interface9_BO", strNewGuild)) / 2)
-			nHalfNameWidth = math.max(nHalfNameWidth, math.ceil(self.nHealthWidth / 2))
-			tNameplate.nHalfNameWidth = nHalfNameWidth
-			wndNameplate:SetAnchorOffsets(-nHalfNameWidth - 17, nTop, nHalfNameWidth + tNameplate.wnd.nameRewardContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop) + 17, nBottom)
+			local nBiggestHalf = math.ceil(math.max(tNameplate.nHalfNameWidth , tNameplate.nHalfGuildWidth))
+			nBiggestHalf = math.max(nBiggestHalf, math.ceil(self.nHealthWidth / 2))
+			tNameplate.nBiggestHalf = nBiggestHalf
+			wndNameplate:SetAnchorOffsets(-nBiggestHalf - 17, nTop, nBiggestHalf + tNameplate.wnd.nameRewardContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop) + 17, nBottom)
 		end
+	end
+
+	if tNameplate.bIsPlayer and (nPreviousHalfWidth ~= nil and tNameplate.nBiggestHalf ~= nPreviousHalfWidth or nPreviousHalfWidth == nil or bVisibilityChange) then
+		self:DrawPremiumTier(tNameplate, AccountItemLib.GetPremiumSystem(), unitOwner:GetPremiumTier())
 	end
 end
 
@@ -715,7 +729,7 @@ function Nameplates:DrawGuild(tNameplate)
 	end
 
 	local strNewGuild = unitOwner:GetAffiliationName()
-	if unitOwner:GetType() == "Player" and strNewGuild ~= nil and strNewGuild ~= "" then
+	if tNameplate.bIsPlayer and strNewGuild ~= nil and strNewGuild ~= "" then
 		strNewGuild = String_GetWeaselString(Apollo.GetString("Nameplates_GuildDisplay"), strNewGuild)
 	end
 
@@ -723,18 +737,19 @@ function Nameplates:DrawGuild(tNameplate)
 		wndGuild:SetTextRaw(strNewGuild)
 
 		-- Need to consider name as well for the resize code
-		local strNewName
+		local strNewName = unitOwner:GetName()
 		if self.bShowTitle then
 			strNewName = unitOwner:GetTitleOrName()
-		else
-			strNewName = unitOwner:GetName()
 		end
+
+		tNameplate.nHalfNameWidth = Apollo.GetTextWidth("Nameplates", strNewName) / 2
+		tNameplate.nHalfGuildWidth = Apollo.GetTextWidth("CRB_Interface9_BO", strNewGuild) / 2
 
 		-- Resize
 		local nLeft, nTop, nRight, nBottom = wndNameplate:GetAnchorOffsets()
-		local nHalfNameWidth = math.ceil(math.max(Apollo.GetTextWidth("Nameplates", strNewName), Apollo.GetTextWidth("CRB_Interface9_BO", strNewGuild)) / 2)
-		nHalfNameWidth = math.max(nHalfNameWidth, math.ceil(self.nHealthWidth / 2))
-		wndNameplate:SetAnchorOffsets(-nHalfNameWidth - 17, nTop, nHalfNameWidth + tNameplate.wnd.nameRewardContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop) + 17, nBottom)
+		local nBiggestHalf = math.ceil(math.max(tNameplate.nHalfNameWidth , tNameplate.nHalfGuildWidth))
+		nBiggestHalf = math.max(nBiggestHalf, math.ceil(self.nHealthWidth / 2))
+		wndNameplate:SetAnchorOffsets(-nBiggestHalf - 17, nTop, nBiggestHalf + tNameplate.wnd.nameRewardContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop) + 17, nBottom)
 	end
 
 	wndGuild:Show(bShow and strNewGuild ~= nil and strNewGuild ~= "")
@@ -865,10 +880,10 @@ function Nameplates:DrawRewards(tNameplate)
 	end
 
 	local tRewardsData = tNameplate.wnd.questRewards:GetData()
-	if bShow and tRewardsData ~= nil and tRewardsData.nIcons ~= nil and tRewardsData.nIcons > 0 and tNameplate.nHalfNameWidth ~= nil then
+	if bShow and tRewardsData ~= nil and tRewardsData.nIcons ~= nil and tRewardsData.nIcons > 0 and tNameplate.nBiggestHalf ~= nil then
 		local wndnameRewardContainer = tNameplate.wnd.nameRewardContainer
 		local nLeft, nTop, nRight, nBottom = wndnameRewardContainer:GetAnchorOffsets()
-		wndnameRewardContainer:SetAnchorOffsets(tNameplate.nHalfNameWidth, nTop, tNameplate.nHalfNameWidth + wndnameRewardContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop), nBottom)
+		wndnameRewardContainer:SetAnchorOffsets(tNameplate.nBiggestHalf, nTop, tNameplate.nBiggestHalf + wndnameRewardContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop), nBottom)
 	end
 end
 
@@ -911,11 +926,9 @@ function Nameplates:CheckDrawDistance(tNameplate)
 	local nDistance = (nDeltaX * nDeltaX) + (nDeltaY * nDeltaY) + (nDeltaZ * nDeltaZ)
 
 	if tNameplate.bIsTarget or tNameplate.bIsCluster then
-		bInRange = nDistance < knTargetRange
-		return bInRange
+		return nDistance < knTargetRange
 	else
-		bInRange = nDistance < self.nMaxRangeSq
-		return bInRange
+		return nDistance < self.nMaxRangeSq
 	end
 end
 
@@ -944,7 +957,7 @@ function Nameplates:HelperVerifyVisibilityOptions(tNameplate)
 				or (self.bShowDispositionHostile and eDisposition == Unit.CodeEnumDisposition.Hostile)
 				or (self.bShowDispositionNeutral and eDisposition == Unit.CodeEnumDisposition.Neutral)
 				or (self.bShowDispositionFriendly and eDisposition == Unit.CodeEnumDisposition.Friendly)
-				or (self.bShowDispositionFriendlyPlayer and eDisposition == Unit.CodeEnumDisposition.Friendly and unitOwner:GetType() == "Player")
+				or (self.bShowDispositionFriendlyPlayer and eDisposition == Unit.CodeEnumDisposition.Friendly and tNameplate.bIsPlayer)
 				or (self.bShowVendor and tActivation.Vendor ~= nil)
 				or (self.bShowTaxi and (tActivation.FlightPathSettler ~= nil or tActivation.FlightPath ~= nil or tActivation.FlightPathNew))
 				or (self.bShowOrganization and tNameplate.bIsGuildMember)
@@ -1182,6 +1195,52 @@ function Nameplates:OnUnitGibbed(unitUpdated)
 	end
 end
 
+function Nameplates:DrawPremiumTier(tNameplate, ePremiumSystem, nTier)
+	local bShow = self.bShowNameMain
+	if tNameplate.bIsTarget then
+		bShow = self.bShowNameTarget
+	end
+
+	local wndPremiumIcon = tNameplate.wnd.premiumIcon
+	if nTier < 1 or not bShow then
+		wndPremiumIcon:Show(false)
+		tNameplate.nVipTier = nil
+		return
+	end
+
+	if tNameplate.nVipTier and tNameplate.nVipTier == nTier then
+		return
+	end
+
+	tNameplate.nVipTier = nTier
+	local strSprite = "UI_BK3_PremiumCalloutBanner_Tiny"
+	if ePremiumSystem == AccountItemLib.CodeEnumPremiumSystem.VIP and ktVIPIcons[nTier] then
+		strSprite = ktVIPIcons[nTier]
+	end
+
+	wndPremiumIcon:SetSprite(strSprite)
+	wndPremiumIcon:Show(true)
+
+	local knSpacing = 0
+	local nIconWidth	=	wndPremiumIcon:GetWidth()
+	local nIconLeft		=	-tNameplate.nHalfNameWidth - nIconWidth - knSpacing
+	local nIconRight	=	-tNameplate.nHalfNameWidth - knSpacing
+
+	local nLeft, nTop, nRight, nBottom = wndPremiumIcon:GetOriginalLocation():GetOffsets()
+	wndPremiumIcon:SetAnchorOffsets(nIconLeft, nTop, nIconRight, nBottom)
+end
+
+function Nameplates:OnPremiumTierChanged(ePremiumSystem, nTier)
+	if self.unitPlayer == nil then
+		return
+	end
+
+	local tNameplate = self.arUnit2Nameplate[self.unitPlayer:GetId()]
+	if tNameplate ~= nil then
+		self:DrawPremiumTier(tNameplate, ePremiumSystem, nTier)
+	end
+end
+
 function Nameplates:OnUnitNameChanged(unitUpdated, strNewName)
 	local tNameplate = self.arUnit2Nameplate[unitUpdated:GetId()]
 	if tNameplate ~= nil then
@@ -1374,10 +1433,6 @@ end
 function Nameplates:OnTargetViewCheck(wndHandler, wndCtrl)
 	self.wndMain:FindChild("ContentMain"):Show(false)
 	self.wndMain:FindChild("ContentTarget"):Show(true)
-end
-
-function Nameplates:OnOK()
-	self.wndMain:Close()
 end
 
 function Nameplates:OnCancel()

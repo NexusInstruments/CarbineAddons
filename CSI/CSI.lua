@@ -301,7 +301,7 @@ function CSI:BuildKeypad(tActiveCSI)
 	self.wndKeypad:FindChild("KeypadTopBG:KeypadText"):Show(true)
 	self.wndKeypad:FindChild("KeypadTopBG:TextDisplay"):SetText("")
 
-	if tActiveCSI.strContext and string.len(tActiveCSI.strContext) > 0 then
+	if tActiveCSI.strContext and Apollo.StringLength(tActiveCSI.strContext) > 0 then
 		self.wndKeypad:FindChild("KeypadTopBG:KeypadText"):SetText(tActiveCSI.strContext)
 	else
 		self.wndKeypad:FindChild("KeypadTopBG:KeypadText"):SetText(Apollo.GetString("CRB_Enter_the_code"))
@@ -753,7 +753,7 @@ function CSI:OnKeypadEnter(wndHandler, wndControl)
 		return
     end
 
-	if string.len(self.strKeypadDisplay) == 0 then
+	if Apollo.StringLength(self.strKeypadDisplay) == 0 then
 		return
 	end
 

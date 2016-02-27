@@ -79,8 +79,7 @@ function GuildRegistration:OnDocumentReady()
 	Apollo.RegisterEventHandler("GuildResultInterceptResponse",		"OnGuildResultInterceptResponse", self)
 	Apollo.RegisterEventHandler("GuildRegistrarOpen",				"OnGuildRegistrationOn", self)
 	Apollo.RegisterEventHandler("GuildRegistrarClose",				"OnCancel", self)
-	Apollo.RegisterEventHandler("CharacterEntitlementUpdate",		"OnEntitlementUpdate", self)
-	Apollo.RegisterEventHandler("AccountEntitlementUpdate",			"OnEntitlementUpdate", self)
+	Apollo.RegisterEventHandler("PremiumTierChanged",				"SetGuildAccess", self)
 	Apollo.RegisterEventHandler("StoreLinksRefresh",				"RefreshStoreLink", self)
 	
 	self.timerErrorMessage = ApolloTimer.Create(3.00, false, "OnErrorMessageTimer", self)
@@ -129,10 +128,37 @@ function GuildRegistration:Initialize()
 
 	self.tWndRefs.wndMain:FindChild("CreditCost"):SetMoneySystem(Money.CodeEnumCurrencyType.Credits)
 
+	local wndIcon = self.tWndRefs.wndRegisterBtn:FindChild("Icon")
+	local wndTitle = self.tWndRefs.wndRegisterBtn:FindChild("Title")
+
+	local bHybridSystem = AccountItemLib.GetPremiumSystem() == AccountItemLib.CodeEnumPremiumSystem.Hybrid
+	wndIcon:Show(bHybridSystem)
+
+	local nIconOffset = 0
+	if not bHybridSystem then
+		nIconOffset = wndIcon:GetWidth()
+	end
+
+	local nLeft, nTop, nRight, nBottom = wndTitle:GetAnchorOffsets()
+	wndTitle:SetAnchorOffsets(nLeft, nTop, nRight + nIconOffset, nBottom)
+
 	self:InitializeHolomarkParts()
 	self:ResetOptions()
-	self.bHasFullGuildAccess = (AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0 or AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.FullGuildsAccess) > 0)
 	self:RefreshStoreLink()
+end
+
+function GuildRegistration:SetGuildAccess()
+	if not self.tWndRefs.wndMain or not self.tWndRefs.wndMain:IsValid() then
+		return
+	end
+
+	self.bHasFullGuildAccess = GuildLib.CanCreate(GuildLib.GuildType_Guild)
+	if self.tWndRefs and self.tWndRefs.wndMain and self.tWndRefs.wndMain:IsValid() then
+		self:UpdateOptions()
+	end
+
+	self.tWndRefs.wndRegisterBtn:Show(self.bHasFullGuildAccess or not self.bStoreLinkValid)
+	self.tWndRefs.wndMain:FindChild("UnlockGuildsBtn"):Show(not self.bHasFullGuildAccess and self.bStoreLinkValid)
 end
 
 function GuildRegistration:OnWindowManagementReady()
@@ -250,15 +276,21 @@ function GuildRegistration:UpdateOptions()
 	self.tWndRefs.wndMain:FindChild("MasterRankValidAlert"):Show(bHasMaster and not bMasterValid)
 	self.tWndRefs.wndMain:FindChild("CouncilRankValidAlert"):Show(bHasCouncil and not bCouncilValid)
 	self.tWndRefs.wndMain:FindChild("MemberRankValidAlert"):Show(bHasMember and not bMemberValid)
-	
-	if bNameValid and bMasterValid and bCouncilValid and bMemberValid and bHasName and bHasMaster and bHasCouncil and bHasMember and bNotInGuild and bHasValidLevel and self.bHasFullGuildAccess then
-		self.tWndRefs.wndRegisterBtn:Enable(true)
-		self.tWndRefs.wndRegisterBtn:FindChild("Title"):SetTextColor(ApolloColor.new("UI_BtnTextGreenNormal"))
-		self.tWndRefs.wndRegisterBtn:FindChild("Icon"):SetOpacity(1)
-	else
-		self.tWndRefs.wndRegisterBtn:FindChild("Title"):SetTextColor(ApolloColor.new("UI_BtnTextGreenDisabled"))
-		self.tWndRefs.wndRegisterBtn:FindChild("Icon"):SetOpacity(0.25)
+
+	local wndTitle = self.tWndRefs.wndRegisterBtn:FindChild("Title")
+	local wndIcon =self.tWndRefs.wndRegisterBtn:FindChild("Icon")
+
+	local bCreateGuild = bNameValid and bMasterValid and bCouncilValid and bMemberValid and bHasName and bHasMaster and bHasCouncil and bHasMember and bNotInGuild and bHasValidLevel and self.bHasFullGuildAccess
+	local strColor = "UI_BtnTextGreenDisabled"
+	local nOpacity = .25
+	if bCreateGuild then
+		strColor = "UI_BtnTextGreenNormal"
+		nOpacity = 1
 	end
+
+	self.tWndRefs.wndRegisterBtn:Enable(bCreateGuild)
+	wndIcon:SetOpacity(nOpacity)
+	wndTitle:SetTextColor(strColor)
 
 	if not bHasValidLevel then
 		self.tWndRefs.wndMain:FindChild("GuildPermissionsAlert"):SetText(Apollo.GetString("GuildRegistration_MustBeLvl12"))
@@ -271,7 +303,7 @@ function GuildRegistration:HelperCheckForEmptyString(strText) -- make sure there
 
 	strFirstChar = string.find(strText, "%S")
 
-	bHasText = strFirstChar ~= nil and string.len(strFirstChar) > 0
+	bHasText = strFirstChar ~= nil and Apollo.StringLength(strFirstChar) > 0
 	return bHasText
 end
 
@@ -618,29 +650,9 @@ function GuildRegistration:OnRenameSocialConfirm(wndHandler, wndControl)
 	self.timerForcedRename:Start()
 end
 
-function GuildRegistration:OnEntitlementUpdate(tEntitlementInfo)
-	if not self.tWndRefs.wndMain then
-		return
-	end
-	if tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.Signature or tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.Free or tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.FullGuildsAccess then
-		self.bHasFullGuildAccess = (AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0 or AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.FullGuildsAccess) > 0)
-		
-		self.tWndRefs.wndRegisterBtn:Show(self.bHasFullGuildAccess or not self.bStoreLinkValid)	
-		if self.bHasFullGuildAccess then 
-			self.tWndRefs.wndRegisterBtn:Enable() 
-			self.tWndRefs.wndRegisterBtn:FindChild("Title"):SetTextColor(ApolloColor.new("UI_BtnTextGreenNormal"))
-			self.tWndRefs.wndRegisterBtn:FindChild("Icon"):SetOpacity(1)
-		else
-			self.tWndRefs.wndRegisterBtn:FindChild("Title"):SetTextColor(ApolloColor.new("UI_BtnTextGreenDisabled"))
-			self.tWndRefs.wndRegisterBtn:FindChild("Icon"):SetOpacity(0.25)
-		end
-		self.tWndRefs.wndMain:FindChild("UnlockGuildsBtn"):Show(not self.bHasFullGuildAccess and self.bStoreLinkValid)
-	end
-end
-
 function GuildRegistration:RefreshStoreLink()
 	self.bStoreLinkValid = StorefrontLib.IsLinkValid(StorefrontLib.CodeEnumStoreLink.Signature)
-	self:OnEntitlementUpdate( { nEntitlementId = AccountItemLib.CodeEnumEntitlement.FullGuildsAccess } )
+	self:SetGuildAccess()
 end
 
 function GuildRegistration:OnUnlockGuilds()

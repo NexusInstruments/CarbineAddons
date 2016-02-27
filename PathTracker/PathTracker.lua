@@ -1085,7 +1085,7 @@ function PathTracker:BuildMission(pmMission)
 	
 	-- Subtitle
 	local strPercent = self:HelperComputeProgressText(eType, pmMission) or ""
-	if string.len(strPercent) > 0 then
+	if Apollo.StringLength(strPercent) > 0 then
 		strMissionType = String_GetWeaselString(Apollo.GetString("ExplorerMissions_PercentSubtitle"),  strPercent, strMissionType)
 	end
 	
@@ -1789,7 +1789,7 @@ function PathTracker:HelperComputeProgressText(eType, pmMission)
 			
 			if tInfo then
 				for strKey, tCurrInfo in pairs(tInfo) do
-					if tCurrInfo.strDescription and string.len(tCurrInfo.strDescription) > 0 then -- Since we get all 8 (including nil) entries and this is how we filter
+					if tCurrInfo.strDescription and Apollo.StringLength(tCurrInfo.strDescription) > 0 then -- Since we get all 8 (including nil) entries and this is how we filter
 						nTotal = nTotal + 1
 						if tCurrInfo.bIsComplete then
 							nCompleted = nCompleted + 1

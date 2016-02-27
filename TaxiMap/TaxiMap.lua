@@ -142,6 +142,7 @@ function TaxiMap:OnInvokeTaxiWindow(unitTaxi, bSettlerTaxi)--If unitTaxi is nil,
 		[22] = Apollo.GetString("CRB_Western"),
 		[51] = Apollo.GetString("CRB_Eastern"),
 		[1061] = Apollo.GetString("CRB_Central"),
+		[3335] = Apollo.GetString("CRB_Arcterra"),
 		[1421] = Apollo.GetString("Lore_Farside"),
 	}
 
@@ -166,11 +167,13 @@ function TaxiMap:OnInvokeTaxiWindow(unitTaxi, bSettlerTaxi)--If unitTaxi is nil,
 	self.tWndRefs.wndWorldView:FindChild("ContWesternBtn"):SetData({nMapContinentId = 8, nWorldId = 22, strName = Apollo.GetString("CRB_Western")})
 	self.tWndRefs.wndWorldView:FindChild("ContEasternBtn"):SetData({nMapContinentId = 6, nWorldId = 51, strName = Apollo.GetString("CRB_Easetern")})
 	self.tWndRefs.wndWorldView:FindChild("ContCentralBtn"):SetData({nMapContinentId = 33, nWorldId = 1061, strName = Apollo.GetString("CRB_Central")})
+	self.tWndRefs.wndWorldView:FindChild("ContArcterraBtn"):SetData({nMapContinentId = 92, nWorldId = 3335, strName = Apollo.GetString("CRB_Arcterra")})
 	self.tWndRefs.wndWorldView:FindChild("ContFarsideBtn"):SetData({nMapContinentId = 28, nWorldId = 1421, strName = Apollo.GetString("Lore_Farside"), bFarside = true})
 	
 	self.tWndRefs.wndMain:FindChild("OlyssiaBtn"):SetData({nMapContinentId = 8, nWorldId = 22, strName = Apollo.GetString("CRB_Western")})
 	self.tWndRefs.wndMain:FindChild("AlizarBtn"):SetData({nMapContinentId = 6, nWorldId = 51, strName = Apollo.GetString("CRB_Eastern")})
 	self.tWndRefs.wndMain:FindChild("IsigrolBtn"):SetData({nMapContinentId = 33, nWorldId = 1061, strName = Apollo.GetString("CRB_Central")})
+	self.tWndRefs.wndMain:FindChild("ArcterraBtn"):SetData({nMapContinentId = 92, nWorldId = 3335, strName = Apollo.GetString("CRB_Arcterra")})
 	self.tWndRefs.wndMain:FindChild("FarsideBtn"):SetData({nMapContinentId = 28, nWorldId = 1421, strName = Apollo.GetString("Lore_Farside"), bFarside = true})
 
 	self.tWndRefs.wndMain:FindChild("DerelictSiloBtn"):SetData({nMapContinentId = 19, nWorldId = 46, strName = Apollo.GetString("Taximap_DerelictSilo"), bFarside = true, bSubZone = true})
@@ -613,7 +616,6 @@ function TaxiMap:OnContinentBtn(wndHandler, wndControl)
 			wndClearBtn:Enable(false)
 		end
 	else
-		local worlds = self.tWndRefs.wndTaxiMap:GetContinentZoneInfo(tSelected.nMapContinentId)
 		for idx, tZone in pairs(self.tWndRefs.wndTaxiMap:GetContinentZoneInfo(tSelected.nMapContinentId)) do
 			if tZone.nWorldId == tSelected.nWorldId  then
 				self.tZoneInfo = tZone

@@ -566,10 +566,6 @@ function MiniMap:OnDocumentReady()
 	
 	self:RehideAllToggledIcons()
 
-	if g_wndTheMiniMap == nil then
-		g_wndTheMiniMap = self.wndMiniMap
-	end
-
 	self:OnOptionsUpdated()
 	self:UpdateRapidTransportBtn()
 	Apollo.RegisterEventHandler("WindowManagementReady", "OnWindowManagementReady", self)

@@ -14,6 +14,7 @@ require "Tooltip"
 require "XmlDoc"
 require "PlayerPathLib"
 require "SoldierEvent"
+require "PathMission"
 
 local PathSoldierMissions = {}
 

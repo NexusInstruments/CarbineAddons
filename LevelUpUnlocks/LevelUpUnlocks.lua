@@ -331,7 +331,7 @@ function LevelUpUnlocks:BuildLevelItem(tUnlock, wndParent, nCurrentLevel)
 	local nLeft, nTop, nRight, nBottom = wndHeader:GetAnchorOffsets()
 	wndHeader:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nHeight + 65)
 
-	if string.len(strInputAction) > 0 then
+	if Apollo.StringLength(strInputAction) > 0 then
 		wndHeader:FindChild("LevelUpHeaderText"):SetText(String_GetWeaselString(Apollo.GetString("LevelUpUnlocks_TypeHeader"), strInputAction, GameLib.GetKeyBindingByEnum(eInputAction)))
 	end
 

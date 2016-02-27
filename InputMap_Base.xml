@@ -100,7 +100,6 @@
         <Key Order="0" Device="Keyboard" Code="57" EventType="Raw" MetaKeys=""/>
         <Key Order="1" Device="Keyboard" Code="82" EventType="Raw" MetaKeys="" AutomaticMouseMode="False"/>
     </Input>
-    <Input Name="Dismount"/>
     <Input Name="ToggleSit"/>
     <Input Name="ToggleWalk">
         <Key Order="0" Device="Keyboard" Code="83" EventType="Click" MetaKeys=""/>
@@ -317,6 +316,9 @@
     </Input>
     <Input Name="FloatingActionBar_Slot6">
         <Key Order="0" Device="Keyboard" Code="64" EventType="Raw" MetaKeys="CTRL"/>
+    </Input>
+    <Input Name="FloatingActionBar_Slot7">
+        <Key Order="0" Device="Keyboard" Code="65" EventType="Raw" MetaKeys="CTRL"/>
     </Input>
     <Input Name="ScaleRampedMotion"/>
     <Input Name="ScaleRampedRotation"/>

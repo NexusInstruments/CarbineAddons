@@ -18,6 +18,25 @@ local knOutAnimationTime = 0.4
 
 local knAnimationOffset = 20
 
+local ktCategories =  
+{
+	[GameLib.CodeEnumTutorialCategory.General] 					= Apollo.GetString("Tutorials_General"),
+	[GameLib.CodeEnumTutorialCategory.Beginner] 				= Apollo.GetString("Tutorials_Beginner"),
+	[GameLib.CodeEnumTutorialCategory.Combat] 					= Apollo.GetString("Tutorials_Combat"),
+	[GameLib.CodeEnumTutorialCategory.PVP] 						= Apollo.GetString("Tutorials_PvP"),
+	[GameLib.CodeEnumTutorialCategory.Housing] 					= Apollo.GetString("Tutorials_Housing"),
+	[GameLib.CodeEnumTutorialCategory.Challenges] 				= Apollo.GetString("Tutorials_Challenges"),
+	[GameLib.CodeEnumTutorialCategory.PublicEvents] 			= Apollo.GetString("Tutorials_PublicEvents"),
+	[GameLib.CodeEnumTutorialCategory.Adventures] 				= Apollo.GetString("Tutorials_Adventures"),
+	[GameLib.CodeEnumTutorialCategory.Path_Soldier] 			= Apollo.GetString("Tutorials_Soldier"),
+	[GameLib.CodeEnumTutorialCategory.Path_Settler] 			= Apollo.GetString("Tutorials_Settler"),
+	[GameLib.CodeEnumTutorialCategory.Path_Scientist] 			= Apollo.GetString("Tutorials_Scientist"),
+	[GameLib.CodeEnumTutorialCategory.Path_Explorer] 			= Apollo.GetString("Tutorials_Explorer"),
+	[GameLib.CodeEnumTutorialCategory.Tradeskills]				= Apollo.GetString("Tutorials_Tradeskills"),
+	[GameLib.CodeEnumTutorialCategory.Zones]					= Apollo.GetString("Tutorials_Zones"),
+	[GameLib.CodeEnumTutorialCategory.Classes]					= Apollo.GetString("Tutorials_Classes"),
+}
+
 local ktHOrientation =
 {
 	tEast =
@@ -402,12 +421,14 @@ function TutorialPrompts:DrawTutorialPage(nTutorialId, nPassedPage) --(wndArg, n
 	-- Set the "view" toggle for the tutorial's category (carrying the option for additional pages)
 	if wnd:FindChild("HideCategoryBtn") ~= nil then
 		local nType = tTutorial.eTutorialCategory
+		local strHideCategory = String_GetWeaselString(Apollo.GetString("Tutorials_DontShowVar"), String_GetWeaselString(Apollo.GetString("CRB_Quotes"),ktCategories[nType]))
 		if nCurrPage == 1 then -- get the setting from page 1
 			self.bTypeViewSetting = not GameLib.IsTutorialCategoryVisible(nType) and not self.bAllViewSetting
 		end
 
 		wnd:FindChild("HideCategoryBtn"):SetData(nType)
 		wnd:FindChild("HideCategoryBtn"):SetCheck(self.bTypeViewSetting and not self.bAllViewSetting)
+		wnd:FindChild("HideCategoryBtn"):SetText(strHideCategory)
 		wnd:FindChild("HideCategoryBtn"):Show(not self.bAllViewSetting)
 	end
 	
@@ -420,8 +441,8 @@ function TutorialPrompts:DrawTutorialPage(nTutorialId, nPassedPage) --(wndArg, n
 	local nOnGoingHeight = 0
 	for idx, strCurrText in ipairs(tTutorial[nCurrPage].tBody) do
 		local wndToDo = nil
-		local bStrCurrTextExists = strCurrText and string.len(strCurrText) > 0
-		local strAsAML = "<P Font=\"CRB_InterfaceMedium\" TextColor=\"ffffffff\" Align=\"Left\">"..strCurrText.."</P>"
+		local bStrCurrTextExists = strCurrText and Apollo.StringLength(strCurrText) > 0
+		local strAsAML = "<P Font=\"CRB_InterfaceMedium\" TextColor=\"UI_TextHoloBody\" Align=\"Left\">"..strCurrText.."</P>"
 		Sound.Play(Sound.PlayUIMiniMapPing)
 		wnd:FindChild("BGArt_Refresh"):SetSprite("BK3:UI_BK3_Holo_RefreshReflectionSquare_anim")
 
@@ -430,7 +451,6 @@ function TutorialPrompts:DrawTutorialPage(nTutorialId, nPassedPage) --(wndArg, n
 			wnd:FindChild("BodyFrameBG"):Show(true)
 			wnd:FindChild("Body"):SetAML(strAsAML)
 			
-
 			if wnd:GetName() ~= "TutorialForm_ExtraLarge" then
 				local nWidth, nHeight = wnd:FindChild("Body"):SetHeightToContentHeight()
 				nOnGoingHeight = math.max(42, nHeight + 20) -- Guarantee at least two lines of height
@@ -452,7 +472,7 @@ function TutorialPrompts:DrawTutorialPage(nTutorialId, nPassedPage) --(wndArg, n
 	end
 
 	for idx, strCurrSprite in ipairs(tTutorial[nCurrPage].tSprites) do
-		local bStrCurrSpriteExists = strCurrSprite and string.len(strCurrSprite) > 0
+		local bStrCurrSpriteExists = strCurrSprite and Apollo.StringLength(strCurrSprite) > 0
 		if idx == 1 and bStrCurrSpriteExists then
 			wnd:FindChild("SpriteContainer"):Show(true)
 			wnd:FindChild("Sprite"):SetSprite(strCurrSprite)
@@ -465,12 +485,7 @@ function TutorialPrompts:DrawTutorialPage(nTutorialId, nPassedPage) --(wndArg, n
 		end
 	end
 
-	-- Top title
-	if #tTutorial > 1 then
-		wnd:FindChild("Title"):SetText(String_GetWeaselString(Apollo.GetString("Tutorials_CurrentPage"), nCurrPage, #tTutorial, tTutorial[nCurrPage].strTitle))
-	else
-		wnd:FindChild("Title"):SetText(tTutorial[nCurrPage].strTitle)
-	end
+	wnd:FindChild("Title"):SetText(tTutorial[nCurrPage].strTitle)
 
 	-- Configure buttons
 	if #tTutorial > 1 then -- multipage
@@ -550,7 +565,7 @@ function TutorialPrompts:DrawTransparentTutorialPage(nTutorialId, nPassedPage)
 
 	-- should only ever have 1 sprite
 	for idx, strCurrSprite in ipairs(tTutorial[nCurrPage].tSprites) do
-		local bStrCurrSpriteExists = strCurrSprite and string.len(strCurrSprite) > 0
+		local bStrCurrSpriteExists = strCurrSprite and Apollo.StringLength(strCurrSprite) > 0
 		if idx == 1 and bStrCurrSpriteExists then
 			self.wndTransparentTutorial:FindChild("Sprite"):SetSprite(strCurrSprite)
 		end

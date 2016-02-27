@@ -228,7 +228,7 @@ function GalacticArchive:HelperShouldShowArticle(artCurr)
 	-- Find the first character of a word or an exact match from the start
 	if strNameChoice then
 		local strNameChoiceLower = strNameChoice:lower()
-		if not (strTitle:lower():find(" "..strNameChoiceLower, 1, true) or string.sub(strTitle, 0, string.len(strNameChoice)):lower() == strNameChoiceLower) then
+		if not (strTitle:lower():find(" "..strNameChoiceLower, 1, true) or string.sub(strTitle, 0, Apollo.StringLength(strNameChoice)):lower() == strNameChoiceLower) then
 			return false
 		end
 	end
@@ -446,7 +446,7 @@ function GalacticArchive:AddArticleToIndex(artData, wndParent)
 	
 	if bHasCostume then
 		wndArticlePortrait:SetCostumeToCreatureId(artData:GetHeaderCreature())
-	elseif string.len(artData:GetHeaderIcon()) > 0 then
+	elseif Apollo.StringLength(artData:GetHeaderIcon()) > 0 then
 		wndArticleIcon:SetSprite(artData:GetHeaderIcon())
 	else
 		wndArticleIcon:SetSprite("Icon_Mission_Explorer_PowerMap")
@@ -623,7 +623,7 @@ function GalacticArchive:DisplayArticle(artDisplay)
 	local bHasCostume = artDisplay:GetHeaderCreature() and artDisplay:GetHeaderCreature() ~= 0
 	if bHasCostume then
 		wndArticle:FindChild("ArticleDisplayCostumeWindow"):SetCostumeToCreatureId(artDisplay:GetHeaderCreature())
-	elseif string.len(artDisplay:GetHeaderIcon()) > 0 then
+	elseif Apollo.StringLength(artDisplay:GetHeaderIcon()) > 0 then
 		wndArticle:FindChild("ArticleDisplayIcon"):SetSprite(artDisplay:GetHeaderIcon())
 	else
 		wndArticle:FindChild("ArticleDisplayIcon"):SetSprite("Icon_Mission_Explorer_PowerMap")
@@ -726,10 +726,10 @@ function GalacticArchive:DrawEntry(entDraw, wndArticle)
 
 	-- Text
 	local strEntryText = ""
-	if string.len(entDraw:GetText()) > 0 then
+	if Apollo.StringLength(entDraw:GetText()) > 0 then
 		strEntryText = entDraw:GetText()
 	end
-	if string.len(entDraw:GetScientistText()) > 0 then
+	if Apollo.StringLength(entDraw:GetScientistText()) > 0 then
 		wndEntry:FindChild("EntryScientistOnlyIcon"):Show(true)
 		wndArticle:FindChild("ArticleScientistOnlyIcon"):Show(true)
 		strEntryText = strEntryText .."</P>\\n<P Font=\"CRB_InterfaceMedium\" TextColor=\"ffffb97f\">"..entDraw:GetScientistText().."</P>"

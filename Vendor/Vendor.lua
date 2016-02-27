@@ -1307,7 +1307,7 @@ function Vendor:ArrangeGroups(tItemList, tGroups)
 	end
 
 	for idx, value in ipairs(tGroups) do
-		if value.strName and string.len(value.strName) > 0 then
+		if value.strName and Apollo.StringLength(value.strName) > 0 then
 			tNewList[value.idGroup] = { strName = value.strName, tItems = {}, idGroup = value.idGroup } --, specials = {}, future = {} }
 		end
 	end

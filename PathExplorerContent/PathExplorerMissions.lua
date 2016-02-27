@@ -13,6 +13,7 @@ require "Tooltip"
 require "XmlDoc"
 require "PlayerPathLib"
 require "AbilityBook"
+require "PathMission"
 
 local PathExplorerMissions = {}
 

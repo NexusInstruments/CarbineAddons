@@ -358,7 +358,7 @@ function SuggestedMenu:OnShowSuggestedMenu()
 
 	table.sort(tAlphabatized, function(a,b) return (a.strCharacterName < b.strCharacterName) end)
 	for idx, tSuggestedInfo in pairs(tAlphabatized) do
-		local strSuggestedSubString = string.sub(tSuggestedInfo.strCharacterName, 1 ,  string.len(self.strLastText))
+		local strSuggestedSubString = string.sub(tSuggestedInfo.strCharacterName, 1 ,  Apollo.StringLength(self.strLastText))
 		if Apollo.StringToLower(strSuggestedSubString) == Apollo.StringToLower(self.strLastText) then --potential result found to be shown, lower so not case sensitive
 			self:CreateSuggestedMenuEntry(tSuggestedInfo)
 		end
@@ -407,7 +407,7 @@ function SuggestedMenu:HelperParseName(strText)
 	end
 	local nIndexOfSpace = string.find(strText, "%s")
 	if nIndexOfSpace then --may not have a space
-		return string.sub(strText, nIndexOfSpace + 1, string.len(strText))
+		return string.sub(strText, nIndexOfSpace + 1, Apollo.StringLength(strText))
 	end
 	--no need to parse return original
 	return strText

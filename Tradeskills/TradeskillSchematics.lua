@@ -123,7 +123,7 @@ function TradeskillSchematics:Initialize(wndParent, nSchematicId, strSearchQuery
 		self:DrawSchematic(tSchematic)
 	end
 
-	if strSearchQuery and string.len(strSearchQuery) > 0 then
+	if strSearchQuery and Apollo.StringLength(strSearchQuery) > 0 then
 		self.wndMain:FindChild("RightSide"):Show(false)
 		self.wndMain:FindChild("SearchTopLeftInputBox"):SetText(strSearchQuery)
 		self:OnSearchTopLeftInputBoxChanged()
@@ -581,7 +581,7 @@ end
 
 function TradeskillSchematics:OnSearchTopLeftInputBoxChanged() -- Also called in Lua
 	local strInput = self.wndMain:FindChild("SearchTopLeftInputBox"):GetText():lower()
-	local bInputExists = string.len(strInput) > 1
+	local bInputExists = Apollo.StringLength(strInput) > 1
 
 	self.wndMain:FindChild("LeftSideSearch"):Show(bInputExists)
 	self.wndMain:FindChild("SearchTopLeftClearBtn"):Show(bInputExists)

@@ -5,6 +5,7 @@
 
 require "Window"
 require "CraftingLib"
+require "AccountItemLib"
 
 local CraftingGrid = {}
 
@@ -141,6 +142,9 @@ function CraftingGrid:OnDocumentReady()
 	Apollo.RegisterEventHandler("CraftingDiscoveryHotCold", 						"OnCraftingDiscoveryHotCold", self)
 	Apollo.RegisterEventHandler("CraftingSchematicLearned", 						"OnCraftingSchematicLearned", self)
 	Apollo.RegisterEventHandler("CraftingUpdateCurrent", 							"OnCraftingUpdateCurrent", self)
+	Apollo.RegisterEventHandler("PremiumTierChanged",								"OnCraftingUpdateCurrent", self)
+	Apollo.RegisterEventHandler("CharacterEntitlementUpdate",						"OnCraftingUpdateCurrent", self)
+	Apollo.RegisterEventHandler("AccountEntitlementUpdate",							"OnCraftingUpdateCurrent", self)
 	Apollo.RegisterEventHandler("UpdateInventory", 									"RedrawAll", self)
 	Apollo.RegisterEventHandler("PlayerCurrencyChanged", 							"RedrawCash", self)
 
@@ -500,11 +504,16 @@ function CraftingGrid:RedrawAllDetailed(idSchematic, tSchematicInfo, tCurrentCra
 end
 
 function CraftingGrid:HandleAdditiveSizeAndBonuses(tSchematicInfo)
-	
+	local unitPlayer = GameLib.GetPlayerUnit()
+	if unitPlayer == nil then
+		return
+	end
+
 	local nBonuses = 0
 	local nBonusesHeight = 0
 	local wndBonusList = self.wndMain:FindChild("BonusList")
-	if AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0  then
+
+	if AccountItemLib.GetPremiumSystem() == AccountItemLib.CodeEnumPremiumSystem.Hybrid and unitPlayer:GetPremiumTier() > 0 then
 		local nSignatureBonus = math.ceil(tSchematicInfo.fBonusSignatureRadius) * 10
 		local wndBonusEntry  = Apollo.LoadForm(self.xmlDoc, "BonusEntry", wndBonusList, self)
 		wndBonusEntry:FindChild("EntryName"):SetText(Apollo.GetString("CraftingGrid_BonusSignature"))
@@ -605,7 +614,7 @@ function CraftingGrid:OnCraftBtn(wndHandler, wndControl) -- CraftBtn
 
 	-- Save last Tooltip
 	local strTooltipSaved = self.strPendingLastMarkerTooltip or ""
-	if string.len(strTooltipSaved) == 0 then
+	if Apollo.StringLength(strTooltipSaved) == 0 then
 		strTooltipSaved = Apollo.GetString("CraftingGrid_NoAdditivesUsed")
 	end
 	self.strPendingLastMarkerTooltip = ""
@@ -624,7 +633,7 @@ function CraftingGrid:OnCraftBtn(wndHandler, wndControl) -- CraftBtn
 
 	-- Order is important, must clear first
 	Event_FireGenericEvent("GenericEvent_ClearCraftSummary")
-	if string.len(strTooltipSaved) > 0 then
+	if Apollo.StringLength(strTooltipSaved) > 0 then
 		Event_FireGenericEvent("GenericEvent_CraftSummaryMsg", Apollo.GetString("CoordCrafting_ItemsUsedSummary") .. "\n" .. strTooltipSaved)
 	end
 

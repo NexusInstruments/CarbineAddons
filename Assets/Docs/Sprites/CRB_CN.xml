@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Sprites>
+    <Sprite Name="CRB_CN_VIP1_B" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="5" x1="5" x2="5" x3="5" x4="56" x5="56" y0="5" y1="5" y2="5" y3="5" y4="75" y5="75" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP2_B" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="66" x1="66" x2="66" x3="66" x4="117" x5="117" y0="5" y1="5" y2="5" y3="5" y4="75" y5="75" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP3_B" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="127" x1="127" x2="127" x3="127" x4="178" x5="178" y0="5" y1="5" y2="5" y3="5" y4="75" y5="75" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP4_B" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="188" x1="188" x2="188" x3="188" x4="239" x5="239" y0="5" y1="5" y2="5" y3="5" y4="75" y5="75" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP5_B" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="249" x1="249" x2="249" x3="249" x4="300" x5="300" y0="5" y1="5" y2="5" y3="5" y4="75" y5="75" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP6_B" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="310" x1="310" x2="310" x3="310" x4="361" x5="361" y0="5" y1="5" y2="5" y3="5" y4="75" y5="75" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP7_B" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="371" x1="371" x2="371" x3="371" x4="422" x5="422" y0="5" y1="5" y2="5" y3="5" y4="75" y5="75" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP8_B" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="432" x1="432" x2="432" x3="432" x4="483" x5="483" y0="5" y1="5" y2="5" y3="5" y4="75" y5="75" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP9_B" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="493" x1="493" x2="493" x3="493" x4="544" x5="544" y0="5" y1="5" y2="5" y3="5" y4="75" y5="75" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP10_B" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="554" x1="554" x2="554" x3="554" x4="605" x5="605" y0="5" y1="5" y2="5" y3="5" y4="75" y5="75" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP_B" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="615" x1="615" x2="615" x3="615" x4="666" x5="666" y0="5" y1="5" y2="5" y3="5" y4="75" y5="75" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP1_C" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="0" x1="0" x2="0" x3="0" x4="31" x5="31" y0="81" y1="81" y2="81" y3="81" y4="121" y5="121" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP2_C" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="38" x1="38" x2="38" x3="38" x4="69" x5="69" y0="81" y1="81" y2="81" y3="81" y4="121" y5="121" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP3_C" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="75" x1="75" x2="75" x3="75" x4="106" x5="106" y0="81" y1="81" y2="81" y3="81" y4="121" y5="121" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP4_C" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="113" x1="113" x2="113" x3="113" x4="144" x5="144" y0="81" y1="81" y2="81" y3="81" y4="121" y5="121" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP5_C" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="151" x1="151" x2="151" x3="151" x4="182" x5="182" y0="81" y1="81" y2="81" y3="81" y4="121" y5="121" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP6_C" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="189" x1="189" x2="189" x3="189" x4="220" x5="220" y0="81" y1="81" y2="81" y3="81" y4="121" y5="121" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP7_C" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="226" x1="226" x2="226" x3="226" x4="257" x5="257" y0="81" y1="81" y2="81" y3="81" y4="121" y5="121" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP8_C" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="264" x1="264" x2="264" x3="264" x4="295" x5="295" y0="81" y1="81" y2="81" y3="81" y4="121" y5="121" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP9_C" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="302" x1="302" x2="302" x3="302" x4="333" x5="333" y0="81" y1="81" y2="81" y3="81" y4="121" y5="121" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP10_C" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="338" x1="338" x2="338" x3="338" x4="369" x5="369" y0="82" y1="82" y2="82" y3="82" y4="122" y5="122" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP_C" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="376" x1="376" x2="376" x3="376" x4="407" x5="407" y0="82" y1="82" y2="82" y3="82" y4="122" y5="122" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP1_D" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="2" x1="2" x2="2" x3="2" x4="21" x5="21" y0="130" y1="130" y2="130" y3="130" y4="150" y5="150" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP2_D" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="25" x1="25" x2="25" x3="25" x4="44" x5="44" y0="130" y1="130" y2="130" y3="130" y4="150" y5="150" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP3_D" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="48" x1="48" x2="48" x3="48" x4="67" x5="67" y0="130" y1="130" y2="130" y3="130" y4="150" y5="150" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP4_D" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="71" x1="71" x2="71" x3="71" x4="90" x5="90" y0="130" y1="130" y2="130" y3="130" y4="150" y5="150" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP5_D" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="94" x1="94" x2="94" x3="94" x4="113" x5="113" y0="130" y1="130" y2="130" y3="130" y4="150" y5="150" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP6_D" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="117" x1="117" x2="117" x3="117" x4="136" x5="136" y0="130" y1="130" y2="130" y3="130" y4="150" y5="150" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP7_D" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="139" x1="139" x2="139" x3="139" x4="158" x5="158" y0="130" y1="130" y2="130" y3="130" y4="150" y5="150" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP8_D" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="162" x1="162" x2="162" x3="162" x4="181" x5="181" y0="130" y1="130" y2="130" y3="130" y4="150" y5="150" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP9_D" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="185" x1="185" x2="185" x3="185" x4="204" x5="204" y0="130" y1="130" y2="130" y3="130" y4="150" y5="150" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP10_D" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="208" x1="208" x2="208" x3="208" x4="227" x5="227" y0="130" y1="130" y2="130" y3="130" y4="150" y5="150" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP_D" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_CN_VIP.tex" x0="231" x1="231" x2="231" x3="231" x4="250" x5="250" y0="130" y1="130" y2="130" y3="130" y4="150" y5="150" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP_StoreBanner" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_VIPPage_Banner.tex" x0="0" x1="0" x2="0" x3="0" x4="328" x5="328" y0="0" y1="0" y2="0" y3="0" y4="360" y5="360" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="CRB_CN_VIP_StoreBannerSmall" Cycle="1">
+        <Frame Texture="UI\Assets\Textures\UI_VIPPage_Banner.tex" x0="330" x1="330" x2="330" x3="330" x4="512" x5="512" y0="0" y1="0" y2="0" y3="0" y4="207" y5="207" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+</Sprites>

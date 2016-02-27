@@ -5,14 +5,17 @@
 
 require "Window"
 require "Money"
+require "AccountItemLib"
 
 local GuildBank = {}
+
+local kstrValidItemIcon			= "UI_BK3_ItemDrag_DestinationNoGlow"
+local kstrInvalidItemIcon		= "UI_BK3_ItemDrag_DestinationDeniedNoGlow"
 
 local kstrFontLog 				= "CRB_InterfaceMedium"
 local knNumBankTabs				= 5
 local knMaxBankSlots 			= 128
 local knMaxBankTabNameLength 	= 20
-local knVeryLargeNumber 		= 2147483640
 local knMaxTransactionLimit 	= 2000000000 -- 2000 plat
 local ktWithdrawLimit 			= {} -- Dynamic. But currently: 0, 1, 2, 5, 10, 25, 50, -1
 local ktWhichPerksAreGuildTabs 	= -- TODO super hardcoded
@@ -85,6 +88,7 @@ function GuildBank:OnDocumentReady()
 	Apollo.RegisterEventHandler("GuildChange", 				"OnGuildChange", self)
 	Apollo.RegisterEventHandler("PlayerCurrencyChanged", 	"OnPlayerCurrencyChanged", self)
 	Apollo.RegisterEventHandler("GuildBankWithdraw",		"OnGuildBankWithdraw", self)
+	Apollo.RegisterEventHandler("MoneyTradeLimitChanged",	"OnMoneyTradeLimitChanged", self)
 
 	self.tTabPerks = {}
 end
@@ -181,7 +185,7 @@ function GuildBank:Initialize(guildOwner)
 		local wndBankTab = self.tWndRefs.wndMain:FindChild("BankTabBtn"..idx)
 		local wndBankTabLog = self.tWndRefs.wndMain:FindChild("BankTabLogBtn"..idx)
 		local strBankTabName = guildOwner:GetBankTabName(idx)
-		if not strBankTabName or string.len(strBankTabName) == 0 then
+		if not strBankTabName or Apollo.StringLength(strBankTabName) == 0 then
 			strBankTabName = Apollo.GetString("GuildBank_BankTab")
 		end
 		wndBankTab:SetText(strBankTabName)
@@ -203,12 +207,23 @@ function GuildBank:Initialize(guildOwner)
 
 	self.strTransferType = nil
 	self.tCurrentDragData = nil
+	local bCashTradeLimited = AccountItemLib.GetPremiumSystem() == AccountItemLib.CodeEnumPremiumSystem.VIP
+	local wndDepositLimit = self.tWndRefs.wndMain:FindChild("DepositLimit")
+	wndDepositLimit:Show(bCashTradeLimited)
+	if bCashTradeLimited then
+		local monTradeLimit = GameLib.GetMoneyTradeLimit()
+		wndDepositLimit:FindChild("CashWindow"):SetAmount(monTradeLimit)
+		self.nTradeLimitAmount = monTradeLimit:GetAmount()
+		
+		local wndCashScreenMain = self.tWndRefs.wndMain:FindChild("CashScreenContainer")
+		local nLeft, nTop, nRight, nBottom = wndCashScreenMain:GetOriginalLocation():GetOffsets()
+		wndCashScreenMain:SetAnchorOffsets(nLeft, nTop, nRight, nBottom - wndDepositLimit:GetHeight())
+	end
 
 	self.tWndRefs.wndMain:FindChild("BankTabBtnVault"):Enable(true)
 	self.tWndRefs.wndMain:FindChild("BankTabBtnPermissions"):Enable(true)
-	self.tWndRefs.wndMain:FindChild("PermissionsMoneyCashWindow"):SetAmountLimit(knMaxTransactionLimit)
-	self.tWndRefs.wndMain:FindChild("PermissionsRepairCashWindow"):SetAmountLimit(knMaxTransactionLimit)
-	self.tWndRefs.wndMain:FindChild("PlayerWithdrawAmountWindow"):SetAmountLimit(knMaxTransactionLimit)
+	self.tWndRefs.wndMain:FindChild("BGMain:PermissionsMain:PermissionsGridBG:PermissionsCashBG:PermissionsWithdrawBG:EditContainer:PermissionsEdit"):SetAmountLimit(knMaxTransactionLimit)
+	self.tWndRefs.wndMain:FindChild("BGMain:PermissionsMain:PermissionsGridBG:PermissionsCashBG:PermissionsRepairBG:EditContainer:PermissionsEdit"):SetAmountLimit(knMaxTransactionLimit)
 	self.tWndRefs.wndMain:FindChild("GuildCashInteractEditCashWindow"):SetAmountLimit(knMaxTransactionLimit)
 	self.tWndRefs.wndMain:FindChild("BankTabBtnCash"):AttachWindow(self.tWndRefs.wndMain:FindChild("CashScreenMain"))
 	self.tWndRefs.wndMain:FindChild("BankTabBtnLog"):AttachWindow(self.tWndRefs.wndMain:FindChild("BankLogScreenMain"))
@@ -414,19 +429,38 @@ function GuildBank:OnBankItemBeginDragDrop(wndHandler, wndControl, nTransferStac
 	if itemSelected then
 		self.strTransferType = guildOwner:BeginBankItemTransfer(itemSelected, nTransferStackCount) -- returns nil if item is bogus or "guild" can't do bank operations. (it is a circle or something)
 		if self.strTransferType ~= nil then
+			local strCurrentSprite = wndHandler:GetSprite()
+			if strCurrentSprite ~= kstrValidItemIcon and strCurrentSprite ~= kstrInvalidItemIcon then
+				self.strPrevSprite = strCurrentSprite
+			end
 			Apollo.BeginDragDrop(wndControl, self.strTransferType, itemSelected:GetIcon(), 0)
 		end
+	else
+		self.tWndRefs.wndMain:FindChild("InvalidItemNotification"):Show(true)
 	end
 	self.tCurrentDragData = itemSelected
 
 	-- TODO Verify deposit permissions
 end
 
-function GuildBank:OnBankItemQueryDragDrop(wndHandler, wndControl, nX, nY, wndSource, strType)
+function GuildBank:OnBankItemQueryDragDrop(wndHandler, wndControl, nX, nY, wndSource, strType, nItemSourceLoc)
 	if wndHandler ~= wndControl then
 		return Apollo.DragDropQueryResult.PassOn
 	elseif strType == "DDGuildBankItem" or strType == "DDBagItem" then -- Should change to an enum?
-		return Apollo.DragDropQueryResult.Accept
+		local itemSource = nil
+		if strType == "DDGuildBankItem" then
+			itemSource = wndSource:GetData()
+		else
+			itemSource = Item.GetItemFromInventoryLoc(nItemSourceLoc)
+		end
+		
+		if itemSource:IsAlwaysTradeable() then
+			wndHandler:SetSprite(kstrValidItemIcon)
+			return Apollo.DragDropQueryResult.Accept
+		else
+			wndHandler:SetSprite(kstrInvalidItemIcon)
+			return Apollo.DragDropQueryResult.Ignore
+		end
 	else
 		return Apollo.DragDropQueryResult.Ignore
 	end
@@ -447,9 +481,10 @@ end
 function GuildBank:OnBankItemEndDragDrop(wndHandler, wndControl, nX, nY, wndSource, strType, nBagSlot) -- Bank Icon
 	if not wndHandler or not self.tWndRefs.wndMain or not self.tWndRefs.wndMain:IsValid() or not self.tWndRefs.wndMain:GetData() or wndSource == wndHandler then
 		self:OnBankItemDragDropCancel()
+		self:ResetBankItemSprite(wndHandler)
 		return false
 	end
-
+	
 	local guildOwner = self.tWndRefs.wndMain:GetData()
 	local nDestinationSlot = wndControl:GetParent():GetData() -- TODO refactor. BankItemIcon -> BankItem -> nIndex
 	local nDestinationTab = self.tWndRefs.wndMain:FindChild("MainBankScrollbar"):GetData()
@@ -465,9 +500,33 @@ function GuildBank:OnBankItemEndDragDrop(wndHandler, wndControl, nX, nY, wndSour
 			guildOwner:EndBankItemTransfer(nDestinationTab, nDestinationSlot)
 		end
 	end
-
+	
 	self:OnBankItemDragDropCancel()
 	return false
+end
+
+function GuildBank:OnBankItemMouseEnter(wndHandler, wndControl)
+	self.strPrevSprite = wndHandler:GetSprite() -- Save sprite in case there's one already there
+end
+
+function GuildBank:OnBankItemMouseExit(wndHandler, wndControl)
+	self:ResetBankItemSprite(wndHandler)
+end
+
+function GuildBank:ResetBankItemSprite(wndIcon)
+	local strCurrentSprite = wndIcon:GetSprite()
+	
+	if strCurrentSprite == kstrInvalidItemIcon or strCurrentSprite == kstrValidItemIcon then
+		wndIcon:SetSprite(self.strPrevSprite)
+	end
+end
+
+function GuildBank:OnBankScreenMainMouseExit(wndHandler, wndControl, x, y)
+	if wndHandler ~= wndControl then
+		return
+	end
+	
+	self.tWndRefs.wndMain:FindChild("InvalidItemNotification"):Show(false)
 end
 
 -----------------------------------------------------------------------------------------------
@@ -523,9 +582,15 @@ function GuildBank:OnBankTabBtnCash()
 
 	local guildOwner = self.tWndRefs.wndMain:GetData()
 	local wndParent = self.tWndRefs.wndMain:FindChild("CashScreenMain")
-
-	local nTransactionAmount = wndParent:FindChild("GuildCashInteractEditCashWindow"):GetAmount()
-	wndParent:FindChild("GuildCashDeposit"):Enable(nTransactionAmount > 0)
+	local monTransactionAmount = wndParent:FindChild("GuildCashInteractEditCashWindow"):GetAmount()
+	local nTransactionAmount = monTransactionAmount:GetAmount()
+	local bTradeLimitCheck = true
+	
+	if self.nTradeLimitAmount ~= nil then
+		bTradeLimitCheck = nTransactionAmount <= self.nTradeLimitAmount
+	end
+	
+	wndParent:FindChild("GuildCashDeposit"):Enable(nTransactionAmount > 0 and bTradeLimitCheck)
 	wndParent:FindChild("GuildCashWithdraw"):Enable(nTransactionAmount > 0)
 
 	wndParent:FindChild("GuildCashAmountWindow"):SetAmount(guildOwner:GetMoney())
@@ -537,11 +602,11 @@ function GuildBank:OnBankTabBtnCash()
 	local nMyWithdrawLimit = tMyRankData.monBankWithdrawLimit:GetAmount()
 
 	wndParent:FindChild("PlayerWithdrawCant"):Show(nMyWithdrawLimit == 0)
-	wndParent:FindChild("PlayerWithdrawNoLimit"):Show(nMyWithdrawLimit >= knVeryLargeNumber) -- There might actually be a limit > 2100 (e.g. 6000 plat), but we'll just show No Limit
-	wndParent:FindChild("PlayerWithdrawAmountWindow"):Show(nMyWithdrawLimit < knVeryLargeNumber and nMyWithdrawLimit ~= 0)
+	wndParent:FindChild("PlayerWithdrawNoLimit"):Show(tMyRankData.bBankWithdrawLimitAll) 
+	wndParent:FindChild("PlayerWithdrawAmountWindow"):Show(nMyWithdrawLimit ~= 0 and not tMyRankData.bBankWithdrawLimitAll)
 
 	local strTooltip = ""
-	if nMyWithdrawLimit >= knVeryLargeNumber then
+	if tMyRankData.bBankWithdrawLimitAll then
 		strTooltip = String_GetWeaselString(Apollo.GetString("GuildBank_NoMoneyLimit"), nMyWithdrawalToday, tMyRankData.strName)
 	elseif nMyWithdrawLimit == 0 then
 		strTooltip = String_GetWeaselString(Apollo.GetString("GuildBank_RankCantTakeMoney"), tMyRankData.strName)
@@ -551,7 +616,7 @@ function GuildBank:OnBankTabBtnCash()
 	wndParent:FindChild("PlayerWithdrawAmountLabel"):SetTooltip(strTooltip)
 
 	local nMyWithdrawlAmountLeft = (nMyWithdrawLimit - nMyWithdrawalToday)
-	local nWithdrawlAmount = self.tWndRefs.wndMain:FindChild("GuildCashInteractEditCashWindow"):GetCurrency()
+	local nWithdrawlAmount = self.tWndRefs.wndMain:FindChild("GuildCashInteractEditCashWindow"):GetAmount()
 
 	if self.nWithdrawlAmount then
 		nMyWithdrawlAmountLeft =  nMyWithdrawlAmountLeft - self.nWithdrawlAmount
@@ -572,7 +637,8 @@ function GuildBank:OnGuildCashDeposit(wndHandler, wndControl)
 	end
 
 	local guildOwner = self.tWndRefs.wndMain:GetData()
-	guildOwner:DepositMoney(self.tWndRefs.wndMain:FindChild("GuildCashInteractEditCashWindow"):GetCurrency())
+	local monCashDeposit = self.tWndRefs.wndMain:FindChild("GuildCashInteractEditCashWindow"):GetAmount()
+	guildOwner:DepositMoney(monCashDeposit)
 	self.tWndRefs.wndMain:FindChild("GuildCashInteractEditCashWindow"):SetAmount(0, true)
 	self:OnBankTabBtnCash()
 	wndHandler:SetFocus()
@@ -584,17 +650,24 @@ function GuildBank:OnGuildCashWithdraw(wndHandler, wndControl)
 	end
 
 	local guildOwner = self.tWndRefs.wndMain:GetData()
-	guildOwner:WithdrawMoney(self.tWndRefs.wndMain:FindChild("GuildCashInteractEditCashWindow"):GetCurrency())
-	self.nWithdrawlAmount = self.tWndRefs.wndMain:FindChild("GuildCashInteractEditCashWindow"):GetAmount()
+	local monCashWithdraw = self.tWndRefs.wndMain:FindChild("GuildCashInteractEditCashWindow"):GetAmount()
+	guildOwner:WithdrawMoney(monCashWithdraw)
+	self.nWithdrawlAmount = monCashWithdraw:GetAmount()
 	self.tWndRefs.wndMain:FindChild("GuildCashInteractEditCashWindow"):SetAmount(0, true)
 	self:OnBankTabBtnCash()
 	wndHandler:SetFocus()
 end
 
-function GuildBank:OnGuildCashInteractEditCashWindow(wndHandler, wndControl) -- GuildCashInteractEditCashWindow
-	local nTransactionAmount = wndHandler:GetAmount()
+function GuildBank:OnGuildCashInteractEditCashWindow(wndHandler, wndControl, monNewAmount, monOldAmount) -- GuildCashInteractEditCashWindow
+	local nTransactionAmount = monNewAmount:GetAmount()
 	local wndParent = self.tWndRefs.wndMain:FindChild("CashScreenMain")
-	wndParent:FindChild("GuildCashDeposit"):Enable(nTransactionAmount > 0)
+	local bTradeLimitCheck = true
+	
+	if self.nTradeLimitAmount ~= nil then
+		bTradeLimitCheck = nTransactionAmount <= self.nTradeLimitAmount
+	end
+	
+	wndParent:FindChild("GuildCashDeposit"):Enable(nTransactionAmount > 0 and bTradeLimitCheck)
 	wndParent:FindChild("GuildCashWithdraw"):Enable(nTransactionAmount > 0)
 end
 
@@ -663,6 +736,12 @@ function GuildBank:OnGuildBankWithdraw(guildOwner)
 	end
 end
 
+function GuildBank:OnMoneyTradeLimitChanged()
+	if self.tWndRefs.wndMain ~= nil then
+		self.tWndRefs.wndMain:FindChild("DepositLimit"):FindChild("CashWindow"):SetAmount(GameLib.GetMoneyTradeLimit())
+	end
+end
+
 -----------------------------------------------------------------------------------------------
 -- Tab Permissions
 -----------------------------------------------------------------------------------------------
@@ -682,22 +761,26 @@ function GuildBank:OnGuildRankChange() -- C++ Event
 	self:DrawTabPermissions()
 end
 
-function GuildBank:OnPermissionsMoneyCashWindow(wndHandler, wndControl) -- PermissionsMoneyCashWindow
-	self.tWndRefs.wndMain:FindChild("PermissionsSaveBtn"):Enable(true)
-	if not wndHandler:GetAmount() or wndHandler:GetAmount() == 0 then
-		wndHandler:GetParent():SetText(Apollo.GetString("GuildBank_CantWithdrawMoney")) -- PermissionsMoneyBG
-	else
-		wndHandler:GetParent():SetText("") -- PermissionsMoneyBG
+function GuildBank:OnPermissionsEdit(wndHandler, wndControl, monNewAmount, monOldAmount)
+	local nNewValue = monNewAmount:GetAmount()
+	local nOldValue = wndControl:GetData()
+
+	if nOldValue ~= nNewValue then
+		self.tWndRefs.wndMain:FindChild("PermissionsSaveBtn"):Enable(true)
 	end
 end
 
-function GuildBank:OnPermissionsRepairCashWindow(wndHandler, wndControl) -- PermissionsRepairCashWindow
+function GuildBank:OnPermissionsSetNoLimit(wndControl, wndHandler)
 	self.tWndRefs.wndMain:FindChild("PermissionsSaveBtn"):Enable(true)
-	if not wndHandler:GetAmount() or wndHandler:GetAmount() == 0 then
-		wndHandler:GetParent():SetText(Apollo.GetString("GuildBank_NoRepairAllowed")) -- PermissionsRepairBG
-	else
-		wndHandler:GetParent():SetText("") -- PermissionsRepairBG
-	end
+	
+	local wndParent = wndControl:GetParent():GetParent():GetParent()
+	local wndPermissionsEdit = wndParent:FindChild("EditContainer:PermissionsEdit")
+	local wndPermissionsDisplay = wndParent:FindChild("Current")
+	
+	wndPermissionsDisplay:FindChild("Text"):SetText(Apollo.GetString("GuildBank_NoLimit"))
+	wndPermissionsDisplay:FindChild("PermissionsDisplay"):Show(false)
+	wndPermissionsEdit:SetAmount(0)
+	wndPermissionsEdit:SetData(-1)
 end
 
 function GuildBank:OnPermissionsCurrentBtnLeftRight(wndHandler, wndControl)
@@ -743,40 +826,88 @@ function GuildBank:DrawTabPermissions()
 	local nTabCount = guildOwner:GetBankTabCount()
 	local tCurrRankData = tRanksTable[nGuildRank]
 	local bCanEditRanks = tRanksTable[guildOwner:GetMyRank()].bChangeRankPermissions
+	local wndPermissionsSaveBtn = wndParent:FindChild("PermissionsSaveBtn")
+	local wndPermissionsResetBtn = wndParent:FindChild("PermissionsResetBtn")
 
 	if not tCurrRankData then
 		return
 	end
 
-	local nWithdrawMoneyLimit = tCurrRankData.monBankWithdrawLimit:GetAmount()
-	wndParent:FindChild("PermissionsSaveBtn"):Enable(false)
-	wndParent:FindChild("PermissionsSaveBtn"):Show(bCanEditRanks)
-	wndParent:FindChild("PermissionsResetBtn"):Show(bCanEditRanks)
+	wndParent:FindChild("PermissionsCurrentRankText"):SetText(String_GetWeaselString(Apollo.GetString("GuildBank_PermissionsAppend"), tCurrRankData.strName))
+	wndPermissionsSaveBtn:Enable(false)
+	wndPermissionsSaveBtn:Show(bCanEditRanks)
+	wndPermissionsResetBtn:Show(bCanEditRanks)
 	wndParent:FindChild("PermissionsCurrentLeftBtn"):Show(nGuildRank > 1)
 	wndParent:FindChild("PermissionsCurrentRightBtn"):Show(nGuildRank < 10)
-	wndParent:FindChild("PermissionsMoneyCashWindow"):Show(not tCurrRankData.bBankWithdrawLimitAll)
-	wndParent:FindChild("PermissionsMoneyCashWindow"):Enable(bCanEditRanks)
-	wndParent:FindChild("PermissionsMoneyCashWindow"):SetData(nWithdrawMoneyLimit)
-	wndParent:FindChild("PermissionsMoneyCashWindow"):SetAmount(nWithdrawMoneyLimit)
 
-	local nRepairLimit = tCurrRankData.monBankRepairLimit:GetAmount()
-	wndParent:FindChild("PermissionsRepairCashWindow"):Enable(bCanEditRanks)
-	wndParent:FindChild("PermissionsRepairCashWindow"):SetData(nRepairLimit)
-	wndParent:FindChild("PermissionsRepairCashWindow"):SetAmount(nRepairLimit)
-	wndParent:FindChild("PermissionsCurrentRankText"):SetText(String_GetWeaselString(Apollo.GetString("GuildBank_PermissionsAppend"), tCurrRankData.strName))
-
+	-- Withdraw permissions
+	local nWithdrawLimit = tCurrRankData.monBankWithdrawLimit:GetAmount()
+	local wndPermissionsWithdrawBG = wndParent:FindChild("PermissionsWithdrawBG")
+	local wndPermissionsWithdrawEdit = wndPermissionsWithdrawBG:FindChild("PermissionsEdit")
+	local wndPermissionsWithdrawDisplay = wndPermissionsWithdrawBG:FindChild("PermissionsDisplay")
+	
+	wndPermissionsWithdrawBG:FindChild("EditContainer"):Show(bCanEditRanks)
+	
+	-- If the current rank has no withdraw limit, display friendly "No Limit" information and set data to -1
 	if tCurrRankData.bBankWithdrawLimitAll then
-		wndParent:FindChild("PermissionsMoneyBG"):SetText(Apollo.GetString("GuildBank_NoLimit"))
-	elseif not nWithdrawMoneyLimit or nWithdrawMoneyLimit == 0 then
-		wndParent:FindChild("PermissionsMoneyBG"):SetText(Apollo.GetString("GuildBank_CantWithdrawMoney"))
-	else
-		wndParent:FindChild("PermissionsMoneyBG"):SetText("")
+		wndPermissionsWithdrawBG:FindChild("Current:Text"):SetText(Apollo.GetString("GuildBank_NoLimit"))
+		wndPermissionsWithdrawDisplay:Show(false)
+		wndPermissionsWithdrawEdit:SetData(-1) 
+		wndPermissionsWithdrawEdit:SetAmount(0) -- Have the edit display show "0" instead of a crazy number
+		
+		-- Update "no limit" button appearance
+		wndPermissionsWithdrawBG:FindChild("EditContainer:NoLimitContainer:NoLimitBtn"):Enable(false)
+		wndPermissionsWithdrawBG:FindChild("EditContainer:NoLimitContainer:Icon"):SetBGColor("UI_BtnTextGrayDisabled")
+	else 
+		if not nWithdrawLimit or nWithdrawLimit == 0 then
+			wndPermissionsWithdrawBG:FindChild("Current:Text"):SetText(Apollo.GetString("GuildBank_CantWithdrawMoney"))
+			wndPermissionsWithdrawDisplay:Show(false)		
+		else	
+			wndPermissionsWithdrawBG:FindChild("Current:Text"):SetText("")
+			wndPermissionsWithdrawDisplay:Show(true)
+		end
+		wndPermissionsWithdrawEdit:SetData(nWithdrawLimit)
+		wndPermissionsWithdrawEdit:SetAmount(nWithdrawLimit)
+		wndPermissionsWithdrawDisplay:SetAmount(nWithdrawLimit)
+		
+		-- Update "no limit" button appearance
+		wndPermissionsWithdrawBG:FindChild("EditContainer:NoLimitContainer:NoLimitBtn"):Enable(true)
+		wndPermissionsWithdrawBG:FindChild("EditContainer:NoLimitContainer:Icon"):SetBGColor("UI_WindowBGDefault")	
 	end
-
-	if not nRepairLimit or nRepairLimit == 0 then
-		wndParent:FindChild("PermissionsRepairBG"):SetText(Apollo.GetString("GuildBank_NoRepairAllowed"))
+	
+	-- Repair permissions
+	local nRepairLimit = tCurrRankData.monBankRepairLimit:GetAmount()
+	local wndPermissionsRepairBG = wndParent:FindChild("PermissionsRepairBG")
+	local wndPermissionsRepairEdit = wndPermissionsRepairBG:FindChild("PermissionsEdit")
+	local wndPermissionsRepairDisplay = wndPermissionsRepairBG:FindChild("PermissionsDisplay")
+	
+	wndPermissionsRepairBG:FindChild("EditContainer"):Show(bCanEditRanks)
+	
+	-- If the current rank effectively has no repair limit, display friendly "No Limit" information and set data to -1
+	if tCurrRankData.bBankRepairLimitAll then
+		wndPermissionsRepairDisplay:Show(false)
+		wndPermissionsRepairBG:FindChild("Current:Text"):SetText(Apollo.GetString("GuildBank_NoLimit"))
+		wndPermissionsRepairEdit:SetAmount(0)
+		wndPermissionsRepairEdit:SetData(-1)
+		
+		-- Update "no limit" button appearance
+		wndPermissionsRepairBG:FindChild("EditContainer:NoLimitContainer:NoLimitBtn"):Enable(false)
+		wndPermissionsRepairBG:FindChild("EditContainer:NoLimitContainer:Icon"):SetBGColor("UI_BtnTextGrayDisabled")		
 	else
-		wndParent:FindChild("PermissionsRepairBG"):SetText("")
+		if not nRepairLimit or nRepairLimit == 0 then
+			wndPermissionsRepairBG:FindChild("Current:Text"):SetText(Apollo.GetString("GuildBank_NoRepairAllowed"))
+			wndPermissionsRepairDisplay:Show(false)		
+		else
+			wndPermissionsRepairBG:FindChild("Current:Text"):SetText("")
+			wndPermissionsRepairDisplay:Show(true)
+		end
+		wndPermissionsRepairEdit:SetData(nRepairLimit)
+		wndPermissionsRepairEdit:SetAmount(nRepairLimit)
+		wndPermissionsRepairDisplay:SetAmount(nRepairLimit)
+		
+		-- Update "no limit" button appearance
+		wndPermissionsRepairBG:FindChild("EditContainer:NoLimitContainer:NoLimitBtn"):Enable(true)
+		wndPermissionsRepairBG:FindChild("EditContainer:NoLimitContainer:Icon"):SetBGColor("UI_WindowBGDefault")	
 	end
 
 	-- Tabs
@@ -800,7 +931,7 @@ function GuildBank:BuildPermissionIndividualTab(wndParent, guildOwner, bCanEditR
 	if tCurrRankData.arBankTab[nBankTab].bDeposit then
 		strSpriteDeposit = "ClientSprites:Icon_Windows_UI_CRB_Checkmark"
 	end
-	if not strBankTabName or string.len(strBankTabName) == 0 then
+	if not strBankTabName or Apollo.StringLength(strBankTabName) == 0 then
 		strBankTabName = Apollo.GetString("GuildBank_BankTab")
 	end
 	if strWithdraw == -1 then
@@ -896,14 +1027,31 @@ function GuildBank:OnPermissionsSaveBtn(wndHandler, wndControl)
 		guildOwner:SetBankTabPermissions(nGuildRank, iTab, tPermissions) -- Calls OnGuildRankChange
 	end
 
-	if nGuildRank == 1 and not tCurrRankData.bBankWithdrawLimitAll then
-		guildOwner:SetRankBankMoneyLimitToAll(1)
-	elseif nGuildRank ~= 1 and wndParent:FindChild("PermissionsMoneyCashWindow"):GetData() ~= wndParent:FindChild("PermissionsMoneyCashWindow"):GetAmount() then
-		guildOwner:SetRankBankMoneyLimit(nGuildRank, wndParent:FindChild("PermissionsMoneyCashWindow"):GetCurrency() or 0) -- Calls OnGuildRankChange
+	----- Update Withdraw limits
+	local wndPermissionsWithdrawEdit = wndParent:FindChild("PermissionsGridBG:PermissionsCashBG:PermissionsWithdrawBG:EditContainer:PermissionsEdit")
+	local nCurrentWithdrawData = wndPermissionsWithdrawEdit:GetData()
+	local monNewWithdrawLimit = wndPermissionsWithdrawEdit:GetAmount()
+	local nNewWithdrawLimit = monNewWithdrawLimit:GetAmount()
+		
+
+	-- If the new data is "no limit" and the input value is still 0, update the withdraw limit to no limit. 
+	if nNewWithdrawLimit == 0 and nCurrentWithdrawData == -1 then
+		guildOwner:SetRankBankMoneyLimitToAll(nGuildRank)
+	elseif nCurrentWithdrawData ~= nNewWithdrawLimit then
+		guildOwner:SetRankBankMoneyLimit(nGuildRank, monNewWithdrawLimit or 0) -- Calls OnGuildRankChange
 	end
 
-	if wndParent:FindChild("PermissionsRepairCashWindow"):GetData() ~= wndParent:FindChild("PermissionsRepairCashWindow"):GetAmount() then
-		guildOwner:SetRankBankRepairLimit(nGuildRank, wndParent:FindChild("PermissionsRepairCashWindow"):GetCurrency() or 0) -- Calls OnGuildRankChange
+	----- Update Repair limits
+	local wndPermissionsRepairEdit =  wndParent:FindChild("PermissionsGridBG:PermissionsCashBG:PermissionsRepairBG:EditContainer:PermissionsEdit")
+	local nCurrentRepairData = wndPermissionsRepairEdit:GetData()
+	local monNewRepairLimit = wndPermissionsRepairEdit:GetAmount()
+	local nNewRepairLimit = monNewRepairLimit:GetAmount()
+	
+	-- Fake "no limit" for repairs until we can actually set this back to "no limit"
+	if nNewRepairLimit == 0 and nCurrentRepairData== -1 then
+		guildOwner:SetRankBankRepairLimitToAll(nGuildRank) -- Calls OnGuildRankChange
+	elseif nCurrentRepairData ~= nNewRepairLimit then
+		guildOwner:SetRankBankRepairLimit(nGuildRank, monNewRepairLimit or 0) -- Calls OnGuildRankChange
 	end
 end
 
@@ -1010,7 +1158,7 @@ function GuildBank:OnBankTabBtnMgmt()
 				local wndCurr = nil
 				local strBankTabName = guildOwner:GetBankTabName(nTabCounter)
 				if tCurrPerk.bIsUnlocked then
-					if not strBankTabName or string.len(strBankTabName) == 0 then
+					if not strBankTabName or Apollo.StringLength(strBankTabName) == 0 then
 						strBankTabName = Apollo.GetString("GuildBank_BankTab")
 					end
 
@@ -1022,7 +1170,7 @@ function GuildBank:OnBankTabBtnMgmt()
 					wndCurr:FindChild("LeaderOptionsTabRenameBtn"):SetData(wndCurr)
 					wndCurr:FindChild("LeaderOptionsTabRenameBtn"):Enable(false)
 				else
-					if not strBankTabName or string.len(strBankTabName) == 0 then
+					if not strBankTabName or Apollo.StringLength(strBankTabName) == 0 then
 						strBankTabName = Apollo.GetString("GuildBank_LockedTab")
 					end
 					wndCurr = Apollo.LoadForm(self.xmlDoc, "LeaderOptionsTabItemNew", wndParent:FindChild("MgmtBankTabContainer"), self)
@@ -1054,12 +1202,12 @@ function GuildBank:OnLeaderOptionsEditBoxChanged(wndHandler, wndControl)
 
 	local wndParent = wndHandler:GetData()
 	local strInput = wndHandler:GetText()
-	if string.len(strInput) > knMaxBankTabNameLength then
+	if Apollo.StringLength(strInput) > knMaxBankTabNameLength then
 		wndHandler:SetText(string.sub(strInput, 0, knMaxBankTabNameLength))
 		wndHandler:SetSel(knMaxBankTabNameLength)
 	end
 
-	if strInput and string.len(strInput) > 0 then
+	if strInput and Apollo.StringLength(strInput) > 0 then
 		local bIsTextValid = GameLib.IsTextValid(strInput, GameLib.CodeEnumUserText.GuildBankTabName, GameLib.CodeEnumUserTextFilterClass.Strict)
 		wndParent:FindChild("LeaderOptionsTabRenameBtn"):Enable(bIsTextValid)
 		wndParent:FindChild("LeaderOptionsRenameValidAlert"):Show(not bIsTextValid)
@@ -1132,7 +1280,7 @@ end
 
 function GuildBank:HelperUpdateHeaderText(strNewHeader)
 	local strFinalHeader = strNewHeader
-	if not strNewHeader or string.len(strNewHeader) == 0 then
+	if not strNewHeader or Apollo.StringLength(strNewHeader) == 0 then
 		strFinalHeader = Apollo.GetString("GuildBank_Title")
 	end
 	self.tWndRefs.wndMain:FindChild("BGHeaderText"):SetText(strFinalHeader)

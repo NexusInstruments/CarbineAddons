@@ -135,7 +135,7 @@ function Dialog:DrawResponses(eState, idQuest, tResponseList)
 	-- Top Summary Text (only shows up for quests and if there are rewards)
 	local queCurr = DialogSys.GetViewableQuest(idQuest)
 	local strTopResponseText = DialogSys.GetResponseText()
-	if queCurr and queCurr:GetRewardData() and #queCurr:GetRewardData() > 0 and strTopResponseText and string.len(strTopResponseText) > 0 then
+	if queCurr and queCurr:GetRewardData() and #queCurr:GetRewardData() > 0 and strTopResponseText and Apollo.StringLength(strTopResponseText) > 0 then
 		self.wndPlayer:FindChild("TopSummaryText"):SetAML("<P Font=\"CRB_InterfaceMedium\" TextColor=\""..kstrRewardColor.."\">"..strTopResponseText.."</P>")
 		self.wndPlayer:FindChild("TopSummaryText"):SetHeightToContentHeight()
 		self.wndPlayer:FindChild("TopSummaryText"):Show(true)
@@ -431,6 +431,7 @@ function Dialog:HelperDrawLootItem(wndCurrReward, tCurrReward, bSimple)
 		wndCurrReward:SetTooltip("")
 	else
 		wndCurrReward:FindChild("LootItemIcon"):SetSprite(strIconSprite)
+		wndCurrReward:FindChild("LootItemIcon"):SetText(tCurrReward.nAmount > 1 and tCurrReward.nAmount or "")
 	end
 end
 
@@ -460,7 +461,7 @@ function Dialog:DrawNpcBubble(wndArg, eState, idQuest)
 	end
 	
 	local strText = cdDialog:GetText()
-	if not strText or string.len(strText) == 0 then
+	if not strText or Apollo.StringLength(strText) == 0 then
 		wndArg:Show(false)
 		return
 	end

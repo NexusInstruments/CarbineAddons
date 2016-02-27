@@ -411,7 +411,7 @@ function ErrorDialog:OnClearUnit( wndHandler, wndControl, eMouseButton )
 end
 
 function ErrorDialog:OnDescriptionChanged(wndHandler, wndControl, strText)
-	local nLength = string.len(strText)
+	local nLength = Apollo.StringLength(strText)
 	local strDesc = String_GetWeaselString(Apollo.GetString("ErrorDialog_TextCount"), Apollo.GetString("Description"), nLength)
 	self.wndReportBug:FindChild("DescriptionLabel"):SetText(strDesc)
 

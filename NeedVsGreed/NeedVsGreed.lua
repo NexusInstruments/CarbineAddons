@@ -148,6 +148,7 @@ function NeedVsGreed:DrawLoot(tCurrentElement, nItemsInQueue)
 	local itemCurrent = tCurrentElement.itemDrop
 	local itemModData = tCurrentElement.tModData
 	local tGlyphData = tCurrentElement.tSigilData
+	
 	self.wndMain:FindChild("LootTitle"):SetText(itemCurrent:GetName())
 	self.wndMain:FindChild("LootTitle"):SetTextColor(ktEvalColors[itemCurrent:GetItemQuality()])
 	self.wndMain:FindChild("GiantItemIcon"):SetData(itemCurrent)
@@ -183,49 +184,55 @@ end
 -- Chat Message Events
 -----------------------------------------------------------------------------------------------
 
-function NeedVsGreed:OnLootRollAllPassed(itemLooted)
-	local strResult = String_GetWeaselString(Apollo.GetString("NeedVsGreed_EveryonePassed"), itemLooted:GetChatLinkString())
+function NeedVsGreed:OnLootRollAllPassed(tLootInfo)
+	local strResult = String_GetWeaselString(Apollo.GetString("NeedVsGreed_EveryonePassed"), tLootInfo.itemLoot:GetChatLinkString())
 	Event_FireGenericEvent("GenericEvent_LootChannelMessage", strResult)
 end
 
-function NeedVsGreed:OnLootRollWon(itemLoot, strWinner, bNeed)
+function NeedVsGreed:OnLootRollWon(tLootInfo)
 	local strNeedOrGreed = nil
-	if bNeed then
+	if tLootInfo.bNeed then
 		strNeedOrGreed = Apollo.GetString("NeedVsGreed_NeedRoll")
 	else
 		strNeedOrGreed = Apollo.GetString("NeedVsGreed_GreedRoll")
 	end
 	
-	local strResult = String_GetWeaselString(Apollo.GetString("NeedVsGreed_ItemWon"), strWinner, itemLoot:GetChatLinkString(), strNeedOrGreed)
-	Event_FireGenericEvent("GenericEvent_LootChannelMessage", strResult)
-end
-
-function NeedVsGreed:OnLootRollSelected(itemLoot, strPlayer, bNeed)
-	local strNeedOrGreed = nil
-	if bNeed then
-		strNeedOrGreed = Apollo.GetString("NeedVsGreed_NeedRoll")
-	else
-		strNeedOrGreed = Apollo.GetString("NeedVsGreed_GreedRoll")
-	end
-
-	local strResult = String_GetWeaselString(Apollo.GetString("NeedVsGreed_LootRollSelected"), strPlayer, strNeedOrGreed, itemLoot:GetChatLinkString())
-	Event_FireGenericEvent("GenericEvent_LootChannelMessage", strResult)
-end
-
-function NeedVsGreed:OnLootRollPassed(itemLoot, strPlayer)
-	local strResult = String_GetWeaselString(Apollo.GetString("NeedVsGreed_PlayerPassed"), strPlayer, itemLoot:GetChatLinkString())
-	Event_FireGenericEvent("GenericEvent_LootChannelMessage", strResult)
-end
-
-function NeedVsGreed:OnLootRoll(itemLoot, strPlayer, nRoll, bNeed)
-	local strNeedOrGreed = nil
-	if bNeed then
-		strNeedOrGreed = Apollo.GetString("NeedVsGreed_NeedRoll")
-	else
-		strNeedOrGreed = Apollo.GetString("NeedVsGreed_GreedRoll")
+	local strItem = tLootInfo.itemLoot:GetChatLinkString()
+	local nCount = tLootInfo.itemLoot:GetStackCount()
+	if nCount > 1 then
+		strItem = String_GetWeaselString(Apollo.GetString("CombatLog_MultiItem"), nCount, strItem)
 	end
 	
-	local strResult = String_GetWeaselString(Apollo.GetString("NeedVsGreed_OnLootRoll"), strPlayer, nRoll, itemLoot:GetChatLinkString(), strNeedOrGreed)
+	local strResult = String_GetWeaselString(Apollo.GetString("NeedVsGreed_ItemWon"), tLootInfo.strPlayer, strItem, strNeedOrGreed)
+	Event_FireGenericEvent("GenericEvent_LootChannelMessage", strResult)
+end
+
+function NeedVsGreed:OnLootRollSelected(tLootInfo)
+	local strNeedOrGreed = nil
+	if tLootInfo.bNeed then
+		strNeedOrGreed = Apollo.GetString("NeedVsGreed_NeedRoll")
+	else
+		strNeedOrGreed = Apollo.GetString("NeedVsGreed_GreedRoll")
+	end
+
+	local strResult = String_GetWeaselString(Apollo.GetString("NeedVsGreed_LootRollSelected"), tLootInfo.strPlayer, strNeedOrGreed, tLootInfo.itemLoot:GetChatLinkString())
+	Event_FireGenericEvent("GenericEvent_LootChannelMessage", strResult)
+end
+
+function NeedVsGreed:OnLootRollPassed(tLootInfo)
+	local strResult = String_GetWeaselString(Apollo.GetString("NeedVsGreed_PlayerPassed"), tLootInfo.strPlayer, tLootInfo.itemLoot:GetChatLinkString())
+	Event_FireGenericEvent("GenericEvent_LootChannelMessage", strResult)
+end
+
+function NeedVsGreed:OnLootRoll(tLootInfo)
+	local strNeedOrGreed = nil
+	if tLootInfo.bNeed then
+		strNeedOrGreed = Apollo.GetString("NeedVsGreed_NeedRoll")
+	else
+		strNeedOrGreed = Apollo.GetString("NeedVsGreed_GreedRoll")
+	end
+
+	local strResult = String_GetWeaselString(Apollo.GetString("NeedVsGreed_OnLootRoll"), tLootInfo.strPlayer, tLootInfo.nRoll, tLootInfo.itemLoot:GetChatLinkString(), strNeedOrGreed)
 	Event_FireGenericEvent("GenericEvent_LootChannelMessage", strResult)
 end
 

@@ -30,11 +30,14 @@ local kcrQuestFontColor = "ffffffff"
 local kcrPathFontColor = "ffff8000"
 local kcrBodyFontColor = "ffffffff"
 local kcrBodyFontColorBacked = "ff7fffb9"
-local kfFirstMessageDelay = 0.75 -- how long do we want to stall the first floater; gives them time to amass and clear other notices
-local kfFramerateRefreshRate = 0.1 -- how often do we update our framerate?
+local knFirstMessageDelay = 0.75 -- how long do we want to stall the first floater; gives them time to amass and clear other notices
+local knFramerateRefreshRate = 0.1 -- how often do we update our framerate?
 
-local kfMessageSpawnDelay = 1.85 --from the sprite
-local kfMessageDespawnDelay = 0.26 --from the sprite
+local knMessageSpawnDelay = 1.85 --from the sprite
+local knMessageSpawnDelayEarly = 0.65
+local knMessageDespawnDelay = 0.26 --from the sprite
+local knPublicEventNoticeTimerDuration = 4.0
+local knMessageMainDelay = 0.5
 
 local karPathMissionLabels =
 {
@@ -73,32 +76,44 @@ function FloatTextPanel:OnDocumentReady()
 		return
 	end
 
-	Apollo.RegisterEventHandler("Death", "OnDeath", self)
-	Apollo.RegisterEventHandler("QuestInit", "OnQuestInit", self)
-	Apollo.RegisterEventHandler("QuestFloater", "OnQuestNotice", self)
-	Apollo.RegisterEventHandler("SettlerHubReward", "OnSettlerHubReward", self)
-	Apollo.RegisterEventHandler("EpisodeStateChanged", "OnEpisodeStateChanged", self)
-	Apollo.RegisterEventHandler("AchievementGranted", "OnAchievementUpdated", self)
-	Apollo.RegisterEventHandler("ProfessionAchievementUpdated", "OnAchievementUpdated", self)
-	Apollo.RegisterEventHandler("AccountEntitlementUpdate", "OnEntitlementUpdate", self)
-	Apollo.RegisterEventHandler("CharacterEntitlementUpdate", "OnEntitlementUpdate", self)
-	Apollo.RegisterEventHandler("AlertAchievement", "OnAchievementNotice", self)
-	Apollo.RegisterEventHandler("AlertTitle", "OnTitletNotice", self)
-	Apollo.RegisterEventHandler("PlayerPathMissionUnlocked", "OnPlayerPathMissionUnlocked", self)
-	Apollo.RegisterEventHandler("PlayerPathMissionUpdate", "OnPlayerPathUpdated", self) -- specific mission update, send the mission
-	Apollo.RegisterEventHandler("ChangeWorld", "OnChangeWorld", self)
-	Apollo.RegisterEventHandler("ToggleFramerate", "OnToggleFramerate", self)
-	Apollo.RegisterEventHandler("HintArrowDistanceUpdate", "OnHintArrowDistanceUpdate", self)
-	Apollo.RegisterEventHandler("RealmBroadcastTierHigh", "OnRealmBroadcastTierHigh", self)
+	Apollo.RegisterEventHandler("Death",								"OnDeath", self)
+	Apollo.RegisterEventHandler("QuestInit",							"OnQuestInit", self)
+	Apollo.RegisterEventHandler("QuestFloater",							"OnQuestNotice", self)
+	Apollo.RegisterEventHandler("SettlerHubReward",						"OnSettlerHubReward", self)
+	Apollo.RegisterEventHandler("EpisodeStateChanged",					"OnEpisodeStateChanged", self)
+	Apollo.RegisterEventHandler("AchievementGranted",					"OnAchievementUpdated", self)
+	Apollo.RegisterEventHandler("ProfessionAchievementUpdated",			"OnAchievementUpdated", self)
+	Apollo.RegisterEventHandler("AccountEntitlementUpdate",				"OnEntitlementUpdate", self)
+	Apollo.RegisterEventHandler("CharacterEntitlementUpdate",			"OnEntitlementUpdate", self)
+	Apollo.RegisterEventHandler("AlertAchievement", 					"OnAchievementNotice", self)
+	Apollo.RegisterEventHandler("AlertTitle", 							"OnTitletNotice", self)
+	Apollo.RegisterEventHandler("PlayerPathMissionUnlocked", 			"OnPlayerPathMissionUnlocked", self)
+	Apollo.RegisterEventHandler("PlayerPathMissionUpdate", 				"OnPlayerPathUpdated", self) -- specific mission update, send the mission
+	Apollo.RegisterEventHandler("ChangeWorld", 							"OnChangeWorld", self)
+	Apollo.RegisterEventHandler("ToggleFramerate", 						"OnToggleFramerate", self)
+	Apollo.RegisterEventHandler("HintArrowDistanceUpdate", 				"OnHintArrowDistanceUpdate", self)
+	Apollo.RegisterEventHandler("RealmBroadcastTierHigh", 				"OnRealmBroadcastTierHigh", self)
+	Apollo.RegisterEventHandler("PublicEventObjectiveJoinedMessage",	"OnPublicEventObjectiveJoinedMessage", self)
+	Apollo.RegisterEventHandler("PublicEventObjectiveStartMessage",		"OnPublicEventObjectiveStartMessage", self)
+	Apollo.RegisterEventHandler("PublicEventEnd",						"OnPublicEventEnd", self)
 
-	Apollo.RegisterTimerHandler("FirstMessageDelaySub", "OnFirstMessageDelaySub", self)
-	Apollo.RegisterTimerHandler("DelayAlertMain", "OnDelayAlertMain", self)
-	Apollo.RegisterTimerHandler("DelayAlertMainAnim", "OnDelayAlertMainAnim", self)
-	Apollo.RegisterTimerHandler("MessageTimerMain", "OnMessageTimerMain", self)
-	Apollo.RegisterTimerHandler("MessageTimerMainDelay", "OnMessageTimerMainDelay", self)
-	Apollo.RegisterTimerHandler("DelayExpiredMain", "OnDelayExpiredMain", self)
-	Apollo.RegisterTimerHandler("FramerateRefreshTimer", "OnFramerateRefreshTimer", self)
-
+	self.timerFramerateRefresh = ApolloTimer.Create(knFramerateRefreshRate, true, "OnFramerateRefreshTimer", self)
+	self.timerFramerateRefresh:Stop()
+	self.timerDelayAlertMain = ApolloTimer.Create(knMessageSpawnDelayEarly, false, "OnDelayAlertMain", self) -- makes the text fade on sooner
+	self.timerDelayAlertMain:Stop()
+	self.timerDelayAlertMainAnim = ApolloTimer.Create(knMessageSpawnDelay, false, "DelayAlertMainAnim", self)
+	self.timerDelayAlertMainAnim:Stop()
+	self.timerMessageMain = ApolloTimer.Create(knMessageMainDelay, false, "OnMessageTimerMain", self) -- duration will get changed later anyway
+	self.timerMessageMain:Stop()
+	self.timerMessageMainDelay = ApolloTimer.Create(knMessageMainDelay, false, "OnMessageTimerMainDelay", self)
+	self.timerMessageMainDelay:Stop()
+	self.timerDelayExpiredMain = ApolloTimer.Create(knMessageDespawnDelay, false, "OnDelayExpiredMain", self)
+	self.timerDelayExpiredMain:Stop()
+	self.timerPublicEventNotice = ApolloTimer.Create(knPublicEventNoticeTimerDuration, false, "OnPublicEventNoticeTimer", self)
+	self.timerPublicEventNotice:Stop()
+	self.timerFirstMessageDelaySub = ApolloTimer.Create(knFirstMessageDelay, false, "OnFirstMessageDelaySub", self)
+	self.timerFirstMessageDelaySub:Stop()
+	
     -- load our forms
     self.wndMain = Apollo.LoadForm(self.xmlDoc, "FloaterPanel", nil, self)
 	self.wndPrimaryParent = Apollo.LoadForm(self.xmlDoc, "FloaterPanelLower", nil, self)
@@ -173,7 +188,7 @@ function FloatTextPanel:OnDocumentReady()
 	self.wndFramerate = Apollo.LoadForm(self.xmlDoc, "FramerateDisplay", nil, self)
 	self.wndFramerate:Show(false, true)
 
-	Apollo.CreateTimer("FramerateRefreshTimer", kfFramerateRefreshRate, true)
+	self.timerFramerateRefresh:Start()
 
 	self.wndHintArrowDistance = Apollo.LoadForm(self.xmlDoc ,"HintArrowDistanceDisplay", nil, self)
 	self.wndHintArrowDistance:Show(false, true)
@@ -279,8 +294,8 @@ function FloatTextPanel:ProcessAlertsMain()
 	-- Delay for the sprite to draw
 	self.wndPrimaryParent:FindChild("Anim_OpenBurst"):SetSprite("CRB_Anim_WindowBirth:Burst_Open")
 	self.wndPrimaryParent:FindChild("Anim_MessageBacker"):SetSprite("CRB_Anim_WindowBirth:BracketOpen")
-	Apollo.CreateTimer("DelayAlertMain", kfMessageSpawnDelay - 1.2, false) -- makes the text fade on sooner
-	Apollo.CreateTimer("DelayAlertMainAnim", kfMessageSpawnDelay, false)
+	self.timerDelayAlertMain:Start() -- makes the text fade on sooner
+	self.timerDelayAlertMainAnim:Start()
 end
 
 function FloatTextPanel:OnDelayAlertMain()
@@ -346,18 +361,18 @@ function FloatTextPanel:DisplayAlertMain(iType, strInfo)
 	self:StartMessageTimerMain(self.tMainWindowDurations[iType])
 end
 
-function FloatTextPanel:StartMessageTimerMain(fDuration) -- showing
-	Apollo.CreateTimer("MessageTimerMain", fDuration, false)
+function FloatTextPanel:StartMessageTimerMain(nDuration) -- showing
+	self.timerMessageMain:Set(nDuration, false)
 end
 
 function FloatTextPanel:OnMessageTimerMain() -- clear the text and still before running the clearing animation
 	self.wndPrimary:Show(false)
-	Apollo.CreateTimer("MessageTimerMainDelay", 0.500, false)
+	self.timerMessageMainDelay:Start()
 end
 
 function FloatTextPanel:OnMessageTimerMainDelay() -- clearing animation, set the process delay
 	self.wndPrimaryParent:FindChild("Anim_MessageBacker"):SetSprite("CRB_Anim_WindowBirth:BracketClose")
-	Apollo.CreateTimer("DelayExpiredMain", kfMessageDespawnDelay, false)
+	self.timerDelayExpiredMain:Start()
 end
 
 function FloatTextPanel:OnDelayExpiredMain()
@@ -424,6 +439,88 @@ function FloatTextPanel:OnRealmBroadcastClose(wndHandler, wndControl)
 	local wndParent = wndHandler:GetData()
 	wndParent:Destroy()
 	wndParent = nil
+end
+
+function FloatTextPanel:OnPublicEventObjectiveJoinedMessage(peoObjective)
+	self:DisplayPublicEventInfo(peoObjective:GetEvent():GetName(), peoObjective:GetJoinMessage())
+	Sound.Play(Sound.PlayUIPublicEventPlugsDiscovery)
+end
+
+function FloatTextPanel:OnPublicEventObjectiveStartMessage(peoObjective)
+	self:DisplayPublicEventInfo(peoObjective:GetEvent():GetName(), peoObjective:GetStartMessage())
+	Sound.Play(Sound.PlayUIPublicEventPlugsDiscovery)
+end
+
+function FloatTextPanel:OnPublicEventEnd(peEvent, eReason, tStats)--filtering for plugs here because this gets fired for all public events.
+	if eReason ~= PublicEvent.PublicEventParticipantRemoveReason_CompleteSuccess then
+		return
+	end
+	
+	local strDescription = peEvent:GetEndMessage()
+	if strDescription == nil then
+		return
+	end
+
+	self:DisplayPublicEventInfo(peEvent:GetName(), strDescription)
+	Sound.Play(Sound.PlayUIPublicEventPlugsCompletion)
+end
+
+function FloatTextPanel:DisplayPublicEventInfo(strTitle, strDescription)
+	if strDescription == nil then
+		return
+	end
+	
+	if self.wndPublicEventNotice == nil then
+		self.wndPublicEventNotice = Apollo.LoadForm("FloatTextPanel.xml", "PublicEventNotice", nil, self)
+	end
+	
+	local wndPublicEventNoticeTitle = self.wndPublicEventNotice:FindChild("Title")
+	local wndPublicEventNoticeBody = self.wndPublicEventNotice:FindChild("Body")
+	local wndTitleClaspLeft = self.wndPublicEventNotice:FindChild("TitleClaspLeft")
+	local wndTitleClaspRight = self.wndPublicEventNotice:FindChild("TitleClaspRight")
+	
+	local nLeft, nTop, nRight, nBottom = self.wndPublicEventNotice:GetOriginalLocation():GetOffsets()
+	-- Resize title
+	local nTitleLeft, nTitleTop, nTitleRight, nTitleBottom = wndPublicEventNoticeTitle:GetOriginalLocation():GetOffsets()
+	local nLClaspLeft, nLClaspTop, nLClaspRight, nLClaspBottom = wndTitleClaspLeft:GetOriginalLocation():GetOffsets()
+	local nRClaspLeft, nRClaspTop, nRClaspRight, nRClaspBottom = wndTitleClaspRight:GetOriginalLocation():GetOffsets()
+	local nTitleLeftDistance = nTitleLeft - nLeft
+	local nTotalTitleWidth = 2 * nLClaspLeft + 2 * (nLClaspRight - nLClaspLeft) + 2 * (nTitleLeftDistance - nLClaspRight) + Apollo.GetTextWidth(wndPublicEventNoticeTitle:GetFont(), strTitle)
+	local nWidthDiff = nRight - nLeft - nTotalTitleWidth
+	if nWidthDiff < 0 then
+		-- Expand parent container
+		wndTitleClaspLeft:SetAnchorOffsets(nLClaspLeft, nLClaspTop, nLClaspRight, nLClaspBottom)
+		wndTitleClaspRight:SetAnchorOffsets(nRClaspLeft, nRClaspTop, nRClaspRight, nRClaspBottom)
+		nLeft = nLeft - (nWidthDiff / 2)
+		nRight = nRight + (nWidthDiff / 2)
+		self.wndPublicEventNotice:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+	else
+		-- Resize title clasps
+		wndTitleClaspLeft:SetAnchorOffsets(nLClaspLeft, nLClaspTop, nLClaspRight + (nWidthDiff / 2), nLClaspBottom)
+		wndTitleClaspRight:SetAnchorOffsets(nRClaspLeft - (nWidthDiff / 2), nRClaspTop, nRClaspRight, nRClaspBottom)
+		self.wndPublicEventNotice:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+	end
+	
+	-- Set text
+	wndPublicEventNoticeTitle:SetText(strTitle)
+	local strFont = wndPublicEventNoticeBody:GetFont()
+	wndPublicEventNoticeBody:SetAML(string.format("<P Font=\"%s\" TextColor=\"%s\" Align=\"Center\">%s</P>", wndPublicEventNoticeBody:GetFont(), wndPublicEventNoticeBody:GetTextColor():GetColorString(), strDescription))
+	
+	-- Resize body
+	local nBodyLeft, nBodyTop, nBodyRight, nBodyBottom = wndPublicEventNoticeBody:GetOriginalLocation():GetOffsets()
+	local nPrevHeight = nBodyBottom - nBodyTop
+	local nWidth, nHeight = wndPublicEventNoticeBody:SetHeightToContentHeight()
+	local nHeightDiff = nHeight - nPrevHeight
+	if nHeightDiff > 0 then
+		self.wndPublicEventNotice:SetAnchorOffsets(nLeft, nTop, nRight, nBottom + nHeightDiff)
+	end
+	
+	self.wndPublicEventNotice:Show(true)
+	self.timerPublicEventNotice:Start()
+end
+
+function FloatTextPanel:OnPublicEventNoticeTimer()
+	self.wndPublicEventNotice:Show(false)
 end
 
 -----------------------------------------------------------------------------------------------
@@ -661,7 +758,7 @@ function FloatTextPanel:AddToQueueSub(iAlertType, strAlertString, tAlertContent)
 		return
 	elseif self.bEmptyQueueSub then
 		-- if the queue is empty, stall to let floaters amass
-		Apollo.CreateTimer("FirstMessageDelaySub", kfFirstMessageDelay, false)
+		self.timerFirstMessageDelaySub:Start()
 	elseif self.bFirstMessageDelaySub then -- if the delay is set, we'll get past this when the queue re-cycles
 		self:ProcessAlertsSub()
 	end

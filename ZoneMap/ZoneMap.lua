@@ -27,6 +27,7 @@ local kstrQuestNameColorComplete 		= "ff2fdc02"
 local kstrQuestNameColorTimed 			= "fffffc00"
 local kcrEpisodeColor 					= "ff31fcf6"
 local kcrEpisodeColorMinimized 			= "cc21a5a1"
+local knCollapseRewardTrackPadding		= 21
 
 local ktHexColor =
 {
@@ -130,7 +131,6 @@ function ZoneMap:CreateOverlayObjectTypes()
 	self.eObjectTypeLevelBandRegion		= self.wndZoneMap:CreateOverlayType(ktHexColor.tLevelBandRgn.crBorder, ktHexColor.tLevelBandRgn.crInterior, "", "")
 	self.eObjectTypeLocation			= self.wndZoneMap:CreateOverlayType()
 	self.eObjectTypeHexGroup			= self.wndZoneMap:CreateOverlayType()
-	self.eObjectTypeMapTrackedUnit		= self.wndZoneMap:CreateOverlayType()
 	self.eObjectTypeCityDirectionPing	= self.wndZoneMap:CreateOverlayType()
 
 	-- units
@@ -179,56 +179,56 @@ function ZoneMap:CreatePOIIcons()
 	self.tPOITypes =
 	{
 		--tChallengeFlash 	= {strSprite = "Icon_MapNode_Map_Generic_POI",				strType = Apollo.GetString("ZoneMap_ChallengeLocation")}, -- TODO
-		[self.eObjectTypeQuest]					= {strSprite = "",												eCategory = ktMarkerCategories.TrackedQuests,		strType = Apollo.GetString("MiniMap_QuestObjectives")},
-		[self.eObjectTypeChallenge]				= {strSprite = "Icon_MapNode_Map_Generic_POI",					eCategory = ktMarkerCategories.Challenges,			strType = Apollo.GetString("CBCrafting_Challenge")}, -- TODO
-		[self.eObjectTypePublicEvent] 			= {strSprite = "sprMap_IconCompletion_Challenge",				eCategory = ktMarkerCategories.PublicEvents,		strType = Apollo.GetString("ZoneMap_PublicEvent")}, -- TODO
+		[self.eObjectTypeQuest]							= {strSprite = "",												eCategory = ktMarkerCategories.TrackedQuests,		strType = Apollo.GetString("MiniMap_QuestObjectives")},
+		[self.eObjectTypeChallenge]						= {strSprite = "Icon_MapNode_Map_Generic_POI",					eCategory = ktMarkerCategories.Challenges,			strType = Apollo.GetString("CBCrafting_Challenge")}, -- TODO
+		[self.eObjectTypePublicEvent] 					= {strSprite = "sprMap_IconCompletion_Challenge",				eCategory = ktMarkerCategories.PublicEvents,		strType = Apollo.GetString("ZoneMap_PublicEvent")}, -- TODO
 		-- Mission sprites will be set up in ToggleWindow	
-		[self.eObjectTypeMission] 				= {strSprite = "",												eCategory = ktMarkerCategories.Missions,			strType = ""},
-		[self.eObjectTypeNemesisRegion]			= {strSprite = "",												eCategory = ktMarkerCategories.NemesisRegions,		strType = Apollo.GetString("ZoneMap_NemesisRegions")},
-		[self.eObjectTypeLevelBandRegion]		= {strSprite = "",												eCategory = ktMarkerCategories.LevelBands,			strType = ""},
-		[self.eObjectTypeLocation]				= {strSprite = "",												eCategory = nil,									strType = ""},
-		[self.eObjectTypeHexGroup]				= {strSprite = "",												eCategory = nil,									strType = ""},
-		[self.eObjectTypeMapTrackedUnit]		= {strSprite = "",												eCategory = nil,									strType = ""},
-		[self.eObjectTypeCityDirectionPing]	= {strSprite = "",													eCategory = nil,									strType = ""},
-		[self.eObjectTypeQuestReward] 			= {strSprite = "sprMM_QuestCompleteUntracked",					eCategory = ktMarkerCategories.QuestNPCs,			strType = Apollo.GetString("ZoneMap_QuestRedeemer")},
-		[self.eObjectTypeQuestReceiving]		= {strSprite = "sprMM_QuestCompleteUntracked",					eCategory = ktMarkerCategories.QuestNPCs,			strType = Apollo.GetString("ZoneMap_QuestRedeemer")},
-		[self.eObjectTypeQuestNew] 				= {strSprite = "Icon_MapNode_Map_Quest",						eCategory = ktMarkerCategories.QuestNPCs,			strType = Apollo.GetString("ZoneMap_QuestGiver")},
-		[self.eObjectTypeQuestNewTradeskill]	= {strSprite = "",												eCategory = ktMarkerCategories.QuestNPCs,			strType = Apollo.GetString("ZoneMap_QuestGiver")},
-		[self.eObjectTypeQuestNewSoon] 			= {strSprite = "Icon_MapNode_Map_Quest_Disabled", 				eCategory = ktMarkerCategories.QuestNPCs,			strType = Apollo.GetString("ZoneMap_QuestGiver")},
-		[self.eObjectTypeTradeskills]			= {strSprite = "IconSprites:Icon_MapNode_Map_Tradeskill",		eCategory = ktMarkerCategories.Tradeskills,			strType = Apollo.GetString("ZoneMap_TradeskillPOI")},
-		[self.eObjectTypeVendor] 				= {strSprite = "Icon_MapNode_Map_Vendor",						eCategory = ktMarkerCategories.Vendors,				strType = Apollo.GetString("CRB_Vendor")},
-		[self.eObjectTypeAuctioneer]			= {strSprite = "",												eCategory = ktMarkerCategories.Services,			strType = Apollo.GetString("MarketplaceAuction_AuctionHouse")},
-		[self.eObjectTypeCommodity]				= {strSprite = "",												eCategory = ktMarkerCategories.Services,			strType = Apollo.GetString("MarketplaceCommodity_CommoditiesExchange")},
-		[self.eObjectTypeInstancePortal] 		= {strSprite = "Icon_MapNode_Map_Portal",						eCategory = ktMarkerCategories.Portals,				strType = Apollo.GetString("ZoneMap_InstancePortal")}, -- TODO
-		[self.eObjectTypeBindPointActive] 		= {strSprite = "Icon_MapNode_Map_Gate",							eCategory = ktMarkerCategories.BindPoints,			strType = Apollo.GetString("ZoneMap_CurrentBindPoint")},
-		[self.eObjectTypeBindPointInactive] 	= {strSprite = "Icon_MapNode_Map_Gate",							eCategory = ktMarkerCategories.BindPoints,			strType = Apollo.GetString("ZoneMap_AvailableBindPoint")},
-		[self.eObjectTypeMiningNode]			= {strSprite = "",												eCategory = ktMarkerCategories.MiningNodes,			strType = Apollo.GetString("ZoneMap_MiningNodes")},
-		[self.eObjectTypeRelicHunterNode]		= {strSprite = "",												eCategory = ktMarkerCategories.RelicNodes,			strType = Apollo.GetString("ZoneMap_RelicHunterNodes")},
-		[self.eObjectTypeSurvivalistNode]		= {strSprite = "",												eCategory = ktMarkerCategories.SurvivalistNodes,	strType = Apollo.GetString("ZoneMap_SurvivalistNodes")},
-		[self.eObjectTypeFarmingNode]			= {strSprite = "",												eCategory = ktMarkerCategories.FarmingNodes,		strType = Apollo.GetString("ZoneMap_FarmingNodes")},
-		[self.eObjectTypeFishingNode]			= {strSprite = "",												eCategory = nil,									strType = ""},
-		[self.eObjectTypeHazard]				= {strSprite = "",												eCategory = nil,									strType = ""},
-		[self.eObjectTypeVendorFlight]			= {strSprite = "",												eCategory = ktMarkerCategories.Taxis,				strType = Apollo.GetString("ZoneMap_Taxis")},
-		[self.eObjectTypeFriend]				= {strSprite = "",												eCategory = nil,									strType = Apollo.GetString("MiniMap_Friends")},
-		[self.eObjectTypeRival]					= {strSprite = "",												eCategory = nil,									strType = Apollo.GetString("MiniMap_Rivals")},
-		[self.eObjectTypeTrainer]				= {strSprite = "",												eCategory = nil,									strType = Apollo.GetString("ZoneMap_Trainer")},
-		[self.eObjectTypeQuestKill]				= {strSprite = "",												eCategory = nil,									strType = ""},
-		[self.eObjectTypeQuestTarget]			= {strSprite = "",												eCategory = ktMarkerCategories.QuestNPCs,			strType = ""},
-		[self.eObjectTypePublicEventKill]		= {strSprite = "",												eCategory = nil,									strType = ""},
-		[self.eObjectTypePublicEventTarget]		= {strSprite = "",												eCategory = nil,									strType = ""},
-		[self.eObjectTypeVendorFlightPathNew]	= {strSprite = "",												eCategory = ktMarkerCategories.Taxis,				strType = Apollo.GetString("ZoneMap_Taxis")},
-		[self.eObjectTypeNeutral]				= {strSprite = "",												eCategory = nil,									strType = ""},
-		[self.eObjectTypeHostile]				= {strSprite = "",												eCategory = nil,									strType = ""},
-		[self.eObjectTypeGroupMember]			= {strSprite = "",												eCategory = nil,									strType = Apollo.GetString("MiniMap_GroupMembers")},
-		[self.eObjectCityDirections]			= {strSprite = "Icon_MapNode_Map_CityDirections",				eCategory = ktMarkerCategories.CityDirections,		strType = Apollo.GetString("ZoneMap_CityDirections")},
-		[self.eObjectTypeCREDDExchange]			= {strSprite = "",												eCategory = ktMarkerCategories.Services,			strType = Apollo.GetString("MarketplaceCredd_Title")},
-		[self.eObjectTypeCostume]				= {strSprite = "",												eCategory = ktMarkerCategories.Services,			strType = Apollo.GetString("ZoneMap_CostumeAndDyes")},
-		[self.eObjectTypeBank]					= {strSprite = "",												eCategory = ktMarkerCategories.Services,			strType = Apollo.GetString("Bank_Header")},
-		[self.eObjectTypeGuildBank]				= {strSprite = "",												eCategory = ktMarkerCategories.Services,			strType = Apollo.GetString("GuildBank_Title")},
-		[self.eObjectTypeGuildRegistrar]		= {strSprite = "",												eCategory = ktMarkerCategories.Services,			strType = Apollo.GetString("DialogResponse_GuildRegistrar")},
-		[self.eObjectTypeMail]					= {strSprite = "",												eCategory = ktMarkerCategories.Services,			strType = Apollo.GetString("InterfaceMenu_Mail")},
-		[self.eObjectTypeConvert]				= {strSprite = "",												eCategory = ktMarkerCategories.Services,			strType = Apollo.GetString("ResourceConversion_Title")},
-		[self.eObjectTypeNavPoint]				= {strSprite = "",												eCategory = ktMarkerCategories.Navpoint,							strType = Apollo.GetString("Navpoint")},
+		[self.eObjectTypeMission] 						= {strSprite = "",												eCategory = ktMarkerCategories.Missions,			strType = ""},
+		[self.eObjectTypeNemesisRegion]					= {strSprite = "",												eCategory = ktMarkerCategories.NemesisRegions,		strType = Apollo.GetString("ZoneMap_NemesisRegions")},
+		[self.eObjectTypeLevelBandRegion]				= {strSprite = "",												eCategory = ktMarkerCategories.LevelBands,			strType = ""},
+		[self.eObjectTypeLocation]						= {strSprite = "",												eCategory = nil,									strType = ""},
+		[self.eObjectTypeHexGroup]						= {strSprite = "",												eCategory = nil,									strType = ""},
+		[self.eObjectTypeCityDirectionPing]				= {strSprite = "",													eCategory = nil,									strType = ""},
+		[GameLib.CodeEnumMapOverlayType.TrackedUnit]	= {strSprite = "",												eCategory = nil,									strType = ""},
+		[self.eObjectTypeQuestReward] 					= {strSprite = "sprMM_QuestCompleteUntracked",					eCategory = ktMarkerCategories.QuestNPCs,			strType = Apollo.GetString("ZoneMap_QuestRedeemer")},
+		[self.eObjectTypeQuestReceiving]				= {strSprite = "sprMM_QuestCompleteUntracked",					eCategory = ktMarkerCategories.QuestNPCs,			strType = Apollo.GetString("ZoneMap_QuestRedeemer")},
+		[self.eObjectTypeQuestNew] 						= {strSprite = "Icon_MapNode_Map_Quest",						eCategory = ktMarkerCategories.QuestNPCs,			strType = Apollo.GetString("ZoneMap_QuestGiver")},
+		[self.eObjectTypeQuestNewTradeskill]			= {strSprite = "",												eCategory = ktMarkerCategories.QuestNPCs,			strType = Apollo.GetString("ZoneMap_QuestGiver")},
+		[self.eObjectTypeQuestNewSoon] 					= {strSprite = "Icon_MapNode_Map_Quest_Disabled", 				eCategory = ktMarkerCategories.QuestNPCs,			strType = Apollo.GetString("ZoneMap_QuestGiver")},
+		[self.eObjectTypeTradeskills]					= {strSprite = "IconSprites:Icon_MapNode_Map_Tradeskill",		eCategory = ktMarkerCategories.Tradeskills,			strType = Apollo.GetString("ZoneMap_TradeskillPOI")},
+		[self.eObjectTypeVendor] 						= {strSprite = "Icon_MapNode_Map_Vendor",						eCategory = ktMarkerCategories.Vendors,				strType = Apollo.GetString("CRB_Vendor")},
+		[self.eObjectTypeAuctioneer]					= {strSprite = "",												eCategory = ktMarkerCategories.Services,			strType = Apollo.GetString("MarketplaceAuction_AuctionHouse")},
+		[self.eObjectTypeCommodity]						= {strSprite = "",												eCategory = ktMarkerCategories.Services,			strType = Apollo.GetString("MarketplaceCommodity_CommoditiesExchange")},
+		[self.eObjectTypeInstancePortal] 				= {strSprite = "Icon_MapNode_Map_Portal",						eCategory = ktMarkerCategories.Portals,				strType = Apollo.GetString("ZoneMap_InstancePortal")}, -- TODO
+		[self.eObjectTypeBindPointActive] 				= {strSprite = "Icon_MapNode_Map_Gate",							eCategory = ktMarkerCategories.BindPoints,			strType = Apollo.GetString("ZoneMap_CurrentBindPoint")},
+		[self.eObjectTypeBindPointInactive] 			= {strSprite = "Icon_MapNode_Map_Gate",							eCategory = ktMarkerCategories.BindPoints,			strType = Apollo.GetString("ZoneMap_AvailableBindPoint")},
+		[self.eObjectTypeMiningNode]					= {strSprite = "",												eCategory = ktMarkerCategories.MiningNodes,			strType = Apollo.GetString("ZoneMap_MiningNodes")},
+		[self.eObjectTypeRelicHunterNode]				= {strSprite = "",												eCategory = ktMarkerCategories.RelicNodes,			strType = Apollo.GetString("ZoneMap_RelicHunterNodes")},
+		[self.eObjectTypeSurvivalistNode]				= {strSprite = "",												eCategory = ktMarkerCategories.SurvivalistNodes,	strType = Apollo.GetString("ZoneMap_SurvivalistNodes")},
+		[self.eObjectTypeFarmingNode]					= {strSprite = "",												eCategory = ktMarkerCategories.FarmingNodes,		strType = Apollo.GetString("ZoneMap_FarmingNodes")},
+		[self.eObjectTypeFishingNode]					= {strSprite = "",												eCategory = nil,									strType = ""},
+		[self.eObjectTypeHazard]						= {strSprite = "",												eCategory = nil,									strType = ""},
+		[self.eObjectTypeVendorFlight]					= {strSprite = "",												eCategory = ktMarkerCategories.Taxis,				strType = Apollo.GetString("ZoneMap_Taxis")},
+		[self.eObjectTypeFriend]						= {strSprite = "",												eCategory = nil,									strType = Apollo.GetString("MiniMap_Friends")},
+		[self.eObjectTypeRival]							= {strSprite = "",												eCategory = nil,									strType = Apollo.GetString("MiniMap_Rivals")},
+		[self.eObjectTypeTrainer]						= {strSprite = "",												eCategory = nil,									strType = Apollo.GetString("ZoneMap_Trainer")},
+		[self.eObjectTypeQuestKill]						= {strSprite = "",												eCategory = nil,									strType = ""},
+		[self.eObjectTypeQuestTarget]					= {strSprite = "",												eCategory = ktMarkerCategories.QuestNPCs,			strType = ""},
+		[self.eObjectTypePublicEventKill]				= {strSprite = "",												eCategory = nil,									strType = ""},
+		[self.eObjectTypePublicEventTarget]				= {strSprite = "",												eCategory = nil,									strType = ""},
+		[self.eObjectTypeVendorFlightPathNew]			= {strSprite = "",												eCategory = ktMarkerCategories.Taxis,				strType = Apollo.GetString("ZoneMap_Taxis")},
+		[self.eObjectTypeNeutral]						= {strSprite = "",												eCategory = nil,									strType = ""},
+		[self.eObjectTypeHostile]						= {strSprite = "",												eCategory = nil,									strType = ""},
+		[self.eObjectTypeGroupMember]					= {strSprite = "",												eCategory = nil,									strType = Apollo.GetString("MiniMap_GroupMembers")},
+		[self.eObjectCityDirections]					= {strSprite = "Icon_MapNode_Map_CityDirections",				eCategory = ktMarkerCategories.CityDirections,		strType = Apollo.GetString("ZoneMap_CityDirections")},
+		[self.eObjectTypeCREDDExchange]					= {strSprite = "",												eCategory = ktMarkerCategories.Services,			strType = Apollo.GetString("MarketplaceCredd_Title")},
+		[self.eObjectTypeCostume]						= {strSprite = "",												eCategory = ktMarkerCategories.Services,			strType = Apollo.GetString("ZoneMap_CostumeAndDyes")},
+		[self.eObjectTypeBank]							= {strSprite = "",												eCategory = ktMarkerCategories.Services,			strType = Apollo.GetString("Bank_Header")},
+		[self.eObjectTypeGuildBank]						= {strSprite = "",												eCategory = ktMarkerCategories.Services,			strType = Apollo.GetString("GuildBank_Title")},
+		[self.eObjectTypeGuildRegistrar]				= {strSprite = "",												eCategory = ktMarkerCategories.Services,			strType = Apollo.GetString("DialogResponse_GuildRegistrar")},
+		[self.eObjectTypeMail]							= {strSprite = "",												eCategory = ktMarkerCategories.Services,			strType = Apollo.GetString("InterfaceMenu_Mail")},
+		[self.eObjectTypeConvert]						= {strSprite = "",												eCategory = ktMarkerCategories.Services,			strType = Apollo.GetString("ResourceConversion_Title")},
+		[self.eObjectTypeNavPoint]						= {strSprite = "",												eCategory = ktMarkerCategories.Navpoint,							strType = Apollo.GetString("Navpoint")},
 	}
 end
 
@@ -431,7 +431,6 @@ function ZoneMap:BuildShownTypesArrays()
 		self.eObjectTypeLocation,
 		self.eObjectTypeHexGroup,
 		self.eObjectTypeQuest,
-		self.eObjectTypeMapTrackedUnit,
 		self.eObjectTypeCityDirectionPing,
 		self.eObjectTypeNemesisRegion,
 		self.eObjectTypeNavPoint,
@@ -446,7 +445,6 @@ function ZoneMap:BuildShownTypesArrays()
 		self.eObjectTypeLocation,
 		self.eObjectTypeHexGroup,
 		self.eObjectTypeQuest,
-		self.eObjectTypeMapTrackedUnit,
 		self.eObjectTypeCityDirectionPing,
 		self.eObjectTypeNemesisRegion,
 		self.eObjectTypeNavPoint,
@@ -461,7 +459,6 @@ function ZoneMap:BuildShownTypesArrays()
 		self.eObjectTypeLocation,
 		self.eObjectTypeHexGroup,
 		self.eObjectTypeQuest,
-		self.eObjectTypeMapTrackedUnit,
 		self.eObjectTypeCityDirectionPing,
 		self.eObjectTypeNemesisRegion,
 		self.eObjectTypeNavPoint,
@@ -662,6 +659,10 @@ function ZoneMap:OnDocumentReady()
 	
 	Apollo.RegisterEventHandler("ContentFinder_OpenMapToNavPoint",							"HelperGoToMap", self)
 
+	--Reward Tracks
+	Apollo.RegisterEventHandler("RewardTrackUpdated",					"UpdateRewardTrack", self)
+	Apollo.RegisterEventHandler("RewardTrackActive",					"UpdateRewardTrack", self)
+
 	--Group Events
 	Apollo.RegisterEventHandler("Group_UpdatePosition", 				"OnGroupUpdatePosition", self)			-- ( arMembers )
 	Apollo.RegisterEventHandler("Group_Updated", 						"DrawGroupMembers", self)				-- ()
@@ -712,7 +713,8 @@ function ZoneMap:OnDocumentReady()
 		self.wndWorldView:FindChild("ContWesternBtn"),
 		self.wndWorldView:FindChild("ContHalonRingBtn"),
 		self.wndWorldView:FindChild("ContCentralBtn"),
-		self.wndWorldView:FindChild("ContFarsideBtn")
+		self.wndWorldView:FindChild("ContFarsideBtn"),
+		self.wndWorldView:FindChild("ContArcterra"),
 	}
 
 	self.wndZoneMap:SetGhostWindow(false)
@@ -722,6 +724,7 @@ function ZoneMap:OnDocumentReady()
 	self.wndWorldView:FindChild("ContHalonRingBtn"):SetData(9)
 	self.wndWorldView:FindChild("ContCentralBtn"):SetData(33)
 	self.wndWorldView:FindChild("ContFarsideBtn"):SetData(28)
+	self.wndWorldView:FindChild("ContArcterra"):SetData(92)
 
 	self.wndMain:Show(false, true)
 	self.wndMain:SetSizingMinimum(400, 300)
@@ -752,16 +755,30 @@ function ZoneMap:OnDocumentReady()
 	Apollo.SetConsoleVariable("ui.zoneMap.POIDotColor", knPOIColorHidden)
 
 	self.wndMapControlPanel = Apollo.LoadForm(self.xmlDoc, "ZoneMapControlPanel", self.wndMain:FindChild("ZoneMapControlPanelParent"), self)
-	self.wndMapControlPanel:FindChild("QuestPaneToggle"):SetCheck(true)
-	self.wndMapControlPanel:FindChild("MissionPaneToggle"):SetCheck(true)
-	self.wndMapControlPanel:FindChild("ChallengePaneToggle"):SetCheck(true)
-	self.wndMapControlPanel:FindChild("PublicEventPaneToggle"):SetCheck(true)
-	self.wndMapControlPanel:FindChild("QuestPaneToggle"):AttachWindow(self.wndMapControlPanel:FindChild("QuestPaneContent"))
-	self.wndMapControlPanel:FindChild("MissionPaneToggle"):AttachWindow(self.wndMapControlPanel:FindChild("MissionPaneContent"))
-	self.wndMapControlPanel:FindChild("ChallengePaneToggle"):AttachWindow(self.wndMapControlPanel:FindChild("ChallengePaneContent"))
-	self.wndMapControlPanel:FindChild("PublicEventPaneToggle"):AttachWindow(self.wndMapControlPanel:FindChild("PublicEventPaneContent"))
+	self.wndRewardTrackContainer = self.wndMapControlPanel:FindChild("RewardTrackContainer")
 
-	self.wndMapControlPanel:FindChild("ControlPanelInnerFrame"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	local wndInnerFrame = self.wndMapControlPanel:FindChild("ControlPanelInnerFrame")
+
+	local wndToggle = nil
+	self.wndQuestPane = Apollo.LoadForm(self.xmlDoc, "ControlPanelEntry", wndInnerFrame, self)
+	wndToggle = self.wndQuestPane:FindChild("Toggle")
+	wndToggle:SetText(Apollo.GetString("CRB_Quests"))
+	wndToggle:SetCheck(true)
+
+	self.wndMissionPane = Apollo.LoadForm(self.xmlDoc, "ControlPanelEntry", wndInnerFrame, self)
+	wndToggle = self.wndMissionPane:FindChild("Toggle")
+	wndToggle:SetText(Apollo.GetString("Nameplates_Missions"))
+	wndToggle:SetCheck(true)
+
+	self.wndChallengePane = Apollo.LoadForm(self.xmlDoc, "ControlPanelEntry", wndInnerFrame, self)
+	wndToggle = self.wndChallengePane:FindChild("Toggle")
+	wndToggle:SetText(Apollo.GetString("MiniMap_Challenges"))
+	wndToggle:SetCheck(true)
+
+	self.wndPublicEventPane = Apollo.LoadForm(self.xmlDoc, "ControlPanelEntry", wndInnerFrame, self)
+	wndToggle = self.wndPublicEventPane:FindChild("Toggle")
+	wndToggle:SetText(Apollo.GetString("PublicEventTracker_PublicEvents"))
+	wndToggle:SetCheck(true)
 
 	self.wndMain:FindChild("ZoneComplexToggle"):AttachWindow(self.wndMain:FindChild("ZoneComplexList"))
 
@@ -961,8 +978,15 @@ function ZoneMap:ToggleWindow()
 			self:OnNavPointSet(tPoint and tPoint.tPosition or nil)
 		end
 		
+		local bClaimReward = false
+		if self.rtZone then
+			arRewards = self.rtZone:GetAllRewards()
+			if arRewards and arRewards[1] then --Zone Rewards are currently designed to have one reward, and one choice.
+				bClaimReward = arRewards[1].bCanClaim
+			end
+		end
 
-		if self.bControlPanelShown then
+		if self.bControlPanelShown or bClaimReward then
 			self:OnToggleControlsOn()
 		else
 			self:OnToggleControlsOff()
@@ -1253,24 +1277,65 @@ function ZoneMap:OnToggleControlsOff(wndHandler, wndControl)
 
 end
 
+function ZoneMap:OnGenerateRewardItemTooltip(wndHandler, wndControl, eToolTipType, x, y)
+	local itemReward = wndControl:GetData()
+	if not itemReward then
+		return
+	end
+
+	local tPrimaryTooltipOpts =
+	{
+		bPrimary = true,
+		itemCompare = itemReward:GetEquippedItemForItemType()
+	}
+	
+	if Tooltip ~= nil and Tooltip.GetSpellTooltipForm ~= nil then
+		Tooltip.GetItemTooltipForm(self, wndControl, itemReward, tPrimaryTooltipOpts)
+	end
+end
+
 function ZoneMap:OnResizeOptionsPane()
-	local wndParent = self.wndMapControlPanel
-	local nLeft, nTop, nRight, nBottom = wndParent:FindChild("QuestPaneContainer"):GetAnchorOffsets()
-	wndParent:FindChild("QuestPaneContainer"):SetAnchorOffsets(nLeft, nTop, nRight, nTop + (wndParent:FindChild("QuestPaneToggle"):IsChecked() and 206 or 52))
+	--First set size of Reward Panel and Control Panel Content.
+	local wndRewardToggle = self.wndRewardTrackContainer:FindChild("Toggle")
+	local wndInnerFrame = self.wndMapControlPanel:FindChild("ControlPanelInnerFrame")
 
-	nLeft, nTop, nRight, nBottom = wndParent:FindChild("MissionPaneContainer"):GetAnchorOffsets()
-	wndParent:FindChild("MissionPaneContainer"):SetAnchorOffsets(nLeft, nTop, nRight, nTop + (wndParent:FindChild("MissionPaneToggle"):IsChecked() and 206 or 52))
+	local nRewardLeft, nRewardTop, nRewardRight, nRewardBottom = self.wndRewardTrackContainer:GetOriginalLocation():GetOffsets()
+	local nFrameLeft, nFrameTop, nFrameRight, nFrameBottom = wndInnerFrame:GetOriginalLocation():GetOffsets()
+	local nRToggleLeft, nRToggleTop, nRToggleRight, nRToggleBottom = wndRewardToggle:GetAnchorOffsets()
 
-	nLeft, nTop, nRight, nBottom = wndParent:FindChild("ChallengePaneContainer"):GetAnchorOffsets()
-	wndParent:FindChild("ChallengePaneContainer"):SetAnchorOffsets(nLeft, nTop, nRight, nTop + (wndParent:FindChild("ChallengePaneToggle"):IsChecked() and 160 or 52))
+	local bHasRewardTrack = self.rtZone ~= nil
+	self.wndRewardTrackContainer:Show(bHasRewardTrack)
+	if not bHasRewardTrack then
+		nFrameTop = nRToggleBottom
+	elseif not wndRewardToggle:IsChecked() then
+		nRewardBottom = nRToggleBottom + knCollapseRewardTrackPadding
+		nFrameTop = nRToggleBottom + knCollapseRewardTrackPadding
+	end
+	self.wndRewardTrackContainer:SetAnchorOffsets(nRewardLeft, nRewardTop, nRewardRight, nRewardBottom)
+	wndInnerFrame:SetAnchorOffsets(nFrameLeft, nFrameTop, nFrameRight, nFrameBottom)
 
-	nLeft, nTop, nRight, nBottom = wndParent:FindChild("PublicEventPaneContainer"):GetAnchorOffsets()
-	wndParent:FindChild("PublicEventPaneContainer"):SetAnchorOffsets(nLeft, nTop, nRight, nTop + (wndParent:FindChild("PublicEventPaneToggle"):IsChecked() and 160 or 52))
+	--Set sizing for individual Control Panel entries.
+	for idx, wndContrlPanelEntry in pairs(wndInnerFrame:GetChildren()) do
+		local nPanelLeft, nPanelTop, nPanelRight, nPanelBottom = wndContrlPanelEntry:GetOriginalLocation():GetOffsets()
+		if not wndContrlPanelEntry:FindChild("Toggle"):IsChecked() then
+			local nLeft, nTop, nRight, nBottom = wndContrlPanelEntry:FindChild("Toggle"):GetAnchorOffsets()
+			nPanelBottom = nBottom
+		end
+		wndContrlPanelEntry:SetAnchorOffsets(nPanelLeft, nPanelTop, nPanelRight, nPanelBottom)
+	end
 
-	nLeft, nTop, nRight, nBottom = wndParent:GetAnchorOffsets()
-	nBottom = nTop + wndParent:FindChild("QuestPaneContainer"):GetHeight() + wndParent:FindChild("MissionPaneContainer"):GetHeight() + wndParent:FindChild("ChallengePaneContainer"):GetHeight() + wndParent:FindChild("PublicEventPaneContainer"):GetHeight()
-	wndParent:SetAnchorOffsets(nLeft, nTop, nRight, nBottom + 35)
-	wndParent:FindChild("ControlPanelInnerFrame"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	wndInnerFrame:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	wndInnerFrame:RecalculateContentExtents()
+end
+
+function ZoneMap:OnClaimRewardBtn(wndHandler, wndControl)
+	local tData = wndControl:GetData()
+	if not tData then
+		return
+	end
+	
+	Sound.Play(Sound.PlayUIContractGoldMilestoneTurnIn)
+	self.rtZone:ClaimRewardPoint(tData.nRewardIdx, tData.nChoiceIdx)
 end
 
 -- TODO: a lot of this doesn't need to happen so frequently and can be broken out
@@ -1412,6 +1477,76 @@ function ZoneMap:SetControls() -- runs off timer, sets the controls to reflect t
 	if tInfoForEnable then
 		self.wndMain:FindChild("ZoneComplexToggle"):Enable(eZoomLevel ~= tZoneMapEnums.World and self.wndZoneMap:GetContinentInfo(tInfoForEnable.continentId).bCanDisplay)
 	end
+
+	self:UpdateRewardTrack()
+end
+
+function ZoneMap:UpdateRewardTrack()
+	if not self.wndZoneMap or not self.wndZoneMap:IsValid() then
+		return
+	end
+--[[
+	if not self.wndZoneMap or not self.wndZoneMap:IsValid() or not self.wndZoneMap:IsVisible() then
+		return
+	end
+]]--
+
+	local tZoneInfo = self.wndZoneMap:GetZoneInfo(self.idCurrentZone)
+	if not tZoneInfo then
+		self.rtZone = nil
+		return
+	end
+
+	self.rtZone = tZoneInfo.rtZoneRewardTrack
+	if self.rtZone then
+		local strRTName = self.rtZone:GetName()
+		local wndToggle = self.wndRewardTrackContainer:FindChild("Toggle")
+		wndToggle:SetCheck(true)
+		wndToggle:SetText(strRTName)
+
+		local nRewardProgress = self.rtZone:GetRewardPointsEarned()
+		if nRewardProgress == nil then
+			nRewardProgress = 0
+		end
+
+		local nCost = 0
+		local bCanClaim = false
+		local arRewards = self.rtZone:GetAllRewards()
+		local wndFinalRewardPoint = self.wndRewardTrackContainer:FindChild("FinalRewardPoint")
+		local wndActionBtn = wndFinalRewardPoint:FindChild("ActionBtn")
+
+		if arRewards and arRewards[1] and arRewards[1].tRewardChoices and arRewards[1].tRewardChoices[1] then --Zone Rewards are currently designed to have one reward, and one choice.
+			nCost = arRewards[1].nCost
+			bCanClaim = arRewards[1].bCanClaim
+			wndActionBtn:SetData({nRewardIdx = arRewards[1].nRewardIdx, nChoiceIdx = arRewards[1].tRewardChoices[1].nChoiceIdx})
+
+			local itemReward = arRewards[1].tRewardChoices[1].itemReward
+			local wndItemIcon = wndFinalRewardPoint:FindChild("ItemIcon")
+			wndItemIcon:GetWindowSubclass():SetItem(itemReward)
+			wndItemIcon:SetData(itemReward)
+		end
+
+		self.wndRewardTrackContainer:FindChild("Completion"):SetText(String_GetWeaselString(Apollo.GetString("ZoneMap_RewardCompletion"), nRewardProgress, nCost, (nRewardProgress / nCost) * 100))
+		local wndProgressBar = self.wndRewardTrackContainer:FindChild("ProgressBar")
+		wndProgressBar:SetMax(nCost)
+		wndProgressBar:SetProgress(nRewardProgress)
+
+		local strTooltip = "ZoneMap_CannotClaimTooltip"
+		if bCanClaim then
+			strTooltip = "ZoneMap_CanClaimTooltip"
+
+			if not self.wndZoneMap:IsVisible() then
+				local wndClaimePrompt = Apollo.LoadForm(self.xmlDoc, "ClaimPrompt", nil, self)
+				wndClaimePrompt:FindChild("Title"):SetText(strRTName)
+			end
+		end
+		wndFinalRewardPoint:SetTooltip(Apollo.GetString(strTooltip))
+
+		wndFinalRewardPoint:FindChild("AchievedIndicator"):Show(bCanClaim)
+		self.wndRewardTrackContainer:FindChild("ReminderPulse"):Show(bCanClaim)
+		wndActionBtn:Enable(bCanClaim)		
+	end
+	self:OnResizeOptionsPane()
 end
 
 function ZoneMap:OnZoneChanged()
@@ -1421,6 +1556,7 @@ function ZoneMap:OnZoneChanged()
 	if self.tNavPointLoc then
 		self:OnNavPointSet(self.tNavPointLoc)
 	end
+	self:UpdateRewardTrack()
 end
 
 function ZoneMap:HelperCheckAndBuildSubzones(tZoneInfo, eZoomLevel) -- This repeatedly calls on a timer
@@ -1798,7 +1934,7 @@ function ZoneMap:OnGenerateTooltip(wndHandler, wndControl, eType, nX, nY)
 		local tMapObjects = self.wndZoneMap:GetObjectsAt(tPoint.x, tPoint.y) -- all others
 		local tZoneInfo = self.wndZoneMap:GetZoneInfo()
 		for key, tHexes in pairs(tMapObjects) do
-			if self.tButtonChecks[self.tPOITypes[tHexes.eType].eCategory] or tHexes.eType  == self.eObjectTypeNavPoint or tHexes.eType  == self.eObjectTypeMapTrackedUnit then
+			if self.tButtonChecks[self.tPOITypes[tHexes.eType].eCategory] or tHexes.eType  == self.eObjectTypeNavPoint or tHexes.eType  == GameLib.CodeEnumMapOverlayType.TrackedUnit then
 				local strName = ""
 				local strType = self.tPOITypes[tHexes.eType] and self.tPOITypes[tHexes.eType].strType or eType					
 				
@@ -2673,14 +2809,15 @@ function ZoneMap:UpdateChallengeList()
 		return
 	end
 
-	self.wndMapControlPanel:FindChild("ChallengePaneContentList"):DestroyChildren()
+	local wndContentList = self.wndChallengePane:FindChild("ContentList")
+	wndContentList:DestroyChildren()
 
 	local tChallengeList = ChallengesLib:GetActiveChallengeList()
 
 	local nCount = 0
 	for id, chalCurrent in pairs(tChallengeList) do
 		if chalCurrent:IsActivated() then
-			local wndLine = Apollo.LoadForm(self.xmlDoc, "ChallengeEntry", self.wndMapControlPanel:FindChild("ChallengePaneContentList"), self)
+			local wndLine = Apollo.LoadForm(self.xmlDoc, "ChallengeEntry", wndContentList, self)
 			local wndNumber = wndLine:FindChild("TextNumber")
 
 			-- number the queCurr
@@ -2702,7 +2839,7 @@ function ZoneMap:UpdateChallengeList()
 		end
 	end
 
-	self.wndMapControlPanel:FindChild("ChallengePaneContentList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	wndContentList:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function ZoneMap:ChallengeEntryMouseEnter( wndHandler, wndControl, x, y )
@@ -2759,7 +2896,8 @@ function ZoneMap:UpdateMissionList()
 		return
 	end
 
-	self.wndMapControlPanel:FindChild("MissionPaneContentList"):DestroyChildren()
+	local wndContentList = self.wndMissionPane:FindChild("ContentList")
+	wndContentList:DestroyChildren()
 	local epiPathEpisode = PlayerPathLib.GetCurrentEpisode()
 	if epiPathEpisode == nil then
 		return
@@ -2771,7 +2909,7 @@ function ZoneMap:UpdateMissionList()
 	for idx, pmCurrent in ipairs(tMissionList) do
 		local state = pmCurrent:GetMissionState()
 		if state == PathMission.PathMissionState_Unlocked or state == PathMission.PathMissionState_Started then
-			local wndMissionLine = Apollo.LoadForm(self.xmlDoc, "MissionEntry", self.wndMapControlPanel:FindChild("MissionPaneContentList"), self)
+			local wndMissionLine = Apollo.LoadForm(self.xmlDoc, "MissionEntry", wndContentList, self)
 			local wndNumber = wndMissionLine:FindChild("TextNumber")
 
 
@@ -2794,7 +2932,7 @@ function ZoneMap:UpdateMissionList()
 		end
 	end
 
-	self.wndMapControlPanel:FindChild("MissionPaneContentList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	wndContentList:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function ZoneMap:MissionEntryMouseEnter( wndHandler, wndControl, x, y )
@@ -2914,14 +3052,15 @@ function ZoneMap:UpdatePublicEventList()
 		return
 	end
 
-	self.wndMapControlPanel:FindChild("PublicEventPaneContentList"):DestroyChildren()
+	local wndContentList = self.wndPublicEventPane:FindChild("ContentList")
+	wndContentList:DestroyChildren()
 
 	local tEventList = PublicEventsLib.GetActivePublicEventList()
 
 	local nCount = 0
 	for id, peCurrent in pairs(tEventList) do
 		if peCurrent:IsActive() then
-			local wndLine = Apollo.LoadForm(self.xmlDoc, "PublicEventEntry", self.wndMapControlPanel:FindChild("PublicEventPaneContentList"), self)
+			local wndLine = Apollo.LoadForm(self.xmlDoc, "PublicEventEntry", wndContentList, self)
 			local wndNumber = wndLine:FindChild("TextNumber")
 
 			-- number the queCurr
@@ -2943,7 +3082,7 @@ function ZoneMap:UpdatePublicEventList()
 		end
 	end
 
-	self.wndMapControlPanel:FindChild("PublicEventPaneContentList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	wndContentList:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function ZoneMap:PublicEventEntryMouseEnter( wndHandler, wndControl, x, y )
@@ -3162,7 +3301,7 @@ function ZoneMap:OnZoneMapMouseMove(wndHandler, wndControl, nX, nY)
 
 	local wndTooltip = self.wndZoneMap:FindChild("ZoneName")
 	wndTooltip:SetText(strZone)
-	if string.len(strZone) > 0 and tHex.nLabelX ~= nil then
+	if Apollo.StringLength(strZone) > 0 and tHex.nLabelX ~= nil then
 		wndTooltip:Move(tHex.nLabelX - 150, tHex.nLabelY - 40, 300, 80)
 	end
 end
@@ -3291,12 +3430,13 @@ function ZoneMap:UpdateQuestList()
 	end
 
 	self.tEpisodeList = QuestLib.GetTrackedEpisodes(self.bQuestTrackerByDistance)
-	self.wndMapControlPanel:FindChild("QuestPaneContentList"):DestroyChildren()
+	local wndContentList = self.wndQuestPane:FindChild("ContentList")
+	wndContentList:DestroyChildren()
 
 	local nCount = 0
 	for idx, epiCurr in ipairs(self.tEpisodeList) do
 		for idx2, queCurr in ipairs(epiCurr:GetTrackedQuests(0, self.bQuestTrackerByDistance)) do
-			local wndQuestLine = Apollo.LoadForm(self.xmlDoc, "QuestEntry", self.wndMapControlPanel:FindChild("QuestPaneContentList"), self)
+			local wndQuestLine = Apollo.LoadForm(self.xmlDoc, "QuestEntry", wndContentList, self)
 			local wndNumber = wndQuestLine:FindChild("TextNumber")
 
 			-- number the queCurr
@@ -3326,7 +3466,24 @@ function ZoneMap:UpdateQuestList()
 		end
 	end
 
-	self.wndMapControlPanel:FindChild("QuestPaneContentList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	wndContentList:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+end
+
+function ZoneMap:OnRewardReadyClaim(wndHandler, wndControl)
+	if wndHandler ~= wndControl then
+		return
+	end
+
+	self:ToggleWindow()
+	wndControl:GetParent():Destroy()
+end
+
+function ZoneMap:OnRewardDeclineClaim(wndHandler, wndControl)
+	if wndHandler ~= wndControl then
+		return
+	end
+
+	wndControl:GetParent():Destroy()
 end
 
 function ZoneMap:BuildQuestTitleString(queCurr)
@@ -3516,7 +3673,7 @@ end
 
 ---------------------------------------------------------------------------------------------------
 function ZoneMap:OnMapTrackedUnitUpdate(idTrackedUnit, tPos)
-	tTrackedInfo = GetMapTrackedUnitData(idTrackedUnit)
+	local tTrackedInfo = GetMapTrackedUnitData(idTrackedUnit)
 	if tTrackedInfo == nil then
 		return
 	end
@@ -3529,12 +3686,12 @@ function ZoneMap:OnMapTrackedUnitUpdate(idTrackedUnit, tPos)
 		crEdge 		= CColor.new(1, 1, 1, 1),
 	}
 
-	self.wndZoneMap:RemoveObjectsByUserData(self.eObjectTypeMapTrackedUnit, idTrackedUnit)
-	self.wndZoneMap:AddObject(self.eObjectTypeMapTrackedUnit, tPos, tTrackedInfo.label, tInfo, {bNeverShowOnEdge = true, bFixedSizeSmall = false}, not self.tToggledIcons.bTracked, idTrackedUnit)
+	self.wndZoneMap:RemoveObjectsByUserData(GameLib.CodeEnumMapOverlayType.TrackedUnit, idTrackedUnit)
+	self.wndZoneMap:AddObject(GameLib.CodeEnumMapOverlayType.TrackedUnit, tPos, tTrackedInfo.label, tInfo, {bNeverShowOnEdge = true, bFixedSizeSmall = false}, not self.tToggledIcons.bTracked, idTrackedUnit)
 end
 
 function ZoneMap:OnMapTrackedUnitDisable(idTrackedUnit)
-	self.wndZoneMap:RemoveObjectsByUserData(self.eObjectTypeMapTrackedUnit, idTrackedUnit)
+	self.wndZoneMap:RemoveObjectsByUserData(GameLib.CodeEnumMapOverlayType.TrackedUnit, idTrackedUnit)
 end
 
 ---------------------------------------------------------------------------------------------------

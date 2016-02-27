@@ -233,13 +233,17 @@ function Sabotage:DrawHealth(peoHealth, wndBar, wndProgress)
 	-- Display labels to indicate team assignment
 	local eTeam = MatchingGame.GetPVPMatchState().eMyTeam
 	local blueTeamText = self.wndMain:FindChild("Blue:TeamText")
+	local blueTeamIndicator = self.wndMain:FindChild("Blue:TeamIndicator")
 	local redTeamText = self.wndMain:FindChild("Red:TeamText")
-			
+	local redTeamIndicator = self.wndMain:FindChild("Red:TeamIndicator")
+	
 	if eTeam == 1  then
+		blueTeamIndicator:Show(nCurrentHealth > 0)
 		blueTeamText:SetText(Apollo.GetString("Sabotage_OwnCore"))
 		redTeamText:SetText(Apollo.GetString("Sabotage_EnemyCore"))
 		redTeamText:SetTextColor("UI_BtnTextGrayListNormal")
 	else
+		redTeamIndicator:Show(nCurrentHealth > 0)
 		redTeamText:SetText(Apollo.GetString("Sabotage_OwnCore"))
 		blueTeamText:SetText(Apollo.GetString("Sabotage_EnemyCore"))
 		blueTeamText:SetTextColor("UI_BtnTextGrayListNormal")

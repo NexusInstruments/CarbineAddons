@@ -141,7 +141,7 @@ function CircleRegistration:OnCircleRegNameChanging(wndHandler, wndControl)
 	if wndLimit ~= nil then
 		wndLimit:Show(true)
 	
-		local nNameLength = string.len(strInput or "")
+		local nNameLength = Apollo.StringLength(strInput or "")
 
 		wndLimit:SetText(String_GetWeaselString(Apollo.GetString("CRB_Progress"), nNameLength, GameLib.GetTextTypeMaxLength(GameLib.CodeEnumUserText.GuildName)))
 		wndLimit:SetTextColor(bIsValid and ApolloColor.new("UI_TextHoloBodyCyan") or ApolloColor.new("AlertOrangeYellow"))
@@ -187,7 +187,7 @@ function CircleRegistration:UpdateCircleRegOptions()
 	self.wndRegisterCircleBtn:Enable(bHasName and bNameValid and bHasMaster and bHasCouncil and bHasMember)
 	
 	if strMasterName ~= nil then
-		local nNameLength = string.len(strMasterName or "")
+		local nNameLength = Apollo.StringLength(strMasterName or "")
 		local wndLimitMaster = self.wndMain:FindChild("CircleRegistrationWnd"):FindChild("RegistrationContent:LimitMaster")
 		local wndMasterValidAlert = self.wndMain:FindChild("CircleRegistrationWnd"):FindChild("RegistrationContent:MasterValidAlert")
 		wndLimitMaster:SetText(String_GetWeaselString(Apollo.GetString("CRB_Progress"), nNameLength, GameLib.GetTextTypeMaxLength(GameLib.CodeEnumUserText.GuildRankName)))
@@ -197,7 +197,7 @@ function CircleRegistration:UpdateCircleRegOptions()
 	end
 	
 	if strCouncilName ~= nil then
-		local nNameLength = string.len(strCouncilName or "")
+		local nNameLength = Apollo.StringLength(strCouncilName or "")
 		local wndLimitCouncil = self.wndMain:FindChild("CircleRegistrationWnd"):FindChild("RegistrationContent:LimitCouncil")
 		local wndCouncilValidAlert = self.wndMain:FindChild("CircleRegistrationWnd"):FindChild("RegistrationContent:CouncilValidAlert")
 		wndLimitCouncil:SetText(String_GetWeaselString(Apollo.GetString("CRB_Progress"), nNameLength, GameLib.GetTextTypeMaxLength(GameLib.CodeEnumUserText.GuildRankName)))
@@ -207,7 +207,7 @@ function CircleRegistration:UpdateCircleRegOptions()
 	end
 	
 	if strMemberName ~= nil then
-		local nNameLength = string.len(strMemberName or "")
+		local nNameLength = Apollo.StringLength(strMemberName or "")
 		local wndLimitMember = self.wndMain:FindChild("CircleRegistrationWnd"):FindChild("RegistrationContent:LimitMember")
 		local wndMemberValidAlert = self.wndMain:FindChild("CircleRegistrationWnd"):FindChild("RegistrationContent:MemberValidAlert")
 		wndLimitMember:SetText(String_GetWeaselString(Apollo.GetString("CRB_Progress"), nNameLength, GameLib.GetTextTypeMaxLength(GameLib.CodeEnumUserText.GuildRankName)))
@@ -221,7 +221,7 @@ end
 
 function CircleRegistration:HelperCheckForEmptyString(strText) -- make sure there's a valid string
 	local strFirstChar = string.find(strText, "%S")
-	return strFirstChar ~= nil and string.len(strFirstChar) > 0
+	return strFirstChar ~= nil and Apollo.StringLength(strFirstChar) > 0
 end
 
 function CircleRegistration:HelperClearCircleRegFocus(wndHandler, wndControl)

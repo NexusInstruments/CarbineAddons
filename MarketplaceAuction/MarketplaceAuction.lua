@@ -11,6 +11,7 @@ require "Unit"
 require "MarketplaceLib"
 require "ItemAuction"
 require "StorefrontLib"
+require "AccountItemLib"
 
 local MarketplaceAuction = {}
 
@@ -156,14 +157,12 @@ function MarketplaceAuction:OnDocumentReady()
 	Apollo.RegisterTimerHandler("PostResultTimer", 				"OnPostResultTimer", self)
 	
 	-- Entitlement updates
-	Apollo.RegisterEventHandler("CharacterEntitlementUpdate",	"OnEntitlementUpdate", self)
 	Apollo.RegisterEventHandler("AccountEntitlementUpdate",		"OnEntitlementUpdate", self)
+	Apollo.RegisterEventHandler("PremiumSystemUpdate",			"OnPremiumSystemUpdate", self)
 	
 	-- Store updates
-	Apollo.RegisterEventHandler("StoreLinksRefresh",						"RequestUpdates", self)
+	Apollo.RegisterEventHandler("StoreLinksRefresh",			"RequestUpdates", self)
 
-	self.nCurMaxSlots = 0
-	self.tPrevAuctionsCount = { nSell = 0, nBuy = 0  }
 	self.tAuctionsCount = { nSell = 0, nBuy = 0 }
 	self:RequestUpdates()
 end
@@ -190,11 +189,6 @@ function MarketplaceAuction:OnDestroy()
 end
 
 function MarketplaceAuction:OnToggleAuctionWindow()
-	if AccountItemLib.CodeEnumEntitlement.EconomyParticipation and AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.EconomyParticipation) == 0 then
-		Event_FireGenericEvent("GenericEvent_SystemChannelMessage", Apollo.GetString("CRB_FeatureDisabledForGuests"))
-		return
-	end
-
 	if self.wndMain and self.wndMain:IsValid() then
 		self:OnDestroy()
 	else
@@ -204,7 +198,6 @@ end
 
 function MarketplaceAuction:OnPlayerCurrencyChanged()
 	if self.wndMain and self.wndMain:IsValid() then
-		self.wndPlayerCashWindow:SetAmount(GameLib.GetPlayerCurrency())
 		self:ToggleAndInitializeBuyOrSell() -- TODO: Gate if this spams
 	end
 end
@@ -218,8 +211,6 @@ function MarketplaceAuction:Initialize()
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("MarketplaceAuction_AuctionHouse"), nSaveVersion=3})
 
 	self.wndMain:Invoke()
-	
-	self.wndPlayerCashWindow = self.wndMain:FindChild("PlayerCashWindow")
 
 	local wndSort = self.wndMain:FindChild("SortContainer")
 	wndSort:FindChild("SortOptionsStatOpener"):AttachWindow(wndSort:FindChild("SortFlyoutStatContainer"))
@@ -233,8 +224,6 @@ function MarketplaceAuction:Initialize()
 	self.wndMain:FindChild("HeaderBuyBtn"):SetCheck(true)
 	self.wndMain:FindChild("BottomBidBtn"):Enable(false)
 	self.wndMain:FindChild("BottomBuyoutBtn"):Enable(false)
-	self.wndMain:FindChild("BottomBidPriceUpBtn"):Enable(false)
-	self.wndMain:FindChild("BottomBidPriceDownBtn"):Enable(false)
 	self.wndMain:FindChild("PostResultNotification"):Show(false, true)
 	self.wndMain:FindChild("SellContainer"):FindChild("CreateBidInputBox"):SetAmountLimit(knMaxPlat)
 	self.wndMain:FindChild("SellContainer"):FindChild("CreateBuyoutInputBox"):SetAmountLimit(knMaxPlat) -- 9999 plat
@@ -247,6 +236,8 @@ function MarketplaceAuction:Initialize()
 	self.nTotalResults = nil
 	self.nSearchId = nil -- TODO REFACTOR: Can delete
 	self.strSearchEnum = nil -- TODO REFACTOR: Can delete
+	self.ePremiumSystem = AccountItemLib.GetPremiumSystem()
+	self.nPremiumTier = AccountItemLib.GetPremiumTier()
 
 	self:InitializeCategories()
 	self:OnResizeCategories()
@@ -254,7 +245,7 @@ function MarketplaceAuction:Initialize()
 	self:OnPlayerCurrencyChanged() -- Will call main update method
 	MarketplaceLib.RequestOwnedItemAuctions()
 
-	self:UpdateSlotNotification()
+	self:UpdateAuctionNotification()
 	
 	Sound.Play(Sound.PlayUIWindowAuctionHouseOpen)
 end
@@ -282,7 +273,7 @@ function MarketplaceAuction:InitializeCategories()
 		end
 
 		for idx2, tBotData in pairs(MarketplaceLib.GetAuctionableTypes(tMidData.nId) or {}) do
-			if string.len(tBotData.strName) > 0 then
+			if Apollo.StringLength(tBotData.strName) > 0 then
 				local wndCurr = Apollo.LoadForm(self.xmlDoc, "CategoryMidItem", wndTop:FindChild("CategoryTopList"), self)
 				wndCurr:FindChild("CategoryMidBtn"):SetText(tBotData.strName)
 				wndCurr:FindChild("CategoryMidBtn"):SetData({ tBotData.nId, "Bot" })
@@ -320,7 +311,7 @@ function MarketplaceAuction:InitializeCategories()
 
 			-- Use the list of children to draw button
 			for idx, tData in pairs(tFullMidList) do
-				if string.len(tData[2]) > 0 then
+				if Apollo.StringLength(tData[2]) > 0 then
 					local wndCurr = Apollo.LoadForm(self.xmlDoc, "CategoryMidItem", wndTop:FindChild("CategoryTopList"), self)
 					wndCurr:FindChild("CategoryMidBtn"):SetText(tData[2])
 					wndCurr:FindChild("CategoryMidBtn"):SetData({ tData[1], tData[3] })
@@ -440,13 +431,13 @@ function MarketplaceAuction:ToggleAndInitializeBuyOrSell()
 	wndFilter:FindChild("FilterClearBtn"):Show(wndFilter:FindChild("FilterClearBtn"):GetData() or false) -- GOTCHA: Visibility update is delayed until a manual reset
 
 	self.wndMain:FindChild("SearchResultList"):SetText("")
-	self.wndMain:FindChild("AdvancedOptionsContainer:BuyOnly"):Show(bIsBuyChecked)
+
 	if bIsBuyChecked then
 		self:InitializeBuy()
 	elseif bIsSellChecked then
 		self:InitializeSell()
 	end
-	self:UpdateSlotNotification()
+	self:UpdateAuctionNotification()
 	self:OnRowSelectBtnUncheck()
 end
 
@@ -455,7 +446,7 @@ end
 -----------------------------------------------------------------------------------------------
 
 function MarketplaceAuction:OnSearchEditBoxChanged(wndHandler, wndControl) -- SearchEditBox
-	self.wndMain:FindChild("SearchClearBtn"):Show(string.len(wndHandler:GetText() or "") > 0)
+	self.wndMain:FindChild("SearchClearBtn"):Show(Apollo.StringLength(wndHandler:GetText() or "") > 0)
 end
 
 function MarketplaceAuction:OnSearchClearBtn(wndHandler, wndControl)
@@ -639,7 +630,7 @@ function MarketplaceAuction:OnFilterOptionsWindowClosed(wndHandler, wndControl)
 end
 
 function MarketplaceAuction:HelperCheckValidValues(wndChanged)
-	local wndFilterOptions = self.wndMain:FindChild("AdvancedOptionsContainer:BuyOnly:FilterContainer:FilterOptionsContainer")
+	local wndFilterOptions = self.wndMain:FindChild("BuyContainer:FilterContainer:FilterOptionsContainer")
 	local wndMinLevelFilter = wndFilterOptions:FindChild("FilterOptionsLevelMinContainer:FilterOptionsLevelEditBox")
 	local wndMaxLevelFilter = wndFilterOptions:FindChild("FilterOptionsLevelMaxContainer:FilterOptionsLevelEditBox")
 	local nMinLevelValue = tonumber(wndMinLevelFilter:GetText()) or knMinLevel
@@ -772,7 +763,7 @@ function MarketplaceAuction:InitializeBuy()
 
 		if #arFilters > MarketplaceLib.kAuctionSearchMaxFilters then
 			self.wndMain:FindChild("SearchResultTooManyResults"):SetText(Apollo.GetString("MarketplaceAuction_TooManyFilters"))
-		elseif strSearchQuery and string.len(strSearchQuery) > 0 then
+		elseif strSearchQuery and Apollo.StringLength(strSearchQuery) > 0 then
 			local nFamilyId, nCategoryId, nTypeId = 0, 0, 0 -- strSearchEnum can be nil, at which point it will be a global search
 			if strSearchEnum == "Top" then
 				nFamilyId = nSearchId
@@ -886,13 +877,16 @@ function MarketplaceAuction:BuildListItem(aucCurr, wndParent, bBuyTab)
 	end
 
 	local wnd = Apollo.LoadForm(self.xmlDoc, strFormToLoad, wndParent, self)
+	local wndListIcon = wnd:FindChild("ListIcon")
+	local luaSubclass = wndListIcon:GetWindowSubclass()
+
+	luaSubclass:SetItem(itemCurr)
 	wnd:SetData(aucCurr)
 	wnd:FindChild("RowSelectBtn"):SetData(aucCurr)
 	wnd:FindChild("RowSelectBtn"):Show(bBuyTab)
 	wnd:FindChild("ListName"):SetText(itemCurr:GetName())
-	wnd:FindChild("ListIcon"):SetSprite(itemCurr:GetIcon())
-	wnd:FindChild("ListIcon"):SetText(aucCurr:GetCount() <= 1 and "" or aucCurr:GetCount())
-	wnd:FindChild("ListIcon"):SetData(itemCurr)
+	wndListIcon:SetText(aucCurr:GetCount() <= 1 and "" or aucCurr:GetCount())
+	wndListIcon:SetData(itemCurr)
 
 	local eTimeRemaining = aucCurr:GetTimeRemainingEnum()
 	if bIsOwnAuction then
@@ -918,7 +912,7 @@ function MarketplaceAuction:BuildListItem(aucCurr, wndParent, bBuyTab)
 	end
 
 	if wnd:FindChild("BuyNowPrice") then
-		local bCanAffordBuyNow = self.wndPlayerCashWindow:GetAmount() >= nBuyoutPrice
+		local bCanAffordBuyNow = GameLib.GetPlayerCurrency():GetAmount() >= nBuyoutPrice
 		wnd:FindChild("BuyNowPrice"):SetAmount(nBuyoutPrice)
 		wnd:FindChild("BuyNowPrice"):SetTextColor(bCanAffordBuyNow and "UI_TextHoloBodyCyan" or "Reddish")
 	end
@@ -936,8 +930,6 @@ function MarketplaceAuction:OnRowSelectBtnUncheck(wndHandler, wndControl)
 	wndParent:FindChild("BottomBidBtn"):Enable(false)
 	wndParent:FindChild("BottomBuyoutBtn"):Enable(false)
 	wndParent:FindChild("BottomBidPrice"):Enable(false)
-	wndParent:FindChild("BottomBidPriceUpBtn"):Enable(false)
-	wndParent:FindChild("BottomBidPriceDownBtn"):Enable(false)
 	wndParent:FindChild("BottomBuyoutPrice"):SetAmount(0)
 	wndParent:FindChild("BottomBidPrice"):SetAmount(0)
 end
@@ -961,8 +953,6 @@ function MarketplaceAuction:OnRowSelectBtnCheck(wndHandler, wndControl)
 	wndParent:FindChild("BottomBuyoutBtn"):SetData(wndParent)
 	wndParent:FindChild("BottomBidPrice"):SetData(wndParent)
 	wndParent:FindChild("BottomBidResetBtn"):SetData(wndParent)
-	wndParent:FindChild("BottomBidPriceUpBtn"):SetData(wndParent)
-	wndParent:FindChild("BottomBidPriceDownBtn"):SetData(wndParent)
 
 	wndParent:FindChild("BottomBidPrice"):Enable(true)
 	wndParent:FindChild("BottomBidPrice"):SetAmount(nDefaultBid)
@@ -975,20 +965,9 @@ end
 -- Buy Btns
 -----------------------------------------------------------------------------------------------
 
-function MarketplaceAuction:OnBidPriceUpBtn(wndHandler, wndControl)
-	local wndParent = wndHandler:GetData()
-	local aucCurr = wndParent:GetData()
-	self:OnHelperBidPriceEditBox(wndParent, aucCurr, true)
-end
-
-function MarketplaceAuction:OnBidPriceDownBtn(wndHandler, wndControl)
-	local wndParent = wndHandler:GetData()
-	local aucCurr = wndParent:GetData()
-	self:OnHelperBidPriceEditBox(wndParent, aucCurr, false)
-end
-
 function MarketplaceAuction:OnHelperBidPriceEditBox(wndParent, aucCurr, bAdd)
-	local nOldValue = tonumber(wndParent:FindChild("BottomBidPrice"):GetAmount()) or 1
+	local monBidValue  = wndParent:FindChild("BottomBidPrice"):GetAmount() 
+	local nOldValue = tonumber(monBidValue:GetAmount()) or 1
 	local nNewValue = math.min(knMaxPlat, math.max(0, bAdd and nOldValue + 1 or nOldValue - 1))
 
 	wndParent:SetFocus()
@@ -1004,10 +983,6 @@ function MarketplaceAuction:OnBidResetBtn(wndHandler, wndControl)
 
 	local nDefaultBid = math.max(aucCurr:GetMinBid():GetAmount(), aucCurr:GetCurrentBid():GetAmount())
 	wndParent:FindChild("BottomBidResetBtn"):Show(false)
-	wndParent:FindChild("BottomBidPriceUpBtn"):Enable(nDefaultBid < aucCurr:GetBuyoutPrice():GetAmount())
-	wndParent:FindChild("BottomBidPriceDownBtn"):Enable(false)
-	wndParent:FindChild("BottomBuyoutPrice"):SetTextColor(ApolloColor.new("UI_WindowTitleGray"))
-	wndParent:FindChild("BottomBidPrice"):SetTextColor(ApolloColor.new("UI_WindowTitleGray"))
 	wndParent:FindChild("BottomBidPrice"):SetAmount(nDefaultBid)
 	wndParent:SetFocus()
 
@@ -1015,8 +990,6 @@ function MarketplaceAuction:OnBidResetBtn(wndHandler, wndControl)
 end
 
 function MarketplaceAuction:OnBidPriceAmountChanged(wndHandler, wndControl) -- BidPrice, data is parent
-	wndHandler:SetText(math.max(0, tonumber(wndHandler:GetAmount() or 0)))
-
 	local wndParent = wndHandler:GetData()
 	wndParent:FindChild("BottomBidResetBtn"):Show(true)
 	self:HelperValidateBidEditBoxInput()
@@ -1027,24 +1000,17 @@ function MarketplaceAuction:HelperValidateBidEditBoxInput()
 	local aucCurr = wndParent:GetData()
 
 	local bValidBidPrice = true
-	local nPlayerCash = self.wndPlayerCashWindow:GetAmount()
+	local nPlayerCash = GameLib.GetPlayerCurrency():GetAmount()
 	local nMinBidPrice = aucCurr:GetMinBid():GetAmount()
 	local nCurrBidPrice = aucCurr:GetCurrentBid():GetAmount()
 	local nBuyoutPrice = aucCurr:GetBuyoutPrice():GetAmount()
-	local nAttemptPrice = wndParent:FindChild("BottomBidPrice"):GetAmount()
+	local nAttemptPrice = wndParent:FindChild("BottomBidPrice"):GetAmount():GetAmount()
 
 	-- Up Down Arrows
 	if nAttemptPrice < nMinBidPrice or nAttemptPrice < nCurrBidPrice or nAttemptPrice > nPlayerCash then
 		bValidBidPrice = false
-		wndParent:FindChild("BottomBidPriceUpBtn"):Enable(true)
-		wndParent:FindChild("BottomBidPriceDownBtn"):Enable(false)
 	elseif nBuyoutPrice > 0 and nBuyoutPrice < nAttemptPrice then
 		bValidBidPrice = false
-		wndParent:FindChild("BottomBidPriceUpBtn"):Enable(false)
-		wndParent:FindChild("BottomBidPriceDownBtn"):Enable(true)
-	else
-		wndParent:FindChild("BottomBidPriceUpBtn"):Enable(nAttemptPrice < nBuyoutPrice)
-		wndParent:FindChild("BottomBidPriceDownBtn"):Enable(nAttemptPrice > nMinBidPrice and nAttemptPrice > nCurrBidPrice)
 	end
 
 	-- Buttons
@@ -1057,19 +1023,20 @@ function MarketplaceAuction:HelperValidateBidEditBoxInput()
 		bBuyoutOnly = true
 	end
 
-	local bCanBuyout = not bBidOnly and not aucCurr:IsOwned() and nBuyoutPrice <= nPlayerCash
+	local tAuctionAccess = AccountItemLib.GetPlayerRewardProperty(AccountItemLib.CodeEnumRewardProperty.AuctionAccess)
+	local bHasAccess = tAuctionAccess and tAuctionAccess.nValue ~= 0
+	local bCanBuyout = not bBidOnly and not aucCurr:IsOwned() and nBuyoutPrice <= nPlayerCash and bHasAccess
 	wndParent:FindChild("BottomBuyoutBtn"):Enable(bCanBuyout)
 	if bCanBuyout then
 		wndParent:FindChild("BottomBuyoutBtn"):SetActionData(GameLib.CodeEnumConfirmButtonType.MarketplaceAuctionBuySubmit, aucCurr, true)
 	end
 
 	wndParent:FindChild("BottomBuyoutPrice"):SetTextColor(bCanBuyout and "UI_WindowTitleGray" or "Reddish")
-	wndParent:FindChild("BottomBidPrice"):SetTextColor(bValidBidPrice and "UI_WindowTitleGray" or "Reddish")
 
-	local bCanBid = not bBuyoutOnly and bValidBidPrice and not aucCurr:IsTopBidder() and not aucCurr:IsOwned()
+	local bCanBid = not bBuyoutOnly and bValidBidPrice and not aucCurr:IsTopBidder() and not aucCurr:IsOwned() and bHasAccess
 	wndParent:FindChild("BottomBidBtn"):Enable(bCanBid)
 	if bCanBid then
-		local monBidPrice = wndParent:FindChild("BottomBidPrice"):GetCurrency()
+		local monBidPrice = wndParent:FindChild("BottomBidPrice"):GetAmount()
 		wndParent:FindChild("BottomBidBtn"):SetActionData(GameLib.CodeEnumConfirmButtonType.MarketplaceAuctionBuySubmit, aucCurr, false, monBidPrice)
 	end
 end
@@ -1139,17 +1106,18 @@ function MarketplaceAuction:InitializeSell()
 		if itemCurr and itemCurr:IsAuctionable() then
 			local wndCurr = self:LoadByName("SellListItem", self.wndMain:FindChild("SellLeftSideItemList"), "SellListItem"..itemCurr:GetName())
 			wndCurr:SetData(itemCurr)
-			 
 			wndCurr:SetName(itemCurr:GetName())
-			
+
 			local nCount = itemCurr:GetStackCount()
 			local strText = itemCurr:GetName()
 			if nCount > 1 then
 				strText = String_GetWeaselString(Apollo.GetString("MarketplaceAuction_AuctionItemCount"), strText, nCount)
 			end
 			
+			local luaSubclass = wndCurr:FindChild("ListItemIcon"):GetWindowSubclass()
+			
+			luaSubclass:SetItem(itemCurr)
 			wndCurr:FindChild("ListItemTitle"):SetText(strText)
-			wndCurr:FindChild("ListItemIcon"):SetSprite(itemCurr:GetIcon())
 			-- Find the previously clicked item or first one of the same id
 			if self.itemSelected ~= nil then
 				if self.itemSelected:GetItemId() == itemCurr:GetItemId() then
@@ -1174,13 +1142,14 @@ function MarketplaceAuction:InitializeSell()
 		local bReverseSort = true
 		MarketplaceLib.RequestItemAuctionsByItems({ wndReached:GetData():GetItemId() }, nPage, MarketplaceLib.AuctionSort.Buyout, bReverseSort, nil, nil, nil, nil)
 	else
-		self.wndMain:FindChild("SellRightSide"):Show(false)
+		self.wndMain:FindChild("SellContainer:SellRightSide:ResultsContainer"):Show(false)
 		self.itemSelected = nil
 	end
 
 	local bListIsEmpty = #self.wndMain:FindChild("SellLeftSideItemList"):GetChildren() == 0
 	self.wndMain:FindChild("SellLeftSideItemList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, function (a,b) return a:GetName() < b:GetName() end)
 	self.wndMain:FindChild("SellLeftSideItemList"):SetText(bListIsEmpty and Apollo.GetString("MarketplaceAuction_NoItemsToSell") or "")
+	self.wndMain:FindChild("SellRightSide"):Show(true)
 end
 
 function MarketplaceAuction:OnSellListItemCheck(wndHandler, wndControl)
@@ -1193,16 +1162,14 @@ function MarketplaceAuction:OnSellListItemCheck(wndHandler, wndControl)
 		return
 	end
 
+	local tAuctionAccess = AccountItemLib.GetPlayerRewardProperty(AccountItemLib.CodeEnumRewardProperty.AuctionAccess)
 	local wndParent = self.wndMain:FindChild("SellRightSide")
 	wndParent:FindChild("CreateSellOrderBtn"):SetData(itemSelling)
+	wndParent:FindChild("CreateSellOrderBtn"):Enable(tAuctionAccess and tAuctionAccess.nValue ~= 0)
 
-	wndParent:Show(true)
-	wndParent:FindChild("BigIcon"):GetWindowSubclass():SetItem(itemSelling)
+	wndParent:FindChild("ResultsContainer"):Show(true)
+	wndParent:FindChild("BigIcon"):SetSprite(itemSelling:GetIcon())
 	wndParent:FindChild("BigItemName"):SetText(itemSelling:GetName())
-	
-	local nCount = itemSelling:GetStackCount()
-	wndParent:FindChild("ItemCount"):SetText(nCount)
-	wndParent:FindChild("ItemCount"):Show(nCount > 1)
 
 	wndParent:FindChild("CreateBidInputBox"):SetTooltip("")
 	wndParent:FindChild("CreateBidInputBox"):SetTextColor(ApolloColor.new("UI_TextHoloBodyCyan"))
@@ -1236,6 +1203,7 @@ function MarketplaceAuction:OnSellListItemCheck(wndHandler, wndControl)
 	local nPage = 0
 	local bReverseSort = true
 	MarketplaceLib.RequestItemAuctionsByItems({ itemSelling:GetItemId() }, nPage, MarketplaceLib.AuctionSort.Buyout, bReverseSort, nil, nil, nil, nil)
+	self:UpdateAuctionNotification()
 end
 
 function MarketplaceAuction:OnSellListItemUncheck(wndHandler, wndControl)
@@ -1244,7 +1212,6 @@ function MarketplaceAuction:OnSellListItemUncheck(wndHandler, wndControl)
 	end
 
 	wndHandler:FindChild("ListItemTitle"):SetTextColor(ApolloColor.new("UI_BtnTextGrayListNormal"))
-	self.wndMain:FindChild("SellRightSide"):Show(false)
 	
 	-- Discard the selection state of the item
 	self.itemSelected = nil
@@ -1269,8 +1236,8 @@ function MarketplaceAuction:ValidateSellOrder() -- CreateSellOrderBtn data is oI
 	local wndBidErrorIcon = self.wndMain:FindChild("SellContainer"):FindChild("CreateBidErrorIcon")
 
 	local itemMerchendice = wndSellOrderBtn:GetData()
-	local monBidPrice = wndBidInputBox:GetCurrency() -- not an integer
-	local monBuyoutPrice = wndBuyoutInputBox:GetCurrency() -- not an integer
+	local monBidPrice = wndBidInputBox:GetAmount() -- not an integer
+	local monBuyoutPrice = wndBuyoutInputBox:GetAmount() -- not an integer
 
 	wndBidErrorIcon:Show(false)
 	wndBidInputBox:SetTextColor("white")
@@ -1375,8 +1342,12 @@ end
 function MarketplaceAuction:OnPostResultTimer()
 	if self.wndMain and self.wndMain:IsValid() then
 		Apollo.StopTimer("PostResultTimer")
-		self.wndMain:FindChild("PostResultNotification"):Show(false)
+		self:CloseResultWindow()
 	end
+end
+
+function MarketplaceAuction:CloseResultWindow()
+	self.wndMain:FindChild("PostResultNotification"):Show(false)
 end
 
 function MarketplaceAuction:OnItemAuctionWon(aucCurrent)
@@ -1442,7 +1413,7 @@ function MarketplaceAuction:OnPostResultNotificationClick(wndHandler, wndControl
 end
 
 function MarketplaceAuction:OnOpenMarketListingsBtn(wndHandler, wndControl)
-	Event_FireGenericEvent("InterfaceMenu_ToggleMarketplaceListings")
+	Event_FireGenericEvent("ToggleListingsFromAuctionHouse")
 end
 
 function MarketplaceAuction:OnGenericEditBoxMouseDown(wndHandler, wndControl)
@@ -1499,156 +1470,182 @@ function MarketplaceAuction:OnOwnedItemAuctions(tAuctions)
 		end
 	end
 	self.tAuctionsCount = { nSell = nNewAuctions, nBuy = nNewBids}
-	if nNewAuctions ~= self.tPrevAuctionsCount.nSell or nNewBids ~= self.tPrevAuctionsCount.nBuy then
-		self:UpdateSlotNotification()
-	end
+
+	self:UpdateAuctionNotification()
 end
 
 -----------------------------------------------------------------------------------------------
--- Entitlement Updates
+-- PremiumSystem Updates
 -----------------------------------------------------------------------------------------------
-
 function MarketplaceAuction:OnEntitlementUpdate(tEntitlementInfo)
-	local bNotSignatureOrFree = tEntitlementInfo.nEntitlementId ~= AccountItemLib.CodeEnumEntitlement.Signature and tEntitlementInfo.nEntitlementId ~= AccountItemLib.CodeEnumEntitlement.Free
-	local bNotExtraOrLoyalty = tEntitlementInfo.nEntitlementId ~= AccountItemLib.CodeEnumEntitlement.ExtraAuctions and tEntitlementInfo.nEntitlementId ~= AccountItemLib.CodeEnumEntitlement.LoyaltyExtraAuctions
-	if not self.wndMain or (bNotSignatureOrFree and bNotExtraOrLoyalty) then
+	if not self.wndMain or (tEntitlementInfo.nEntitlementId ~= AccountItemLib.CodeEnumEntitlement.ExtraAuctions and tEntitlementInfo.nEntitlementId ~= AccountItemLib.CodeEnumEntitlement.LoyaltyExtraAuctions) then
 		return
 	end
-	self:UpdateSlotNotification()
+	
+	self:UpdateAuctionNotification()
 end
 
-function MarketplaceAuction:UpdateSlotNotification()
+function MarketplaceAuction:OnPremiumSystemUpdate(ePremiumSystem, nPremiumTier)
+	self.ePremiumSystem = ePremiumSystem
+	self.nPremiumTier = nPremiumTier
+	
+	self:UpdateAuctionNotification()
+end
 
+function MarketplaceAuction:UpdateAuctionNotification()
 	if not self.wndMain then
 		return
 	end
+	
 	self:RefreshStoreLink()
-	local bIsBuyChecked = self.wndMain:FindChild("HeaderBuyBtn"):IsChecked()
-	local bIsSellChecked = self.wndMain:FindChild("HeaderSellBtn"):IsChecked()
-	local nMaxSlots = MarketplaceLib.GetMaxAuctions()
-	local bAuctionsChanged = self.tAuctionsCount.nSell ~= self.tPrevAuctionsCount.nSell or self.tAuctionsCount.nBuy ~= self.tPrevAuctionsCount.nBuy
-	local bSellUpdated = self.tAuctionsCount and (nMaxSlots - self.tAuctionsCount.nSell) <= 0
-	local bBuyUpdated = self.tAuctionsCount and (nMaxSlots - self.tAuctionsCount.nBuy) <= 0
-	self.bAuctionsAndBidsFull = bSellUpdated or bBuyUpdated
-	local bDisplay = self.bStoreLinkValid and self.bAuctionsAndBidsFull and MarketplaceLib.GetAuctionsLimit() ~= nMaxSlots
-	local wndBuyContainer = self.wndMain:FindChild("BuyContainer")
-	local wndMTXSlotNotify = wndBuyContainer:FindChild("MTX_SlotWarning")
-	if not wndMTXSlotNotify then
-		wndMTXSlotNotify = Apollo.LoadForm(self.xmlDoc, "MTX_SlotWarning", wndBuyContainer, self)
-	end
-	wndMTXSlotNotify:Show(false)
+
+	-- Setting up window references
+	local wndTop = self.wndMain:FindChild("BuyContainer:RightContent")
 	
-	local wndOpenMarketListingsBtn = self.wndMain:FindChild("OpenMarketListingsBtn")
-	local wndMaxSlots = wndOpenMarketListingsBtn:FindChild("MaxSlots")
+	-- Getting limits
+	local eRewardProperty = AccountItemLib.CodeEnumRewardProperty.AuctionBids
+	local nCurrentCount = self.tAuctionsCount.nBuy
 	
-	local nLoyaltyAuctionCount = AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.LoyaltyExtraAuctions)
-	local nSignatureCount = AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature)
-	local nSignatureMaxCount = 0
-	if nSignatureCount > 0 then
-		nSignatureMaxCount = MarketplaceLib.GetSignatureAuctionsLimit() - nLoyaltyAuctionCount
-	end
-	local nExtraAuctionCount = AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.ExtraAuctions)
-	local nTotalAuctionCount = nSignatureMaxCount + nExtraAuctionCount + nLoyaltyAuctionCount
+	-- Setting up label
+	local strListingsLabel = "MarketplaceAuction_MyBids"
 	
-	-- Adjust displayed text and icon based on any slot increases coming from entitlements
-	if nTotalAuctionCount > 0 then	
-		wndOpenMarketListingsBtn:ChangeArt("BK3:btnMetal_ExpandMenu_NoNav")
-		if bIsBuyChecked then
-			wndOpenMarketListingsBtn:SetText(String_GetWeaselString(Apollo.GetString("MarketplaceAuction_MyBids"), self.tAuctionsCount.nBuy))
-		else
-			wndOpenMarketListingsBtn:SetText(String_GetWeaselString(Apollo.GetString("MarketplaceAuction_MyAuctions"), self.tAuctionsCount.nSell))
-		end
-		local wndIconMTX = wndOpenMarketListingsBtn:FindChild("IconMTX")
-		wndIconMTX:Show(true)
-		local nDiffCount = 0
-		local nBaseCount = MarketplaceLib.GetBaseAuctions()
-		if nSignatureCount > 0 then
-			nDiffCount = nBaseCount
-		end
-		wndIconMTX:SetTooltip(String_GetWeaselString(Apollo.GetString("MarketplaceAuction_AdditionalSlots"), nBaseCount, nTotalAuctionCount - nDiffCount))
+	-- Changing to correct values if we're on the Sell tab
+	if self.wndMain:FindChild("SellContainer"):IsShown() then
+		wndTop = self.wndMain:FindChild("SellContainer:SellRightSide")
+		eRewardProperty = AccountItemLib.CodeEnumRewardProperty.AuctionListings
 		
-		wndMaxSlots:SetText(nMaxSlots)
-		wndMaxSlots:Show(true)
-	else -- Reset to default if no longer getting additional slots
-		wndOpenMarketListingsBtn:ChangeArt("BK3:btnMetal_Flyout")
-		wndOpenMarketListingsBtn:FindChild("IconMTX"):Show(false)
-		if bIsBuyChecked then
-			wndOpenMarketListingsBtn:SetText(String_GetWeaselString(Apollo.GetString("MarketplaceAuction_MyBids"), self.tAuctionsCount.nBuy, nMaxSlots))
-		else
-			wndOpenMarketListingsBtn:SetText(String_GetWeaselString(Apollo.GetString("MarketplaceAuction_MyAuctions"), self.tAuctionsCount.nSell, nMaxSlots))
-		end
-		wndMaxSlots:Show(false)
+		nCurrentCount = self.tAuctionsCount.nSell
+		
+		strListingsLabel = "MarketplaceAuction_MyListings"
 	end
 	
-	local nLeft, nTop, nRight, nBottom = wndMaxSlots:GetOriginalLocation():GetOffsets()
-	local nOpenMarketListingsBtnTextWidth = Apollo.GetTextWidth("CRB_Button", wndOpenMarketListingsBtn:GetText())
-	wndMaxSlots:SetAnchorOffsets(nOpenMarketListingsBtnTextWidth + knButtonTextPadding, nTop, Apollo.GetTextWidth("CRB_Button", wndMaxSlots:GetText()), nBottom)
+	local wndResultsContainer = wndTop:FindChild("ResultsContainer")
 	
-	if bDisplay == wndMTXSlotNotify:IsShown()  and not bAuctionsChanged and nMaxSlots == self.nCurMaxSlots then
+	local nCurrentMax = AccountItemLib.GetPlayerRewardProperty(eRewardProperty).nValue
+	local nBaseLimit = AccountItemLib.GetStaticRewardPropertyForTier(0, eRewardProperty, nil, true).nValue
+	
+	local nMaxFromPremium = nCurrentMax - nBaseLimit
+	
+	local tAuctionAccess = AccountItemLib.GetPlayerRewardProperty(AccountItemLib.CodeEnumRewardProperty.AuctionAccess)
+	local bHasAccess = tAuctionAccess and tAuctionAccess.nValue ~= 0
+	if not bHasAccess then
+		nCurrentMax = 0
+	end
+
+	local wndOpenMarketListingsBtn = wndTop:FindChild("FilterContainer:OpenMarketListingsBtn")
+	local wndIconMTX = wndOpenMarketListingsBtn:FindChild("IconMTX")
+	
+	-- Set up the text on "My Listings"
+	local bIsHybrid = self.ePremiumSystem == AccountItemLib.CodeEnumPremiumSystem.Hybrid
+	local bIsVIP = self.ePremiumSystem == AccountItemLib.CodeEnumPremiumSystem.VIP
+	local strLabel = ""
+	if nBaseLimit < nCurrentMax and bIsHybrid then
+		strLabel = string.format("<T TextColor=\"UI_WindowYellow\">" .. nCurrentMax .. "</T>")
+		wndIconMTX:SetTooltip(String_GetWeaselString(Apollo.GetString("MarketplaceAuction_AdditionalSlots"), nBaseLimit, nMaxFromPremium))
+		wndIconMTX:Show(true)
+	elseif not bHasAccess then
+		strLabel = string.format("<T TextColor=\"UI_WindowTextRed\">" .. nCurrentMax .. "</T>")
+		wndIconMTX:Show(false)
+	else
+		strLabel = tostring(nCurrentMax)
+		wndIconMTX:Show(false)
+	end
+	wndOpenMarketListingsBtn:FindChild("Text"):SetAML(string.format("<T Font=\"CRB_Button\" TextColor=\"UI_BtnTextGoldListNormal\">".. String_GetWeaselString(Apollo.GetString(strListingsLabel), nCurrentCount, strLabel) .. "</T>"))
+	
+	-- Load the MTX Upsell window
+	local wndMTXSlotNotify = wndTop:FindChild("MTX_SlotWarning")
+	if not wndMTXSlotNotify then
+		wndMTXSlotNotify = Apollo.LoadForm(self.xmlDoc, "MTX_SlotWarning", wndTop, self)
+	end
+	
+	-- If the state hasn't changed, we don't need to update the window
+	local nMaxTier = AccountItemLib.GetPremiumTierMax()
+	local bCanUpgradeTier = self.nPremiumTier < AccountItemLib.GetPremiumTierMax()
+	local nCurrentEntitlementCount = AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.ExtraAuctions)
+	local bCanPurchaseUpgrades = nCurrentEntitlementCount and nCurrentEntitlementCount < AccountItemLib.GetMaxEntitlementCount(AccountItemLib.CodeEnumEntitlement.ExtraAuctions) and self.bStoreLinkValidExtras
+
+	local bDisplayUpsell = nCurrentMax ~= AccountItemLib.GetStaticRewardPropertyForTier(nMaxTier, eRewardProperty).nValue and (not bHasAccess or (nCurrentCount == nCurrentMax and (bCanUpgradeTier or bCanPurchaseUpgrades))) and self.bStoreLinkValid 
+	if bDisplayUpsell == wndMTXSlotNotify:IsShown() then
 		return
 	end
 	
-	self.tPrevAuctionsCount = self.tAuctionsCount
-	self.nCurMaxSlots = nMaxSlots
+	wndMTXSlotNotify:Show(bDisplayUpsell)
 	
-	local pixSearchHeader = self.wndMain:FindChild("AdvancedOptionsContainer"):GetPixieInfo(1)
-	local arPixOffsets = pixSearchHeader.loc.nOffsets
-	local wndWaitScreen = wndBuyContainer:FindChild("WaitScreen")
-	local wndSearchResultList = wndBuyContainer:FindChild("SearchResultList")
-	local wndRefreshAnimation = self.wndMain:FindChild("RefreshAnimation")
-	local wndUnlockAddSlotsBtn = wndMTXSlotNotify:FindChild("UnlockSlotsBtn")
-	local nWaitScreenLeft, nWaitScreenTop, nWaitScreenRight, nWaitScreenBottom = wndWaitScreen:GetOriginalLocation():GetOffsets()
-	local nSearchResultListLeft, nSearchResultListTop, nSearchResultListRight, nSearchResultListBottom = wndSearchResultList:GetOriginalLocation():GetOffsets()
-	local nRefreshAnimationLeft, nRefreshAnimationTop, nRefreshAnimationRight, nRefreshAnimationBottom = wndRefreshAnimation:GetOriginalLocation():GetOffsets()
-	local nMTXSlotNotifyHeight = 0
-	wndMTXSlotNotify:Show(bDisplay)
-	
-	if bDisplay then
-		local wndSigPlayerBtn = wndMTXSlotNotify:FindChild("SigPlayerBtn")
-		local nUnlockAddSlotsBtnLeft, nUnlockAddSlotsBtnTop, nUnlockAddSlotsBtnRight, nUnlockAddSlotsBtnBottom = wndUnlockAddSlotsBtn:GetOriginalLocation():GetOffsets()
-		local nUnlockAddSlotsBtnPointsLeft, nUnlockAddSlotsBtnPointsTop, nUnlockAddSlotsBtnPointsRight, nUnlockAddSlotsPointsBtnBottom = wndUnlockAddSlotsBtn:GetOriginalLocation():GetPoints()
-		local nSigPlayerBtnPointsLeft, nSigPlayerBtnPointsTop, nSigPlayerBtnPointsRight, nSigPlayerBtnPointsBottom = wndSigPlayerBtn:GetOriginalLocation():GetPoints()
-		local wndMTXSlotNotifyBody = wndMTXSlotNotify:FindChild("Body")
+	-- If it isn't displayed, we don't need to update it.
+	local nUpsellHeight = 0
+	if bDisplayUpsell then
+		-- More window references
+		local wndMTXContainer = wndMTXSlotNotify:FindChild("ContentContainer")
+		local wndMTXContent = wndMTXSlotNotify:FindChild("UpsellContainer")
 		
-		nMTXSlotNotifyHeight = wndMTXSlotNotify:GetData()
-		if not nMTXSlotNotifyHeight then
-			nMTXSlotNotifyHeight = wndMTXSlotNotify:GetHeight()
-			wndMTXSlotNotify:SetData(nMTXSlotNotifyHeight)
+		-- Hide the icon if it isn't VIP and shift everything over
+		wndMTXContainer:FindChild("VIPIcon"):Show(bIsVIP)
+		wndMTXContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
+		
+		-- We do like our window references
+		local wndSigPlayerBtn = wndMTXContent:FindChild("SigPlayerBtn")
+		local wndMTXSlotNotifyBody = wndMTXContent:FindChild("Body")
+		
+		-- Set the correct text for each premium system (Signature is default)
+		local strSignatureText = "MarketplaceAuction_BecomeSignature"
+		if bIsVIP then
+			strSignatureText = "CRB_CN_BecomeVIPMember"
 		end
 		
-		local nSlotCount = not self.bStoreLinkValid and 0 or MarketplaceLib.GetSignatureAuctionsLimit() - nMaxSlots
-		if nSlotCount <= 0 then
-			wndSigPlayerBtn:Show(false)
-			wndMTXSlotNotifyBody:SetAML("<P Font=\"CRB_InterfaceMedium\" Align=\"Center\" TextColor=\"UI_TextHoloBody\">"..Apollo.GetString("MarketplaceAuction_UnlockAdditionalSlotsGroups").."</P>")
-		else
-			wndSigPlayerBtn:Show(true)
-			wndMTXSlotNotifyBody:SetAML("<P Font=\"CRB_InterfaceMedium\" Align=\"Center\" TextColor=\"UI_TextHoloBody\">"..String_GetWeaselString(Apollo.GetString("MarketplaceAuction_BecomeSignatureOrUnlock"), tostring(nSlotCount)).."</P>")
+		-- You can upgrade the tier if you aren't at the max
+		wndSigPlayerBtn:SetText(Apollo.GetString(strSignatureText))
+		wndSigPlayerBtn:Show(bCanUpgradeTier)
+		wndSigPlayerBtn:FindChild("MTCCallout"):Show(bIsHybrid)
+		
+		-- Hide the button to buy slots if you already have all the slots and shift everything over
+		local wndSlotsBtn = wndMTXContent:FindChild("UnlockSlotsBtn")
+		wndSlotsBtn:Show(bCanPurchaseUpgrades)
+		wndSlotsBtn:FindChild("MTCCallout"):Show(bIsHybrid)
+		wndMTXSlotNotify:FindChild("UpsellBtnContainer"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
+		
+		-- Using an ML string to set the height accurately later
+		local strMLString = ""
+		if bIsHybrid then
+			if bCanUpgradeTier then
+				local nCurrentTierMin = AccountItemLib.GetStaticRewardPropertyForTier(self.nPremiumTier, eRewardProperty, nil, true).nValue
+				local nNextTierMin = AccountItemLib.GetStaticRewardPropertyForTier(self.nPremiumTier + 1, eRewardProperty, nil, true).nValue
+				strMLString = String_GetWeaselString(Apollo.GetString("MarketplaceAuction_BecomeSignatureOrUnlock"), tostring(nNextTierMin - nCurrentTierMin))
+			elseif bCanPurchaseUpgrades then
+				strMLString = Apollo.GetString("MarketplaceAuction_UnlockAdditionalSlotsGroups")
+			end
+		elseif bIsVIP then
+			if bCanUpgradeTier then
+				strMLString = Apollo.GetString("Marketplace_VIPAccess")				
+			end
 		end
-		local nPrevMTXSlotBodyHeight = wndMTXSlotNotifyBody:GetData()
-		if not nPrevMTXSlotBodyHeight then
-			nPrevMTXSlotBodyHeight = wndMTXSlotNotifyBody:GetHeight()
-			wndMTXSlotNotifyBody:SetData(nPrevMTXSlotBodyHeight)
+		wndMTXSlotNotifyBody:SetAML(string.format("<P Font=\"CRB_InterfaceMedium\" Align=\"Left\" TextColor=\"UI_TextHoloBody\">%s</P>", strMLString))
+		
+		-- Resizing the Upsell windows
+		local nOldHeight = wndMTXSlotNotifyBody:GetHeight()
+		local nNewWidth, nNewHeight = wndMTXSlotNotifyBody:SetHeightToContentHeight()
+
+		local nTitleHeight = wndMTXSlotNotify:FindChild("Title"):GetHeight()
+		local nButtonHeight = wndMTXSlotNotify:FindChild("UpsellBtnContainer"):GetHeight()
+		local nDiff = nNewHeight - nOldHeight
+
+		if nDiff < 0 then
+			nDiff = 0
 		end
-		local nHeight = arPixOffsets[4] - arPixOffsets[2]
-		wndMTXSlotNotify:SetAnchorOffsets(arPixOffsets[1], nHeight, 0, nHeight) -- adjust the width so Body sizes correctly
-		local nMTXSlotBodyWidth, nMTXSlotBodyHeight = wndMTXSlotNotifyBody:SetHeightToContentHeight()
-		if nMTXSlotBodyHeight - nPrevMTXSlotBodyHeight > 0 then
-			nMTXSlotNotifyHeight = nMTXSlotNotifyHeight + (nMTXSlotBodyHeight - nPrevMTXSlotBodyHeight)
-		end
-		wndMTXSlotNotify:SetAnchorOffsets(arPixOffsets[1], nHeight, 0, nHeight + nMTXSlotNotifyHeight)
-		if nSlotCount <= 0 then
-			nUnlockAddSlotsBtnPointsLeft = nSigPlayerBtnPointsLeft
-			local nWidth = wndMTXSlotNotify:GetWidth() - wndUnlockAddSlotsBtn:GetWidth()
-			nUnlockAddSlotsBtnRight = nWidth / -2
-			nUnlockAddSlotsBtnLeft = math.abs(nUnlockAddSlotsBtnRight)
-		end
-		wndUnlockAddSlotsBtn:SetAnchorPoints(nUnlockAddSlotsBtnPointsLeft, nUnlockAddSlotsBtnPointsTop, nUnlockAddSlotsBtnPointsRight, nUnlockAddSlotsPointsBtnBottom)
-		wndUnlockAddSlotsBtn:SetAnchorOffsets(nUnlockAddSlotsBtnLeft, nUnlockAddSlotsBtnTop, nUnlockAddSlotsBtnRight, nUnlockAddSlotsBtnBottom)
+		
+		-- wndMTXContent's offsets got messed up when we called wndMTXSlotNotify:ArrangeChildrenHorz, so we'll fix it so the window resizes correctly
+		local nContentLeft, nContentTop, nContentRight, nContentBottom = wndMTXContent:GetAnchorOffsets()
+		wndMTXContent:SetAnchorOffsets(nContentLeft, nContentTop, nContentRight, nContentBottom + nDiff)
+		
+		local nFilterLeft, nFilterTop, nFilterRight, nFilterBottom = wndTop:FindChild("FilterContainer"):GetAnchorOffsets()
+		local nNotifyLeft, nNotifyTop, nNotifyRight, nNotifyBottom = wndMTXSlotNotify:GetAnchorOffsets()
+		wndMTXSlotNotify:SetAnchorOffsets(nNotifyLeft, nNotifyTop + nFilterBottom, nNotifyRight, nNotifyBottom + nFilterBottom + nDiff)
+		wndTop:Show(true)
+		
+		nUpsellHeight = wndMTXSlotNotify:GetHeight()
 	end
 	
-	wndWaitScreen:SetAnchorOffsets(nWaitScreenLeft, nWaitScreenTop + nMTXSlotNotifyHeight, nWaitScreenRight, nWaitScreenBottom)
-	wndSearchResultList:SetAnchorOffsets(nSearchResultListLeft, nSearchResultListTop + nMTXSlotNotifyHeight, nSearchResultListRight, nSearchResultListBottom)
-	wndRefreshAnimation:SetAnchorOffsets(nRefreshAnimationLeft, nRefreshAnimationTop + nMTXSlotNotifyHeight, nRefreshAnimationRight, nRefreshAnimationBottom)
+	local nOriginalLeft, nOriginalTop, nOriginalRight, nOriginalBottom = wndResultsContainer:GetOriginalLocation():GetOffsets()
+	wndResultsContainer:SetAnchorOffsets(nOriginalLeft, nOriginalTop + nUpsellHeight, nOriginalRight, nOriginalBottom)
 end
 
 -----------------------------------------------------------------------------------------------
@@ -1656,13 +1653,14 @@ end
 -----------------------------------------------------------------------------------------------
 
 function MarketplaceAuction:RefreshStoreLink()
-	local nMaxSlots = MarketplaceLib.GetMaxAuctions()
-	local bSellUpdated = self.tAuctionsCount and (nMaxSlots - self.tAuctionsCount.nSell) <= 0
-	local bBuyUpdated = self.tAuctionsCount and (nMaxSlots - self.tAuctionsCount.nBuy) <= 0
-	self.bAuctionsAndBidsFull = bSellUpdated or bBuyUpdated
-	
-	self.bStoreLinkValid = StorefrontLib.IsLinkValid(StorefrontLib.CodeEnumStoreLink.Signature) 
-	if self.bAuctionsAndBidsFull then
+	local nMaxAuctions = MarketplaceLib.GetMaxAuctions()
+	local nMaxBids = MarketplaceLib.GetMaxBids()
+	local bAuctionsFull = self.tAuctionsCount and nMaxAuctions <= self.tAuctionsCount.nSell
+	local bBidsFull = self.tAuctionsCount and nMaxBids <= self.tAuctionsCount.nBuy
+	self.bAuctionsOrBidsFull = bAuctionsFull or bBidsFull
+	 
+	self.bStoreLinkValid = StorefrontLib.IsLinkValid(StorefrontLib.CodeEnumStoreLink.Signature)
+	if self.bAuctionsOrBidsFull then
 		self.bStoreLinkValidExtras = StorefrontLib.IsLinkValid(StorefrontLib.CodeEnumStoreLink.ExtraAuctionsAndBids) 
 	end
 end

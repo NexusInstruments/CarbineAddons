@@ -7,6 +7,7 @@ require "Window"
 require "GameLib"
 require "ChallengesLib"
 require "RewardTrackLib"
+require "AccountItemLib"
 
 local ChallengeLog = {}
 local kIdAllZoneBtn = -1
@@ -53,8 +54,10 @@ function ChallengeLog:OnDocumentReady()
 	Apollo.RegisterEventHandler("RewardTrackUpdated",			"UpdateRewardTracker", self)
 	Apollo.RegisterEventHandler("RewardTrackActive",			"UpdateRewardTracker", self)
 	
-	Apollo.RegisterEventHandler("CharacterEntitlementUpdate",	"OnEntitlementUpdate", self)
-	Apollo.RegisterEventHandler("AccountEntitlementUpdate",		"OnEntitlementUpdate", self)
+	Apollo.RegisterEventHandler("PremiumTierChanged",			"OnPremiumTierChanged", self)
+	Apollo.RegisterEventHandler("CharacterEntitlementUpdate",	"UpdateSignatureControls", self)
+	Apollo.RegisterEventHandler("AccountEntitlementUpdate",		"UpdateSignatureControls", self)
+
 	Apollo.RegisterEventHandler("StoreLinksRefresh",			"RefreshStoreLink", self)
 
 	self.tTimerAreaRestriction =
@@ -339,7 +342,7 @@ function ChallengeLog:OnEditBoxChanged(wndHandler, wndControl, strText)
 	if strSearchString ~= "" then
 		for idx, clgCurrent in pairs(tChallengesByZoneId) do
 			local strChallengeName = clgCurrent:GetName():lower()
-			if strChallengeName:find(" "..strSearchString, 1, true) or string.sub(strChallengeName, 0, string.len(strSearchString)) == strSearchString then --Possibly clean up
+			if strChallengeName:find(" "..strSearchString, 1, true) or string.sub(strChallengeName, 0, Apollo.StringLength(strSearchString)) == strSearchString then --Possibly clean up
 				tFilteredChallengesByName[idx] = clgCurrent
 			end
         end
@@ -1768,14 +1771,21 @@ function ChallengeLog:HelperCurrentTypeAlreadyActive(eChallengeType, idChallenge
 	end
 end
 
-function ChallengeLog:OnEntitlementUpdate(tEntitlementInfo)
-	if not self.wndMain then
+function ChallengeLog:UpdateSignatureControls()
+	local unitPlayer = GameLib.GetPlayerUnit()
+	if unitPlayer then
+		self:OnPremiumTierChanged(AccountItemLib.GetPremiumSystem(), unitPlayer:GetPremiumTier())
+	end
+end
+
+function ChallengeLog:OnPremiumTierChanged(ePremiumSystem, nTier)
+	if not self.wndMain or ePremiumSystem ~= AccountItemLib.CodeEnumPremiumSystem.Hybrid then
 		return
 	end
 
-	local bSignature = AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0
+	local bSignature = nTier > 0
 	local bLoyaltyBonus = AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.LoyaltyChallengeBonus) > 0
-
+	
 	local wndRewardTracker = self.wndMain:FindChild("RewardTracker")
 	local wndBonusesContainer = wndRewardTracker:FindChild("BonusesContainer")
 	local wndIconMTXFormatContainer = wndBonusesContainer:FindChild("IconMTXFormatContainer")
@@ -1787,7 +1797,7 @@ function ChallengeLog:OnEntitlementUpdate(tEntitlementInfo)
 
 	if bSignature or bLoyaltyBonus then
 		wndProgressBar:SetFullSprite("challenges:sprChallenges_RewardsProgressFGSig")
-
+		
 		-- Set tooltip
 		local tRewardTrackInfo = ChallengesLib.GetRewardTrackInfo()
 		local nTotalBonus = 0
@@ -1826,9 +1836,8 @@ function ChallengeLog:OnEntitlementUpdate(tEntitlementInfo)
 end
 
 function ChallengeLog:RefreshStoreLink()
-	self.bStoreLinkValid = StorefrontLib.IsLinkValid(StorefrontLib.CodeEnumStoreLink.Signature) 
-	
-	self:OnEntitlementUpdate({ nEntitlementId = AccountItemLib.CodeEnumEntitlement.Free })
+	self.bStoreLinkValid = StorefrontLib.IsLinkValid(StorefrontLib.CodeEnumStoreLink.Signature)
+	self:UpdateSignatureControls()
 end
 
 function ChallengeLog:OnBecomeSignature(wndHandler, wndControl)

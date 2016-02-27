@@ -65,8 +65,6 @@ function Circles:OnDocumentReady()
 	
 	self.timerAlert = ApolloTimer.Create(3.0, false, "OnCircleAlertDisplayTimer", self)
 	self.timerAlert:Stop()
-	
-	self.bHasFullCircleAccess = (AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0 or AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.FullGuildsAccess) > 0)
 end
 
 function Circles:OnGenericEvent_InitializeCircles(wndParent, guildCurr)
@@ -240,7 +238,7 @@ function Circles:BuildRosterList(guildCurr, tRoster)
 			wndGrid:SetCellDoc(iCurrRow, 7, string.format("<T Font=\"CRB_InterfaceSmall\" TextColor=\"%s\">%s</T>", strTextColor, self:HelperConvertToTime(tCurr.fLastOnline)))
 			
 			wndGrid:SetCellDoc(iCurrRow, 8, "<T Font=\"CRB_InterfaceSmall\" TextColor=\""..strTextColor.."\">".. FixXMLString(tCurr.strNote) .."</T>")
-			wndGrid:SetCellLuaData(iCurrRow, 8, String_GetWeaselString(Apollo.GetString("GuildRoster_ActiveNoteTooltip"), tCurr.strName, string.len(tCurr.strNote) > 0 and tCurr.strNote or "N/A")) -- For tooltip
+			wndGrid:SetCellLuaData(iCurrRow, 8, String_GetWeaselString(Apollo.GetString("GuildRoster_ActiveNoteTooltip"), tCurr.strName, Apollo.StringLength(tCurr.strNote) > 0 and tCurr.strNote or "N/A")) -- For tooltip
 			if wndData ~= nil then
 				if tCurr.strName == wndData.strName then
 					wndGrid:SetCurrentRow(iCurrRow)
@@ -449,7 +447,7 @@ function Circles:HelperValidateAndRefreshRankSettingsWindow(wndSettings)
 	local strName = wndSettings:FindChild("Name:OptionString"):GetText()
 
 	if wndLimit ~= nil then
-		local nNameLength = string.len(strName or "")
+		local nNameLength = Apollo.StringLength(strName or "")
 
 		wndLimit:SetText(String_GetWeaselString(Apollo.GetString("CRB_Progress"), nNameLength, GameLib.GetTextTypeMaxLength(GameLib.CodeEnumUserText.GuildRankName)))
 		wndLimit:SetTextColor(nNameLength < 1 and crGuildNameLengthError or crGuildNameLengthGood)
@@ -531,8 +529,8 @@ function Circles:ResetRosterMemberButtons()
 		wndPromoteBtn:Enable(bSomeRowIsPicked and bTargetIsUnderMyRank)
 		wndDemoteBtn:Enable(bSomeRowIsPicked and bTargetIsUnderMyRank and wndRosterGrid:GetData().nRank ~= 10) -- Circles can't go below 10
 
-		wndAddBtn:Show(tMyRankPermissions and tMyRankPermissions.bInvite and self.bHasFullCircleAccess)
-		wndUnlockBtn:Show(not self.bHasFullCircleAccess and bStoreLinkValid)
+		wndAddBtn:Show(tMyRankPermissions and tMyRankPermissions.bInvite and GuildLib.CanInvite(GuildLib.GuildType_Circle))
+		wndUnlockBtn:Show(not GuildLib.CanCreate(GuildLib.GuildType_Circle) and bStoreLinkValid)
 		wndRemoveBtn:Show(tMyRankPermissions and tMyRankPermissions.bKick)
 		wndDemoteBtn:Show(tMyRankPermissions and tMyRankPermissions.bChangeMemberRank)
 		wndPromoteBtn:Show(tMyRankPermissions and tMyRankPermissions.bChangeMemberRank)
@@ -648,7 +646,7 @@ function Circles:OnAddMemberYesClick(wndHandler, wndControl) -- wndHandler is 'A
 	local guildCurr = self.tWndRefs.wndMain:GetData()
 	local wndEditBox = wndHandler:GetData()
 
-	if wndEditBox and wndEditBox:GetData() and string.len(wndEditBox:GetText()) > 0 then -- TODO: Additional string validation
+	if wndEditBox and wndEditBox:GetData() and Apollo.StringLength(wndEditBox:GetText()) > 0 then -- TODO: Additional string validation
 		guildCurr:Invite(wndEditBox:GetText())
 	end
 	self:OnRosterAddMemberCloseBtn()
@@ -864,7 +862,6 @@ function Circles:OnEntitlementUpdate(tEntitlementInfo)
 		return
 	end
 	if tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.Signature or tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.Free or tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.FullGuildsAccess then
-		self.bHasFullCircleAccess = (AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0 or AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.FullGuildsAccess) > 0)
 		self:ResetRosterMemberButtons()
 	end
 end

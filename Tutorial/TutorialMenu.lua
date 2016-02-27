@@ -416,7 +416,7 @@ end
 
 function TutorialMenu:OnSearchTopLeftInputBoxChanged(wndHandler, wndControl)
 	local strInput = Apollo.StringToLower(wndHandler:GetText())
-	local bInputExists = string.len(strInput) > 0
+	local bInputExists = Apollo.StringLength(strInput) > 0
 
 	self.tWndRefs.wndSearch:FindChild("SearchTopLeftClearBtn"):Show(bInputExists)
 	

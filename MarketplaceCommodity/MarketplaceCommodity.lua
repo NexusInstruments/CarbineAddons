@@ -9,6 +9,7 @@ require "Money"
 require "MarketplaceLib"
 require "CommodityOrder"
 require "StorefrontLib"
+require "AccountItemLib"
 
 local MarketplaceCommodity = {}
 
@@ -20,12 +21,10 @@ local ktOrderAverages =
 }
 
 local knMinLevel = 1
-local knMaxLevel = 50 -- TODO: Replace with a variable from code
+local knMaxLevel = 300
 
 local kCommodityAuctionRake = MarketplaceLib.kCommodityAuctionRake
 local kAuctionSearchMaxResults = MarketplaceLib.kAuctionSearchMaxResults
-local kMaxCommodityOrder = MarketplaceLib.kMaxCommodityOrder -- An order can only go up to 200 stock
-local kstrAuctionOrderDuration = MarketplaceLib.kCommodityOrderListTimeDays
 local knButtonTextPadding = 10
 
 local karEvalStrings =
@@ -80,16 +79,19 @@ function MarketplaceCommodity:OnDocumentReady()
 	Apollo.RegisterEventHandler("CommodityInfoResults", 			"OnCommodityInfoResults", self)
 	Apollo.RegisterEventHandler("OwnedCommodityOrders", 			"OnCommodityDataReceived", self)
 	Apollo.RegisterEventHandler("MarketplaceWindowClose", 			"OnWindowClose", self)
-	Apollo.RegisterEventHandler("CharacterEntitlementUpdate",		"OnEntitlementUpdate", self)
 	Apollo.RegisterEventHandler("AccountEntitlementUpdate",			"OnEntitlementUpdate", self)
-	Apollo.RegisterEventHandler("StoreLinksRefresh",						"RequestOrderUpdate", self)
+	Apollo.RegisterEventHandler("PremiumSystemUpdate",				"OnPremiumSystemUpdate", self)
+	Apollo.RegisterEventHandler("StoreLinksRefresh",				"RequestOrderUpdate", self)
 	
 	Apollo.RegisterTimerHandler("PostResultTimer", 					"OnPostResultTimer", self)
+
+	self.tOrdersCount =
+	{
+		nBuy = 0,
+		nSell = 0,
+	}
 	
-	self.nCurMaxSlots = 0
-	self.nPrevCommoditiesCount = 0
-	self.nOwnedBuyOrderCount = 0
-	self.nOwnedSellOrderCount = 0
+	self.tWndRefs = {}
 end
 
 function MarketplaceCommodity:OnWindowManagementReady()
@@ -97,17 +99,17 @@ function MarketplaceCommodity:OnWindowManagementReady()
 end
 
 function MarketplaceCommodity:OnWindowClose()
-	if self.wndMain and self.wndMain:IsValid() then
+	if self.tWndRefs.wndMain and self.tWndRefs.wndMain:IsValid() then
 		self:OnSearchClearBtn()
-		self.wndMain:Destroy()
-		self.wndMain = nil
+		self.tWndRefs.wndMain:Destroy()
+		self.tWndRefs = {}
 	end
 	Event_CancelCommodities()
 end
 
 function MarketplaceCommodity:OnCloseBtnSignal()
-	if self.wndMain and self.wndMain:IsValid() then
-		self.wndMain:Close()
+	if self.tWndRefs.wndMain and self.tWndRefs.wndMain:IsValid() then
+		self.tWndRefs.wndMain:Close()
 	end
 end
 
@@ -117,32 +119,38 @@ function MarketplaceCommodity:Initialize()
 		return
 	end
 
-	if self.wndMain and self.wndMain:IsValid() then
-		self.wndMain:Destroy()
+	if self.tWndRefs.wndMain and self.tWndRefs.wndMain:IsValid() then
+		self.tWndRefs.wndMain:Destroy()
 	end
 
-	self.wndMain = Apollo.LoadForm(self.xmlDoc, "MarketplaceCommodityForm", nil, self)
-	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.wndMain, strName = Apollo.GetString("MarketplaceCommodity_CommoditiesExchange")})
+	self.tWndRefs.wndMain = Apollo.LoadForm(self.xmlDoc, "MarketplaceCommodityForm", nil, self)
+	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.tWndRefs.wndMain, strName = Apollo.GetString("MarketplaceCommodity_CommoditiesExchange")})
 
-	self.wndOrderLimitText = self.wndMain:FindChild("OpenMarketListingsBtn")
+	self.tWndRefs.wndMain:SetSizingMinimum(790, 600)
+	self.tWndRefs.wndMain:SetSizingMaximum(790, 1600)
 
-	self.wndMain:SetSizingMinimum(790, 600)
-	self.wndMain:SetSizingMaximum(790, 1600)
+	self.tWndRefs.wndMain:FindChild("FilterOptionsBtn"):AttachWindow(self.tWndRefs.wndMain:FindChild("FilterOptionsContainer"))
+	local wndMaxContainer = self.tWndRefs.wndMain:FindChild("FilterOptionsLevelMaxContainer")
+	wndMaxContainer:FindChild("FilterOptionsLevelUpBtn"):SetData(self.tWndRefs.wndMain:FindChild("FilterOptionsLevelMaxContainer"))
+	wndMaxContainer:FindChild("FilterOptionsLevelDownBtn"):SetData(self.tWndRefs.wndMain:FindChild("FilterOptionsLevelMaxContainer"))
+	wndMaxContainer:FindChild("FilterOptionsLevelEditBox"):SetText(knMaxLevel)
+	wndMaxContainer:FindChild("FilterOptionsLevelUpBtn"):Enable(false)
 
-	self.wndMain:FindChild("FilterOptionsBtn"):AttachWindow(self.wndMain:FindChild("FilterOptionsContainer"))
-	self.wndMain:FindChild("FilterOptionsLevelMaxContainer"):FindChild("FilterOptionsLevelUpBtn"):SetData(self.wndMain:FindChild("FilterOptionsLevelMaxContainer"))
-	self.wndMain:FindChild("FilterOptionsLevelMaxContainer"):FindChild("FilterOptionsLevelDownBtn"):SetData(self.wndMain:FindChild("FilterOptionsLevelMaxContainer"))
-	self.wndMain:FindChild("FilterOptionsLevelMaxContainer"):FindChild("FilterOptionsLevelEditBox"):SetText(knMaxLevel)
-	self.wndMain:FindChild("FilterOptionsLevelMaxContainer"):FindChild("FilterOptionsLevelUpBtn"):Enable(false)
+	local wndMinContainer = self.tWndRefs.wndMain:FindChild("FilterOptionsLevelMinContainer")
+	wndMinContainer:FindChild("FilterOptionsLevelUpBtn"):SetData(self.tWndRefs.wndMain:FindChild("FilterOptionsLevelMinContainer"))
+	wndMinContainer:FindChild("FilterOptionsLevelDownBtn"):SetData(self.tWndRefs.wndMain:FindChild("FilterOptionsLevelMinContainer"))
+	wndMinContainer:FindChild("FilterOptionsLevelEditBox"):SetText(knMinLevel)
+	wndMinContainer:FindChild("FilterOptionsLevelDownBtn"):Enable(false)
 
-	self.wndMain:FindChild("FilterOptionsLevelMinContainer"):FindChild("FilterOptionsLevelUpBtn"):SetData(self.wndMain:FindChild("FilterOptionsLevelMinContainer"))
-	self.wndMain:FindChild("FilterOptionsLevelMinContainer"):FindChild("FilterOptionsLevelDownBtn"):SetData(self.wndMain:FindChild("FilterOptionsLevelMinContainer"))
-	self.wndMain:FindChild("FilterOptionsLevelMinContainer"):FindChild("FilterOptionsLevelEditBox"):SetText(knMinLevel)
-	self.wndMain:FindChild("FilterOptionsLevelMinContainer"):FindChild("FilterOptionsLevelDownBtn"):Enable(false)
-
-	self.wndMain:FindChild("PostResultNotification"):Show(false, true)
-	self.wndMain:FindChild("WaitingScreen"):Show(false, true)
-	self.wndMain:FindChild("HeaderBuyNowBtn"):SetCheck(true)
+	self.tWndRefs.wndMain:FindChild("PostResultNotification"):Show(false, true)
+	self.tWndRefs.wndMain:FindChild("WaitingScreen"):Show(false, true)
+	
+	self.tWndRefs.wndBuyNowHeader 		= self.tWndRefs.wndMain:FindChild("HeaderBuyNowBtn")
+	self.tWndRefs.wndBuyOrderHeader 	= self.tWndRefs.wndMain:FindChild("HeaderBuyOrderBtn")
+	self.tWndRefs.wndSellNowHeader 		= self.tWndRefs.wndMain:FindChild("HeaderSellNowBtn")
+	self.tWndRefs.wndSellOrderHeader 	= self.tWndRefs.wndMain:FindChild("HeaderSellOrderBtn")
+	
+	self.tWndRefs.wndBuyNowHeader:SetCheck(true)
 
 	-- Item Filtering (Rarity)
 	self.tFilteredRarity =
@@ -162,7 +170,7 @@ function MarketplaceCommodity:Initialize()
 	end
 	table.sort(tItemQualities, function(a,b) return a.nQuality < b.nQuality end)
 
-	local wndFilterParent = self.wndMain:FindChild("FilterContainer"):FindChild("FilterOptionsRarityList")
+	local wndFilterParent = self.tWndRefs.wndMain:FindChild("FilterContainer"):FindChild("FilterOptionsRarityList")
 	for idx, tQuality in ipairs(tItemQualities) do
 		local wndFilter = Apollo.LoadForm(self.xmlDoc, "FilterOptionsRarityItem", wndFilterParent, self)
 		wndFilter:FindChild("FilterOptionsRarityItemBtn"):SetCheck(true)
@@ -172,13 +180,16 @@ function MarketplaceCommodity:Initialize()
 		wndFilter:FindChild("FilterOptionsRarityItemColor"):SetBGColor(karEvalColors[tQuality.nQuality])
 	end
 	wndFilterParent:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	
+	self.ePremiumSystem = AccountItemLib.GetPremiumSystem()
+	self.nPremiumTier = AccountItemLib.GetPremiumTier()
 
 	self:InitializeCategories()
 	self:OnResizeCategories()
 	self:OnHeaderBtnToggle()
 	MarketplaceLib.RequestOwnedCommodityOrders()
 	
-	self.wndMain:Invoke()
+	self.tWndRefs.wndMain:Invoke()
 
 	Sound.Play(Sound.PlayUIWindowCommoditiesExchangeOpen)
 end
@@ -196,7 +207,7 @@ function MarketplaceCommodity:InitializeCategories()
 	for idx, tData in pairs(tFlattenedList) do
 		local tTopCategory = tData.tTopCategory
 		local tMidCategory = tData.tMidCategory
-		local wndTop = self:LoadByName("CategoryTopItem", self.wndMain:FindChild("MainCategoryContainer"), tMidCategory.strName)
+		local wndTop = self:LoadByName("CategoryTopItem", self.tWndRefs.wndMain:FindChild("MainCategoryContainer"), tMidCategory.strName)
 		wndTop:FindChild("CategoryTopBtn"):SetText(tMidCategory.strName)
 		wndTop:FindChild("CategoryTopBtn"):SetData(wndTop)
 
@@ -214,17 +225,17 @@ function MarketplaceCommodity:InitializeCategories()
 		end
 	end
 
-	self.wndMain:FindChild("MainCategoryContainer"):SetData({ nTopCategory = 0, nMidCategory = 0, nBotCategory = 0 })
+	self.tWndRefs.wndMain:FindChild("MainCategoryContainer"):SetData({ nTopCategory = 0, nMidCategory = 0, nBotCategory = 0 })
 end
 
 function MarketplaceCommodity:OnResizeCategories() -- Can come from XML
-	for idx, wndTop in pairs(self.wndMain:FindChild("MainCategoryContainer"):GetChildren()) do
+	for idx, wndTop in pairs(self.tWndRefs.wndMain:FindChild("MainCategoryContainer"):GetChildren()) do
 		local nListHeight = wndTop:FindChild("CategoryTopBtn"):IsChecked() and (wndTop:FindChild("CategoryTopList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop) + 12) or 0
 		local nLeft, nTop, nRight, nBottom = wndTop:GetAnchorOffsets()
 		wndTop:SetAnchorOffsets(nLeft, nTop, nRight, nTop + nListHeight + 44)
 	end
-	self.wndMain:FindChild("MainCategoryContainer"):RecalculateContentExtents()
-	self.wndMain:FindChild("MainCategoryContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	self.tWndRefs.wndMain:FindChild("MainCategoryContainer"):RecalculateContentExtents()
+	self.tWndRefs.wndMain:FindChild("MainCategoryContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 -----------------------------------------------------------------------------------------------
@@ -233,30 +244,30 @@ end
 
 function MarketplaceCommodity:OnHeaderBtnToggle()
 	-- Filters
-	local wndFilter = self.wndMain:FindChild("FilterContainer")
+	local wndFilter = self.tWndRefs.wndMain:FindChild("FilterContainer")
 	local bFilterActive = wndFilter:FindChild("FilterClearBtn"):GetData() or false
 	wndFilter:FindChild("FilterOptionsContainer"):Show(false)
 	wndFilter:FindChild("FilterClearBtn"):Show(bFilterActive) -- GOTCHA: Visibility update is delayed until a manual reset
 
 	-- Main Build
-	self.wndMain:FindChild("MainScrollContainer"):DestroyChildren() -- TODO refactor
-	if self.wndMain:FindChild("HeaderSellNowBtn"):IsChecked() or self.wndMain:FindChild("HeaderSellOrderBtn"):IsChecked() then
+	self.tWndRefs.wndMain:FindChild("MainScrollContainer"):DestroyChildren() -- TODO refactor
+	if self.tWndRefs.wndSellNowHeader:IsChecked() or self.tWndRefs.wndSellOrderHeader:IsChecked() then
 		self:InitializeSell()
-	elseif self.wndMain:FindChild("HeaderBuyNowBtn"):IsChecked() or self.wndMain:FindChild("HeaderBuyOrderBtn"):IsChecked() then
+	elseif self.tWndRefs.wndBuyNowHeader:IsChecked() or self.tWndRefs.wndBuyOrderHeader:IsChecked() then
 		self:InitializeBuy()
 	end
 
 	-- Empty message (if applicable)
 	local strMessage = ""
-	local bNoResults = #self.wndMain:FindChild("MainScrollContainer"):GetChildren() == 0
-	if bNoResults and string.len(self.wndMain:FindChild("SearchEditBox"):GetText()) > 0 then
+	local bNoResults = #self.tWndRefs.wndMain:FindChild("MainScrollContainer"):GetChildren() == 0
+	if bNoResults and Apollo.StringLength(self.tWndRefs.wndMain:FindChild("SearchEditBox"):GetText()) > 0 then
 		strMessage = Apollo.GetString("MarketplaceCommodity_NoResults")
 	elseif bNoResults then -- If it's a buy tab, and they haven't clicked a category, do a custom message
 		local bAnyCategoryChecked = false
-		if self.wndMain:FindChild("HeaderSellNowBtn"):IsChecked() or self.wndMain:FindChild("HeaderSellOrderBtn"):IsChecked() then
+		if self.tWndRefs.wndSellNowHeader:IsChecked() or self.tWndRefs.wndSellOrderHeader:IsChecked() then
 			bAnyCategoryChecked = true
 		else
-			for idx, wndCurr in pairs(self.wndMain:FindChild("MainCategoryContainer"):GetChildren()) do
+			for idx, wndCurr in pairs(self.tWndRefs.wndMain:FindChild("MainCategoryContainer"):GetChildren()) do
 				if wndCurr:FindChild("CategoryTopBtn") and wndCurr:FindChild("CategoryTopBtn"):IsChecked() then
 					bAnyCategoryChecked = true
 					break
@@ -265,9 +276,9 @@ function MarketplaceCommodity:OnHeaderBtnToggle()
 		end
 		strMessage = bAnyCategoryChecked and Apollo.GetString("MarketplaceCommodity_NoResults") or Apollo.GetString("MarketplaceCommodity_PickACategory")
 	end
-	self.wndMain:FindChild("MainScrollContainer"):SetText(strMessage)
-	self.wndMain:FindChild("MainScrollContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
-	self.wndMain:FindChild("MainScrollContainer"):SetVScrollPos(0)
+	self.tWndRefs.wndMain:FindChild("MainScrollContainer"):SetText(strMessage)
+	self.tWndRefs.wndMain:FindChild("MainScrollContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	self.tWndRefs.wndMain:FindChild("MainScrollContainer"):SetVScrollPos(0)
 	self:OnResizeCategories()
 end
 
@@ -277,7 +288,7 @@ function MarketplaceCommodity:InitializeSell()
 	local unitPlayer = GameLib.GetPlayerUnit()
 
 	-- Helper method
-	local tCategoryFilterDataIds = self.wndMain:FindChild("MainCategoryContainer"):GetData() or { nTopCategory = 0, nMidCategory = 0, nBotCategory = 0 }
+	local tCategoryFilterDataIds = self.tWndRefs.wndMain:FindChild("MainCategoryContainer"):GetData() or { nTopCategory = 0, nMidCategory = 0, nBotCategory = 0 }
 	local function HelperValidateCategory(tCategoryFilterDataIds, itemCurr)
 		if tCategoryFilterDataIds.nBotCategory ~= 0 then
 			return tCategoryFilterDataIds.nBotCategory == itemCurr:GetItemType()
@@ -309,19 +320,19 @@ function MarketplaceCommodity:InitializeSell()
 	table.sort(tBothItemTables, function(a,b) return a.strName < b.strName end)
 
 	-- Show only the relevant categories
-	self.wndMain:FindChild("FilterContainer"):Show(false)
-	for idx, wndCurr in pairs(self.wndMain:FindChild("MainCategoryContainer"):GetChildren()) do
+	self.tWndRefs.wndMain:FindChild("FilterContainer"):Show(false)
+	for idx, wndCurr in pairs(self.tWndRefs.wndMain:FindChild("MainCategoryContainer"):GetChildren()) do
 		wndCurr:Show(tAllCategoryNames[wndCurr:GetName()]) -- Compare name against window name
 	end
 
 	-- Now build the window and do another layer of filtering
-	local strSearchFilter = Apollo.StringToLower(self.wndMain:FindChild("SearchEditBox"):GetText() or "")
-	local bSkipSearchFilter = string.len(strSearchFilter) == 0
+	local strSearchFilter = Apollo.StringToLower(self.tWndRefs.wndMain:FindChild("SearchEditBox"):GetText() or "")
+	local bSkipSearchFilter = Apollo.StringLength(strSearchFilter) == 0
 	
 	for key, tCurrData in pairs(tBothItemTables) do
 		local tCurrItem = tCurrData.tCurrItem
 		if tCurrItem and tCurrItem:IsCommodity() and (bSkipSearchFilter or string.find(Apollo.StringToLower(tCurrData.strName), strSearchFilter)) then
-			local bSellNow = self.wndMain:FindChild("HeaderSellNowBtn"):IsChecked()
+			local bSellNow = self.tWndRefs.wndSellNowHeader:IsChecked()
 			local strWindow = bSellNow and "SimpleListItem" or "AdvancedListItem"
 			local strButtonText = bSellNow and Apollo.GetString("MarketplaceCommodity_SellNow") or Apollo.GetString("MarketplaceCommodity_CreateSellOrder")
 			self:BuildListItem(tCurrItem, strWindow, strButtonText)
@@ -335,8 +346,8 @@ end
 function MarketplaceCommodity:InitializeBuy()
 	-- Category showing / hiding
 	local bAnyCategoryChecked = false
-	self.wndMain:FindChild("FilterContainer"):Show(true)
-	for idx, wndCurr in pairs(self.wndMain:FindChild("MainCategoryContainer"):GetChildren()) do
+	self.tWndRefs.wndMain:FindChild("FilterContainer"):Show(true)
+	for idx, wndCurr in pairs(self.tWndRefs.wndMain:FindChild("MainCategoryContainer"):GetChildren()) do
 		wndCurr:Show(true) -- Sell may hide the irrelevant categories
 		if not bAnyCategoryChecked and wndCurr:FindChild("CategoryTopBtn") and wndCurr:FindChild("CategoryTopBtn"):IsChecked() then
 			bAnyCategoryChecked = true
@@ -345,17 +356,17 @@ function MarketplaceCommodity:InitializeBuy()
 
 	MarketplaceLib.RequestOwnedCommodityOrders() -- Leads to OwnedCommodityOrders
 	-- Early exit if no search or category (completely blank UI)
-	local strSearchFilter = self.wndMain:FindChild("SearchEditBox"):GetText()
-	if not bAnyCategoryChecked and string.len(strSearchFilter) == 0 then
+	local strSearchFilter = self.tWndRefs.wndMain:FindChild("SearchEditBox"):GetText()
+	if not bAnyCategoryChecked and Apollo.StringLength(strSearchFilter) == 0 then
 		return
 	end
 
-	local bBuyNow = self.wndMain:FindChild("HeaderBuyNowBtn"):IsChecked()
+	local bBuyNow = self.tWndRefs.wndBuyNowHeader:IsChecked()
 	local strWindow = bBuyNow and "SimpleListItem" or "AdvancedListItem"
 	local strBtnText = bBuyNow and Apollo.GetString("MarketplaceCommodity_BuyNow") or Apollo.GetString("MarketplaceCommodity_CreateBuyOrder")
 
 	-- Level Filtering
-	local wndFilter = self.wndMain:FindChild("FilterContainer")
+	local wndFilter = self.tWndRefs.wndMain:FindChild("FilterContainer")
 	local nLevelMin = tonumber(wndFilter:FindChild("FilterOptionsLevelMinContainer"):FindChild("FilterOptionsLevelEditBox"):GetText()) or knMinLevel
 	local nLevelMax = tonumber(wndFilter:FindChild("FilterOptionsLevelMaxContainer"):FindChild("FilterOptionsLevelEditBox"):GetText()) or knMaxLevel
 	if nLevelMin == knMinLevel then
@@ -383,7 +394,7 @@ function MarketplaceCommodity:InitializeBuy()
 		end
 	end
 
-	local tCategoryFilter = self.wndMain:FindChild("MainCategoryContainer"):GetData() or { nTopCategory = 0, nMidCategory = 0, nBotCategory = 0 }
+	local tCategoryFilter = self.tWndRefs.wndMain:FindChild("MainCategoryContainer"):GetData() or { nTopCategory = 0, nMidCategory = 0, nBotCategory = 0 }
 	local tSearchResults, bHitMax = MarketplaceLib.SearchCommodityItems(strSearchFilter, tCategoryFilter.nTopCategory, tCategoryFilter.nMidCategory, tCategoryFilter.nBotCategory, fnFilter)
 
 	-- Draw results then request info for each result
@@ -395,7 +406,7 @@ function MarketplaceCommodity:InitializeBuy()
 
 	-- If too many results, show a message
 	if bHitMax then
-		local wndSearchFail = self:LoadByName("TooManySearchResultsText", self.wndMain:FindChild("MainScrollContainer"), "TooManySearchResultsText")
+		local wndSearchFail = self:LoadByName("TooManySearchResultsText", self.tWndRefs.wndMain:FindChild("MainScrollContainer"), "TooManySearchResultsText")
 		local strFilterOrNot = ""
 		if wndFilter:FindChild("FilterClearBtn"):GetData() then
 			strFilterOrNot = "MarketplaceCommodity_TooManyResultsFilter"
@@ -407,23 +418,23 @@ function MarketplaceCommodity:InitializeBuy()
 end
 
 function MarketplaceCommodity:OnSearchEditBoxChanged(wndHandler, wndControl) -- SearchEditBox
-	self.wndMain:FindChild("SearchClearBtn"):Show(string.len(wndHandler:GetText() or "") > 0)
+	self.tWndRefs.wndMain:FindChild("SearchClearBtn"):Show(Apollo.StringLength(wndHandler:GetText() or "") > 0)
 end
 
 function MarketplaceCommodity:OnSearchClearBtn(wndHandler, wndControl)
-	self.wndMain:FindChild("SearchEditBox"):SetText("")
-	self.wndMain:FindChild("SearchClearBtn"):Show(false)
+	self.tWndRefs.wndMain:FindChild("SearchEditBox"):SetText("")
+	self.tWndRefs.wndMain:FindChild("SearchClearBtn"):Show(false)
 	self:OnSearchCommitBtn()
 end
 
 function MarketplaceCommodity:OnSearchCommitBtn(wndHandler, wndControl) -- ALso SearchEditBox's WindowKeyReturn
-	self.wndMain:FindChild("SearchClearBtn"):SetFocus()
-	self.wndMain:FindChild("RefreshAnimation"):SetSprite("CRB_WindowAnimationSprites:sprWinAnim_BirthSmallTemp")
+	self.tWndRefs.wndMain:FindChild("SearchClearBtn"):SetFocus()
+	self.tWndRefs.wndMain:FindChild("RefreshAnimation"):SetSprite("CRB_WindowAnimationSprites:sprWinAnim_BirthSmallTemp")
 	self:OnHeaderBtnToggle()
 end
 
 function MarketplaceCommodity:OnRefreshBtn(wndHandler, wndControl) -- Also from lua and multiple XML buttons
-	self.wndMain:FindChild("RefreshAnimation"):SetSprite("CRB_WindowAnimationSprites:sprWinAnim_BirthSmallTemp")
+	self.tWndRefs.wndMain:FindChild("RefreshAnimation"):SetSprite("CRB_WindowAnimationSprites:sprWinAnim_BirthSmallTemp")
 	self:OnHeaderBtnToggle()
 end
 
@@ -433,16 +444,21 @@ end
 
 function MarketplaceCommodity:BuildListItem(tCurrItem, strWindowName, strBtnText)
 	local nItemId = tCurrItem:GetItemId()
-	local bSellNowOrSellOrder = self.wndMain:FindChild("HeaderSellNowBtn"):IsChecked() or self.wndMain:FindChild("HeaderSellOrderBtn"):IsChecked()
+	local bSellNowOrSellOrder = self.tWndRefs.wndSellNowHeader:IsChecked() or self.tWndRefs.wndSellOrderHeader:IsChecked()
 	local nIconBackpackCount = bSellNowOrSellOrder and tCurrItem:GetBackpackCount() or ""
-	local wndCurr = self:LoadByName(strWindowName, self.wndMain:FindChild("MainScrollContainer"), nItemId)
+	local wndCurr = self:LoadByName(strWindowName, self.tWndRefs.wndMain:FindChild("MainScrollContainer"), nItemId)
+	
+	local wndSubmitBtn = wndCurr:FindChild("ListSubmitBtn")
+	local wndListIcon = wndCurr:FindChild("ListIcon")
+	local luaSubClass = wndListIcon:GetWindowSubclass()
+	luaSubClass:SetItem(tCurrItem)
+		
 	wndCurr:FindChild("ListInputPrice"):SetData(wndCurr)
-	wndCurr:FindChild("ListSubmitBtn"):SetData({tCurrItem, wndCurr})
-	wndCurr:FindChild("ListSubmitBtn"):Enable(false)
-	wndCurr:FindChild("ListSubmitBtn"):SetText(strBtnText)
+	wndSubmitBtn:SetData({tCurrItem, wndCurr})
+	wndSubmitBtn:Enable(false)
+	wndSubmitBtn:SetText(strBtnText)
 	wndCurr:FindChild("ListName"):SetText(tCurrItem:GetName())
-	wndCurr:FindChild("ListIcon"):SetData(tCurrItem)
-	wndCurr:FindChild("ListIcon"):SetSprite(tCurrItem:GetIcon())
+	wndListIcon:SetData(tCurrItem)
 	wndCurr:FindChild("ListCount"):SetData(nIconBackpackCount)
 	wndCurr:FindChild("ListCount"):SetText(nIconBackpackCount)
 	wndCurr:FindChild("ListInputNumberUpBtn"):SetData(wndCurr)
@@ -489,11 +505,11 @@ end
 
 function MarketplaceCommodity:OnListInputNumberHelper(wndParent, nNewValue)
 	local nMax = MarketplaceLib.kMaxCommodityOrder
-	if self.wndMain:FindChild("HeaderSellNowBtn"):IsChecked() or self.wndMain:FindChild("HeaderSellOrderBtn"):IsChecked() then
+	if self.tWndRefs.wndSellNowHeader:IsChecked() or self.tWndRefs.wndSellOrderHeader:IsChecked() then
 		nMax = math.min(nMax, tonumber(wndParent:FindChild("ListCount"):GetData()))
 	end
 	
-	if self.wndMain:FindChild("HeaderSellNowBtn"):IsChecked() or self.wndMain:FindChild("HeaderBuyNowBtn"):IsChecked() then
+	if self.tWndRefs.wndSellNowHeader:IsChecked() or self.tWndRefs.wndBuyNowHeader:IsChecked() then
 		self:UpdateDisplayedAverage(wndParent, nNewValue)
 	end
 
@@ -503,21 +519,16 @@ function MarketplaceCommodity:OnListInputNumberHelper(wndParent, nNewValue)
 end
 
 function MarketplaceCommodity:OnListInputPriceAmountChanged(wndHandler, wndControl) -- ListInputPrice, data is parent
-	local nNumDisplay = math.max(0, tonumber(wndHandler:GetAmount() or 0))
-	wndHandler:SetText(nNumDisplay)
-
 	-- Allow order posting
 	local wndParent = wndHandler:GetData()
 	self:HelperValidateListInputForSubmit(wndParent)
 end
 
 function MarketplaceCommodity:OnListInputPriceMouseDown(wndHandler, wndControl)
-	wndHandler:SetStyleEx("SkipZeroes", false)
 	self:HelperValidateListInputForSubmit(wndHandler:GetData())
 end
 
 function MarketplaceCommodity:OnListInputPriceLoseFocus(wndHandler, wndControl)
-	wndHandler:SetStyleEx("SkipZeroes", true)
 	self:HelperValidateListInputForSubmit(wndHandler:GetData())
 end
 
@@ -535,12 +546,12 @@ function MarketplaceCommodity:HelperValidateListInputForSubmit(wndParent)
 
 	local wndListInputPrice = wndParent:FindChild("ListInputPrice")
 	if wndListInputPrice and wndParent:FindChild("ListInputNumber") and wndParent:FindChild("ListInputNumber"):IsValid() then
-		nPrice = math.max(0, tonumber(wndListInputPrice:GetAmount() or 0)) * tonumber(wndParent:FindChild("ListInputNumber"):GetText())
+		nPrice = math.max(0, tonumber(wndListInputPrice:GetAmount():GetAmount() or 0)) * tonumber(wndParent:FindChild("ListInputNumber"):GetText())
 		nPrice = nPrice + math.max(nPrice * MarketplaceLib.kfCommodityBuyOrderTaxMultiplier, MarketplaceLib.knCommodityBuyOrderTaxMinimum)
 	end
 
 	local bCanAfford = true
-	if self.wndMain:FindChild("HeaderBuyNowBtn"):IsChecked() or self.wndMain:FindChild("HeaderBuyOrderBtn"):IsChecked() then
+	if self.tWndRefs.wndBuyNowHeader:IsChecked() or self.tWndRefs.wndBuyOrderHeader:IsChecked() then
 		bCanAfford = GameLib.GetPlayerCurrency():GetAmount() > nPrice
 	end
 
@@ -558,14 +569,16 @@ function MarketplaceCommodity:HelperValidateListInputForSubmit(wndParent)
 
 	local wndListSubmitBtn = wndParent:FindChild("ListSubmitBtn")
 	if wndListSubmitBtn then
-		local bEnable = nPrice > 0 and nQuantity > 0 and nQuantity <= kMaxCommodityOrder and nAvailable > 0 and bCanAfford
+		local tAuctionAccess = AccountItemLib.GetPlayerRewardProperty(AccountItemLib.CodeEnumRewardProperty.CommodityAccess)
+		local bHasAccess = tAuctionAccess and tAuctionAccess.nValue ~= 0
+		local bEnable = nPrice > 0 and nQuantity > 0 and nQuantity <= MarketplaceLib.kMaxCommodityOrder and nAvailable > 0 and bCanAfford and bHasAccess
 		wndListSubmitBtn:Enable(bEnable)
 		if bEnable then
 			local tCurrItem = wndListSubmitBtn:GetData()[1]
 			local wndParent = wndListSubmitBtn:GetData()[2]
-			local monPricePerUnit = wndParent:FindChild("ListInputPrice"):GetCurrency() -- not an integer
+			local monPricePerUnit = wndParent:FindChild("ListInputPrice"):GetAmount() -- not an integer
 			local nOrderCount = tonumber(wndParent:FindChild("ListInputNumber"):GetText())
-			local bBuyTab = self.wndMain:FindChild("HeaderBuyNowBtn"):IsChecked() or self.wndMain:FindChild("HeaderBuyOrderBtn"):IsChecked()
+			local bBuyTab = self.tWndRefs.wndBuyNowHeader:IsChecked() or self.tWndRefs.wndBuyOrderHeader:IsChecked()
 
 			if wndParent:FindChild("ListLowerThanVendor") then
 				local nItemPrice = 0
@@ -582,7 +595,7 @@ function MarketplaceCommodity:HelperValidateListInputForSubmit(wndParent)
 			if nOrderCount and monPricePerUnit:GetAmount() > 0 then
 				orderNew:SetCount(nOrderCount)
 				orderNew:SetPrices(monPricePerUnit)
-				orderNew:SetForceImmediate(self.wndMain:FindChild("HeaderBuyNowBtn"):IsChecked() or self.wndMain:FindChild("HeaderSellNowBtn"):IsChecked())
+				orderNew:SetForceImmediate(self.tWndRefs.wndBuyNowHeader:IsChecked() or self.tWndRefs.wndSellNowHeader:IsChecked())
 			end
 
 			if not nOrderCount or not monPricePerUnit or monPricePerUnit:GetAmount() < 1 or not orderNew:CanPost() then
@@ -604,7 +617,7 @@ function MarketplaceCommodity:OnFilterOptionsLevelUpBtn(wndHandler, wndControl)
 	local nNewValue = nOldValue and nOldValue + 1
 	wndEditBox:SetText(nNewValue)
 	self:HelperCheckValidLevelValues(wndEditBox)
-	self.wndMain:FindChild("FilterContainer:FilterClearBtn"):SetData(true)
+	self.tWndRefs.wndMain:FindChild("FilterContainer:FilterClearBtn"):SetData(true)
 end
 
 function MarketplaceCommodity:OnFilterOptionsLevelDownBtn(wndHandler, wndControl)
@@ -613,23 +626,23 @@ function MarketplaceCommodity:OnFilterOptionsLevelDownBtn(wndHandler, wndControl
 	local nNewValue = nOldValue and nOldValue - 1
 	wndEditBox:SetText(nNewValue)
 	self:HelperCheckValidLevelValues(wndEditBox)
-	self.wndMain:FindChild("FilterContainer:FilterClearBtn"):SetData(true)
+	self.tWndRefs.wndMain:FindChild("FilterContainer:FilterClearBtn"):SetData(true)
 end
 
 function MarketplaceCommodity:OnFilterEditBoxChanged(wndHandler, wndControl)
 	local wndEditBox = wndHandler:GetParent():FindChild("FilterOptionsLevelEditBox")
 	self:HelperCheckValidLevelValues(wndEditBox)
-	self.wndMain:FindChild("FilterContainer:FilterClearBtn"):SetData(true) -- GOTCHA: It will flag as dirty bit when the Refresh event gets called
+	self.tWndRefs.wndMain:FindChild("FilterContainer:FilterClearBtn"):SetData(true) -- GOTCHA: It will flag as dirty bit when the Refresh event gets called
 end
 
 function MarketplaceCommodity:OnFilterOptionsRarityItemToggle(wndHandler, wndControl) -- FilterOptionsRarityItemBtn
 	self.tFilteredRarity[wndHandler:GetData()] = wndHandler:IsChecked()
 	wndHandler:FindChild("FilterOptionsRarityItemCheck"):SetSprite(wndHandler:IsChecked() and "sprCharC_NameCheckYes" or "sprRaid_RedXClose_Centered")
-	self.wndMain:FindChild("FilterContainer"):FindChild("FilterClearBtn"):SetData(true)
+	self.tWndRefs.wndMain:FindChild("FilterContainer"):FindChild("FilterClearBtn"):SetData(true)
 end
 
 function MarketplaceCommodity:OnResetFilterBtn(wndHandler, wndControl)
-	local wndFilter = self.wndMain:FindChild("FilterContainer")
+	local wndFilter = self.tWndRefs.wndMain:FindChild("FilterContainer")
 	for idx, wndCurr in pairs(wndFilter:FindChild("FilterOptionsRarityList"):GetChildren()) do
 		local wndCurrBtn = wndCurr:FindChild("FilterOptionsRarityItemBtn")
 		if wndCurrBtn then
@@ -646,13 +659,13 @@ function MarketplaceCommodity:OnResetFilterBtn(wndHandler, wndControl)
 end
 
 function MarketplaceCommodity:OnFilterOptionsWindowClosed(wndHandler, wndControl)
-	if wndHandler == wndControl and self.wndMain and self.wndMain:IsValid() and self.wndMain:FindChild("FilterClearBtn"):GetData() then
+	if wndHandler == wndControl and self.tWndRefs.wndMain and self.tWndRefs.wndMain:IsValid() and self.tWndRefs.wndMain:FindChild("FilterClearBtn"):GetData() then
 		self:OnRefreshBtn()
 	end
 end
 
 function MarketplaceCommodity:HelperCheckValidLevelValues(wndChanged)
-	local wndFilterOptions = self.wndMain:FindChild("FilterContainer:FilterOptionsContainer")
+	local wndFilterOptions = self.tWndRefs.wndMain:FindChild("FilterContainer:FilterOptionsContainer")
 	local wndMinLevelFilter = wndFilterOptions:FindChild("FilterOptionsLevelMinContainer:FilterOptionsLevelEditBox")
 	local wndMaxLevelFilter = wndFilterOptions:FindChild("FilterOptionsLevelMaxContainer:FilterOptionsLevelEditBox")
 	local nMinLevelValue = tonumber(wndMinLevelFilter:GetText()) or knMinLevel
@@ -717,7 +730,7 @@ end
 
 function MarketplaceCommodity:OnCategoryTopBtnToggle(wndHandler, wndControl)
 	local wndParent = wndHandler:GetData()
-	self.wndMain:SetGlobalRadioSel("MarketplaceCommodity_CategoryMidBtn_GlobalRadioGroup", -1)
+	self.tWndRefs.wndMain:SetGlobalRadioSel("MarketplaceCommodity_CategoryMidBtn_GlobalRadioGroup", -1)
 
 	local tSearchData = { nTopCategory = 0, nMidCategory = 0, nBotCategory = 0 }
 	if wndHandler:IsChecked() then
@@ -728,13 +741,13 @@ function MarketplaceCommodity:OnCategoryTopBtnToggle(wndHandler, wndControl)
 		end
 	end
 
-	self.wndMain:FindChild("MainCategoryContainer"):SetData(tSearchData)
+	self.tWndRefs.wndMain:FindChild("MainCategoryContainer"):SetData(tSearchData)
 	self:OnRefreshBtn()
 	self:OnResizeCategories()
 end
 
 function MarketplaceCommodity:OnCategoryMidBtnCheck(wndHandler, wndControl)
-	self.wndMain:FindChild("MainCategoryContainer"):SetData(wndHandler:GetData()) -- { nTopCategory, nMidCategory, nBotCategory }
+	self.tWndRefs.wndMain:FindChild("MainCategoryContainer"):SetData(wndHandler:GetData()) -- { nTopCategory, nMidCategory, nBotCategory }
 	self:OnRefreshBtn()
 end
 
@@ -745,7 +758,7 @@ end
 function MarketplaceCommodity:OnGenerateSimpleConfirmTooltip(wndHandler, wndControl, eType, nX, nY) -- wndHandler is ListSubmitBtn, data is { tCurrItem and window "SimpleListItem" }
 	local tCurrItem = wndHandler:GetData()[1]
 	local wndParent = wndHandler:GetData()[2]
-	local monPricePerUnit = wndParent:FindChild("ListInputPrice"):GetCurrency() -- not an integer
+	local monPricePerUnit = wndParent:FindChild("ListInputPrice"):GetAmount() -- not an integer
 	local nOrderCount = tonumber(wndParent:FindChild("ListInputNumber"):GetText()) or -1
 	if nOrderCount == -1 then
 		return
@@ -753,7 +766,7 @@ function MarketplaceCommodity:OnGenerateSimpleConfirmTooltip(wndHandler, wndCont
 
 	-- TODO TEMP: This may be deleted soon
 	-- TODO: This doesn't update as it's a tooltipform. But this is temp and may be deleted soon.
-	local bBuyNow = self.wndMain:FindChild("HeaderBuyNowBtn"):IsChecked()
+	local bBuyNow = self.tWndRefs.wndBuyNowHeader:IsChecked()
 	local wndTooltip = wndHandler:LoadTooltipForm("MarketplaceCommodity.xml", "SimpleConfirmTooltip", self)
 	wndTooltip:FindChild("SimpleConfirmTooltipPrice"):SetAmount(nOrderCount * monPricePerUnit:GetAmount())
 	wndTooltip:FindChild("SimpleConfirmTooltipText"):SetText(String_GetWeaselString(Apollo.GetString("MarketplaceCommodity_MultiItem"), nOrderCount, tCurrItem:GetName()))
@@ -765,18 +778,18 @@ function MarketplaceCommodity:OnGenerateAdvancedConfirmTooltip(wndHandler, wndCo
 	-- wndHandler is ListSubmitBtn, data is { tCurrItem and window "SimpleListItem" }
 	local tCurrItem = wndHandler:GetData()[1]
 	local wndParent = wndHandler:GetData()[2]
-	local monPricePerUnit = wndParent:FindChild("ListInputPrice"):GetCurrency() -- not an integer
+	local monPricePerUnit = wndParent:FindChild("ListInputPrice"):GetAmount() -- not an integer
 	local nOrderCount = tonumber(wndParent:FindChild("ListInputNumber"):GetText()) or -1
 	if nOrderCount == -1 then
 		return
 	end
 
-	local bBuyOrder = self.wndMain:FindChild("HeaderBuyOrderBtn"):IsChecked()
+	local bBuyOrder = self.tWndRefs.wndBuyOrderHeader:IsChecked()
 	local nSellCutMultipler = bBuyOrder and 1 or (1 - (kCommodityAuctionRake / 100))
 	local strSellTextCut = bBuyOrder and "" or String_GetWeaselString(Apollo.GetString("MarketplaceCommodity_AuctionhouseTax"), (kCommodityAuctionRake * -1))
 	local strTitle = bBuyOrder and Apollo.GetString("MarketplaceCommodity_ClickToBuyOrder") or Apollo.GetString("MarketplaceCommodity_ClickToSellOrder")
 	local strMainBox = String_GetWeaselString(Apollo.GetString("MarketplaceCommodity_MultiItem"), nOrderCount, tCurrItem:GetName())
-	local strDuration = String_GetWeaselString(Apollo.GetString("MarketplaceCommodity_DurationDays"), tostring(kstrAuctionOrderDuration))
+	local strDuration = String_GetWeaselString(Apollo.GetString("MarketplaceCommodity_DurationDays"), tostring(MarketplaceLib.kCommodityOrderListTimeDays))
 
 	local wndTooltip = wndHandler:LoadTooltipForm("MarketplaceCommodity.xml", "AdvancedConfirmTooltip", self)
 	wndTooltip:FindChild("AdvancedConfirmSellFeeContainer"):Show(not bBuyOrder)
@@ -800,7 +813,7 @@ function MarketplaceCommodity:OnGenerateTooltipFullStats(wndHandler, wndControl,
 		local strBuy = ""
 		local nBuyPrice = tStats.arBuyOrderPrices[nRowIdx].monPrice:GetAmount()
 		if nBuyPrice > 0 then
-			strBuy = self.wndMain:FindChild("HiddenCashWindow"):GetAMLDocForAmount(nBuyPrice, true, "ff2f94ac", "CRB_InterfaceSmall", 0) -- 2nd is skip zeroes, 5th is align left
+			strBuy = wndFullStats:FindChild("HiddenCashWindow"):GetAMLDocForAmount(nBuyPrice, true, "ff2f94ac", "CRB_InterfaceSmall", 0) -- 2nd is skip zeroes, 5th is align left
 		else
 			strBuy = "<P Font=\"CRB_InterfaceSmall\" TextColor=\"ff2f94ac\">" .. Apollo.GetString("CRB_NoData") .. "</P>"
 		end
@@ -808,7 +821,7 @@ function MarketplaceCommodity:OnGenerateTooltipFullStats(wndHandler, wndControl,
 		local strSell = ""
 		local nSellPrice = tStats.arSellOrderPrices[nRowIdx].monPrice:GetAmount()
 		if nSellPrice > 0 then
-			strSell = self.wndMain:FindChild("HiddenCashWindow"):GetAMLDocForAmount(nSellPrice, true, "ff2f94ac", "CRB_InterfaceSmall", 0) -- 2nd is skip zeroes, 5th is align left
+			strSell = wndFullStats:FindChild("HiddenCashWindow"):GetAMLDocForAmount(nSellPrice, true, "ff2f94ac", "CRB_InterfaceSmall", 0) -- 2nd is skip zeroes, 5th is align left
 		else
 			strSell = "<P Font=\"CRB_InterfaceSmall\" TextColor=\"ff2f94ac\">" .. Apollo.GetString("CRB_NoData") .. "</P>"
 		end
@@ -831,11 +844,11 @@ end
 -----------------------------------------------------------------------------------------------
 
 function MarketplaceCommodity:OnCommodityInfoResults(nItemId, tStats, tOrders)
-	if not self.wndMain or not self.wndMain:IsValid() then
+	if not self.tWndRefs.wndMain or not self.tWndRefs.wndMain:IsValid() then
 		return
 	end
 
-	local wndMatch = self.wndMain:FindChild("MainScrollContainer"):FindChild(nItemId)
+	local wndMatch = self.tWndRefs.wndMain:FindChild("MainScrollContainer"):FindChild(nItemId)
 	if not wndMatch or not wndMatch:IsValid() then
 		return
 	end
@@ -843,21 +856,19 @@ function MarketplaceCommodity:OnCommodityInfoResults(nItemId, tStats, tOrders)
 	wndMatch:Show(true)
 	wndMatch:FindChild("ListItemStatsBubble"):SetData(tStats) -- For OnGenerateTooltipFullStats
 	wndMatch:FindChild("ListItemStatsBubble"):Show(tStats.nSellOrderCount and tStats.nSellOrderCount > 0)
-	if self.wndMain:FindChild("HeaderBuyNowBtn"):IsChecked() then -- Else it'll use inventory bag count
-		wndMatch:FindChild("ListCount"):SetData(tStats.nSellOrderCount)
-		wndMatch:FindChild("ListCount"):SetText(tStats.nSellOrderCount)
-	end
 
 	-- Fill in the second cash window with the first found
 	local nValueForInput = 0
 	local nValueForLeftPrice = 0
 	local strNoData = Apollo.GetString("MarketplaceCommodity_AveragePriceNoData")
 
-	if self.wndMain:FindChild("HeaderBuyNowBtn"):IsChecked() then
+	if self.tWndRefs.wndBuyNowHeader:IsChecked() then
+		wndMatch:FindChild("ListCount"):SetData(tStats.nSellOrderCount)
+		wndMatch:FindChild("ListCount"):SetText(tStats.nSellOrderCount)
 		nValueForInput = tStats.arSellOrderPrices[ktOrderAverages.Top1].monPrice:GetAmount()
 		nValueForLeftPrice = tStats.arSellOrderPrices[ktOrderAverages.Top1].monPrice:GetAmount()
 		wndMatch:FindChild("ListSubtitleLeft"):SetText(tStats.arSellOrderPrices[ktOrderAverages.Top50] and Apollo.GetString("MarketplaceCommodity_AverageBuyPrice") or strNoData)
-	elseif self.wndMain:FindChild("HeaderSellNowBtn"):IsChecked() then
+	elseif self.tWndRefs.wndSellNowHeader:IsChecked() then
 		nValueForInput = tStats.arBuyOrderPrices[ktOrderAverages.Top1].monPrice:GetAmount()
 		nValueForLeftPrice = tStats.arBuyOrderPrices[ktOrderAverages.Top1].monPrice:GetAmount()
 		wndMatch:FindChild("ListSubtitleLeft"):SetText(tStats.arBuyOrderPrices[ktOrderAverages.Top50] and Apollo.GetString("MarketplaceCommodity_AverageSellPrice") or strNoData)
@@ -866,11 +877,11 @@ function MarketplaceCommodity:OnCommodityInfoResults(nItemId, tStats, tOrders)
 		wndMatch:FindChild("ListSubtitlePriceRight"):Show(tStats.arSellOrderPrices[ktOrderAverages.Top1])
 		wndMatch:FindChild("ListSubtitlePriceRight"):SetAmount(tStats.arSellOrderPrices[ktOrderAverages.Top1].monPrice)
 
-		if self.wndMain:FindChild("HeaderBuyOrderBtn"):IsChecked() then
+		if self.tWndRefs.wndBuyOrderHeader:IsChecked() then
 			nValueForInput = tStats.arBuyOrderPrices[ktOrderAverages.Top1].monPrice:GetAmount()
 			wndMatch:FindChild("ListSubtitleLeft"):SetText(Apollo.GetString("MarketplaceCommodity_HighestOfferLabel") .. "\n" .. (tStats.arBuyOrderPrices[ktOrderAverages.Top1].monPrice:GetAmount() and "" or strNoData))
 			wndMatch:FindChild("ListSubtitleRight"):SetText(Apollo.GetString("MarketplaceCommodity_BuyNowLabel") .. "\n" .. (tStats.arSellOrderPrices[ktOrderAverages.Top1].monPrice:GetAmount() and "" or strNoData))
-		elseif self.wndMain:FindChild("HeaderSellOrderBtn"):IsChecked() then
+		elseif self.tWndRefs.wndSellOrderHeader:IsChecked() then
 			nValueForInput = tStats.arSellOrderPrices[ktOrderAverages.Top1].monPrice:GetAmount()
 			wndMatch:FindChild("ListSubtitleLeft"):SetText(Apollo.GetString("MarketplaceCommodity_SellNowLabel") .. "\n" .. (tStats.arBuyOrderPrices[ktOrderAverages.Top1].monPrice:GetAmount() and "" or strNoData))
 			wndMatch:FindChild("ListSubtitleRight"):SetText(Apollo.GetString("MarketplaceCommodity_LowestOfferLabel") .. "\n" .. (tStats.arSellOrderPrices[ktOrderAverages.Top1].monPrice:GetAmount() and "" or strNoData))
@@ -878,7 +889,7 @@ function MarketplaceCommodity:OnCommodityInfoResults(nItemId, tStats, tOrders)
 	end
 
 	local bCanAfford = true
-	if self.wndMain:FindChild("HeaderBuyNowBtn"):IsChecked() or self.wndMain:FindChild("HeaderBuyOrderBtn"):IsChecked() then
+	if self.tWndRefs.wndBuyNowHeader:IsChecked() or self.tWndRefs.wndBuyOrderHeader:IsChecked() then
 		local nPrice = math.max(0, (nValueForInput or 0))
 		nPrice = nPrice + math.max(nPrice * MarketplaceLib.kfCommodityBuyOrderTaxMultiplier, MarketplaceLib.knCommodityBuyOrderTaxMinimum)
 		bCanAfford = GameLib.GetPlayerCurrency():GetAmount() >= nPrice
@@ -890,15 +901,15 @@ function MarketplaceCommodity:OnCommodityInfoResults(nItemId, tStats, tOrders)
 	if bEnable then
 		local tCurrItem = wndListSubmitBtn:GetData()[1]
 		local wndParent = wndListSubmitBtn:GetData()[2]
-		local monPricePerUnit = wndParent:FindChild("ListInputPrice"):GetCurrency() -- not an integer
+		local monPricePerUnit = wndParent:FindChild("ListInputPrice"):GetAmount() -- not an integer
 		local nOrderCount = tonumber(wndParent:FindChild("ListInputNumber"):GetText())
-		local bBuyTab = self.wndMain:FindChild("HeaderBuyNowBtn"):IsChecked() or self.wndMain:FindChild("HeaderBuyOrderBtn"):IsChecked()
+		local bBuyTab = self.tWndRefs.wndBuyNowHeader:IsChecked() or self.tWndRefs.wndBuyOrderHeader:IsChecked()
 
 		local orderNew = bBuyTab and CommodityOrder.newBuyOrder(tCurrItem:GetItemId()) or CommodityOrder.newSellOrder(tCurrItem:GetItemId())
 		if nOrderCount and monPricePerUnit:GetAmount() > 0 then
 			orderNew:SetCount(nOrderCount)
 			orderNew:SetPrices(monPricePerUnit)
-			orderNew:SetForceImmediate(self.wndMain:FindChild("HeaderBuyNowBtn"):IsChecked() or self.wndMain:FindChild("HeaderSellNowBtn"):IsChecked())
+			orderNew:SetForceImmediate(self.tWndRefs.wndBuyNowHeader:IsChecked() or self.tWndRefs.wndSellNowHeader:IsChecked())
 		end
 
 		if not nOrderCount or not monPricePerUnit or monPricePerUnit:GetAmount() < 1 or not orderNew:CanPost() then
@@ -912,7 +923,7 @@ function MarketplaceCommodity:OnCommodityInfoResults(nItemId, tStats, tOrders)
 	wndMatch:FindChild("ListSubtitlePriceLeft"):Show(nValueForLeftPrice)
 	wndMatch:FindChild("ListSubtitlePriceLeft"):SetAmount(nValueForLeftPrice or 0)
 
-	self.wndMain:FindChild("MainScrollContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	self.tWndRefs.wndMain:FindChild("MainScrollContainer"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 end
 
 function MarketplaceCommodity:OnPostCommodityOrderResult(eAuctionPostResult, orderSource, nActualCost)
@@ -931,11 +942,11 @@ function MarketplaceCommodity:OnPostCommodityOrderResult(eAuctionPostResult, ord
 	}
 
 	local strResult = tAuctionPostResultToString[eAuctionPostResult]
-	if self.wndMain and self.wndMain:IsValid() then
+	if self.tWndRefs.wndMain and self.tWndRefs.wndMain:IsValid() then
 
-		if self.wndMain and self.wndMain:FindChild("HeaderBuyNowBtn"):IsChecked() and eAuctionPostResult == MarketplaceLib.AuctionPostResult.CannotFillOrder then
+		if self.tWndRefs.wndMain and self.tWndRefs.wndBuyNowHeader:IsChecked() and eAuctionPostResult == MarketplaceLib.AuctionPostResult.CannotFillOrder then
 			strResult = Apollo.GetString("MarketplaceCommodity_CannotFillBuyOrder")
-		elseif self.wndMain:FindChild("HeaderSellNowBtn"):IsChecked() and eAuctionPostResult == MarketplaceLib.AuctionPostResult.CannotFillOrder then
+		elseif self.tWndRefs.wndSellNowHeader:IsChecked() and eAuctionPostResult == MarketplaceLib.AuctionPostResult.CannotFillOrder then
 			strResult = Apollo.GetString("MarketplaceCommodity_CannotFillSellOrder")
 		end
 
@@ -954,190 +965,200 @@ function MarketplaceCommodity:OnPostCommodityOrderResult(eAuctionPostResult, ord
 
 		if orderSource:IsPosted() then
 			if orderSource:IsBuy() then
-				self:UpdateOrderLimit(self.nOwnedBuyOrderCount + 1, self.nOwnedSellOrderCount)
+				self:UpdateOrderLimit(self.tOrdersCount.nBuy + 1, self.tOrdersCount.nSell)
 			else
-				self:UpdateOrderLimit(self.nOwnedBuyOrderCount, self.nOwnedSellOrderCount + 1)
+				self:UpdateOrderLimit(self.tOrdersCount.nBuy, self.tOrdersCount.nSell + 1)
 			end
 		end
 	end
 end
 
 function MarketplaceCommodity:OnPostCustomMessage(strMessage, bResultOK, nDuration)
-	if not self.wndMain or not self.wndMain:IsValid() then
+	if not self.tWndRefs.wndMain or not self.tWndRefs.wndMain:IsValid() then
 		return
 	end
 
 	local strTitle = bResultOK and Apollo.GetString("CRB_Success") or Apollo.GetString("MarketplaceAuction_ErrorLabel")
-	self.wndMain:FindChild("PostResultNotification"):Show(true)
-	self.wndMain:FindChild("PostResultNotification"):SetTooltip(strTitle)
-	self.wndMain:FindChild("PostResultNotificationSubText"):SetText(strMessage)
-	self.wndMain:FindChild("PostResultNotificationLabel"):SetTextColor(bResultOK and ApolloColor.new("UI_TextHoloTitle") or ApolloColor.new("Reddish"))
-	self.wndMain:FindChild("PostResultNotificationLabel"):SetText(strTitle)
+	self.tWndRefs.wndMain:FindChild("PostResultNotification"):Show(true)
+	self.tWndRefs.wndMain:FindChild("PostResultNotification"):SetTooltip(strTitle)
+	self.tWndRefs.wndMain:FindChild("PostResultNotificationSubText"):SetText(strMessage)
+	self.tWndRefs.wndMain:FindChild("PostResultNotificationLabel"):SetTextColor(bResultOK and ApolloColor.new("UI_TextHoloTitle") or ApolloColor.new("Reddish"))
+	self.tWndRefs.wndMain:FindChild("PostResultNotificationLabel"):SetText(strTitle)
 	Apollo.CreateTimer("PostResultTimer", nDuration, false)
 end
 
-function MarketplaceCommodity:OnCommodityAuctionRemoved(eAuctionEventType, orderRemoved)
-	-- TODO
-	--if eAuctionEventType == MarketplaceLib.AuctionEventType.Fill then
-	--elseif eAuctionEventType == MarketplaceLib.AuctionEventType.Expire then
-	--elseif eAuctionEventType == MarketplaceLib.AuctionEventType.Cancel then
-	--end
+function MarketplaceCommodity:OnClosePostResultNotification()
+	self.tWndRefs.wndMain:FindChild("PostResultNotification"):Show(false)
+end
 
-	if not self.wndMain or not self.wndMain:IsValid() then
+function MarketplaceCommodity:OnCommodityAuctionRemoved(eAuctionEventType, orderRemoved)
+	if not self.tWndRefs.wndMain or not self.tWndRefs.wndMain:IsValid() then
 		return
 	end
 
 	if orderRemoved:IsBuy() then
-		self:UpdateOrderLimit(self.nOwnedBuyOrderCount - 1, self.nOwnedSellOrderCount)
+		self:UpdateOrderLimit(self.tOrdersCount.nBuy - 1, self.tOrdersCount.nSell)
 	else
-		self:UpdateOrderLimit(self.nOwnedBuyOrderCount, self.nOwnedSellOrderCount - 1)
+		self:UpdateOrderLimit(self.tOrdersCount.nBuy, self.tOrdersCount.nSell - 1)
 	end
 end
 
 function MarketplaceCommodity:OnEntitlementUpdate(tEntitlementInfo)
-	local bNotSignatureOrFree = tEntitlementInfo.nEntitlementId ~= AccountItemLib.CodeEnumEntitlement.Signature and tEntitlementInfo.nEntitlementId ~= AccountItemLib.CodeEnumEntitlement.Free
-	local bNotExtraOrLoyalty = tEntitlementInfo.nEntitlementId ~= AccountItemLib.CodeEnumEntitlement.ExtraCommodityOrders and tEntitlementInfo.nEntitlementId ~= AccountItemLib.CodeEnumEntitlement.LoyaltyExtraCommodityOrders
-	if not self.wndMain or (bNotSignatureOrFree and bNotExtraOrLoyalty) then
+	if not self.wndMain or (tEntitlementInfo.nEntitlementId ~= AccountItemLib.CodeEnumEntitlement.ExtraCommodityOrders and tEntitlementInfo.nEntitlementId ~= AccountItemLib.CodeEnumEntitlement.LoyaltyExtraCommodityOrders) then
 		return
 	end
+	
+	self:UpdateSlotNotification()
+end
+
+function MarketplaceCommodity:OnPremiumSystemUpdate(ePremiumSystem, nTier)
+	self.ePremiumSystem = ePremiumSystem
+	self.nPremiumTier = nTier
+	
 	self:UpdateSlotNotification()
 end
 
 function MarketplaceCommodity:UpdateSlotNotification()
-	if not self.wndMain then
+	if not self.tWndRefs.wndMain then
 		return
 	end
 	
 	self:RefreshStoreLink()
-	local nMaxSlots = MarketplaceLib.GetMaxCommodityOrders()
-	local nTotalOwnedOrderCount = self.nOwnedBuyOrderCount + self.nOwnedSellOrderCount
-	local bCommoditiesChanged = self.nPrevCommoditiesCount ~= nTotalOwnedOrderCount
-	self.bCommodityOrdersFull = ((nMaxSlots - self.nOwnedBuyOrderCount) <= 0) or ((nMaxSlots - self.nOwnedSellOrderCount) <= 0)
-	local bValidTab = self.wndMain:FindChild("HeaderSellOrderBtn"):IsChecked() or self.wndMain:FindChild("HeaderBuyOrderBtn"):IsChecked() 
-	local bDisplay = self.bStoreLinkValid and self.bCommodityOrdersFull and MarketplaceLib.GetCommodityLimit() ~= nMaxSlots
-	local wndMTXSlotNotify = self.wndMain:FindChild("MTX_SlotWarning")
-	if not wndMTXSlotNotify then
-		wndMTXSlotNotify = Apollo.LoadForm(self.xmlDoc, "MTX_SlotWarning", self.wndMain, self)
+	
+	-- Getting Limits
+	local nCurrentCount = self.tOrdersCount.nBuy
+	local strLimitText = "Marketplace_CommodityLimitBuyBegin"
+	local wndSelectedHeader = self.tWndRefs.wndMain:GetRadioSelButton("MarketplaceC_HeaderRadioGroup")
+	if wndSelectedHeader == self.tWndRefs.wndSellNowHeader or wndSelectedHeader == self.tWndRefs.wndSellOrderHeader then
+		nCurrentCount = self.tOrdersCount.nSell
+		strLimitText = "Marketplace_CommodityLimitBegin"
 	end
 	
-	local wndMaxSlots = self.wndOrderLimitText:FindChild("MaxSlots")
-	
-	local nLoyaltyCommodityCount = AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.LoyaltyExtraCommodityOrders)
-	local nSignatureCount = AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature)
-	local nSignatureMaxCount = 0
-	if nSignatureCount > 0 then
-		nSignatureMaxCount = MarketplaceLib.GetSignatureCommodityLimit() - nLoyaltyCommodityCount
-	end
-	local nExtraCommodityCount = AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.ExtraCommodityOrders)
-	local nTotalCommodityCount = nSignatureMaxCount + nExtraCommodityCount + nLoyaltyCommodityCount
-
-	local strOrderLimitTooltipBuy = string.format('%s%d%s', String_GetWeaselString(Apollo.GetString("Marketplace_CommodityLimitBuyBegin"), self.nOwnedBuyOrderCount), nMaxSlots, Apollo.GetString("Marketplace_LimitEnd"))
-	local strOrderLimitTooltipSell = string.format('%s%d%s', String_GetWeaselString(Apollo.GetString("Marketplace_CommodityLimitBegin"), self.nOwnedSellOrderCount), nMaxSlots, Apollo.GetString("Marketplace_LimitEnd"))
-
-	self.wndOrderLimitText:SetTooltip(strOrderLimitTooltipBuy .. "\n" .. strOrderLimitTooltipSell)
-	
-	-- Adjust displayed text and icon based on any slot increases coming from entitlements
-	if nTotalCommodityCount > 0 then	
-		self.wndOrderLimitText:ChangeArt("BK3:btnMetal_ExpandMenu_NoNav")
-		self.wndOrderLimitText:SetText(String_GetWeaselString(Apollo.GetString("MarketplaceAuction_MyListings"), nTotalOwnedOrderCount))
+	local nCurrentMax = AccountItemLib.GetPlayerRewardProperty(AccountItemLib.CodeEnumRewardProperty.CommodityOrders).nValue
+	local nBaseLimit = AccountItemLib.GetStaticRewardPropertyForTier(0, AccountItemLib.CodeEnumRewardProperty.CommodityOrders, nil, true).nValue
+	local nMaxFromPremium = nCurrentMax - nBaseLimit
 		
-		local wndIconMTX = self.wndOrderLimitText:FindChild("IconMTX")
+	local tAuctionAccess = AccountItemLib.GetPlayerRewardProperty(AccountItemLib.CodeEnumRewardProperty.CommodityAccess)
+	local bHasAccess = tAuctionAccess and tAuctionAccess.nValue ~= 0
+	local bIsHybrid = self.ePremiumSystem == AccountItemLib.CodeEnumPremiumSystem.Hybrid
+	local bIsVIP = self.ePremiumSystem == AccountItemLib.CodeEnumPremiumSystem.VIP
+	
+	if not bHasAccess then
+		nCurrentMax = 0
+	end
+	
+	--Setting up window references
+	local wndOpenMarketListingsBtn = self.tWndRefs.wndMain:FindChild("OpenMarketListingsBtn")
+	local wndIconMTX = wndOpenMarketListingsBtn:FindChild("IconMTX")
+	
+	-- Set up the text on "My Listings"
+	local strLabel = ""
+	if nBaseLimit < nCurrentMax and bIsHybrid then	
+		strLabel = string.format("<T TextColor=\"UI_WindowYellow\">" .. nCurrentMax .. "</T>")
+		wndIconMTX:SetTooltip(String_GetWeaselString(Apollo.GetString("MarketplaceAuction_AdditionalSlots"), nBaseLimit, nMaxFromPremium))
 		wndIconMTX:Show(true)
-		local nDiffCount = 0
-		local nBaseCount = MarketplaceLib.GetBaseCommodityOrders()
-		if nSignatureCount > 0 then
-			nDiffCount = nBaseCount
-		end
-		wndIconMTX:SetTooltip(String_GetWeaselString(Apollo.GetString("MarketplaceAuction_AdditionalSlots"), nBaseCount, nTotalCommodityCount - nDiffCount))
+	else
+		strLabel = tostring(nCurrentMax)
+		wndIconMTX:Show(false)
+	end
+	wndOpenMarketListingsBtn:FindChild("Text"):SetAML(string.format("<T Font=\"CRB_Button\" TextColor=\"UI_BtnTextGoldListNormal\">".. String_GetWeaselString(Apollo.GetString(strLimitText), nCurrentCount, strLabel) .. "</T>"))
+	
+	-- Load the MTX Upsell window
+	if not self.tWndRefs.wndMTXSlotNotify then
+		self.tWndRefs.wndMTXSlotNotify = Apollo.LoadForm(self.xmlDoc, "MTX_SlotWarning", self.tWndRefs.wndMain:FindChild("RightSide"), self)
+		local nFilterLeft, nFilterTop, nFilterRight, nFilterBottom = self.tWndRefs.wndMain:FindChild("RightSide:MetalHeader"):GetAnchorOffsets()		
 		
-		wndMaxSlots:SetText(nMaxSlots * 2)
-		wndMaxSlots:Show(true)
-	else -- Reset to default if no longer getting additional slots
-		self.wndOrderLimitText:ChangeArt("BK3:btnMetal_Flyout")
-		self.wndOrderLimitText:FindChild("IconMTX"):Show(false)
-		self.wndOrderLimitText:SetText(String_GetWeaselString(Apollo.GetString("MarketplaceCommodity_OrderLimitCount"), nTotalOwnedOrderCount, nMaxSlots * 2))
-		wndMaxSlots:Show(false)
+		local nInitialLeft, nInitialTop, nInitialRight, nInitialBottom = self.tWndRefs.wndMTXSlotNotify:GetAnchorOffsets()
+		self.tWndRefs.wndMTXSlotNotify:SetAnchorOffsets(nInitialLeft, nInitialTop + nFilterBottom, nInitialRight, nInitialBottom + nFilterBottom)
 	end
 	
-	local nLeft, nTop, nRight, nBottom = wndMaxSlots:GetOriginalLocation():GetOffsets()
-	local nOrderLimitTextWidth = Apollo.GetTextWidth("CRB_Button", self.wndOrderLimitText:GetText())
-	wndMaxSlots:SetAnchorOffsets(nOrderLimitTextWidth + knButtonTextPadding, nTop, Apollo.GetTextWidth("CRB_Button", wndMaxSlots:GetText()), nBottom)
-	
-	local wndWaitScreen = self.wndMain:FindChild("WaitingScreen")
-	local wndRefreshAnimation = self.wndMain:FindChild("RefreshAnimation")
-	local wndMainScrollContainer = self.wndMain:FindChild("MainScrollContainer")
-	local nWaitScreenLeft, nWaitScreenTop, nWaitScreenRight, nWaitScreenBottom = wndWaitScreen:GetOriginalLocation():GetOffsets()
-	local nRefreshAnimationLeft, nRefreshAnimationTop, nRefreshAnimationRight, nRefreshAnimationBottom = wndRefreshAnimation:GetOriginalLocation():GetOffsets()
-	local nMainScrollLeft, nMainScrollTop, nMainScrollRight, nMainScrollBottom = wndMainScrollContainer:GetOriginalLocation():GetOffsets()
-	if bDisplay == wndMTXSlotNotify:IsShown() and not bCommoditiesChanged and nMaxSlots == self.nCurMaxSlots and not bValidTab then
-		wndWaitScreen:SetAnchorOffsets(nWaitScreenLeft, nWaitScreenTop, nWaitScreenRight, nWaitScreenBottom)
-		wndRefreshAnimation:SetAnchorOffsets(nRefreshAnimationLeft, nRefreshAnimationTop, nRefreshAnimationRight, nRefreshAnimationBottom)
-		wndMainScrollContainer:SetAnchorOffsets(nMainScrollLeft, nMainScrollTop, nMainScrollRight, nMainScrollBottom)
-		wndMTXSlotNotify:Show(false)
+	local nMaxTier = AccountItemLib.GetPremiumTierMax()
+	local bCanUpgradeTier = self.nPremiumTier < nMaxTier
+	local nCurrentEntitlementCount = AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.ExtraCommodityOrders)
+	local bCanPurchaseUpgrades = nCurrentEntitlementCount and nCurrentEntitlementCount < AccountItemLib.GetMaxEntitlementCount(AccountItemLib.CodeEnumEntitlement.ExtraCommodityOrders) and self.bStoreLinkValidExtras
+
+	local bDisplayUpsell = nCurrentMax ~= AccountItemLib.GetStaticRewardPropertyForTier(nMaxTier, AccountItemLib.CodeEnumRewardProperty.CommodityOrders).nValue and (not bHasAccess or (nCurrentCount == nCurrentMax and (bCanUpgradeTier or bCanPurchaseUpgrades))) and self.bStoreLinkValid 
+	if bDisplayUpsell == self.tWndRefs.wndMTXSlotNotify:IsShown() then
 		return
 	end
 	
-	self.nPrevCommoditiesCount = nTotalOwnedOrderCount
-	self.nCurMaxSlots = nMaxSlots
-	
-	local wndSearchHeader = self.wndMain:FindChild("MetalHeader")
-	local nLeftSearchOffsets, nTopSearchOffsets, nRightSearchOffsets, nBottomSearchOffsets = wndSearchHeader:GetAnchorOffsets()
-	local wndUnlockAddSlotsBtn = wndMTXSlotNotify:FindChild("UnlockSlotsBtn")
-	local nMTXSlotNotifyHeight = 0
-	local nSearchHeaderHeight = 0
-	wndMTXSlotNotify:Show(bDisplay and bValidTab)
-	
-	if bDisplay and bValidTab then
-		local wndSigPlayerBtn = wndMTXSlotNotify:FindChild("SigPlayerBtn")
-		local nUnlockAddSlotsBtnLeft, nUnlockAddSlotsBtnTop, nUnlockAddSlotsBtnRight, nUnlockAddSlotsBtnBottom = wndUnlockAddSlotsBtn:GetOriginalLocation():GetOffsets()
-		local nUnlockAddSlotsBtnPointsLeft, nUnlockAddSlotsBtnPointsTop, nUnlockAddSlotsBtnPointsRight, nUnlockAddSlotsPointsBtnBottom = wndUnlockAddSlotsBtn:GetOriginalLocation():GetPoints()
-		local nSigPlayerBtnPointsLeft, nSigPlayerBtnPointsTop, nSigPlayerBtnPointsRight, nSigPlayerBtnPointsBottom = wndSigPlayerBtn:GetOriginalLocation():GetPoints()
-		local wndMTXSlotNotifyBody = wndMTXSlotNotify:FindChild("Body")
+	-- If it isn't displayed, we don't need to update it.
+	local nUpsellHeight = 0
+	if bDisplayUpsell then
+		-- More window references
+		local wndMTXContainer = self.tWndRefs.wndMTXSlotNotify:FindChild("ContentContainer")
+		local wndMTXContent = self.tWndRefs.wndMTXSlotNotify:FindChild("UpsellContainer")
 		
-		nMTXSlotNotifyHeight = wndMTXSlotNotify:GetData()
-		if not nMTXSlotNotifyHeight then
-			nMTXSlotNotifyHeight = wndMTXSlotNotify:GetHeight()
-			wndMTXSlotNotify:SetData(nMTXSlotNotifyHeight)
-		end
-		local nSlotCount = not self.bStoreLinkValid and 0 or MarketplaceLib.GetSignatureCommodityLimit() - nMaxSlots
-		if nSlotCount <= 0 then
-			wndSigPlayerBtn:Show(false)
-			wndMTXSlotNotifyBody:SetAML("<P Font=\"CRB_InterfaceMedium\" Align=\"Center\" TextColor=\"UI_TextHoloBody\">"..Apollo.GetString("MarketplaceAuction_UnlockAdditionalSlotsGroups").."</P>")
-		else
-			wndSigPlayerBtn:Show(true)
-			wndMTXSlotNotifyBody:SetAML("<P Font=\"CRB_InterfaceMedium\" Align=\"Center\" TextColor=\"UI_TextHoloBody\">"..String_GetWeaselString(Apollo.GetString("MarketplaceAuction_BecomeSignatureOrUnlock"), tostring(nSlotCount)).."</P>")
+		-- Hide the icon if it isn't VIP and shift everything over
+		wndMTXContainer:FindChild("VIPIcon"):Show(bIsVIP)
+		wndMTXContainer:ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
+		
+		-- We do like our window references
+		local wndSigPlayerBtn = wndMTXContent:FindChild("SigPlayerBtn")
+		local wndMTXSlotNotifyBody = wndMTXContent:FindChild("Body")
+		
+		-- Set the correct text for each premium system (Signature is default)
+		local strSignatureText = "MarketplaceAuction_BecomeSignature"
+		if bIsVIP then
+			strSignatureText = "CRB_CN_BecomeVIPMember"
 		end
 		
-		local nPrevMTXSlotBodyHeight = wndMTXSlotNotifyBody:GetData()
-		if not nPrevMTXSlotBodyHeight then
-			nPrevMTXSlotBodyHeight = wndMTXSlotNotifyBody:GetHeight()
-			wndMTXSlotNotifyBody:SetData(nPrevMTXSlotBodyHeight)
+		-- You can upgrade the tier if you aren't at the max
+		wndSigPlayerBtn:SetText(Apollo.GetString(strSignatureText))
+		wndSigPlayerBtn:Show(bCanUpgradeTier)
+		wndSigPlayerBtn:FindChild("MTCCallout"):Show(bIsHybrid)
+		
+		-- Hide the button to buy slots if you already have all the slots and shift everything over
+		local wndSlotsBtn = wndMTXContent:FindChild("UnlockSlotsBtn")
+		wndSlotsBtn:Show(bCanPurchaseUpgrades)
+		wndSlotsBtn:FindChild("MTCCallout"):Show(bIsHybrid)
+		self.tWndRefs.wndMTXSlotNotify:FindChild("UpsellBtnContainer"):ArrangeChildrenHorz(Window.CodeEnumArrangeOrigin.LeftOrTop)
+		
+		-- Using an ML string to set the height accurately later
+		local strMLString = ""
+		if bIsHybrid then
+			if bCanUpgradeTier then
+				local nCurrentTierMin = AccountItemLib.GetStaticRewardPropertyForTier(self.nPremiumTier, AccountItemLib.CodeEnumRewardProperty.CommodityOrders, nil, true).nValue
+				local nNextTierMin = AccountItemLib.GetStaticRewardPropertyForTier(self.nPremiumTier + 1, AccountItemLib.CodeEnumRewardProperty.CommodityOrders, nil, true).nValue
+				strMLString = String_GetWeaselString(Apollo.GetString("MarketplaceAuction_BecomeSignatureOrUnlock"), tostring(nNextTierMin - nCurrentTierMin))
+			elseif bCanPurchaseUpgrades then
+				strMLString = Apollo.GetString("MarketplaceAuction_UnlockAdditionalSlotsGroups")
+			end
+		elseif bIsVIP then
+			if bCanUpgradeTier then
+				strMLString = Apollo.GetString("Marketplace_VIPAccess")				
+			end
 		end
-		wndMTXSlotNotify:SetAnchorOffsets(nLeftSearchOffsets, nBottomSearchOffsets, 0, nBottomSearchOffsets) -- adjust the width so Body sizes correctly
-		local nMTXSlotBodyWidth, nMTXSlotBodyHeight = wndMTXSlotNotifyBody:SetHeightToContentHeight()
-		if nMTXSlotBodyHeight - nPrevMTXSlotBodyHeight > 0 then
-			nMTXSlotNotifyHeight = nMTXSlotNotifyHeight + (nMTXSlotBodyHeight - nPrevMTXSlotBodyHeight)
+		wndMTXSlotNotifyBody:SetAML(string.format("<P Font=\"CRB_InterfaceMedium\" Align=\"Left\" TextColor=\"UI_TextHoloBody\">%s</P>", strMLString))
+		
+		-- Resizing the Upsell windows
+		local nOldHeight = wndMTXSlotNotifyBody:GetHeight()
+		local nNewWidth, nNewHeight = wndMTXSlotNotifyBody:SetHeightToContentHeight()
+		local nDiff = nNewHeight - nOldHeight
+
+		if nDiff < 0 then
+			nDiff = 0
 		end
-		wndMTXSlotNotify:SetAnchorOffsets(nLeftSearchOffsets, nBottomSearchOffsets, nRightSearchOffsets, nBottomSearchOffsets + nMTXSlotNotifyHeight)
-		if nSlotCount <= 0 then
-			nUnlockAddSlotsBtnPointsLeft = nSigPlayerBtnPointsLeft
-			local nWidth = wndMTXSlotNotify:GetWidth() - wndUnlockAddSlotsBtn:GetWidth()
-			nUnlockAddSlotsBtnRight = nWidth / -2
-			nUnlockAddSlotsBtnLeft = math.abs(nUnlockAddSlotsBtnRight)
-		end
-		wndUnlockAddSlotsBtn:SetAnchorPoints(nUnlockAddSlotsBtnPointsLeft, nUnlockAddSlotsBtnPointsTop, nUnlockAddSlotsBtnPointsRight, nUnlockAddSlotsPointsBtnBottom)
-		wndUnlockAddSlotsBtn:SetAnchorOffsets(nUnlockAddSlotsBtnLeft, nUnlockAddSlotsBtnTop, nUnlockAddSlotsBtnRight, nUnlockAddSlotsBtnBottom)
-		nSearchHeaderHeight = nMTXSlotNotifyHeight + wndSearchHeader:GetHeight()
+		
+		local nContentLeft, nContentTop, nContentRight, nContentBottom = wndMTXContent:GetAnchorOffsets()
+		wndMTXContent:SetAnchorOffsets(nContentLeft, nContentTop, nContentRight, nContentBottom + nDiff)
+		
+		local nNotifyLeft, nNotifyTop, nNotifyRight, nNotifyBottom = self.tWndRefs.wndMTXSlotNotify:GetAnchorOffsets()
+		self.tWndRefs.wndMTXSlotNotify:SetAnchorOffsets(nNotifyLeft, nNotifyTop, nNotifyRight, nNotifyBottom + nDiff)
+		
+		nUpsellHeight = self.tWndRefs.wndMTXSlotNotify:GetHeight()
 	end
 	
-	wndWaitScreen:SetAnchorOffsets(nWaitScreenLeft, nWaitScreenTop + nMTXSlotNotifyHeight + nSearchHeaderHeight, nWaitScreenRight, nWaitScreenBottom)
-	wndRefreshAnimation:SetAnchorOffsets(nRefreshAnimationLeft, nRefreshAnimationTop + nMTXSlotNotifyHeight + nSearchHeaderHeight, nRefreshAnimationRight, nRefreshAnimationBottom)
-	wndMainScrollContainer:SetAnchorOffsets(nMainScrollLeft, nMainScrollTop + nMTXSlotNotifyHeight, nMainScrollRight, nMainScrollBottom)
+	self.tWndRefs.wndMTXSlotNotify:Show(bDisplayUpsell)
+	
+	local wndResultsContainer = self.tWndRefs.wndMain:FindChild("MainScrollContainer")
+	local nOriginalLeft, nOriginalTop, nOriginalRight, nOriginalBottom = wndResultsContainer:GetOriginalLocation():GetOffsets()
+	wndResultsContainer:SetAnchorOffsets(nOriginalLeft, nOriginalTop + nUpsellHeight, nOriginalRight, nOriginalBottom)
 end
 
 function MarketplaceCommodity:RefreshStoreLink()
 	local nMaxSlots = MarketplaceLib.GetMaxCommodityOrders()
-	self.bCommodityOrdersFull = ((nMaxSlots - self.nOwnedBuyOrderCount) <= 0) or ((nMaxSlots - self.nOwnedSellOrderCount) <= 0)
+	self.bCommodityOrdersFull = ((nMaxSlots - self.tOrdersCount.nBuy) <= 0) or ((nMaxSlots - self.tOrdersCount.nSell) <= 0)
 	
 	self.bStoreLinkValid = StorefrontLib.IsLinkValid(StorefrontLib.CodeEnumStoreLink.Signature) 
 	if self.bCommodityOrdersFull then
@@ -1162,9 +1183,9 @@ function MarketplaceCommodity:OnGenerateSignatureTooltip(wndHandler, wndControl)
 end
 
 function MarketplaceCommodity:OnPostResultTimer()
-	if self.wndMain and self.wndMain:IsValid() then
+	if self.tWndRefs.wndMain and self.tWndRefs.wndMain:IsValid() then
 		Apollo.StopTimer("PostResultTimer")
-		self.wndMain:FindChild("PostResultNotification"):Show(false)
+		self:OnClosePostResultNotification()
 	end
 end
 
@@ -1190,20 +1211,20 @@ function MarketplaceCommodity:OnCommodityDataReceived(tOrders) -- From Marketpla
 end
 
 function MarketplaceCommodity:UpdateOrderLimit(nBuyCount, nSellCount)
-	if not self.wndMain or not self.wndMain:IsValid() then
+	if not self.tWndRefs.wndMain or not self.tWndRefs.wndMain:IsValid() then
 		return
 	end
 
 	if nBuyCount < 0 then
-		self.nOwnedBuyOrderCount = 0
+		self.tOrdersCount.nBuy = 0
 	else
-		self.nOwnedBuyOrderCount = nBuyCount
+		self.tOrdersCount.nBuy = nBuyCount
 	end
 
 	if nSellCount < 0 then
-		self.nOwnedSellOrderCount = 0
+		self.tOrdersCount.nSell = 0
 	else
-		self.nOwnedSellOrderCount = nSellCount
+		self.tOrdersCount.nSell = nSellCount
 	end
 
 	self:UpdateSlotNotification()
@@ -1252,16 +1273,16 @@ function MarketplaceCommodity:UpdateDisplayedAverage(wndAuction, nCount)
 	if nCount <= 1 then
 		eCategory = ktOrderAverages.Top1
 		
-		if self.wndMain:FindChild("HeaderSellNowBtn"):IsChecked() then
+		if self.tWndRefs.wndSellNowHeader:IsChecked() then
 			strLabel = "MarketplaceCommodity_AverageSellPrice"
-		elseif self.wndMain:FindChild("HeaderBuyNowBtn"):IsChecked() then
+		elseif self.tWndRefs.wndBuyNowHeader:IsChecked() then
 			strLabel = "MarketplaceCommodity_AverageBuyPrice"
 		end
 	elseif nCount <= 10 then
 		eCategory = ktOrderAverages.Top10
 	end
 	
-	if self.wndMain:FindChild("HeaderSellNowBtn"):IsChecked() then
+	if self.tWndRefs.wndSellNowHeader:IsChecked() then
 		monAmount = tInfo.arBuyOrderPrices[eCategory].monPrice
 	else
 		monAmount = tInfo.arSellOrderPrices[eCategory].monPrice

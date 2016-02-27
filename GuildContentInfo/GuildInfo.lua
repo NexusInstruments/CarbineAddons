@@ -224,7 +224,7 @@ function GuildInfo:OnEditMotDCloseBtn() -- The Window Close Event can also route
 end
 
 function GuildInfo:OnEditMotDEditBoxReturn(wndHandler, wndControl, strText)
-	if wndHandler and wndHandler:GetData() and string.len(strText) > 0 then
+	if wndHandler and wndHandler:GetData() and Apollo.StringLength(strText) > 0 then
 		local guildOwner = self.wndMain:GetData()
 		if guildOwner then
 			guildOwner:SetMessageOfTheDay(strText)

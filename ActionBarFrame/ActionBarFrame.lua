@@ -707,5 +707,9 @@ function ActionBarFrame:OnCharacterCreated()
 	end
 end
 
+function ActionBarFrame:OpenMountsCustomization()
+	Event_FireGenericEvent("GenericEvent_OpenCollectables")
+end
+
 local ActionBarFrameInst = ActionBarFrame:new()
 ActionBarFrameInst:Init()

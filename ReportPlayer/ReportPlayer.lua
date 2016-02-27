@@ -139,9 +139,9 @@ function ReportPlayer:OnToggleFromOptionsMenu()
 
 	for idx = 1, 2 do
 		local strName = GameLib.GetLastTargetedPlayerName(idx) or ""
-		self.wndNamePicker:FindChild("LastTargetTooltipExplain"..idx):Show(strName and string.len(strName) > 0)
+		self.wndNamePicker:FindChild("LastTargetTooltipExplain"..idx):Show(strName and Apollo.StringLength(strName) > 0)
 		self.wndNamePicker:FindChild("LastTargetName"..idx):SetText(strName)
-		self.wndNamePicker:FindChild("LastTargetBtn"..idx):Enable(strName and string.len(strName) > 0)
+		self.wndNamePicker:FindChild("LastTargetBtn"..idx):Enable(strName and Apollo.StringLength(strName) > 0)
 		self.wndNamePicker:FindChild("LastTargetBtn"..idx):SetData(idx)
 	end
 
@@ -152,7 +152,7 @@ end
 function ReportPlayer:OnCustomInputEditBoxChanged(wndHandler, wndControl)
 	local strInput = wndHandler:GetText() or ""
 	self.wndNamePicker:FindChild("CustomInputBtn"):SetData(strInput)
-	self.wndNamePicker:FindChild("CustomInputBtn"):Enable(strInput and string.len(strInput) > 0)
+	self.wndNamePicker:FindChild("CustomInputBtn"):Enable(strInput and Apollo.StringLength(strInput) > 0)
 end
 
 function ReportPlayer:OnNameSelectedBtn(wndHandler, wndControl)

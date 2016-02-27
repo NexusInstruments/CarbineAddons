@@ -22,6 +22,12 @@ require "ContentFinderLib"
 -----------------------------------------------------------------------------------------------
 local MatchMaker = {}
 
+local kstrConsoleAllowMercFilter	 	= "matching.mercenaryAllowed"
+local kstrConsoleAllowWarpartyFilter 	= "matching.warpartyAllowed"
+local kstrConsoleDoNotFindOthers		= "matching.doNotFindOthers"
+local knRandomMatchIndex = 0
+local knQuestTabId = -1
+
 local ktItemQualityColors =
 {
 	[Item.CodeEnumItemQuality.Inferior] 		= "ItemQuality_Inferior",
@@ -35,6 +41,7 @@ local ktItemQualityColors =
 
 local ktTypeNames = 
 {
+	[knQuestTabId]								= Apollo.GetString("CRB_Quests"),
 	[MatchingGame.MatchType.Shiphand] 			= Apollo.GetString("MatchMaker_Shiphands"),
 	[MatchingGame.MatchType.Adventure] 			= Apollo.GetString("MatchMaker_Adventures"),
 	[MatchingGame.MatchType.Dungeon] 			= Apollo.GetString("CRB_Dungeons"),
@@ -43,20 +50,108 @@ local ktTypeNames =
 	[MatchingGame.MatchType.Warplot] 			= Apollo.GetString("MatchMaker_Warplots"),
 	[MatchingGame.MatchType.OpenArena] 			= Apollo.GetString("MatchMaker_Arenas"),
 	[MatchingGame.MatchType.Arena] 				= Apollo.GetString("MatchMaker_Arenas"),
+	[MatchingGame.MatchType.WorldStory]			= Apollo.GetString("QuestLog_WorldStory"),
 }
 
+-- Match Types need to correspond to ktPvPTypes and ktPvETypes (excluding quests)
+local ktTypeIntros = 
+{
+	[MatchingGame.MatchType.Shiphand] 		= { 
+		strBackground = "matchmaker:Matchmaker_BG_Expeditions",
+		arStats = {
+			String_GetWeaselString(Apollo.GetString("MatchMaker_Label_GroupSize"), Apollo.GetString("MatchMaker_Expeditions_GroupSize")), 
+			String_GetWeaselString(Apollo.GetString("MatchMaker_Label_AvgDuration"), Apollo.GetString("MatchMaker_Expeditions_AvgDuration")),
+			String_GetWeaselString(Apollo.GetString("MatchMaker_Label_RecVetILevel"), Apollo.GetString("MatchMaker_Expeditions_RecVetILevel")),
+		}, 
+		arDescription = {
+			Apollo.GetString("MatchMaker_Expeditions_Desc1"), 
+			Apollo.GetString("MatchMaker_Expeditions_Desc2"), 
+		},
+	},
+	[MatchingGame.MatchType.Adventure] 		= { 
+		strBackground = "matchmaker:Matchmaker_BG_Adventures",	
+		arStats = {
+			String_GetWeaselString(Apollo.GetString("MatchMaker_Label_GroupSize"), Apollo.GetString("MatchMaker_Adventures_GroupSize")), 
+			String_GetWeaselString(Apollo.GetString("MatchMaker_Label_AvgDuration"), Apollo.GetString("MatchMaker_Adventures_AvgDuration")),
+			String_GetWeaselString(Apollo.GetString("MatchMaker_Label_RecVetILevel"), Apollo.GetString("MatchMaker_Adventures_RecVetILevel")),
+		}, 
+		arDescription = {
+			Apollo.GetString("MatchMaker_Adventures_Desc1"), 
+			Apollo.GetString("MatchMaker_Adventures_Desc2"), 
+		},
+	},
+	[MatchingGame.MatchType.Dungeon] 		= { 
+		strBackground = "matchmaker:Matchmaker_BG_Dungeons",	
+		arStats = {
+			String_GetWeaselString(Apollo.GetString("MatchMaker_Label_GroupSize"), Apollo.GetString("MatchMaker_Dungeons_GroupSize")), 
+			String_GetWeaselString(Apollo.GetString("MatchMaker_Label_AvgDuration"), Apollo.GetString("MatchMaker_Dungeons_AvgDuration")),
+			String_GetWeaselString(Apollo.GetString("MatchMaker_Label_RecVetILevel"), Apollo.GetString("MatchMaker_Dungeons_RecVetILevel")),
+		}, 
+		arDescription = {
+			Apollo.GetString("MatchMaker_Dungeons_Desc1"), 
+			Apollo.GetString("MatchMaker_Dungeons_Desc2"), 
+		},
+	},
+	[MatchingGame.MatchType.WorldStory]		 = { 
+		strBackground = "matchmaker:Matchmaker_BG_WorldStory",
+		arStats = {
+			String_GetWeaselString(Apollo.GetString("MatchMaker_Label_GroupSize"), Apollo.GetString("MatchMaker_WorldStory_GroupSize")), 
+			String_GetWeaselString(Apollo.GetString("MatchMaker_Label_AvgDuration"), Apollo.GetString("MatchMaker_WorldStory_AvgDuration")),
+		}, 
+		arDescription = {
+			Apollo.GetString("MatchMaker_WorldStory_Desc1"), 
+			Apollo.GetString("MatchMaker_WorldStory_Desc2"), 
+		},
+	},
+	[MatchingGame.MatchType.Battleground] 	 = { 
+		strBackground = "matchmaker:Matchmaker_BG_Battlegrounds",
+		arStats = {
+			String_GetWeaselString(Apollo.GetString("MatchMaker_Label_GroupSize"), Apollo.GetString("MatchMaker_Battlegrounds_GroupSize")), 
+		}, 
+		arDescription = {
+			Apollo.GetString("MatchMaker_Battlegrounds_Desc1"), 
+			Apollo.GetString("MatchMaker_Battlegrounds_Desc2"), 
+		},
+	},
+	[MatchingGame.MatchType.Warplot] 		 = { 
+		strBackground = "matchmaker:Matchmaker_BG_Warplots",
+		arStats = {
+			String_GetWeaselString(Apollo.GetString("MatchMaker_Label_GroupSize"), Apollo.GetString("MatchMaker_Warplots_GroupSize")), 
+		}, 
+		arDescription = {
+			Apollo.GetString("MatchMaker_Warplots_Desc1"), 
+			Apollo.GetString("MatchMaker_Warplots_Desc2"), 
+		},
+	},
+	[MatchingGame.MatchType.OpenArena]  	= { 
+		strBackground = "matchmaker:Matchmaker_BG_Arenas",	
+		arStats = {
+			String_GetWeaselString(Apollo.GetString("MatchMaker_Label_GroupSize"), Apollo.GetString("MatchMaker_Arenas_GroupSize")), 
+		}, 
+		arDescription = {
+			Apollo.GetString("MatchMaker_Arenas_Desc1"), 
+			Apollo.GetString("MatchMaker_Arenas_Desc2"), 
+		},
+	},	
+}
+
+
+-- Numbers indicate sort order for tabs.  1 is quest
 local ktPvETypes =
 {
-	[MatchingGame.MatchType.Shiphand] 			= true,
-	[MatchingGame.MatchType.Adventure] 			= true,
-	[MatchingGame.MatchType.Dungeon] 			= true,
+	[knQuestTabId]								= 1,
+	[MatchingGame.MatchType.Shiphand] 			= 2,
+	[MatchingGame.MatchType.Adventure] 			= 3,
+	[MatchingGame.MatchType.Dungeon] 			= 4,
+	[MatchingGame.MatchType.WorldStory]			= 5,
 }
 
+-- Numbers indicate sort order for tabs
 local ktPvPTypes = 
 {
-	[MatchingGame.MatchType.Battleground]		= true,
-	[MatchingGame.MatchType.Warplot] 			= true,
-	[MatchingGame.MatchType.OpenArena] 			= true,
+	[MatchingGame.MatchType.Battleground]		= 1,
+	[MatchingGame.MatchType.Warplot] 			= 2,
+	[MatchingGame.MatchType.OpenArena] 			= 3,
 }
 
 local ktRatedPvPTypes =
@@ -121,12 +216,6 @@ local keMasterTabs =
 	["PvE"]			= 2,
 	["PvP"]			= 3,
 }
-
-local kstrConsoleAllowMercFilter	 	= "matching.mercenaryAllowed"
-local kstrConsoleAllowWarpartyFilter 	= "matching.warpartyAllowed"
-local kstrConsoleDoNotFindOthers		= "matching.doNotFindOthers"
-local knQuestTabId = -1
-local knRandomMatchIndex = 0
 
 -----------------------------------------------------------------------------------------------
 -- Initialization
@@ -208,10 +297,11 @@ function MatchMaker:OnDocumentReady()
 	Apollo.RegisterEventHandler("DuelAccepted",							"OnDuelAccepted", self)
 	Apollo.RegisterEventHandler("DuelLeftArea",							"OnDuelLeftArea", self)
 	Apollo.RegisterEventHandler("DuelCancelWarning",					"OnDuelCancelWarning", self)
-	
-	-- Entitlement Updates
-	Apollo.RegisterEventHandler("AccountEntitlementUpdate",				"OnEntitlementUpdate", self)
-	Apollo.RegisterEventHandler("CharacterEntitlementUpdate",			"OnEntitlementUpdate", self)
+
+	--PremiumTierUpdates
+	Apollo.RegisterEventHandler("PremiumTierChanged",					"UpdateTeamInfo", self)
+
+	--StoreLinks
 	Apollo.RegisterEventHandler("StoreLinksRefresh",					"RefreshStoreLink", self)
 
 	-- Tutorial Anchor
@@ -244,7 +334,6 @@ function MatchMaker:OnDocumentReady()
 	self.tHasGuild = {}
 	
 	self:RefreshStoreLink()
-	self.bValidEntitlements = AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0 or AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.FullGuildsAccess) > 0
 	
 	if MatchingGame.IsQueuedForMatching() or MatchingGame.IsQueuedAsGroup() or MatchingGame.IsGamePending() then
 		self:OnJoinQueue()
@@ -280,18 +369,12 @@ function MatchMaker:OnMatchMakerOn()
 	self:BuildMatchTable()
 
 	Event_FireGenericEvent("WindowManagementAdd", {wnd = self.tWndRefs.wndMain, strName = Apollo.GetString("CRB_ContentFinder")})
-
-	local wndPvETab = self.tWndRefs.wndMain:FindChild("PvETab")
-	wndPvETab:FindChild("QuestsTab"):SetData(knQuestTabId)
-	wndPvETab:FindChild("ShiphandsTabBtn"):SetData(MatchingGame.MatchType.Shiphand)
-	wndPvETab:FindChild("AdventuresTabBtn"):SetData(MatchingGame.MatchType.Adventure)
-	wndPvETab:FindChild("DungeonsTabBtn"):SetData(MatchingGame.MatchType.Dungeon)
-
-	local wndPvPTab = self.tWndRefs.wndMain:FindChild("PvPTab")
-	wndPvPTab:FindChild("BattlegroundTabBtn"):SetData(MatchingGame.MatchType.Battleground)
-	wndPvPTab:FindChild("WarplotsTabBtn"):SetData(MatchingGame.MatchType.Warplot)
-	wndPvPTab:FindChild("ArenaTabBtn"):SetData(MatchingGame.MatchType.OpenArena)
-	self.arMatchesQueued = MatchingGame.GetQueuedMatches()
+	
+	local wndPvEList = self.tWndRefs.wndMain:FindChild("PvETab")	
+	self:BuildTabs(wndPvEList, ktPvETypes)
+	
+	local wndPvPList = self.tWndRefs.wndMain:FindChild("PvPTab")
+	self:BuildTabs(wndPvPList, ktPvPTypes)
 	
 	local wndHeaderBtns = self.tWndRefs.wndMain:FindChild("HeaderButtons")
 	local wndSuggestedBtn = wndHeaderBtns:FindChild("SuggestedBtn")
@@ -324,6 +407,27 @@ function MatchMaker:OnMatchMakerOn()
 	else
 		wndSuggestedBtn:SetCheck(true)
 		self:OnSuggestedTabSelected(wndSuggestedBtn, wndSuggestedBtn)
+	end
+end
+
+function MatchMaker:BuildTabs(wndParent, tMatchTypes)
+	local nTableSize = 0
+	for eMatchType, nSortOrder in pairs(tMatchTypes) do
+		nTableSize = nTableSize + 1
+	end
+	
+	local fRightAnchor = 1/nTableSize
+	for eMatchType, nSortOrder in pairs(tMatchTypes) do
+		local wndCurrTab = Apollo.LoadForm(self.xmlDoc, "MatchTypeButton", wndParent, self)
+		wndCurrTab:SetText(ktTypeNames[eMatchType])
+		wndCurrTab:SetData(eMatchType)
+		wndCurrTab:SetAnchorPoints(fRightAnchor * (tMatchTypes[eMatchType] - 1), 0, fRightAnchor * tMatchTypes[eMatchType], 1)
+		
+		if nSortOrder == 1 then
+			wndCurrTab:ChangeArt("BK3:btnMetal_TabSub_Left")
+		elseif nSortOrder == nTableSize then
+			wndCurrTab:ChangeArt("BK3:btnMetal_TabSub_Right")
+		end
 	end
 end
 
@@ -597,11 +701,11 @@ function MatchMaker:BuildArenaControls()
 	
 	local wndSettings = wndControls:FindChild("PvESettings")
 	local nLeft, nTop, nRight, nBottom = wndSettings:GetOriginalLocation():GetOffsets()
-	wndSettings:SetAnchorOffsets(nLeft, nTop, nRight, nTop)
+	wndSettings:SetAnchorOffsets(nLeft, nBottom, nRight, nBottom)
 	
 	local wndContainer = wndControls:FindChild("MasterList")
 	local nListLeft, nListTop, nListRight, nListBottom = wndContainer:GetOriginalLocation():GetOffsets()
-	wndContainer:SetAnchorOffsets(nListLeft, nTop, nListRight, nListBottom)
+	wndContainer:SetAnchorOffsets(nListLeft, nListTop, nListRight, nBottom)
 	
 	wndContainer:DestroyChildren()
 	
@@ -644,12 +748,14 @@ function MatchMaker:BuildArenaControls()
 			local guildArenaTeam = self.tHasGuild[ktPvPGuildToTeamSize[nTeamSize]]
 			if guildArenaTeam then
 				wndRated:FindChild("MatchSelection"):Enable(true)
+				wndRated:FindChild("MatchSelection"):SetTooltip("")
 				wndRated:FindChild("TeamName"):Show(true)
 				wndRated:FindChild("TeamName"):SetTextRaw(String_GetWeaselString(Apollo.GetString("Nameplates_GuildDisplay"), guildArenaTeam:GetName()))
 				wndRated:FindChild("Rating"):Show(true)
 				wndRated:FindChild("Rating"):SetText(String_GetWeaselString(Apollo.GetString("MatchMaker_Rating"), guildArenaTeam:GetPvpRatings().nRating))
 			else
 				wndRated:FindChild("MatchSelection"):Enable(false)
+				wndRated:FindChild("MatchSelection"):SetTooltip(Apollo.GetString("MatchMaker_RatedArenaTeamReq"))
 				wndRated:FindChild("TeamName"):Show(false)
 				wndRated:FindChild("Rating"):Show(false)
 			end
@@ -675,7 +781,8 @@ function MatchMaker:BuildArenaControls()
 	end
 	
 	wndControls:FindChild("MasterList"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
-	self:SetMatchDetails(matchDisplayed)
+
+	self:ResizeBlocker()
 	self:ValidateQueueButtons()
 end
 
@@ -703,11 +810,11 @@ function MatchMaker:BuildWarplotControls()
 	
 	local wndSettings = wndControls:FindChild("PvESettings")
 	local nLeft, nTop, nRight, nBottom = wndSettings:GetOriginalLocation():GetOffsets()
-	wndSettings:SetAnchorOffsets(nLeft, nTop, nRight, nTop)
+	wndSettings:SetAnchorOffsets(nLeft, nBottom, nRight, nBottom)
 	
 	local wndContainer = wndControls:FindChild("MasterList")
 	local nListLeft, nListTop, nListRight, nListBottom = wndContainer:GetOriginalLocation():GetOffsets()
-	wndContainer:SetAnchorOffsets(nListLeft, nTop, nListRight, nListBottom)
+	wndContainer:SetAnchorOffsets(nListLeft, nListTop, nListRight, nBottom)
 	
 	wndContainer:DestroyChildren()
 	
@@ -715,17 +822,26 @@ function MatchMaker:BuildWarplotControls()
 	
 	local wndWarplotSettings = Apollo.LoadForm(self.xmlDoc, "WarplotEntry", wndContainer, self)
 	wndWarplotSettings:FindChild("Mercenary"):SetCheck(Apollo.GetConsoleVariable(kstrConsoleAllowMercFilter))
-	wndWarplotSettings:FindChild("Mercenary"):Enable(bCanQueue)
+	wndWarplotSettings:FindChild("MercenaryContainer"):SetData(matchWarplot)
+
+	if bCanQueue then
+		wndWarplotSettings:FindChild("Mercenary"):Enable(true)
+		wndWarplotSettings:FindChild("Mercenary"):SetTooltip("")
+	else
+		wndWarplotSettings:FindChild("Mercenary"):Enable(false)
+		wndWarplotSettings:FindChild("Mercenary"):SetTooltip(String_GetWeaselString(Apollo.GetString("CRB_LevelReqParticipation"), matchWarplot:GetMinLevel(), Apollo.GetString("MatchMaker_Warplots")))
+	end
 	
 	local guildWarparty = self.tHasGuild[ktPvPGuildToTeamSize[nTeamSize]]
 	local bCanQueueWarparty = bCanQueue and guildWarparty and guildWarparty:GetRanks()[guildWarparty:GetMyRank()].bCanQueueTheWarparty
 	
 	wndWarplotSettings:FindChild("Warparty"):Enable(bCanQueueWarparty)
 	wndWarplotSettings:FindChild("Warparty"):SetCheck(bCanQueueWarparty and Apollo.GetConsoleVariable(kstrConsoleAllowWarpartyFilter))
+	wndWarplotSettings:FindChild("WarpartyContainer"):SetData(matchWarplot)
 	
 	self.matchDisplayed = matchWarplot
-	
-	self:SetMatchDetails(matchWarplot)
+
+	self:ResizeBlocker()
 	self:ValidateQueueButtons()
 end
 
@@ -737,6 +853,7 @@ function MatchMaker:BuildMatchList(wndHandler, wndControl)
 		return
 	end
 	
+	self:OnCloseMatchInfo()
 	self.tWndRefs.wndMain:FindChild("TabContent:QuestContent"):Show(false)
 	self.tWndRefs.wndMain:FindChild("TabContent:MatchContent"):Show(true)
 	
@@ -750,32 +867,75 @@ function MatchMaker:BuildMatchList(wndHandler, wndControl)
 		self.ePvPTabSelected = eMatchType
 	end
 	
-	if eMatchType == MatchingGame.MatchType.Warplot then
+	if eMatchType == knQuestTabId then
+		self:BuildQuestList()
+	elseif eMatchType == MatchingGame.MatchType.Warplot then
 		self:BuildWarplotControls()
 	elseif eMatchType == MatchingGame.MatchType.OpenArena or eMatchType == MatchingGame.MatchType.Arena then
 		self:BuildArenaControls()
 	else
 		self:BuildMatchControls(eMatchType)
-
-		local bIsAtCap = GameLib.GetPlayerLevel(true) == GameLib.GetLevelCap()
-		if bIsAtCap then
-			self:SetMatchDetails(self.tMatchList[eMatchType][knRandomMatchIndex].matchVet)
-		elseif self.tSuggestedInfo then
-			if ktPvETypes[eMatchType] and self.tSuggestedInfo.matchPvE then
-				self:SetMatchDetails(self.tSuggestedInfo.matchPvE)
-			elseif (ktPvPTypes[eMatchType] or ktRatedPvPTypes[eMatchType]) and self.tSuggestedInfo.matchPvP then
-				self:SetMatchDetails(self.tSuggestedInfo.matchPvP)
-			else
-				self:SetMatchDetails()
-			end
-		else
-			self:SetMatchDetails()
-		end
+	end
+	
+	if eMatchType ~= knQuestTabId then
+		self:BuildMatchIntro(eMatchType)
 	end
 end
 
-function MatchMaker:BuildMatchControls(eMatchType)
-	-- Build the arrays of matches for the given type
+function MatchMaker:BuildMatchIntro(eMatchType)
+	if not ktTypeIntros[eMatchType] then
+		return
+	end
+	
+	local wndParent = self.tWndRefs.wndMain:FindChild("TabContent:MatchContent:MatchTypeInfo")
+	local wndTextContainer = self.tWndRefs.wndMain:FindChild("TabContent:MatchContent:MatchTypeInfo:TextContainer")
+	local strSprite = ktTypeIntros[eMatchType].strBackground
+	
+	wndParent:SetSprite(strSprite)
+	wndTextContainer:FindChild("Title"):SetText(ktTypeNames[eMatchType])
+	
+	local strStats = ""
+	local strDesc = ""
+	if #ktTypeIntros[eMatchType].arStats > 0 then
+		for idx, strStat in ipairs(ktTypeIntros[eMatchType].arStats) do
+			strStats = string.format("<P Font=\"CRB_Header10\" TextColor=\"UI_TextHoloTitle\">%s</P><P Font=\"CRB_Header10\" TextColor=\"UI_TextHoloTitle\">%s</P>", strStats, strStat)
+		end
+	end
+	
+	wndTextContainer:FindChild("Stats"):SetAML(strStats)
+	wndTextContainer:FindChild("Stats"):SetHeightToContentHeight()
+	
+	if #ktTypeIntros[eMatchType].arDescription > 0 then
+		for idx, strParagraph in ipairs(ktTypeIntros[eMatchType].arDescription) do	
+			strDesc = string.format("%s%s\n\n", strDesc, strParagraph)
+		end
+	end
+
+	wndTextContainer:FindChild("Description"):SetText(strDesc)	
+	wndTextContainer:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+end
+
+function MatchMaker:OnCloseMatchInfo()
+	local wndInfo = self.tWndRefs.wndMain:FindChild("TabContent:MatchContent:MatchInfo")
+	
+	if wndInfo:IsVisible() then
+		local matchInfo = wndInfo:GetData()
+		local wndMasterList = self.tWndRefs.wndMain:FindChild("MasterList")
+		local matchSelected
+		
+		if matchInfo:IsRandom() then
+			matchSelected = wndMasterList:FindChild("RightColumn"):FindChildByUserData(matchInfo)
+		else
+			matchSelected = wndMasterList:FindChildByUserData(matchInfo)
+		end
+		if matchSelected ~= nil then
+			matchSelected:SetCheck(false)
+		end
+		wndInfo:Show(false)
+	end 
+end
+
+function MatchMaker:GetSortedMatches(eMatchType)
 	local arMatchOrder = {}
 	if ktRatedToNormal[eMatchType] then
 		eMatchType = ktRatedToNormal[eMatchType]
@@ -802,6 +962,12 @@ function MatchMaker:BuildMatchControls(eMatchType)
 	end
 
 	table.sort(arMatchOrder, fnMatchSort)
+	return arMatchOrder
+end
+
+function MatchMaker:BuildMatchControls(eMatchType)
+	-- Build the arrays of matches for the given type
+	local arMatchOrder = self:GetSortedMatches(eMatchType)
 
 	-- Clear the existing windows
 	local wndControls = self.tWndRefs.wndMain:FindChild("TabContent:MatchContent:Controls")
@@ -810,9 +976,11 @@ function MatchMaker:BuildMatchControls(eMatchType)
 	
 	if GameLib.GetPlayerLevel(true) == GameLib.GetLevelCap() then
 		local wndRandomHeader = self:BuildRandomHeader(eMatchType, wndContainer, arMatchOrder)
-		local wndDropdown = wndRandomHeader:FindChild("ListDropdown")
-		wndDropdown:SetCheck(true)
-		self:ToggleMatchHeader(wndDropdown, wndDropdown)
+		if wndRandomHeader then
+			local wndDropdown = wndRandomHeader:FindChild("ListDropdown")
+			wndDropdown:SetCheck(true)
+			self:ToggleMatchHeader(wndDropdown, wndDropdown)
+		end
 	end
 
 	local wndMatchTypeContainer = self:BuildMatchTypeContainer(eMatchType, wndContainer, arMatchOrder)
@@ -825,10 +993,10 @@ function MatchMaker:BuildMatchControls(eMatchType)
 	
 	local wndSettings = wndControls:FindChild("PvESettings")
 	local nLeft, nTop, nRight, nBottom = wndSettings:GetOriginalLocation():GetOffsets()
-	local nNewBottom = nBottom
+	local nNewTop = nTop
 	
 	local nListLeft, nListTop, nListRight, nListBottom = wndContainer:GetOriginalLocation():GetOffsets()
-	local nNewListTop = nListTop
+	local nNewListBottom = nListBottom
 	
 	if ktPvETypes[eMatchType] then
 		local tValidRoles = {}
@@ -838,42 +1006,73 @@ function MatchMaker:BuildMatchControls(eMatchType)
 			tValidRoles[eRole] = true
 		end
 
-		wndRoles:FindChild("DPS"):Enable(tValidRoles[MatchingGame.Roles.DPS])
-		wndRoles:FindChild("Tank"):Enable(tValidRoles[MatchingGame.Roles.Tank])
-		wndRoles:FindChild("Healer"):Enable(tValidRoles[MatchingGame.Roles.Healer])
+		local wndRoleDPSBlock = wndRoles:FindChild("DPSBlock")
+		local wndRoleDPS = wndRoles:FindChild("DPSBlock:DPS")
+		local wndRoleHealerBlock = wndRoles:FindChild("HealerBlock")
+		local wndRoleHealer = wndRoles:FindChild("HealerBlock:Healer")
+		local wndRoleTankBlock = wndRoles:FindChild("TankBlock")
+		local wndRoleTank = wndRoles:FindChild("TankBlock:Tank")
+		
+		if tValidRoles[MatchingGame.Roles.DPS] then
+			wndRoleDPS:Enable(true)
+		else
+			wndRoleDPS:Enable(false)
+			wndRoleDPS:SetTooltip(Apollo.GetString("MatchMaker_RoleClassReq"))
+			wndRoleDPSBlock:FindChild("RoleIcon"):SetBGColor("UI_AlphaPercent30")
+			wndRoleDPSBlock:FindChild("RoleLabel"):SetTextColor("UI_BtnTextGrayDisabled")
+		end
+		
+		if tValidRoles[MatchingGame.Roles.Tank] then
+			wndRoleTank:Enable(true)
+		else
+			wndRoleTank:Enable(false)
+			wndRoleTank:SetTooltip(Apollo.GetString("MatchMaker_RoleClassReq"))
+			wndRoleTankBlock:FindChild("RoleIcon"):SetBGColor("UI_AlphaPercent30")
+			wndRoleTankBlock:FindChild("RoleLabel"):SetTextColor("UI_BtnTextGrayDisabled")
+		end
+		
+		if tValidRoles[MatchingGame.Roles.Healer] then
+			wndRoleHealer:Enable(true)
+		else
+			wndRoleHealer:Enable(false)
+			wndRoleHealer:SetTooltip(Apollo.GetString("MatchMaker_RoleClassReq"))
+			wndRoleHealerBlock:FindChild("RoleIcon"):SetBGColor("UI_AlphaPercent30")
+			wndRoleHealerBlock:FindChild("RoleLabel"):SetTextColor("UI_BtnTextGrayDisabled")
+		end
 
 		local tSelectedRoles = {}
 		for idx, eRole in pairs(MatchingGame.GetSelectedRoles()) do
 			tSelectedRoles[eRole] = true
 		end
 
-		wndRoles:FindChild("DPS"):SetCheck(tValidRoles[MatchingGame.Roles.DPS] and tSelectedRoles[MatchingGame.Roles.DPS])
-		wndRoles:FindChild("Tank"):SetCheck(tValidRoles[MatchingGame.Roles.Tank] and tSelectedRoles[MatchingGame.Roles.Tank])
-		wndRoles:FindChild("Healer"):SetCheck(tValidRoles[MatchingGame.Roles.Healer] and tSelectedRoles[MatchingGame.Roles.Healer])
+		wndRoleDPS:SetCheck(tValidRoles[MatchingGame.Roles.DPS] and tSelectedRoles[MatchingGame.Roles.DPS])
+		wndRoleHealer:SetCheck(tValidRoles[MatchingGame.Roles.Tank] and tSelectedRoles[MatchingGame.Roles.Tank])
+		wndRoleTank:SetCheck(tValidRoles[MatchingGame.Roles.Healer] and tSelectedRoles[MatchingGame.Roles.Healer])
 
-		wndRoles:FindChild("DPS"):SetData(MatchingGame.Roles.DPS)
-		wndRoles:FindChild("Tank"):SetData(MatchingGame.Roles.Tank)
-		wndRoles:FindChild("Healer"):SetData(MatchingGame.Roles.Healer)
+		wndRoleDPS:SetData(MatchingGame.Roles.DPS)
+		wndRoleTank:SetData(MatchingGame.Roles.Tank)
+		wndRoleHealer:SetData(MatchingGame.Roles.Healer)
 		
 		local wndShiphandOptions = wndSettings:FindChild("ShiphandOptions")
-		if eMatchType == MatchingGame.MatchType.Shiphand then
+		if eMatchType == MatchingGame.MatchType.Shiphand or eMatchType == MatchingGame.MatchType.WorldStory then
 			wndShiphandOptions:Show(true)
 			wndShiphandOptions:FindChild("DontFindOthers"):SetCheck(Apollo.GetConsoleVariable(kstrConsoleDoNotFindOthers))
 		else
 			local nShiphandHeight = wndShiphandOptions:GetHeight()
-			nNewBottom = nBottom - nShiphandHeight
-			nNewListTop = nListTop - nShiphandHeight
+			nNewTop = nTop + nShiphandHeight
+			nNewListBottom = nListBottom + nShiphandHeight	
 		end
 		
 		wndSettings:Show(true)
 	else
 		wndSettings:Show(false)
-		nNewBottom = nTop
+		nNewListBottom = nBottom
 	end
-	
-	wndSettings:SetAnchorOffsets(nLeft, nTop, nRight, nNewBottom)
-	wndContainer:SetAnchorOffsets(nListLeft, nNewBottom, nListRight, nListBottom)
-	
+
+	wndSettings:SetAnchorOffsets(nLeft, nNewTop, nRight, nBottom)
+	wndContainer:SetAnchorOffsets(nListLeft, nListTop , nListRight, nNewListBottom)
+
+	self:ResizeBlocker()
 	self:ValidateQueueButtons()
 end
 
@@ -1024,6 +1223,7 @@ function MatchMaker:BuildMatchButton(matchGame, eMatchType, wndParent)
 	if GameLib.GetPlayerUnit():GetLevel() < nMinLevel then
 		wndSelection:Enable(false)
 		wndInfoButton:Enable(false)
+		wndSelection:SetTooltip(Apollo.GetString("PrerequisiteComp_Level"))
 	end
 
 	wndInfoButton:SetText(strText)
@@ -1069,7 +1269,7 @@ function MatchMaker:UpdateAchievements()
 	
 	local arAchievements = AchievementsLib.GetAchievementsForCategory(tCategoryInfo.nCategoryId, true)
 	
-	local wndAchievementContainer = self.tWndRefs.wndMain:FindChild("TabContent:MatchContent:AchievementContainer")
+	local wndAchievementContainer = self.tWndRefs.wndMain:FindChild("TabContent:MatchContent:MatchInfo:Content:AchievementContainer")
 	
 	wndAchievementContainer:FindChild("CategoryName"):SetText(tCategoryInfo.strCategoryName)
 	
@@ -1131,6 +1331,8 @@ function MatchMaker:SetMatchDetails(matchSelected)
 	end
 	
 	self.matchDisplayed = matchSelected
+	wndInfo:SetData(matchSelected)
+	
 	local eMatchType = matchSelected:GetType()
 	
 	local wndDetails = wndInfo:FindChild("Details")
@@ -1197,7 +1399,7 @@ function MatchMaker:SetMatchDetails(matchSelected)
 		local tRatingInfo = MatchingGame.GetPvpRating(eRatingType)
 		
 		if tRatingInfo then
-			wndRating:FindChild("RatingLabel"):SetText(String_GetWeaselString(Apollo.GetString("MatchMaker_PersonalRating"), tRatingInfo.nRating))
+			wndRating:SetText(String_GetWeaselString(Apollo.GetString("MatchMaker_PersonalRating"), tRatingInfo.nRating))
 			wndRating:Show(true)
 		else
 			wndRating:Show(false)
@@ -1251,7 +1453,7 @@ function MatchMaker:SetMatchDetails(matchSelected)
 	-- Update the achievements UI
 	self:UpdateAchievements()
 	
-	wndInfo:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
+	wndInfo:FindChild("Content"):ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop)
 	
 	wndInfo:Show(true)
 end
@@ -1267,21 +1469,28 @@ function MatchMaker:UpdateTeamInfo()
 	
 	if ktPvPGuildRequired[eMatchType] then
 		local wndTeam = wndInfo:FindChild("TeamContainer")
+		local wndUpsellPlayerBtn = wndTeam:FindChild("UpsellPlayer")
+		local wndCreateTeamBtn = wndTeam:FindChild("CreateTeam")
+		local wndExistingTeam = wndTeam:FindChild("ExistingTeam")
+		local wndTeamName = wndTeam:FindChild("TeamName")
+
 		local eGuildType = ktPvPGuildToTeamSize[self.matchDisplayed:GetTeamSize()]
+		local bCanCreate = GuildLib.CanCreate(eGuildType)
+		local bHybridSystem = AccountItemLib.GetPremiumSystem() == AccountItemLib.CodeEnumPremiumSystem.Hybrid
+
 		local guildShown = self.tHasGuild[eGuildType]
-		
 		if guildShown then
+			wndExistingTeam:Show(true)
+			wndCreateTeamBtn:Show(false)
+			wndUpsellPlayerBtn:Show(false)
+
 			local tMyRatingInfo = guildShown:GetMyPvpRatings()
 			local tTeamRatingInfo = guildShown:GetPvpRatings()			
 			local nTeamMatchesPlayed = tTeamRatingInfo.nWins + tTeamRatingInfo.nLosses + tTeamRatingInfo.nDraws
 			local nMyGames = tMyRatingInfo.nWins + tMyRatingInfo.nLosses + tMyRatingInfo.nDraws
 			local strPercent = String_GetWeaselString(Apollo.GetString("CRB_Percent"), math.floor(tMyRatingInfo.fParticipation * 100))
 			
-			wndTeam:FindChild("ExistingTeam"):Show(true)
-			wndTeam:FindChild("CreateTeam"):Show(false)
-			wndTeam:FindChild("SignaturePlayer"):Show(false)
-			
-			wndTeam:FindChild("TeamName"):SetText(guildShown:GetName())
+			wndTeamName:SetText(guildShown:GetName())
 			wndTeam:FindChild("Rating"):SetText(String_GetWeaselString(Apollo.GetString("MatchMaker_Rating"), tTeamRatingInfo.nRating))
 			wndTeam:FindChild("TeamPlayed"):SetText(String_GetWeaselString(Apollo.GetString("MatchMaker_GamesPlayed"), nTeamMatchesPlayed))
 			wndTeam:FindChild("PersonalPlayed"):SetText(String_GetWeaselString(Apollo.GetString("MatchMaker_TeamParticipation"), nMyGames, strPercent))
@@ -1289,28 +1498,32 @@ function MatchMaker:UpdateTeamInfo()
 			local wndRosterButton = wndTeam:FindChild("RosterButton")
 			wndRosterButton:Show(true)
 			wndRosterButton:SetData(guildShown:GetType())
-			wndRosterButton:FindChild("SignatureValid"):Show(self.bValidEntitlements)
+			wndRosterButton:FindChild("SignatureValid"):Show(bHybridSystem and bCanCreate)
 		else
+			wndExistingTeam:Show(false)
+	
 			local strLabel = "Guild_GuildTypeWarparty"
-			
 			if eMatchType == MatchingGame.MatchType.Arena then
 				strLabel = "Guild_GuildTypeArena"
 			end
-			
-			wndTeam:FindChild("TeamName"):SetText(Apollo.GetString(strLabel))
-			wndTeam:FindChild("ExistingTeam"):Show(false)
+			wndTeamName:SetText(Apollo.GetString(strLabel))
 
-			local bCanCreate = GameLib.GetPlayerLevel(true) >= self.matchDisplayed:GetMinLevel()
-			local wndCreateTeam = wndTeam:FindChild("CreateTeam")
-			local wndSignaturePlayerBtn = wndTeam:FindChild("SignaturePlayer")
-			
-			wndCreateTeam:Show(self.bValidEntitlements)
-			wndCreateTeam:SetData(eGuildType)
-			wndCreateTeam:Enable(bCanCreate)
-			
-			wndSignaturePlayerBtn:Show(not self.bValidEntitlements)
-			wndSignaturePlayerBtn:SetData(eGuildType)
-			wndSignaturePlayerBtn:Enable(self.bStoreLinkValid)
+			local strUpsellText = "Storefront_NavVip"
+			if bHybridSystem then
+				strUpsellText = "Storefront_NavSignature"
+			end
+
+			local bShowUpsell = not bCanCreate and GameLib.GetPlayerLevel(true) >= self.matchDisplayed:GetMinLevel()
+			wndCreateTeamBtn:Show(not bShowUpsell)
+			wndCreateTeamBtn:FindChild("SignaturePlayerValid"):Show(bHybridSystem)
+			wndCreateTeamBtn:SetData(eGuildType)
+			wndCreateTeamBtn:Enable(bCanCreate)
+
+			wndUpsellPlayerBtn:Show(bShowUpsell)
+			wndUpsellPlayerBtn:FindChild("SignatureBanner"):Show(bHybridSystem)
+			wndUpsellPlayerBtn:SetText(String_GetWeaselString(Apollo.GetString("Matchmaker_PlayerTeamCreation"), Apollo.GetString(strUpsellText)))
+			wndUpsellPlayerBtn:SetData(eGuildType)
+			wndUpsellPlayerBtn:Enable(not bCanCreate and self.bStoreLinkValid)
 		end
 		
 		wndTeam:Show(true)
@@ -1468,20 +1681,17 @@ end
 -- Queue button functionality
 -----------------------------------------------------------------------------------------------
 function MatchMaker:CheckQueueEligibility()
-	local wndDefault = self.tWndRefs.wndMain:FindChild("TabContent:MatchContent:Controls:QueueControls:DefaultControls")
-	local wndSelected = nil
-	
+	local eType = nil
 	if self.tWndRefs.wndMain:FindChild("HeaderButtons:PvPBtn"):IsChecked() then
-		wndSelected = self.tWndRefs.wndMain:FindChild("PvPTab"):GetRadioSelButton("MatchMakerPvETabGroup")
+		eType = self.ePvPTabSelected
 	elseif self.tWndRefs.wndMain:FindChild("HeaderButtons:PvEBtn"):IsChecked() then
-		wndSelected = self.tWndRefs.wndMain:FindChild("PvETab"):GetRadioSelButton("MatchMakerPvETabGroup")
-	end
-	
-	if not wndSelected then
+		eType = self.ePvETabSelected
+	else
 		return
 	end
-
-	local eType = wndSelected:GetData()
+	
+	local wndControls = self.tWndRefs.wndMain:FindChild("TabContent:MatchContent:Controls")
+	local wndDefault = wndControls:FindChild("QueueControls:DefaultControls")
 	
 	if eType == MatchingGame.MatchType.OpenArena then
 		if #self.arMatchesToQueue > 0 then
@@ -1489,13 +1699,21 @@ function MatchMaker:CheckQueueEligibility()
 		end
 	end
 	
+	local bSoloOnly = true
+	for idx, matchSelected in pairs(self.arMatchesToQueue) do
+		if matchSelected:GetTeamSize() > 1 or matchSelected:IsRandom() then
+			bSoloOnly = false
+			break
+		end
+	end
+	
 	local bValidRoleSelection = true
-	if ktPvETypes[eType] then
+	if ktPvETypes[eType] and not bSoloOnly then
 		bValidRoleSelection = #MatchingGame.GetSelectedRoles() > 0
 	end
 	
 	local nWarpartyTeamSize = 0
-	for idx, tMatchInfo in pairs (self.tMatchList[MatchingGame.MatchType.Warplot]) do
+	for idx, tMatchInfo in pairs(self.tMatchList[MatchingGame.MatchType.Warplot]) do
 		matchWarplot = tMatchInfo.matchVet
 		nWarpartyTeamSize = idx
 	end
@@ -1505,7 +1723,7 @@ function MatchMaker:CheckQueueEligibility()
 	local bCanSoloQueue = (not ktPvPGuildRequired[eType] or (bCanQueueAsWarparty and Apollo.GetConsoleVariable(kstrConsoleAllowWarpartyFilter)) or (eType == MatchingGame.MatchType.Warplot and Apollo.GetConsoleVariable(kstrConsoleAllowMercFilter))) and bValidRoleSelection and #self.arMatchesToQueue > 0
 	wndDefault:FindChild("SoloQueue"):Enable(bCanSoloQueue)
 
-	local bCanJoinAsGroup = MatchingGame.CanQueueAsGroup() and #self.arMatchesToQueue > 0
+	local bCanJoinAsGroup = MatchingGame.CanQueueAsGroup() and not bSoloOnly
 	
 	if bCanJoinAsGroup then
 		if eType ~= MatchingGame.MatchType.Warplot then
@@ -1533,8 +1751,23 @@ function MatchMaker:CheckQueueEligibility()
 	if not MatchingGame.CanQueueAsGroup() then
 		strButtonText = "Matchmaker_GroupNotEligible"
 	end
-	
+
+	wndControls:FindChild("MasterListSelectBlocker"):Show(#self.arMatchesToQueue == 0)
+	wndControls:FindChild("QueueControls:RoleSelectBlocker"):Show(not bValidRoleSelection)
+	wndControls:FindChild("PvESettings:NoRoleBlocker"):Show(bSoloOnly)
+		
 	wndGroupJoin:SetText(Apollo.GetString(strButtonText))
+end
+
+function MatchMaker:ResizeBlocker()
+	local wndControls = self.tWndRefs.wndMain:FindChild("TabContent:MatchContent:Controls")
+	local wndBlocker = wndControls:FindChild("MasterListSelectBlocker")
+	
+	local nListLeft, nListTop, nListRight, nListBottom = wndControls:FindChild("MasterList"):GetAnchorOffsets()
+	local nBlockerLeft, nBlockerTop, nBlockerRight, nBlockerBottom = wndBlocker:GetAnchorOffsets()
+	local nNewBlockerTop = nBlockerTop
+
+	wndBlocker:SetAnchorOffsets(nBlockerLeft, nListBottom - 25, nBlockerRight, nBlockerBottom)
 end
 
 function MatchMaker:ValidateQueueButtons()
@@ -2653,17 +2886,6 @@ end
 ---------------------------------------------------------------------------------------------------
 --Store Updates
 ---------------------------------------------------------------------------------------------------
-function MatchMaker:OnEntitlementUpdate(tEntitlementInfo)
-	if not tEntitlementInfo then
-		return
-	end
-	
-	if tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.Signature or tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.Free or tEntitlementInfo.nEntitlementId == AccountItemLib.CodeEnumEntitlement.FullGuildsAccess then
-		self.bValidEntitlements = AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.Signature) > 0 or AccountItemLib.GetEntitlementCount(AccountItemLib.CodeEnumEntitlement.FullGuildsAccess) > 0
-		self:UpdateTeamInfo()
-	end
-end
-
 function MatchMaker:RefreshStoreLink()
 	self.bStoreLinkValid = StorefrontLib.IsLinkValid(StorefrontLib.CodeEnumStoreLink.Signature)
 	self:UpdateTeamInfo()

@@ -181,7 +181,7 @@ function LiveEvent:BuildEventObjectiveTitleString(peoObjective)
 	-- Use short form or reward text if possible
 	local strResult = ""
 	local strShortText = peoObjective:GetShortDescription()
-	if strShortText and string.len(strShortText) > 0 then
+	if strShortText and Apollo.StringLength(strShortText) > 0 then
 		strResult = string.format("<T Font=\"CRB_InterfaceMedium\">%s</T>", strShortText)
 	else
 		strResult = string.format("<T Font=\"CRB_InterfaceMedium\">%s</T>", peoObjective:GetDescription())

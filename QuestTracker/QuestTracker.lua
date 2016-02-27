@@ -1060,7 +1060,7 @@ function QuestTracker:BuildObjectiveTitleString(queQuest, tObjective, bIsTooltip
 	-- Early exit for completed
 	if queQuest:GetState() == Quest.QuestState_Achieved then
 		strResult = queQuest:GetCompletionObjectiveShortText()
-		if bIsTooltip or self.bShowLongQuestText or not strResult or string.len(strResult) <= 0 then
+		if bIsTooltip or self.bShowLongQuestText or not strResult or Apollo.StringLength(strResult) <= 0 then
 			strResult = queQuest:GetCompletionObjectiveText()
 		end
 		return string.format("<T Font=\"CRB_InterfaceSmall\">%s</T>", strResult)
@@ -1070,7 +1070,7 @@ function QuestTracker:BuildObjectiveTitleString(queQuest, tObjective, bIsTooltip
 	local strShortText = queQuest:GetObjectiveShortDescription(tObjective.nIndex)
 	if self.bShowLongQuestText or bIsTooltip then
 		strResult = string.format("<T Font=\"CRB_InterfaceSmall\">%s</T>", tObjective.strDescription)
-	elseif strShortText and string.len(strShortText) > 0 then
+	elseif strShortText and Apollo.StringLength(strShortText) > 0 then
 		strResult = string.format("<T Font=\"CRB_InterfaceSmall\">%s</T>", strShortText)
 	end
 	
@@ -1727,7 +1727,7 @@ function QuestTracker:HelperShowQuestCallbackBtn(wndQuest, queQuest, strNumberBa
 		end
 	end
 
-	if not tContactInfo or not tContactInfo.strName or string.len(tContactInfo.strName) <= 0 then
+	if not tContactInfo or not tContactInfo.strName or Apollo.StringLength(tContactInfo.strName) <= 0 then
 		return
 	end
 

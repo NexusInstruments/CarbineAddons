@@ -498,7 +498,7 @@ function TargetFrame:OnUpdate()
 		-- Primary frame
 		if unitTarget:GetHealth() ~= nil and unitTarget:GetMaxHealth() > 0 then
 			self:UpdatePrimaryFrame(unitTarget, bTargetChanged)
-		elseif string.len(unitTarget:GetName()) > 0 then
+		elseif Apollo.StringLength(unitTarget:GetName()) > 0 then
 			bShowWindow = false
 		end
 	else

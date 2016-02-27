@@ -108,7 +108,7 @@ function MasterLoot:OnMasterLootUpdate()
 
 	-- Break items out into MasterLooter and Looter lists (which UI displays them)
 	for idxNewItem, tCurNewItem in pairs(tMasterLoot) do
-			table.insert(tCurNewItem.bIsMaster and tMasterLootItemList or tLooterItemList, tCurNewItem)
+		table.insert(tCurNewItem.bIsMaster and tMasterLootItemList or tLooterItemList, tCurNewItem)
 	end
 
 	-- update lists with items
@@ -157,6 +157,11 @@ function MasterLoot:RefreshMasterLootItemList(tMasterLootItemList)
 			wndCurrentItem:FindChild("ItemIcon"):GetWindowSubclass():SetItem(tItem.itemDrop)
 			wndCurrentItem:FindChild("ItemName"):SetText(tItem.itemDrop:GetName())
 			wndCurrentItem:FindChild("ItemName"):SetTextColor(karItemColors[tItem.itemDrop:GetItemQuality()])
+			
+			local nCount = tItem.itemDrop:GetStackCount()
+			if nCount > 1 then
+				wndCurrentItem:FindChild("ItemIcon"):SetText(nCount)
+			end
 			
 			-- new item(s) show the window
 			self.wndMasterLoot:Show(true)
@@ -273,6 +278,11 @@ function MasterLoot:RefreshLooterItemList(tLooterItemList)
 			wndCurrentItem:FindChild("ItemIcon"):GetWindowSubclass():SetItem(tItem.itemDrop)
 			wndCurrentItem:FindChild("ItemName"):SetText(tItem.itemDrop:GetName())
 			wndCurrentItem:FindChild("ItemName"):SetTextColor(karItemColors[tItem.itemDrop:GetItemQuality()])
+			
+			local nCount = tItem.itemDrop:GetStackCount()
+			if nCount > 1 then
+				wndCurrentItem:FindChild("ItemIcon"):SetText(nCount)
+			end
 			
 			-- new item(s) show the window
 			self.wndLooter:Show(true)
@@ -395,8 +405,14 @@ end
 
 ----------------------------
 
-function MasterLoot:OnLootAssigned(objItem, strLooter)
-	Event_FireGenericEvent("GenericEvent_LootChannelMessage", String_GetWeaselString(Apollo.GetString("CRB_MasterLoot_AssignMsg"), objItem:GetName(), strLooter))
+function MasterLoot:OnLootAssigned(tLootInfo)
+	local strItem = tLootInfo.itemLoot:GetChatLinkString()
+	local nCount = tLootInfo.itemLoot:GetStackCount()
+	if nCount > 1 then
+		strItem = String_GetWeaselString(Apollo.GetString("CombatLog_MultiItem"), nCount, strItem)
+	end
+	
+	Event_FireGenericEvent("GenericEvent_LootChannelMessage", String_GetWeaselString(Apollo.GetString("CRB_MasterLoot_AssignMsg"), strItem, tLootInfo.strPlayer))
 end
 
 local knSaveVersion = 1
